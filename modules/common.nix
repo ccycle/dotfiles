@@ -18,6 +18,7 @@
     gcc.cc
     gnugrep
     go
+    gnupg
     gpg-tui
     graphviz
     grpcui
