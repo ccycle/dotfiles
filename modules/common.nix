@@ -24,6 +24,7 @@
     grpcui
     grpcurl
     htop
+    ijq
     imagemagick
     inkscape
     jq
