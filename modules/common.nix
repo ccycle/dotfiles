@@ -78,7 +78,7 @@
     ./common/nix-formatter.nix
     ./common/nodejs.nix
     ./common/python.nix
-    ./common/rancher-desktop.nix
+    # ./common/rancher-desktop.nix
     ./common/sops.nix
     ./common/tmux.nix
     ./common/zsh.nix
