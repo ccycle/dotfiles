@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "jest": "^29.7.0",
+    "stylus": "^0.62.0",
     "typeorm": "^0.3.17",
     "typeorm-explain": "^0.0.1"
   },
