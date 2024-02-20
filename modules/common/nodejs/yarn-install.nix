@@ -21,4 +21,5 @@ let
 in
 {
   home.packages = [ yarn-install ];
+  programs.git.ignores = [ "node_modules/" ];
 }
