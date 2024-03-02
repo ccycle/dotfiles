@@ -18,8 +18,6 @@ in
     (pkgs.python311.withPackages my-python-packages)
   ];
   imports = [
-    # ./python/conda.nix
-    # ./python/rye.nix
     ./python/pip2nix.nix
   ];
 }
