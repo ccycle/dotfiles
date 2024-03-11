@@ -21,6 +21,7 @@
     };
     aliases = {
       rh = "reset HEAD^";
+      ca = "commit --amend";
       list-merged-branch = ''
         !git branch --merged | egrep -v "(^\*|master|main|dev|skip_branch_name)"
       '';
