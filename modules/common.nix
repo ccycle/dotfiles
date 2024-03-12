@@ -28,6 +28,7 @@
     imagemagick
     inkscape
     jq
+    k6
     llvm_12
     localstack
     neo4j
