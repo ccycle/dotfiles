@@ -1,11 +1,11 @@
 { ... }:
 {
   imports = [
-    ./haskell/ghcup.nix
-    ./haskell/cabal.nix
+    # ./haskell/ghcup.nix
     # ./haskell/compiler.nix
-    ./haskell/dev-tools.nix
     # ./haskell/haskell-language-server.nix
+    ./haskell/cabal.nix
+    ./haskell/dev-tools.nix
     ./haskell/stack.nix
   ];
 }
