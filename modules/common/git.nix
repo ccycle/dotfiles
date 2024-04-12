@@ -23,10 +23,10 @@
       rh = "reset HEAD^";
       ca = "commit --amend";
       list-merged-branch = ''
-        !git branch --merged | egrep -v "(^\*|master|main|dev|skip_branch_name)"
+        !git branch --merged | egrep -v "(^\*|master|main|dev)"
       '';
       delete-merged-branch = ''
-        !git list-merged-branches | xargs git branch -d
+        !git branch --merged | egrep -v "(^\*|master|main|dev)" | xargs git branch -d
       '';
       list-aliases = ''
         !git config --get-regexp ^alias
