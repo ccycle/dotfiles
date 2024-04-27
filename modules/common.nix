@@ -41,6 +41,7 @@
     mysql80
     nix-tree
     ocaml
+    p7zip
     pkgconfig
     platinum-searcher
     purescript
@@ -56,6 +57,7 @@
     sqlite
     sqlitebrowser
     tree
+    unar
     vagrant
     vault
     xdot
