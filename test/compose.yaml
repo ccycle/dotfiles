@@ -1,0 +1,9 @@
+services:
+  home-manager:
+    image: nixos/nix:2.22.0
+    platform: linux/amd64
+    tty: true
+    stdin_open: true
+    volumes:
+      - ../../dotfiles:/root/dotfiles
+    command: sh
