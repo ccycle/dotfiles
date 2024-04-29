@@ -1,1 +1,1 @@
-./modules/common/zsh/p10k-config/.p10k.zsh linguist-vendored
+./modules/common/zsh/p10k-config/.p10k.zsh -linguist-vendored
