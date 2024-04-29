@@ -6,6 +6,7 @@
     dhall-lsp-server
     arrow-cpp
     arrow-glib
+    bundix
     cacert
     cachix
     caddy
