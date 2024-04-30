@@ -14,6 +14,7 @@
     dhall
     dhall-json
     erlang
+    ffmpeg_5
     gawk
     gcc
     gcc.cc
