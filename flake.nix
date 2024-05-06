@@ -43,8 +43,8 @@
     }@args: flake-utils.lib.eachDefaultSystem (system:
     let
       pkgs-unstable = nixpkgs-unstable.legacyPackages.${system};
-      pkgs-2305 = nixpkgs-stable.legacyPackages.${system};
-      pkgs = pkgs-2305;
+      pkgs-stable = nixpkgs-stable.legacyPackages.${system};
+      pkgs = pkgs-stable;
       modules = [ ./modules/common.nix ];
       extraSpecialArgs = args // { inherit pkgs-unstable; };
     in
