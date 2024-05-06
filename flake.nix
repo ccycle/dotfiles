@@ -12,7 +12,7 @@
     ghq-migrator.url = "github:astj/ghq-migrator";
     haskellNix.url = "github:input-output-hk/haskell.nix";
     devx.url = "github:input-output-hk/devx";
-    home-manager.url = "github:nix-community/home-manager/release-23.05";
+    home-manager.url = "github:nix-community/home-manager/release-23.11";
     home-manager.inputs.nixpkgs.follows = "nixpkgs-stable";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/ec668b72d2bad1350fb35cb42891eaa50a59c41a";
     nixpkgs-stable.url = "github:nixos/nixpkgs/release-23.11";

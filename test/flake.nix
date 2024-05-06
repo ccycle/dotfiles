@@ -5,7 +5,7 @@
     call-flake.url = "github:divnix/call-flake";
     nix-installer.url = "github:DeterminateSystems/nix-installer";
     nix-installer.flake = false;
-    home-manager.url = "github:nix-community/home-manager/release-23.05";
+    home-manager.url = "github:nix-community/home-manager/release-23.11";
   };
 
   outputs = { self, call-flake, nix-installer, home-manager, ... }:

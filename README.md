@@ -8,7 +8,7 @@
 
 ### Initialize configuration
 
-`nix run home-manager/release-23.05 -- init`
+`nix run home-manager/release-23.11 -- init`
 
 https://nix-community.github.io/home-manager/
 
@@ -20,4 +20,4 @@ cd $HOME/.config/home-manager
 
 ### Run switcher on home-manager
 
-`nix run home-manager/release-23.05 -- switch`
+`nix run home-manager/release-23.11 -- switch`
