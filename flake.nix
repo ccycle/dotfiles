@@ -1,9 +1,10 @@
 {
   inputs = {
     # Specify the source of Home Manager and Nixpkgs.
+    agenix.url = "github:ryantm/agenix";
     agenix.inputs.home-manager.follows = "home-manager";
     agenix.inputs.nixpkgs.follows = "nixpkgs-2305";
-    agenix.url = "github:ryantm/agenix";
+    attic.url = "github:zhaofengli/attic";
     flake-utils.url = "github:numtide/flake-utils";
     ghcup.flake = false;
     ghcup.url = "github:haskell/ghcup-hs";
@@ -27,6 +28,7 @@
   outputs =
     { self
     , agenix
+    , attic
     , devx
     , flake-utils
     , ghq-migrator

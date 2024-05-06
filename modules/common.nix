@@ -74,6 +74,7 @@
   imports = [
     ./common/age.nix
     ./common/agenix.nix
+    ./common/attic.nix
     ./common/direnv.nix
     ./common/git.nix
     ./common/go-task.nix
