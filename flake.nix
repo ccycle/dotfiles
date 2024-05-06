@@ -3,7 +3,7 @@
     # Specify the source of Home Manager and Nixpkgs.
     agenix.url = "github:ryantm/agenix";
     agenix.inputs.home-manager.follows = "home-manager";
-    agenix.inputs.nixpkgs.follows = "nixpkgs-2305";
+    agenix.inputs.nixpkgs.follows = "nixpkgs-stable";
     attic.url = "github:zhaofengli/attic";
     flake-utils.url = "github:numtide/flake-utils";
     ghcup.flake = false;
@@ -13,12 +13,12 @@
     haskellNix.url = "github:input-output-hk/haskell.nix";
     devx.url = "github:input-output-hk/devx";
     home-manager.url = "github:nix-community/home-manager/release-23.05";
-    home-manager.inputs.nixpkgs.follows = "nixpkgs-2305";
+    home-manager.inputs.nixpkgs.follows = "nixpkgs-stable";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/ec668b72d2bad1350fb35cb42891eaa50a59c41a";
-    nixpkgs-2305.url = "github:nixos/nixpkgs/release-23.05";
+    nixpkgs-stable.url = "github:nixos/nixpkgs/release-23.11";
     pip2nix.url = "github:nix-community/pip2nix";
-    sops-nix.inputs.nixpkgs-stable.follows = "nixpkgs-2305";
-    sops-nix.inputs.nixpkgs.follows = "nixpkgs-2305";
+    sops-nix.inputs.nixpkgs-stable.follows = "nixpkgs-stable";
+    sops-nix.inputs.nixpkgs.follows = "nixpkgs-stable";
     sops-nix.url = "github:Mic92/sops-nix";
     stack2cabal.inputs.haskellNix.follows = "haskellNix";
     stack2cabal.inputs.nixpkgs.follows = "haskellNix/nixpkgs-unstable";
@@ -34,7 +34,7 @@
     , ghq-migrator
     , haskellNix
     , home-manager
-    , nixpkgs-2305
+    , nixpkgs-stable
     , nixpkgs-unstable
     , pip2nix
     , sops-nix
@@ -43,7 +43,7 @@
     }@args: flake-utils.lib.eachDefaultSystem (system:
     let
       pkgs-unstable = nixpkgs-unstable.legacyPackages.${system};
-      pkgs-2305 = nixpkgs-2305.legacyPackages.${system};
+      pkgs-2305 = nixpkgs-stable.legacyPackages.${system};
       pkgs = pkgs-2305;
       modules = [ ./modules/common.nix ];
       extraSpecialArgs = args // { inherit pkgs-unstable; };
