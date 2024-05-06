@@ -3,12 +3,12 @@
 
   inputs = {
     call-flake.url = "github:divnix/call-flake";
-    home-manager = {
-      url = "github:nix-community/home-manager/release-23.05";
-    };
+    nix-installer.url = "github:DeterminateSystems/nix-installer";
+    nix-installer.flake = false;
+    home-manager.url = "github:nix-community/home-manager/release-23.05";
   };
 
-  outputs = { self, call-flake, home-manager, ... }:
+  outputs = { self, call-flake, nix-installer, home-manager, ... }:
     let
       dotfiles = call-flake ../.;
       flake-utils = dotfiles.inputs.flake-utils;
@@ -31,6 +31,10 @@
         # to pass through arguments to home.nix
         inherit extraSpecialArgs;
       };
+      packages.docker = let
+        pkgs = dotfiles.inputs.nixpkgs-2305.legacyPackages.${system};
+        pkgsLinux = dotfiles.inputs.nixpkgs-2305.legacyPackages.x86_64-linux;
+      in import ./docker.nix {inherit pkgs pkgsLinux;};
     }
     );
 }

@@ -2,11 +2,11 @@
   "nodes": {
     "call-flake": {
       "locked": {
-        "lastModified": 1713662534,
+        "lastModified": 1714267385,
         "narHash": "sha256-B9uOqvhDhHnK+kwW/mfI/rAtlXuYlipdOss/L7gBOjs=",
         "owner": "divnix",
         "repo": "call-flake",
-        "rev": "c7363f1696b45fcf678dd8bb40aa6b3acecef51d",
+        "rev": "856920bd78ac60a53fa008479fc9f3751a5a7e42",
         "type": "github"
       },
       "original": {
@@ -34,6 +34,22 @@
         "type": "github"
       }
     },
+    "nix-installer": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1713972779,
+        "narHash": "sha256-B7hG/PnHb4qaPTjkE/oiDEAV0NhrctzD5MqKlYlZj8c=",
+        "owner": "DeterminateSystems",
+        "repo": "nix-installer",
+        "rev": "1b6195b5262a90c5ba2734d96a9b4fd9e52605f4",
+        "type": "github"
+      },
+      "original": {
+        "owner": "DeterminateSystems",
+        "repo": "nix-installer",
+        "type": "github"
+      }
+    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1687466461,
@@ -53,7 +69,8 @@
     "root": {
       "inputs": {
         "call-flake": "call-flake",
-        "home-manager": "home-manager"
+        "home-manager": "home-manager",
+        "nix-installer": "nix-installer"
       }
     }
   },

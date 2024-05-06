@@ -1,9 +1,9 @@
 services:
-  home-manager:
-    image: nixos/nix:2.22.0
+  nix-dev:
+    image: nix-flakes:latest
+    container_name: nix-dev-container
     platform: linux/amd64
     tty: true
     stdin_open: true
-    volumes:
-      - ../../dotfiles:/root/dotfiles
-    command: sh
+    user: '0'
+    command: sleep infinity
