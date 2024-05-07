@@ -35,7 +35,7 @@
     localstack
     neo4j
     nil
-    nix-du
+    # nix-du
     nix-index
     nix-prefetch-git
     minikube
@@ -44,7 +44,7 @@
     nix-tree
     ocaml
     p7zip
-    pkgconfig
+    pkg-config
     platinum-searcher
     purescript
     rclone
@@ -55,14 +55,14 @@
     scala_3
     shellcheck
     sl
-    spago
+    # spago
     sqlite
     sqlitebrowser
     tree
     unar
-    vagrant
-    vault
-    xdot
+    # vagrant
+    # vault
+    # xdot
     yq-go
     zlib
     zlib.dev
