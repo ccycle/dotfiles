@@ -10,7 +10,7 @@
   };
   home.packages = with pkgs; [
     cabal-install
-    haskellPackages.cabal-plan
+    # haskellPackages.cabal-plan
   ];
   programs.git.ignores = [
     "dist-newstyle"
