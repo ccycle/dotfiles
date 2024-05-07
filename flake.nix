@@ -15,7 +15,7 @@
     home-manager.url = "github:nix-community/home-manager/release-23.11";
     home-manager.inputs.nixpkgs.follows = "nixpkgs-stable";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/ec668b72d2bad1350fb35cb42891eaa50a59c41a";
-    nixpkgs-stable.url = "github:nixos/nixpkgs/release-23.11";
+    nixpkgs-stable.url = "github:nixos/nixpkgs/23.11";
     pip2nix.url = "github:nix-community/pip2nix";
     sops-nix.inputs.nixpkgs-stable.follows = "nixpkgs-stable";
     sops-nix.inputs.nixpkgs.follows = "nixpkgs-stable";
