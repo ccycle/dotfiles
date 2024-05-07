@@ -77,6 +77,7 @@
     ./common/attic.nix
     ./common/direnv.nix
     ./common/git.nix
+    ./common/gmake.nix
     ./common/go-task.nix
     ./common/php.nix
     ./common/haskell.nix
