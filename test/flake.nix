@@ -14,27 +14,29 @@
       flake-utils = dotfiles.inputs.flake-utils;
     in
     flake-utils.lib.eachDefaultSystem (system:
-    let
-      extraSpecialArgs = dotfiles.extraSpecialArgs.${system} // {inherit system;};
-      pkgs = dotfiles.pkgs.${system};
-      modules-common = dotfiles.modules.${system};
-    in
-    {
-      homeConfigurations."dotfiles-test" = home-manager.lib.homeManagerConfiguration {
-        inherit pkgs;
+      let
+        extraSpecialArgs = dotfiles.extraSpecialArgs.${system} // { inherit system; };
+        pkgs = dotfiles.pkgs.${system};
+        modules-common = dotfiles.modules.${system};
+      in
+      {
+        homeConfigurations."dotfiles-test" = home-manager.lib.homeManagerConfiguration {
+          inherit pkgs;
 
-        # Specify your home configuration modules here, for example,
-        # the path to your home.nix.
-        modules = [ ./home.nix ] ++ modules-common;
+          # Specify your home configuration modules here, for example,
+          # the path to your home.nix.
+          modules = [ ./home.nix ] ++ modules-common;
 
-        # Optionally use extraSpecialArgs
-        # to pass through arguments to home.nix
-        inherit extraSpecialArgs;
-      };
-      packages.docker = let
-        pkgs = dotfiles.inputs.nixpkgs-stable.legacyPackages.${system};
-        pkgsLinux = dotfiles.inputs.nixpkgs-stable.legacyPackages.x86_64-linux;
-      in import ./docker.nix {inherit pkgs pkgsLinux;};
-    }
+          # Optionally use extraSpecialArgs
+          # to pass through arguments to home.nix
+          inherit extraSpecialArgs;
+        };
+        packages.docker =
+          let
+            pkgs = dotfiles.inputs.nixpkgs-stable.legacyPackages.${system};
+            pkgsLinux = dotfiles.inputs.nixpkgs-stable.legacyPackages.x86_64-linux;
+          in
+          import ./docker.nix { inherit pkgs pkgsLinux; };
+      }
     );
 }

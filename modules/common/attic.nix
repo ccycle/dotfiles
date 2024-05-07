@@ -1,4 +1,4 @@
-{ attic, pkgs, ... }:
-let attic-package = pkgs.callPackage "${attic}/package.nix" { }; in {
-  home.packages = [ attic-package ];
+{ attic, system, ... }:
+{
+  home.packages = [ attic.packages.${system}.default ];
 }
