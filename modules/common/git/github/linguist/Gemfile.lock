@@ -1,7 +1,4 @@
 GEM
-  specs:
-
-GEM
   remote: https://rubygems.org/
   specs:
     cgi (0.4.1)
@@ -18,7 +15,7 @@ PLATFORMS
   x86_64-darwin-23
 
 DEPENDENCIES
-  github-linguist!
+  github-linguist
 
 BUNDLED WITH
    2.4.13
