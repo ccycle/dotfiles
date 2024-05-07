@@ -14,7 +14,7 @@
       flake-update-input = "nix flake lock --update-input ";
       grep-colorize-only = "grep --color=auto -z ";
     };
-    enableSyntaxHighlighting = true;
+    syntaxHighlighting.enable = true;
     enableAutosuggestions = true;
     completionInit =
       ''
