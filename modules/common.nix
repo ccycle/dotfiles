@@ -46,6 +46,7 @@
     p7zip
     pkg-config
     platinum-searcher
+    poppler_utils
     purescript
     rclone
     remarshal
