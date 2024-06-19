@@ -38,4 +38,5 @@
     ./git/github.nix
     ./git/gitlab.nix
   ];
+  home.packages = [ pkgs.git-lfs ];
 }
