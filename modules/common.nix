@@ -59,6 +59,7 @@
     # spago
     sqlite
     sqlitebrowser
+    tini
     tree
     unar
     # vagrant
