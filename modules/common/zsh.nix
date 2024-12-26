@@ -15,7 +15,7 @@
       grep-colorize-only = "grep --color=auto -z ";
     };
     syntaxHighlighting.enable = true;
-    enableAutosuggestions = true;
+    autosuggestion.enable = true;
     completionInit =
       ''
         # https://stackoverflow.com/questions/67136714/how-to-properly-call-compinit-and-bashcompinit-in-zsh

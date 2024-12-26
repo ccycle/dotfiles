@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, pkgs-2311, ... }:
 let
   my-python-packages = ps: with ps; [
     arrow
@@ -15,7 +15,7 @@ let
 in
 {
   home.packages = [
-    (pkgs.python311.withPackages my-python-packages)
+    (pkgs-2311.python311.withPackages my-python-packages)
   ];
   imports = [
     ./python/pip2nix.nix

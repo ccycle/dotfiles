@@ -33,8 +33,8 @@
         };
         packages.docker =
           let
-            pkgs = dotfiles.inputs.nixpkgs-stable.legacyPackages.${system};
-            pkgsLinux = dotfiles.inputs.nixpkgs-stable.legacyPackages.x86_64-linux;
+            pkgs = dotfiles.inputs.nixpkgs.legacyPackages.${system};
+            pkgsLinux = dotfiles.inputs.nixpkgs.legacyPackages.x86_64-linux;
           in
           import ./docker.nix { inherit pkgs pkgsLinux; };
       }

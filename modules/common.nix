@@ -1,4 +1,15 @@
-{ config, pkgs, ... }:
+{ config, pkgs, pkgs-unstable, pkgs-2211, pkgs-2305, ... }:
+
+let
+  packages-2211 = with pkgs-2211; [
+    mongodb
+    spago
+    nix-du
+    vagrant
+    vault
+    xdot
+  ];
+in
 
 {
   home.packages = with pkgs; [
@@ -35,13 +46,13 @@
     localstack
     neo4j
     nil
-    # nix-du
     nix-index
+    nix-info
     nix-prefetch-git
     minikube
-    # mongodb
     mysql80
     nix-tree
+    nmap
     ocaml
     p7zip
     pkg-config
@@ -56,27 +67,25 @@
     scala_3
     shellcheck
     sl
-    # spago
     sqlite
     sqlitebrowser
-    tini
     tree
     unar
-    # vagrant
-    # vault
-    # xdot
+    wireshark
     yq-go
     zlib
     zlib.dev
     zstd
-  ];
+  ]
+  ++ packages-2211;
 
   programs.home-manager.enable = true;
 
   imports = [
     ./common/age.nix
     ./common/agenix.nix
-    ./common/attic.nix
+    # ./common/attic.nix
+    ./common/emacs.nix
     ./common/direnv.nix
     ./common/git.nix
     ./common/gmake.nix

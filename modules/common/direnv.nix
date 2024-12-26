@@ -1,8 +1,13 @@
 { ... }: {
-  programs.direnv.enable = true;
-  programs.direnv.nix-direnv.enable = true;
-  programs.git.ignores = [
-    ".direnv"
-    ".env.local"
-  ];
+  programs = {
+    direnv = {
+      enable = true;
+      nix-direnv.enable = true;
+      enableZshIntegration = true;
+    };
+    git.ignores = [
+      ".direnv"
+      ".env.local"
+    ];
+  };
 }

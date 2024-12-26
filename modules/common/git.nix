@@ -18,6 +18,9 @@
       core.editor = "code --wait";
       init.defaultbranch = "main";
       fetch.prune = true;
+      # https://qiita.com/skkzsh/items/11dd107a0734fec682b8
+      credential.helper = "/Users/mfuruki/.nix-profile/bin/git-credential-manager";
+      credential."https://dev.azure.com".useHttpPath = true;
     };
     aliases = {
       rh = "reset HEAD^";
@@ -31,6 +34,10 @@
       list-aliases = ''
         !git config --get-regexp ^alias
       '';
+      # https://zenn.dev/mary_pp/articles/eaac544eaf600a
+      pushf = ''
+        !git push --force-with-lease --force-if-includes
+      '';
     };
   };
   imports = [
@@ -38,5 +45,8 @@
     ./git/github.nix
     ./git/gitlab.nix
   ];
-  home.packages = [ pkgs.git-lfs ];
+  home.packages = [
+    pkgs.git-lfs
+    pkgs.git-credential-manager
+  ];
 }
