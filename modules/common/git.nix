@@ -13,11 +13,15 @@
       ".my-local-workspace/"
     ];
     extraConfig = {
-      commit.gpgsign = true;
       core.ignorecase = false;
       core.editor = "code --wait";
       init.defaultbranch = "main";
       fetch.prune = true;
+      # https://qiita.com/skkzsh/items/11dd107a0734fec682b8
+      credential = {
+        helper = "${pkgs.git-credential-manager}/bin/git-credential-manager-core";
+        "https://dev.azure.com".useHttpPath = true;
+      };
     };
     aliases = {
       rh = "reset HEAD^";
