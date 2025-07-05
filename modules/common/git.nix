@@ -19,20 +19,20 @@
       fetch.prune = true;
       # https://qiita.com/skkzsh/items/11dd107a0734fec682b8
       credential = {
-        helper = "${pkgs.git-credential-manager}/bin/git-credential-manager-core";
+        helper = "${pkgs.git-credential-manager}/bin/git-credential-manager";
         "https://dev.azure.com".useHttpPath = true;
       };
     };
     aliases = {
       rh = "reset HEAD^";
       ca = "commit --amend";
-      list-merged-branch = ''
+      merged-branch-list = ''
         !git branch --merged | egrep -v "(^\*|master|main|dev)"
       '';
-      delete-merged-branch = ''
+      merged-branch-delete = ''
         !git branch --merged | egrep -v "(^\*|master|main|dev)" | xargs git branch -d
       '';
-      list-aliases = ''
+      aliases-list = ''
         !git config --get-regexp ^alias
       '';
       # https://zenn.dev/mary_pp/articles/eaac544eaf600a
