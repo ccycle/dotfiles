@@ -1,10 +1,10 @@
 { pkgs, ... }: {
   home.packages = with pkgs; [
     node2nix
-    nodejs
     nodePackages.prettier
     nodePackages.ts-node
     nodePackages.webpack
+    nodejs
     typescript
     yarn
     yarn2nix

@@ -54,6 +54,7 @@ in
     nix-tree
     nmap
     ocaml
+    openssh
     p7zip
     pkg-config
     platinum-searcher
@@ -82,23 +83,24 @@ in
   programs.home-manager.enable = true;
 
   imports = [
+    # ./common/attic.nix
+    # ./common/rancher-desktop.nix
     ./common/age.nix
     ./common/agenix.nix
-    # ./common/attic.nix
-    ./common/emacs.nix
+    ./common/cursor.nix
     ./common/direnv.nix
+    ./common/emacs.nix
     ./common/git.nix
     ./common/gmake.nix
     ./common/go-task.nix
-    ./common/php.nix
     ./common/haskell.nix
     ./common/nix-formatter.nix
     ./common/nodejs.nix
+    ./common/php.nix
     ./common/python.nix
-    # ./common/rancher-desktop.nix
     ./common/sops.nix
     ./common/tmux.nix
-    ./common/zsh.nix
     ./common/vscode.nix
+    ./common/zsh.nix
   ];
 }
