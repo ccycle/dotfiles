@@ -19,8 +19,8 @@
       fetch.prune = true;
       # https://qiita.com/skkzsh/items/11dd107a0734fec682b8
       credential = {
-        helper = "${pkgs.git-credential-manager}/bin/git-credential-manager";
-        "https://dev.azure.com".useHttpPath = true;
+        helper = "manager";
+        credentialStore = "keychain";
       };
     };
     aliases = {
