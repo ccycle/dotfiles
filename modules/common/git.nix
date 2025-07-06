@@ -20,7 +20,7 @@
       # https://qiita.com/skkzsh/items/11dd107a0734fec682b8
       credential = {
         helper = "manager";
-        credentialStore = "keychain";
+        credentialStore = "cache";
       };
     };
     aliases = {
