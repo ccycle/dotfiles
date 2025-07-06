@@ -88,7 +88,6 @@ in
     # ./common/rancher-desktop.nix
     ./common/age.nix
     ./common/agenix.nix
-    ./common/cursor.nix
     ./common/direnv.nix
     ./common/emacs.nix
     ./common/git.nix
