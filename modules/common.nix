@@ -73,6 +73,7 @@ in
     tree
     unar
     wireshark
+    wget
     yq-go
     zlib
     zlib.dev

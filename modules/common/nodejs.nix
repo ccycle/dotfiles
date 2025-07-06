@@ -4,6 +4,7 @@
     nodePackages.prettier
     nodePackages.ts-node
     nodePackages.webpack
+    nodePackages.webpack-cli
     nodejs
     typescript
     yarn

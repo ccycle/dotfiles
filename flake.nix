@@ -7,6 +7,7 @@
     flake-utils.url = "github:numtide/flake-utils";
     ghcup.flake = false;
     ghcup.url = "github:haskell/ghcup-hs";
+    ghc-wasm-meta.url = "gitlab:ghc/ghc-wasm-meta?host=gitlab.haskell.org";
     ghq-migrator.flake = false;
     ghq-migrator.url = "github:astj/ghq-migrator";
     haskellNix.url = "github:input-output-hk/haskell.nix";
