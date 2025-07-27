@@ -8,10 +8,10 @@
     enable = true;
     dotDir = ".config/zsh";
     shellAliases = {
-      hm-switch = "home-manager switch --flake ";
+      hm-switch = "home-manager switch -L --impure"; # 環境変数を読み取る処理を入れるため `--impure` をつけている
       zsh-restart = "exec zsh -l";
       nix-daemon-restart = "sudo launchctl kickstart -k system/org.nixos.nix-daemon";
-      flake-update-input = "nix flake lock --update-input ";
+      nix-flake-update-input = "nix flake lock --update-input ";
       grep-colorize-only = "grep --color=auto -z ";
     };
     syntaxHighlighting.enable = true;
