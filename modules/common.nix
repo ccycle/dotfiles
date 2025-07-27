@@ -14,7 +14,8 @@ in
 {
   home.packages = with pkgs; [
     # bun
-    dhall-lsp-server
+    # ffmpeg_5
+    # rclone
     arrow-cpp
     arrow-glib
     bundix
@@ -24,14 +25,14 @@ in
     cmake
     dhall
     dhall-json
+    dhall-lsp-server
     erlang
-    ffmpeg_5
     gawk
     gcc
     gcc.cc
     gnugrep
-    go
     gnupg
+    go
     gpg-tui
     graphviz
     grpcui
@@ -41,6 +42,7 @@ in
     imagemagick
     inkscape
     jq
+    just
     k6
     llvm_12
     localstack
@@ -60,7 +62,6 @@ in
     platinum-searcher
     poppler_utils
     purescript
-    rclone
     remarshal
     rename
     ripgrep
@@ -86,8 +87,8 @@ in
   imports = [
     # ./common/attic.nix
     # ./common/rancher-desktop.nix
+    # ./common/agenix.nix
     ./common/age.nix
-    ./common/agenix.nix
     ./common/direnv.nix
     ./common/emacs.nix
     ./common/git.nix
