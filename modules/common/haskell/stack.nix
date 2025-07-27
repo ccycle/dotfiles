@@ -5,6 +5,6 @@
     ".stack-work"
   ];
   imports = [
-    ./stack2cabal.nix
+    # ./stack2cabal.nix
   ];
 }
