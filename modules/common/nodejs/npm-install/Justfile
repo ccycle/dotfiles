@@ -1,0 +1,7 @@
+# Install a package with --package-lock-only flag
+npm-install package:
+    npm install {{package}} --package-lock-only
+
+#package.json package-lock.json
+generate-from-json:
+    node2nix
