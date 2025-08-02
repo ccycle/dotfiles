@@ -19,5 +19,7 @@ in
   ];
   imports = [
     ./python/pip2nix.nix
+    # ./python/serena.nix
+    ./python/uv.nix
   ];
 }
