@@ -11,5 +11,8 @@
       git_protocol = "https";
       prompt = "enabled";
     };
+
+    # GitHub CLIのcredential helperを無効にして、git-credential-managerを使用
+    enableGitCredentialHelper = false;
   };
 }
