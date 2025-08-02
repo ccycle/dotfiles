@@ -21,6 +21,7 @@
       credential = {
         helper = "manager";
         credentialStore = "cache";
+        cacheOption = "--timeout 86400";
       };
     };
     aliases = {
