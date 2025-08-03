@@ -14,6 +14,13 @@
     devx.url = "github:input-output-hk/devx";
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
+
+    uv2nix = {
+      url = "github:pyproject-nix/uv2nix";
+      inputs.pyproject-nix.follows = "pyproject-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     nixpkgs.url = "github:nixos/nixpkgs/25.05";
     nixpkgs-2211.url = "github:nixos/nixpkgs/22.11";
     nixpkgs-2305.url = "github:nixos/nixpkgs/23.05";
