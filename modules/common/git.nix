@@ -20,8 +20,7 @@
       # https://qiita.com/skkzsh/items/11dd107a0734fec682b8
       credential = {
         helper = "manager";
-        credentialStore = "cache";
-        cacheOption = "--timeout 86400";
+        # credentialStoreとcacheOptionの設定を削除（Git Credential Manager 2.xでは不要）
       };
     };
     aliases = {
