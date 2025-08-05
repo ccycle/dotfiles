@@ -37,6 +37,7 @@ in
     graphviz
     grpcui
     grpcurl
+    hcp
     htop
     ijq
     imagemagick
