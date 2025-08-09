@@ -5,7 +5,6 @@ let
     mongodb
     spago
     nix-du
-    vagrant
     vault
     xdot
   ];
