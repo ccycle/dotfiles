@@ -9,11 +9,11 @@
       export PATH=$HOME/.local/bin:$PATH
     '';
   };
-  home.activation.checkCursorAgent = lib.hm.dag.entryAfter ["writeBoundary"] ''
-  if ! command -v cursor-agent >/dev/null 2>&1; then
-    echo "Warning: cursor-agent is not installed. Please run: curl https://cursor.com/install -fsS | bash"
-  else
-    echo "(Check) cursor-agent is installed"
-  fi
-'';
+  home.activation.checkCursorAgent = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    if ! command -v cursor-agent >/dev/null 2>&1; then
+      echo "Warning: cursor-agent is not installed. Please run: curl https://cursor.com/install -fsS | bash"
+    else
+      echo "(Check) cursor-agent is installed"
+    fi
+  '';
 }
