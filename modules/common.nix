@@ -32,6 +32,7 @@ in
     gnugrep
     gnupg
     go
+    google-cloud-sdk
     gpg-tui
     graphviz
     grpcui
