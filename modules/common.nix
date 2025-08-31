@@ -92,6 +92,7 @@ in
     ./common/age.nix
     ./common/cursor.nix
     ./common/direnv.nix
+    ./common/docker.nix
     ./common/emacs.nix
     ./common/git.nix
     ./common/gmake.nix
