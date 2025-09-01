@@ -17,7 +17,6 @@
 
     uv2nix = {
       url = "github:pyproject-nix/uv2nix";
-      inputs.pyproject-nix.follows = "pyproject-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -68,7 +67,11 @@
       pkgs-2505 = nixpkgs-2505.legacyPackages.${system};
       pkgs-unstable = nixpkgs-unstable.legacyPackages.${system};
       pkgs = nixpkgs.legacyPackages.${system};
-      modules = [ ./modules/common.nix ];
+      modules = [
+        ./modules/common.nix
+        ./home.nix
+      ];
+      env = import ./generated/env.nix;
       extraSpecialArgs = args // {
         inherit
           pkgs-unstable
@@ -79,10 +82,23 @@
           pkgs-2411
           pkgs-2505
           ;
-      };
+      } // env;
     in
     {
+      homeConfigurations."${env.username}" = home-manager.lib.homeManagerConfiguration {
+        inherit pkgs;
+
+        # Specify your home configuration modules here, for example,
+        # the path to your home.nix.
+        modules = [ ./home.nix ] ++ modules;
+
+        # Optionally use extraSpecialArgs
+        # to pass through arguments to home.nix
+        inherit extraSpecialArgs;
+      };
+
       inherit pkgs modules extraSpecialArgs;
+
       packages = {
         init-dotfiles = pkgs.callPackage ./init-dotfiles.nix { };
       };
