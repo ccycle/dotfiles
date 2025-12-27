@@ -18,7 +18,7 @@ in
     (pkgs-2311.python311.withPackages my-python-packages)
   ];
   imports = [
-    ./python/pip2nix.nix
+    # ./python/pip2nix.nix
     # ./python/serena.nix
     ./python/uv.nix
   ];

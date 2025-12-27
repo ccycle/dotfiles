@@ -2,6 +2,10 @@
 npm-install package:
     npm install {{package}} --package-lock-only
 
+# Uninstall a package with --package-lock-only flag
+npm-uninstall package:
+    npm uninstall {{package}} --package-lock-only
+
 #package.json package-lock.json
 generate-from-json:
     node2nix

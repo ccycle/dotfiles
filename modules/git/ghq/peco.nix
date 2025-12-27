@@ -1,6 +1,6 @@
 { pkgs, ... }: {
   programs.zsh = {
-    initExtra =
+    initContent =
       ''
         # peco
         function peco-src () {

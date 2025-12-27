@@ -14,17 +14,19 @@
     ];
     extraConfig = {
       core.ignorecase = false;
-      core.editor = "code --wait";
+      core.editor = "cursor --wait";
       init.defaultbranch = "main";
       fetch.prune = true;
       # https://qiita.com/skkzsh/items/11dd107a0734fec682b8
       credential = {
         helper = "manager";
-        # credentialStoreとcacheOptionの設定を削除（Git Credential Manager 2.xでは不要）
       };
     };
     aliases = {
       rh = "reset HEAD^";
+      stash-abort = "reset --merge";
+      push-origin-head = "push origin HEAD";
+      pull-origin-head = "pull origin HEAD";
       ca = "commit --amend";
       merged-branch-list = ''
         !git branch --merged | egrep -v "(^\*|master|main|dev)"
@@ -32,13 +34,8 @@
       merged-branch-delete = ''
         !git branch --merged | egrep -v "(^\*|master|main|dev)" | xargs git branch -d
       '';
-      aliases-list = ''
-        !git config --get-regexp ^alias
-      '';
-      # https://zenn.dev/mary_pp/articles/eaac544eaf600a
-      pushf = ''
-        !git push --force-with-lease --force-if-includes
-      '';
+      aliases-list = "git config --get-regexp ^alias";
+      push-force-with-lease = "git push --force-with-lease --force-if-includes"; # https://zenn.dev/mary_pp/articles/eaac544eaf600a
     };
   };
   imports = [

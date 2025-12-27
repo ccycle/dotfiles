@@ -1,5 +1,5 @@
 { pkgs, pkgs-unstable, ... }:
-let setPrioritiesAsc = pkgs.callPackage ../../../utils/setPrioritiesAsc.nix { }; in
+let setPrioritiesAsc = pkgs.callPackage ../../utils/setPrioritiesAsc.nix { }; in
 {
   # home.packages =
   #   setPrioritiesAsc (

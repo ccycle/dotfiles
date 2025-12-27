@@ -2,8 +2,9 @@
   "name": "npm-install",
   "version": "0.1.0",
   "dependencies": {
-    "@anthropic-ai/claude-code": "^1.0.56",
     "@google/gemini-cli": "^0.1.13",
+    "devcontainer": "^0.3.0",
+    "npm-check-updates": "^19.1.2",
     "prettier": "^3.6.2",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3",

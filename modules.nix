@@ -1,12 +1,14 @@
-{ config, pkgs, pkgs-unstable, pkgs-2211, pkgs-2305, ... }:
+{ config, pkgs, pkgs-unstable, pkgs-2211, pkgs-2305, pkgs-2505, ... }:
 
 let
   packages-2211 = with pkgs-2211; [
-    mongodb
     spago
     nix-du
     vault
     xdot
+  ];
+  packages-2505 = with pkgs-2505; [
+    # mongodb
   ];
 in
 
@@ -22,6 +24,7 @@ in
     cachix
     caddy
     cmake
+    devcontainer
     dhall
     dhall-json
     dhall-lsp-server
@@ -57,7 +60,6 @@ in
     nix-tree
     nmap
     ocaml
-    openssh
     p7zip
     pkg-config
     platinum-searcher
@@ -81,30 +83,29 @@ in
     zlib.dev
     zstd
   ]
-  ++ packages-2211;
+  ++ packages-2211
+  ++ packages-2505;
 
   programs.home-manager.enable = true;
 
   imports = [
-    # ./common/attic.nix
-    # ./common/rancher-desktop.nix
-    # ./common/agenix.nix
-    ./common/age.nix
-    ./common/cursor.nix
-    ./common/direnv.nix
-    ./common/docker.nix
-    ./common/emacs.nix
-    ./common/git.nix
-    ./common/gmake.nix
-    ./common/go-task.nix
-    ./common/haskell.nix
-    ./common/nix-formatter.nix
-    ./common/nodejs.nix
-    ./common/php.nix
-    ./common/python.nix
-    ./common/sops.nix
-    ./common/tmux.nix
-    ./common/vscode.nix
-    ./common/zsh.nix
+    ./modules/age.nix
+    ./modules/cursor.nix
+    ./modules/direnv.nix
+    ./modules/docker.nix
+    ./modules/emacs.nix
+    ./modules/git.nix
+    ./modules/gmake.nix
+    ./modules/go-task.nix
+    ./modules/haskell.nix
+    ./modules/nix-formatter.nix
+    ./modules/nodejs.nix
+    ./modules/php.nix
+    ./modules/python.nix
+    ./modules/sops.nix
+    ./modules/ssh.nix
+    ./modules/tmux.nix
+    ./modules/zsh.nix
+    ./modules/pinentry_mac.nix
   ];
 }

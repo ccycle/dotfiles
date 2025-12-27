@@ -1,8 +1,6 @@
 { pkgs, ... }:
 {
-  programs.zsh.shellAliases = {
-    curl-stackage-config = "() {curl https://www.stackage.org/$1/cabal.config > cabal.project.freeze}";
-  };
+  programs.zsh.shellAliases = { };
   home.sessionVariables = {
     # https://github.com/haskell/cabal/issues/6716#issuecomment-615913601
     LIBRARY_PATH = pkgs.lib.makeLibraryPath (with pkgs; [ zlib ]);

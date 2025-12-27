@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, config, ... }:
 {
   home.packages = with pkgs; [
     findutils
@@ -21,7 +21,7 @@
         # https://stackoverflow.com/questions/67136714/how-to-properly-call-compinit-and-bashcompinit-in-zsh
         autoload -Uz compinit bashcompinit && compinit && bashcompinit
       '';
-    initExtra =
+    initContent =
       ''
         bindkey '^[^?' backward-kill-word
         bindkey '^[[3;3~' backward-kill-word

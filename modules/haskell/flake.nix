@@ -15,8 +15,6 @@
           ./compiler.nix
           ./haskell-language-server.nix
           ./dev-tools.nix
-          ./stack.nix
-          ./stack2cabal.nix
           ./ghc-wasm-meta.nix
         ];
       };
