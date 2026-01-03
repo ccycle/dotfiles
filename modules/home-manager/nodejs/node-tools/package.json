@@ -1,0 +1,19 @@
+{
+  "name": "nix-node-tools",
+  "version": "1.0.0",
+  "description": "Managed Node.js tools for Nix environment",
+  "private": true,
+  "dependencies": {
+    "jest": "*",
+    "stylus": "*",
+    "typeorm": "*",
+    "@google/gemini-cli": "*"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "node-pty",
+      "husky"
+    ]
+  }
+}

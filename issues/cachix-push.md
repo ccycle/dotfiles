@@ -1,0 +1,2 @@
+- cachix-pushを自動化したい
+- nix-darwinのmoduleとしてstoreをwatchさせることは可能？

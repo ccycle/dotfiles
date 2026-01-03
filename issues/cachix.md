@@ -1,0 +1,1 @@
+- cachix のファイルを、 credential 含め dotfiles で管理したい

@@ -1,5 +1,12 @@
 {
+  # Main system configuration flake.
+  #
+  # NOTE: If this is a fresh installation and you have private flake inputs,
+  # you MUST run the bootstrap flake first to provision access tokens.
+  #
+  # See `bootstrap/flake.nix` for details.
   inputs = {
+    # bootstrap.url = "path:./bootstrap";
     agenix.inputs.home-manager.follows = "home-manager";
     agenix.inputs.nixpkgs.follows = "nixpkgs";
     agenix.url = "github:ryantm/agenix";
@@ -25,40 +32,62 @@
     nixpkgs-2505.url = "github:NixOS/nixpkgs/25.05";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-25.05-darwin";
+    gemini-cli.url = "github:google-gemini/gemini-cli";
+    gemini-cli.flake = false;
     pip2nix.url = "github:nix-community/pip2nix";
     sops-nix.url = "github:Mic92/sops-nix";
     uv2nix.inputs.nixpkgs.follows = "nixpkgs";
     uv2nix.url = "github:pyproject-nix/uv2nix";
   };
 
-  outputs = inputs@{ flake-parts, ... }:
+  outputs = inputs@{ flake-parts, nix-darwin, ... }:
+    let
+      darwinSystems = [ "aarch64-darwin" "x86_64-darwin" ];
+      linuxSystems = [ "aarch64-linux" "x86_64-linux" ];
+      allSystems = darwinSystems ++ linuxSystems;
+
+      forAllSystems = inputs.nixpkgs.lib.genAttrs allSystems;
+      forDarwinSystems = inputs.nixpkgs.lib.genAttrs darwinSystems;
+    in
     flake-parts.lib.mkFlake { inherit inputs; } {
-      systems = [ "aarch64-darwin" "x86_64-darwin" "aarch64-linux" "x86_64-linux" ];
-      perSystem = { config, self', inputs', pkgs, system, ... }: {
-        packages.init-dotfiles = pkgs.callPackage ./init-dotfiles.nix { };
-      };
+      systems = allSystems;
       flake = {
-        pkgs = inputs.nixpkgs.lib.genAttrs [ "aarch64-darwin" "x86_64-darwin" "aarch64-linux" "x86_64-linux" ] (system:
+        pkgs = forAllSystems (system:
           inputs.nixpkgs.legacyPackages.${system}
         );
-        modules = inputs.nixpkgs.lib.genAttrs [ "aarch64-darwin" "x86_64-darwin" "aarch64-linux" "x86_64-linux" ] (system: [
-          ./modules.nix
+        modules = forAllSystems (system: [
           ./home.nix
         ]);
         homeManagerModules.default = { ... }: {
           imports = [
             ./home.nix
-            ./modules.nix
+            inputs.sops-nix.homeManagerModules.sops
           ];
         };
-        darwinModules.base = ./darwin-base.nix;
-        darwinConfigurations."private" = inputs.nix-darwin.lib.darwinSystem {
-          modules = [
-            ./darwin.nix
-          ];
-          specialArgs = inputs // { inherit inputs; };
+        darwinConfigurations = {
+          private = forDarwinSystems (system:
+            let
+              env = if builtins.pathExists ./generated/env.nix then import ./generated/env.nix else import ./env-impure.nix;
+            in
+            inputs.nix-darwin.lib.darwinSystem {
+              modules = [
+                # inputs.bootstrap.darwinModules.bootstrap
+                ./bootstrap/module.nix
+                ./darwin.nix
+              ];
+              specialArgs = inputs // { inherit inputs system; } // env;
+            }
+          );
         };
-        extraSpecialArgs = inputs.nixpkgs.lib.genAttrs [ "aarch64-darwin" "x86_64-darwin" "aarch64-linux" "x86_64-linux" ] (system:
+
+        apps = forDarwinSystems (system: {
+          darwin-rebuild = {
+            type = "app";
+            program = "${nix-darwin.packages.${system}.darwin-rebuild}/bin/darwin-rebuild";
+          };
+        });
+
+        extraSpecialArgs = forAllSystems (system:
           let
             mkPkgs = input: input.legacyPackages.${system};
             env = if builtins.pathExists ./generated/env.nix then import ./generated/env.nix else import ./env-impure.nix;
@@ -74,21 +103,18 @@
             pkgs-unstable = mkPkgs inputs.nixpkgs-unstable;
           } // env
         );
-        homeConfigurations =
-          let
-            env = if builtins.pathExists ./generated/env.nix then import ./generated/env.nix else import ./env-impure.nix;
-            system = "aarch64-darwin";
-          in
-          {
-            "${env.username}" = inputs.home-manager.lib.homeManagerConfiguration {
+        homeConfigurations = {
+          private = forAllSystems (system:
+            inputs.home-manager.lib.homeManagerConfiguration {
               pkgs = inputs.nixpkgs.legacyPackages.${system};
               modules = [
                 ./home.nix
-                ./modules.nix
+                inputs.sops-nix.homeManagerModules.sops
               ];
               extraSpecialArgs = inputs.self.extraSpecialArgs.${system};
-            };
-          };
+            }
+          );
+        };
       };
     };
 }

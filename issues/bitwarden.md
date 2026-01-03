@@ -1,0 +1,3 @@
+- bitwarden で age key を管理したい
+- darwin-rebuild も bitwarden ベースで出来たらいいのか？
+- .config/sops/age/keys.txt の生成だけ bitwarden に頼るとかはありえそう

@@ -1,0 +1,2 @@
+- sops で管理してる credential も含め module としてディレクトリごとに管理したい
+- 今は credential を sops/ 以下で管理してる

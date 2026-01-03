@@ -1,7 +1,6 @@
-{ config, pkgs, inputs, ... }:
+{ config, pkgs, inputs, system, ... }:
 
 let
-  system = "aarch64-darwin";
   env = if builtins.pathExists ./generated/env.nix then import ./generated/env.nix else import ./env-impure.nix;
 
   mkPkgs = input: input.legacyPackages.${system};
@@ -21,10 +20,19 @@ let
 in
 {
   imports = [
-    ./darwin-base.nix
+    ./modules/darwin/cachix/watch-store.nix
   ];
 
-  nix.settings.trusted-users = [ "root" env.username ];
+  services.cachix-watch-store = {
+    enable = true;
+    cacheName = "ccycle";
+    cachixTokenFile = config.sops.secrets.cachix-auth-token-ccycle.path;
+  };
+
+  # Required for launchd.user.agents
+  system.primaryUser = env.username;
+
+  nix.settings.trusted-users = [ env.username ];
 
   users.users."${env.username}" = {
     home = env.homeDirectory;
@@ -36,7 +44,7 @@ in
   home-manager.users."${env.username}" = {
     imports = [
       ./home.nix
-      ./modules.nix
+      inputs.sops-nix.homeManagerModules.sops
     ];
   };
 }

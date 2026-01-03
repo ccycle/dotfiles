@@ -1,10 +1,22 @@
-{ config, pkgs, username, homeDirectory, ... }:
+{ config, pkgs, username, homeDirectory, pkgs-unstable, pkgs-2211, pkgs-2305, pkgs-2505, ... }:
+
+let
+  packages-2211 = with pkgs-2211; [
+    spago
+    nix-du
+    vault
+    xdot
+  ];
+  packages-2505 = with pkgs-2505; [
+    # mongodb
+  ];
+in
 
 {
   # Home Manager needs a bit of information about you and the paths it should
   # manage.
-  home.username = username;
-  home.homeDirectory = homeDirectory;
+  # home.username = username;
+  # home.homeDirectory = homeDirectory;
 
   # This value determines the Home Manager release that your configuration is
   # compatible with. This helps avoid breakage when a new Home Manager release
@@ -13,28 +25,85 @@
   # You should not change this value, even if you update Home Manager. If you do
   # want to update the value, then make sure to first check the Home Manager
   # release notes.
-  home.stateVersion = "25.05"; # Please read the comment before changing.
+  # home.stateVersion = "25.05"; # Please read the comment before changing.
 
   # The home.packages option allows you to install Nix packages into your
   # environment.
-  home.packages = [
-    # # Adds the 'hello' command to your environment. It prints a friendly
-    # # "Hello, world!" when run.
-    # pkgs.hello
-
-    # # It is sometimes useful to fine-tune packages, for example, by applying
-    # # overrides. You can do that directly here, just don't forget the
-    # # parentheses. Maybe you want to install Nerd Fonts with a limited number of
-    # # fonts?
-    # (pkgs.nerdfonts.override { fonts = [ "FantasqueSansMono" ]; })
-
-    # # You can also create simple shell scripts directly inside your
-    # # configuration. For example, this adds a command 'my-hello' to your
-    # # environment:
-    # (pkgs.writeShellScriptBin "my-hello" ''
-    #   echo "Hello, ${config.home.username}!"
-    # '')
-  ];
+  home.packages = with pkgs; [
+    # bun
+    # ffmpeg_5
+    # rclone
+    age
+    arrow-cpp
+    arrow-glib
+    bat # for fzf preview
+    bundix
+    cacert
+    cachix
+    caddy
+    cmake
+    devcontainer
+    dhall
+    dhall-json
+    dhall-lsp-server
+    erlang
+    fd # for fzf file search
+    gawk
+    gcc
+    gcc.cc
+    gnugrep
+    gnupg
+    go
+    google-cloud-sdk
+    gpg-tui
+    graphviz
+    grpcui
+    grpcurl
+    hcp
+    htop
+    ijq
+    imagemagick
+    inkscape
+    jq
+    k6
+    llvm_12
+    localstack
+    minikube
+    mysql80
+    neo4j
+    nil
+    nix-index
+    nix-info
+    nix-prefetch-git
+    nix-tree
+    nmap
+    ocaml
+    p7zip
+    pkg-config
+    platinum-searcher
+    poppler_utils
+    purescript
+    rbw
+    remarshal
+    rename
+    ripgrep
+    rustup
+    scala_3
+    shellcheck
+    sl
+    sqlite
+    sqlitebrowser
+    tree
+    unar
+    wget
+    wireshark
+    yq-go
+    zlib
+    zlib.dev
+    zstd
+  ]
+  ++ packages-2211
+  ++ packages-2505;
 
   # Home Manager is pretty good at managing dotfiles. The primary way to manage
   # plain files is through 'home.file'.
@@ -66,8 +135,33 @@
     # EDITOR = "emacs";
   };
 
-  # Let Home Manager install and manage itself.
-  programs.home-manager.enable = true;
+  # Enable XDG Base Directory Specification
+  # xdg.enable = true;
 
-  imports = [ ./gitconfig.nix ];
+  # Let Home Manager install and manage itself.
+  # programs.home-manager.enable = true;
+
+  imports = [
+    ./bootstrap/modules/home-manager/minimal.nix
+    ./modules/home-manager/cursor.nix
+    ./modules/home-manager/direnv.nix
+    ./modules/darwin/docker.nix
+    ./modules/home-manager/emacs.nix
+    ./modules/home-manager/fzf.nix
+    ./modules/home-manager/git.nix
+    ./modules/home-manager/gmake.nix
+    ./modules/home-manager/go-task.nix
+    ./modules/home-manager/haskell.nix
+    ./modules/home-manager/just.nix
+    ./modules/home-manager/nix-formatter.nix
+    ./modules/home-manager/nodejs.nix
+    ./modules/home-manager/php.nix
+    ./modules/home-manager/python.nix
+    ./modules/home-manager/sops.nix
+    ./modules/home-manager/ssh.nix
+    ./modules/home-manager/tmux.nix
+    ./modules/home-manager/zsh.nix
+    ./modules/home-manager/pinentry_mac.nix
+    ./modules/home-manager/sync-home-files.nix
+  ];
 }

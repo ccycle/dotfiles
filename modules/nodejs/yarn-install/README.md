@@ -1,1 +1,0 @@
-To add a package, run `yarn add <package>`
