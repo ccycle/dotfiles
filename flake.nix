@@ -6,7 +6,6 @@
   #
   # See `bootstrap/flake.nix` for details.
   inputs = {
-    # bootstrap.url = "path:./bootstrap";
     agenix.inputs.home-manager.follows = "home-manager";
     agenix.inputs.nixpkgs.follows = "nixpkgs";
     agenix.url = "github:ryantm/agenix";
@@ -64,6 +63,11 @@
             inputs.sops-nix.homeManagerModules.sops
           ];
         };
+        darwinModules.base = { ... }: {
+          imports = [
+            ./darwin.nix
+          ];
+        };
         darwinConfigurations = {
           private = forDarwinSystems (system:
             let
@@ -71,7 +75,6 @@
             in
             inputs.nix-darwin.lib.darwinSystem {
               modules = [
-                # inputs.bootstrap.darwinModules.bootstrap
                 ./bootstrap/module.nix
                 ./darwin.nix
               ];

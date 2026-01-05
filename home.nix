@@ -142,26 +142,26 @@ in
   # programs.home-manager.enable = true;
 
   imports = [
-    ./bootstrap/modules/home-manager/minimal.nix
-    ./modules/home-manager/cursor.nix
-    ./modules/home-manager/direnv.nix
-    ./modules/darwin/docker.nix
-    ./modules/home-manager/emacs.nix
-    ./modules/home-manager/fzf.nix
-    ./modules/home-manager/git.nix
-    ./modules/home-manager/gmake.nix
-    ./modules/home-manager/go-task.nix
-    ./modules/home-manager/haskell.nix
-    ./modules/home-manager/just.nix
-    ./modules/home-manager/nix-formatter.nix
-    ./modules/home-manager/nodejs.nix
-    ./modules/home-manager/php.nix
-    ./modules/home-manager/python.nix
-    ./modules/home-manager/sops.nix
-    ./modules/home-manager/ssh.nix
-    ./modules/home-manager/tmux.nix
-    ./modules/home-manager/zsh.nix
-    ./modules/home-manager/pinentry_mac.nix
-    ./modules/home-manager/sync-home-files.nix
+    ./bootstrap/modules/minimal/home.nix
+    ./modules/cursor/home.nix
+    ./modules/direnv/home.nix
+    ./modules/docker/home.nix
+    ./modules/emacs/home.nix
+    ./modules/fzf/home.nix
+    ./modules/git/home.nix
+    ./modules/gmake/home.nix
+    ./modules/go-task/home.nix
+    ./modules/haskell/home.nix
+    ./modules/just/home.nix
+    ./modules/nix-formatter/home.nix
+    ./modules/nodejs/home.nix
+    ./modules/php/home.nix
+    ./modules/python/home.nix
+    ./modules/sops/home.nix
+    ./modules/ssh/home.nix
+    ./modules/tmux/home.nix
+    ./modules/zsh/home.nix
+    ./modules/pinentry/home.nix
+    ./modules/sync-home-files/home.nix
   ];
 }

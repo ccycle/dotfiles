@@ -20,7 +20,7 @@ let
 in
 {
   imports = [
-    ./modules/darwin/cachix/watch-store.nix
+    ./modules/cachix/darwin.nix
   ];
 
   services.cachix-watch-store = {
