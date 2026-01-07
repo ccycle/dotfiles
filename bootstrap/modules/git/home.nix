@@ -25,7 +25,9 @@
       rh = "reset HEAD^";
       stash-abort = "reset --merge";
       push-origin-head = "push origin HEAD";
+      push-origin-head-force-with-lease = "push origin HEAD --force-with-lease";
       pull-origin-head = "pull origin HEAD";
+      discard-unstaged-changes = "restore .";
       ca = "commit --amend";
       merged-branch-list = ''
         !git branch --merged | egrep -v "(^\*|master|main|dev)"

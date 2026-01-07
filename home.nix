@@ -142,26 +142,6 @@ in
   # programs.home-manager.enable = true;
 
   imports = [
-    ./bootstrap/modules/minimal/home.nix
-    ./modules/cursor/home.nix
-    ./modules/direnv/home.nix
-    ./modules/docker/home.nix
-    ./modules/emacs/home.nix
-    ./modules/fzf/home.nix
-    ./modules/git/home.nix
-    ./modules/gmake/home.nix
-    ./modules/go-task/home.nix
-    ./modules/haskell/home.nix
-    ./modules/just/home.nix
-    ./modules/nix-formatter/home.nix
-    ./modules/nodejs/home.nix
-    ./modules/php/home.nix
-    ./modules/python/home.nix
-    ./modules/sops/home.nix
-    ./modules/ssh/home.nix
-    ./modules/tmux/home.nix
-    ./modules/zsh/home.nix
-    ./modules/pinentry/home.nix
-    ./modules/sync-home-files/home.nix
+    ./modules/home.nix
   ];
 }

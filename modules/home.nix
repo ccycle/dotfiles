@@ -1,0 +1,25 @@
+{
+  imports = [
+    ../bootstrap/modules/minimal/home.nix
+    ./cursor/home.nix
+    ./direnv/home.nix
+    ./docker/home.nix
+    ./emacs/home.nix
+    ./fzf/home.nix
+    ./git/home.nix
+    ./gmake/home.nix
+    ./go-task/home.nix
+    ./haskell/home.nix
+    ./just/home.nix
+    ./nix-formatter/home.nix
+    ./nodejs/home.nix
+    ./php/home.nix
+    ./python/home.nix
+    ./sops/home.nix
+    ./ssh/home.nix
+    ./tmux/home.nix
+    ./zsh/home.nix
+    ./pinentry/home.nix
+    ./sync-home-files/home.nix
+  ];
+}

@@ -3,7 +3,8 @@
 {
   imports = [
     inputs.home-manager.darwinModules.home-manager
-    ./modules/nix/darwin.nix
+    inputs.sops-nix.darwinModules.sops
+    ./modules/darwin.nix
   ];
 
   nixpkgs.hostPlatform = system;
