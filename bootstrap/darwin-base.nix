@@ -10,7 +10,7 @@
 
   # Basic nix-darwin configuration
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
-  nix.nixPath = [ "nixpkgs=${inputs.nixpkgs}" ];
+  nix.nixPath = pkgs.lib.mkForce [ "nixpkgs=${inputs.nixpkgs}" ];
 
   system.stateVersion = 5;
 

@@ -29,6 +29,7 @@
     nixpkgs-2405.url = "github:NixOS/nixpkgs/24.05";
     nixpkgs-2411.url = "github:NixOS/nixpkgs/24.11";
     nixpkgs-2505.url = "github:NixOS/nixpkgs/25.05";
+    nixpkgs-2511.url = "github:NixOS/nixpkgs/25.11";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-25.05-darwin";
     gemini-cli.url = "github:google-gemini/gemini-cli";

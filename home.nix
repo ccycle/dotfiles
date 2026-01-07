@@ -1,4 +1,4 @@
-{ config, pkgs, username, homeDirectory, pkgs-unstable, pkgs-2211, pkgs-2305, pkgs-2505, ... }:
+{ config, lib, pkgs, username, homeDirectory, pkgs-unstable, pkgs-2211, pkgs-2305, pkgs-2505, ... }:
 
 let
   packages-2211 = with pkgs-2211; [
@@ -66,7 +66,7 @@ in
     inkscape
     jq
     k6
-    llvm_12
+    # llvm_12
     localstack
     minikube
     mysql80
@@ -81,7 +81,7 @@ in
     p7zip
     pkg-config
     platinum-searcher
-    poppler_utils
+    # poppler_utils
     purescript
     rbw
     remarshal

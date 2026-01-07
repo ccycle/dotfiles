@@ -21,13 +21,11 @@ in
 {
   imports = [
     ./modules/cachix/darwin.nix
+    ./bootstrap/modules/cachix/darwin.nix
+    ./modules/nix/darwin.nix
+    ./modules/tailscale/darwin.nix
+    ./modules/ssh/darwin.nix
   ];
-
-  services.cachix-watch-store = {
-    enable = true;
-    cacheName = "ccycle";
-    cachixTokenFile = config.sops.secrets.cachix-auth-token-ccycle.path;
-  };
 
   # Required for launchd.user.agents
   system.primaryUser = env.username;
@@ -38,6 +36,9 @@ in
     home = env.homeDirectory;
     shell = pkgs.zsh;
   };
+
+  # Set Zsh as the default shell for the system and ensure it's in /etc/shells
+  programs.zsh.enable = true;
 
   # Home Manager configuration
   home-manager.extraSpecialArgs = extraSpecialArgs;
