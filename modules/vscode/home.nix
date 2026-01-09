@@ -1,6 +1,5 @@
 { ... }: {
   home.sessionVariables = {
-    EDITOR = "code";
+    # EDITOR = "code";
   };
-  programs.git.ignores = [ ".vscode" ];
 }

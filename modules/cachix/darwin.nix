@@ -3,7 +3,6 @@
 {
   imports = [
     ./options.nix
-    ../../bootstrap/modules/cachix/darwin.nix
   ];
 
   services.cachix-watch-store = {

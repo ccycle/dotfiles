@@ -76,7 +76,6 @@
             in
             inputs.nix-darwin.lib.darwinSystem {
               modules = [
-                ./bootstrap/module.nix
                 ./darwin.nix
               ];
               specialArgs = inputs // { inherit inputs system; } // env;
@@ -98,6 +97,7 @@
           in
           inputs // {
             inherit (inputs) self;
+            inherit system;
             pkgs-2211 = mkPkgs inputs.nixpkgs-2211;
             pkgs-2305 = mkPkgs inputs.nixpkgs-2305;
             pkgs-2311 = mkPkgs inputs.nixpkgs-2311;

@@ -2,6 +2,7 @@
 
 {
   imports = [
+    ./bootstrap/modules/darwin.nix
     ./modules/darwin.nix
   ];
 

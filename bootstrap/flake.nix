@@ -36,7 +36,7 @@
       env = import ./env-impure.nix;
     in
     {
-      darwinModules.bootstrap = ./module.nix;
+      darwinModules.bootstrap = ./modules/darwin.nix;
 
       darwinConfigurations = {
         bootstrap = forDarwinSystems (system:

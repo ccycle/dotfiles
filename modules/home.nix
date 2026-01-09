@@ -1,6 +1,7 @@
 {
   imports = [
-    ../bootstrap/modules/minimal/home.nix
+    ./agenix/home.nix
+    ./attic/home.nix
     ./cursor/home.nix
     ./direnv/home.nix
     ./docker/home.nix
@@ -21,5 +22,6 @@
     ./zsh/home.nix
     ./pinentry/home.nix
     ./sync-home-files/home.nix
+    ./vscode/home.nix
   ];
 }

@@ -1,6 +1,10 @@
 { config, ... }:
 
 {
+  imports = [
+    ./secrets.nix
+  ];
+
   nix.settings = {
     extra-substituters = [
       "https://nix-community.cachix.org"

@@ -2,7 +2,6 @@
 
 {
   imports = [
-    ../../bootstrap/modules/nix/common.nix
   ];
 
   nix.nixPath = lib.mkForce [ "nixpkgs=${inputs.nixpkgs}" ];

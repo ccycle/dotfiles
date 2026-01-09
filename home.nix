@@ -142,6 +142,7 @@ in
   # programs.home-manager.enable = true;
 
   imports = [
+    ./bootstrap/modules/home.nix
     ./modules/home.nix
   ];
 }

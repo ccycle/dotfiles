@@ -46,4 +46,6 @@
     pkgs.git-lfs
     pkgs.git-credential-manager
   ];
+
+  home.file.".ssh/id_ed25519_signing.pub".source = ./id_ed25519_signing.pub;
 }

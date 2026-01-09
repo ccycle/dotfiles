@@ -1,4 +1,4 @@
-{ config, pkgs, lib, self, ... }:
+{ config, pkgs, lib, ... }:
 
 {
   programs.ssh = {
@@ -26,6 +26,4 @@
       fi
       ssh-add ~/.ssh/id_ed25519_signing > /dev/null 2>&1
     '';
-
-  home.file.".ssh/id_ed25519_signing.pub".source = "${self}/bootstrap/modules/git/id_ed25519_signing.pub";
 }

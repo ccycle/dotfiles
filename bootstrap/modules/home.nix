@@ -1,5 +1,6 @@
 {
   imports = [
-    ./minimal/home.nix
+    ./home-manager/home.nix
+    ./git/home.nix
   ];
 }
