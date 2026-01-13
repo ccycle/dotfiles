@@ -6,10 +6,8 @@
   #
   # See `bootstrap/flake.nix` for details.
   inputs = {
-    agenix.inputs.home-manager.follows = "home-manager";
-    agenix.inputs.nixpkgs.follows = "nixpkgs";
-    agenix.url = "github:ryantm/agenix";
     attic.url = "github:zhaofengli/attic";
+    brew-nix.url = "github:BatteredBunny/brew-nix";
     devx.url = "github:input-output-hk/devx";
     flake-parts.inputs.nixpkgs-lib.follows = "nixpkgs";
     flake-parts.url = "github:hercules-ci/flake-parts";
@@ -34,10 +32,13 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-25.05-darwin";
     gemini-cli.url = "github:google-gemini/gemini-cli";
     gemini-cli.flake = false;
+    ghostty.url = "github:ghostty-org/ghostty";
     pip2nix.url = "github:nix-community/pip2nix";
     sops-nix.url = "github:Mic92/sops-nix";
     uv2nix.inputs.nixpkgs.follows = "nixpkgs";
     uv2nix.url = "github:pyproject-nix/uv2nix";
+    yazi-plugins.flake = false;
+    yazi-plugins.url = "github:yazi-rs/plugins";
   };
 
   outputs = inputs@{ flake-parts, nix-darwin, ... }:
@@ -48,6 +49,25 @@
 
       forAllSystems = inputs.nixpkgs.lib.genAttrs allSystems;
       forDarwinSystems = inputs.nixpkgs.lib.genAttrs darwinSystems;
+
+      mkSpecialArgs = system:
+        let
+          mkPkgs = input: input.legacyPackages.${system};
+          env = if builtins.pathExists ./generated/env.nix then import ./generated/env.nix else import ./env-impure.nix;
+        in
+        inputs // {
+          inherit inputs;
+          inherit (inputs) self;
+          inherit system;
+          pkgs-2211 = mkPkgs inputs.nixpkgs-2211;
+          pkgs-2305 = mkPkgs inputs.nixpkgs-2305;
+          pkgs-2311 = mkPkgs inputs.nixpkgs-2311;
+          pkgs-2405 = mkPkgs inputs.nixpkgs-2405;
+          pkgs-2411 = mkPkgs inputs.nixpkgs-2411;
+          pkgs-2505 = mkPkgs inputs.nixpkgs-2505;
+          pkgs-2511 = mkPkgs inputs.nixpkgs-2511;
+          pkgs-unstable = mkPkgs inputs.nixpkgs-unstable;
+        } // env;
     in
     flake-parts.lib.mkFlake { inherit inputs; } {
       systems = allSystems;
@@ -71,14 +91,11 @@
         };
         darwinConfigurations = {
           private = forDarwinSystems (system:
-            let
-              env = if builtins.pathExists ./generated/env.nix then import ./generated/env.nix else import ./env-impure.nix;
-            in
             inputs.nix-darwin.lib.darwinSystem {
               modules = [
                 ./darwin.nix
               ];
-              specialArgs = inputs // { inherit inputs system; } // env;
+              specialArgs = mkSpecialArgs system;
             }
           );
         };
@@ -90,23 +107,8 @@
           };
         });
 
-        extraSpecialArgs = forAllSystems (system:
-          let
-            mkPkgs = input: input.legacyPackages.${system};
-            env = if builtins.pathExists ./generated/env.nix then import ./generated/env.nix else import ./env-impure.nix;
-          in
-          inputs // {
-            inherit (inputs) self;
-            inherit system;
-            pkgs-2211 = mkPkgs inputs.nixpkgs-2211;
-            pkgs-2305 = mkPkgs inputs.nixpkgs-2305;
-            pkgs-2311 = mkPkgs inputs.nixpkgs-2311;
-            pkgs-2405 = mkPkgs inputs.nixpkgs-2405;
-            pkgs-2411 = mkPkgs inputs.nixpkgs-2411;
-            pkgs-2505 = mkPkgs inputs.nixpkgs-2505;
-            pkgs-unstable = mkPkgs inputs.nixpkgs-unstable;
-          } // env
-        );
+        extraSpecialArgs = forAllSystems (system: mkSpecialArgs system);
+
         homeConfigurations = {
           private = forAllSystems (system:
             inputs.home-manager.lib.homeManagerConfiguration {
@@ -115,7 +117,7 @@
                 ./home.nix
                 inputs.sops-nix.homeManagerModules.sops
               ];
-              extraSpecialArgs = inputs.self.extraSpecialArgs.${system};
+              extraSpecialArgs = mkSpecialArgs system;
             }
           );
         };

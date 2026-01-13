@@ -1,6 +1,7 @@
-{ pkgs, ... }:
+{ config, lib, pkgs, pkgs-unstable, ... }:
 
 {
   services.tailscale.enable = true;
-  environment.systemPackages = [ pkgs.tailscale ];
+  # services.tailscale.overrideLocalDns = true;
+  # services.tailscale.package = pkgs-unstable.tailscale;
 }

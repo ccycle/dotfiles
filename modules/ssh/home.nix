@@ -11,6 +11,11 @@
     '';
   };
 
+  # home.file.".ssh/authorized_keys".text = ''
+  #   # ipad-pro-7th-gen
+  #   ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID0Z244BL6t4u5ILComih2Bf1yrL+KXYOCDGwOPc1Ezb 
+  # '';
+
   programs.zsh.initContent =
     if pkgs.stdenv.isDarwin then ''
       # SSH Signing: keys in keychain to agent

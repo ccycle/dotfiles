@@ -1,13 +1,14 @@
 {
   imports = [
-    ./agenix/home.nix
     ./attic/home.nix
     ./cursor/home.nix
     ./direnv/home.nix
     ./docker/home.nix
     ./emacs/home.nix
     ./fzf/home.nix
+    ./ghostty/home.nix
     ./git/home.nix
+    ./gitui/home.nix
     ./gmake/home.nix
     ./go-task/home.nix
     ./haskell/home.nix
@@ -23,5 +24,6 @@
     ./pinentry/home.nix
     ./sync-home-files/home.nix
     ./vscode/home.nix
+    ./yazi/home.nix
   ];
 }
