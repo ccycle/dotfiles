@@ -1,9 +1,0 @@
-services:
-  nix-dev:
-    image: nix-flakes:latest
-    container_name: nix-dev-container
-    platform: linux/amd64
-    tty: true
-    stdin_open: true
-    user: '0'
-    command: sleep infinity

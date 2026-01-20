@@ -15,3 +15,7 @@ fetch-age-key:
 
 darwin-rebuild:
     sudo darwin-rebuild switch --flake ".#private.$(uname -m | sed 's/arm64/aarch64/')-darwin" --impure -L --show-trace
+
+update-gwq:
+    nix flake lock --update-input gwq
+    nix develop --command nix-update --flake .#gwq --version=skip

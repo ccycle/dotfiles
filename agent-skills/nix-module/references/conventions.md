@@ -74,3 +74,21 @@ Content of `modules/darwin.nix`:
   ];
 }
 ```
+
+## 4. Nix Derivation Naming
+
+To clearly indicate that a file contains a Nix derivation (package definition), follow this naming convention.
+
+**Rule:**
+
+- Name the file `drv.nix`.
+- Include the package name in the directory path.
+- The resulting path should look like: `.../<package-name>/drv.nix`.
+
+**Example:**
+
+```
+modules/
+  my-custom-tool/
+    drv.nix       # Contains the derivation for my-custom-tool
+```

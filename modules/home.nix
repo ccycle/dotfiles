@@ -16,14 +16,15 @@
     ./nix-formatter/home.nix
     ./nodejs/home.nix
     ./php/home.nix
+    ./pinentry/home.nix
     ./python/home.nix
+    ./serena/home.nix
     ./sops/home.nix
     ./ssh/home.nix
-    ./tmux/home.nix
-    ./zsh/home.nix
-    ./pinentry/home.nix
     ./sync-home-files/home.nix
+    ./tmux/home.nix
     ./vscode/home.nix
     ./yazi/home.nix
+    ./zsh/home.nix
   ];
 }

@@ -32,6 +32,8 @@ in
   home.packages = with pkgs; [
     # bun
     # ffmpeg_5
+    # llvm_12
+    # poppler_utils
     # rclone
     age
     arrow-cpp
@@ -66,13 +68,14 @@ in
     inkscape
     jq
     k6
-    # llvm_12
+    lean4
     localstack
     minikube
     mysql80
     neo4j
     nil
     nix-index
+    nix-update
     nix-info
     nix-prefetch-git
     nix-tree
@@ -81,7 +84,6 @@ in
     p7zip
     pkg-config
     platinum-searcher
-    # poppler_utils
     purescript
     rbw
     remarshal

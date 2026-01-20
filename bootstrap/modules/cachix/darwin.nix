@@ -5,6 +5,10 @@
     ./secrets.nix
   ];
 
+  custom.nix.accessTokens = [
+    "ccycle.cachix.org=${config.sops.placeholder.cachix-auth-token-ccycle}"
+  ];
+
   nix.settings = {
     extra-substituters = [
       "https://nix-community.cachix.org"

@@ -1,7 +1,7 @@
 { ... }:
 {
   imports = [
-    ./github/secrets.nix
-    ./gitlab/secrets.nix
+    ./github/darwin.nix
+    ./gitlab/darwin.nix
   ];
 }

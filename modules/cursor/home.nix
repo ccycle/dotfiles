@@ -1,7 +1,7 @@
 { pkgs, ... }:
 
 let
-  cursor-agent = pkgs.callPackage ./package.nix { };
+  cursor-agent = pkgs.callPackage ./cursor-agent/drv.nix { };
 in
 {
   home.packages = pkgs.lib.optionals (pkgs.stdenv.hostPlatform.system == "aarch64-darwin") [
@@ -12,15 +12,10 @@ in
     EDITOR = "cursor --wait";
   };
 
-  programs.bash = {
-    enable = true;
-    initExtra = ''
-      # Skip switching to zsh when Cursor Agent is running
-      if [[ -n "$CURSOR_AGENT" ]]; then
-        :
-      else
-        exec zsh
-      fi
-    '';
+  programs.zsh = {
+    shellAliases = {
+      # https://github.com/cursor/cursor/issues/3490#issuecomment-3733405558
+      security-unlock-keychain = "security unlock-keychain ~/Library/Keychains/login.keychain-db";
     };
+  };
 }

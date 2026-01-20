@@ -1,4 +1,4 @@
-# Credentials Management
+# Credentials Management Policy
 
 ## Nix Credentials Strategy
 
@@ -15,7 +15,9 @@ When configuring Nix access tokens (e.g., for fetching private flakes), use a de
 { config, ... }:
 {
   sops.templates."nix-access-tokens-work.conf" = {
-    content = "access-tokens = github.com=${config.sops.placeholder.github_pat_work}";
+    content = ''
+      access-tokens = github.com=${config.sops.placeholder.github_pat_work}
+    '';
     path = "/etc/nix/nix-access-tokens-work.conf";
   };
 

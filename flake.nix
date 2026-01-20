@@ -17,6 +17,8 @@
     ghq-migrator.flake = false;
     ghq-migrator.url = "github:astj/ghq-migrator";
     haskellNix.url = "github:input-output-hk/haskell.nix";
+    gwq.url = "github:d-kuro/gwq";
+    gwq.flake = false;
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
     home-manager.url = "github:nix-community/home-manager/release-25.05";
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
@@ -34,6 +36,7 @@
     gemini-cli.flake = false;
     ghostty.url = "github:ghostty-org/ghostty";
     pip2nix.url = "github:nix-community/pip2nix";
+    serena.url = "github:oraios/serena";
     sops-nix.url = "github:Mic92/sops-nix";
     uv2nix.inputs.nixpkgs.follows = "nixpkgs";
     uv2nix.url = "github:pyproject-nix/uv2nix";
@@ -72,6 +75,20 @@
     flake-parts.lib.mkFlake { inherit inputs; } {
       systems = allSystems;
       flake = {
+        packages = forAllSystems (system: {
+          gwq = inputs.nixpkgs.legacyPackages.${system}.callPackage ./modules/git/gwq/drv.nix {
+            src = inputs.gwq;
+          };
+        });
+
+        devShells = forAllSystems (system: {
+          default = inputs.nixpkgs.legacyPackages.${system}.mkShell {
+            packages = [
+              inputs.nixpkgs.legacyPackages.${system}.nix-update
+            ];
+          };
+        });
+
         pkgs = forAllSystems (system:
           inputs.nixpkgs.legacyPackages.${system}
         );
@@ -87,6 +104,11 @@
         darwinModules.base = { ... }: {
           imports = [
             ./darwin.nix
+          ];
+        };
+        darwinModules.bootstrap = { ... }: {
+          imports = [
+            ./bootstrap/modules/darwin.nix
           ];
         };
         darwinConfigurations = {

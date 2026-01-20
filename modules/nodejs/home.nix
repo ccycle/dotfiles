@@ -1,4 +1,4 @@
-{ pkgs, inputs, ... }: {
+{ pkgs, ... }: {
   home.packages = with pkgs; [
     nodejs
     prefetch-npm-deps
@@ -15,7 +15,7 @@
     # nodePackages.webpack-cli
 
     # Custom packages managed via pnpm
-    (callPackage ./node-tools/default.nix { })
+    (callPackage ./node-tools/drv.nix { })
   ];
   imports = [
     ./eslint.nix
