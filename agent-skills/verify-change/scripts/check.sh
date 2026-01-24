@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 set -e
 
-echo ""
 echo "=== Build Dry-Run ==="
 HOSTNAME=$(scutil --get LocalHostName)
-echo "Building for hostname: $HOSTNAME (dry-run)..."
+echo "hostname: $HOSTNAME"
+SYSTEM=$(nix eval --raw --impure --expr 'builtins.currentSystem')
+echo "system: $SYSTEM"
 
 # Assuming flakes are used.
 git add .

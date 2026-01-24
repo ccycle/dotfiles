@@ -24,6 +24,11 @@ To ensure maintainability and clear dependency trees, we follow a strict aggrega
 - **Recursive Imports:** Top-level `modules/darwin.nix` imports `modules/<feature>/darwin.nix`, which in turn imports `modules/<feature>/<subfeature>/darwin.nix`.
 - Never import a grandchild file directly if a child aggregation file exists.
 
+## Configuration Policy
+
+**Rule:**
+- **No Default Fallbacks:** Do not use default values for critical configurations. Explicitly require the user or the environment to provide necessary values (e.g., using `mkOption` without a default, or `lib.mkIf` checks). Avoid "magic" defaults that might be incorrect in a different context.
+
 ## Agent Skills
 
 We are migrating to [Agent Skills](https://agentskills.io) for task automation and guideline enforcement.
