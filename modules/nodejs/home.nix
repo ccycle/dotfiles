@@ -8,7 +8,6 @@
     devcontainer
 
     # Node packages
-    nodePackages.prettier
     nodePackages.npm-check-updates
     nodePackages.ts-node
     nodePackages.webpack

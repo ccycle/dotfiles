@@ -4,10 +4,11 @@
   "description": "Managed Node.js tools for Nix environment",
   "private": true,
   "dependencies": {
+    "@google/gemini-cli": "*",
     "jest": "*",
+    "prettier": "^3.8.1",
     "stylus": "*",
-    "typeorm": "*",
-    "@google/gemini-cli": "*"
+    "typeorm": "*"
   },
   "pnpm": {
     "onlyBuiltDependencies": [

@@ -32,8 +32,6 @@
     nixpkgs-2511.url = "github:NixOS/nixpkgs/25.11";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-25.05-darwin";
-    gemini-cli.url = "github:google-gemini/gemini-cli";
-    gemini-cli.flake = false;
     ghostty.url = "github:ghostty-org/ghostty";
     pip2nix.url = "github:nix-community/pip2nix";
     serena.url = "github:oraios/serena";

@@ -514,22 +514,6 @@
         "type": "github"
       }
     },
-    "gemini-cli": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1767745516,
-        "narHash": "sha256-Ur9Tww1jv7eF5l102IsF8RbVSToJaWyahVWkAXoyVnI=",
-        "owner": "google-gemini",
-        "repo": "gemini-cli",
-        "rev": "4086abf375050b04c010ddebbbeb80f71eca6db2",
-        "type": "github"
-      },
-      "original": {
-        "owner": "google-gemini",
-        "repo": "gemini-cli",
-        "type": "github"
-      }
-    },
     "ghc-8.6.5-iohk": {
       "flake": false,
       "locked": {
@@ -2068,7 +2052,6 @@
         "brew-nix": "brew-nix",
         "devx": "devx",
         "flake-parts": "flake-parts_2",
-        "gemini-cli": "gemini-cli",
         "ghc-wasm-meta": "ghc-wasm-meta",
         "ghcup": "ghcup",
         "ghostty": "ghostty",

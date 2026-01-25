@@ -35,8 +35,13 @@
       merged-branch-delete = ''
         !git branch --merged | egrep -v "(^\*|master|main|dev)" | xargs git branch -d
       '';
-      aliases-list = "git config --get-regexp ^alias";
-      push-force-with-lease = "git push --force-with-lease --force-if-includes"; # https://zenn.dev/mary_pp/articles/eaac544eaf600a
+      aliases-list = ''
+        !git config --get-regexp ^alias;
+      '';
+      # https://zenn.dev/mary_pp/articles/eaac544eaf600a
+      push-force-with-lease = ''
+        !git push --force-with-lease --force-if-includes
+      '';
     };
   };
   imports = [
