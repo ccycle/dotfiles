@@ -98,7 +98,6 @@ in
     tree
     unar
     wget
-    wireshark
     yq-go
     zlib
     zlib.dev

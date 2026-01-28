@@ -22,6 +22,13 @@
       # macOS: --apple-load-keychain automatically loads keys from keychain with passphrases.
       # This avoids manual ssh-add and leverages macOS native keychain integration.
       ssh-add --apple-load-keychain > /dev/null 2>&1
+
+      # Add all private keys in ~/.ssh to the agent
+      for key in ~/.ssh/*; do
+        if [ -f "$key" ] && grep -q "PRIVATE KEY" "$key"; then
+          ssh-add --apple-use-keychain "$key" > /dev/null 2>&1
+        fi
+      done
     '' else ''
       # SSH Signing: load key to agent
       # Linux: Requires manual agent startup and key addition since no native keychain integration exists.

@@ -3,7 +3,7 @@
 {
   options.custom.nix.accessTokens = lib.mkOption {
     type = lib.types.listOf lib.types.str;
-    default = [];
+    default = [ ];
     description = "List of access tokens for nix.conf in format 'host=token'";
   };
 
