@@ -33,9 +33,9 @@ To ensure maintainability and clear dependency trees, we follow a strict aggrega
 
 We are migrating to [Agent Skills](https://agentskills.io) for task automation and guideline enforcement.
 
-- **[nix-module](./agent-skills/nix-module/SKILL.md):** Use this skill when creating new features or modules. It handles the directory structure and boilerplate generation.
-- **[credentials-manager](./agent-skills/credentials-manager/SKILL.md):** Use this skill for managing secrets and Nix access tokens.
-- **[verify-change](./agent-skills/verify-change/SKILL.md):** Use this skill to verify changes before committing. It runs syntax checks, lints, and build dry-runs.
+- **[nix-module](./skills/nix-module/SKILL.md):** Use this skill when creating new features or modules. It handles the directory structure and boilerplate generation.
+- **[credentials-manager](./skills/credentials-manager/SKILL.md):** Use this skill for managing secrets and Nix access tokens.
+- **[verify-change](./skills/verify-change/SKILL.md):** Use this skill to verify changes before committing. It runs syntax checks, lints, and build dry-runs.
 
 ## Legacy Guidelines
 
@@ -48,9 +48,9 @@ Detailed guidelines are available in the `docs/agents/` directory:
 
 When asked to implement a feature:
 
-1. **Use `nix-module` Skill:** Start by reading `agent-skills/nix-module/SKILL.md` and running the generation script.
-2. **Use `credentials-manager` Skill:** If handling secrets, refer to `agent-skills/credentials-manager/SKILL.md`.
+1. **Use `nix-module` Skill:** Start by reading `skills/nix-module/SKILL.md` and running the generation script.
+2. **Use `credentials-manager` Skill:** If handling secrets, refer to `skills/credentials-manager/SKILL.md`.
 3. **Check Structure:** Does it fit into an existing feature directory? If not, create `modules/<feature>`. Ensure file dependencies are clear from the structure.
 4. **Separate Platforms:** Use `darwin/` for system config and `home-manager/` for user config.
 5. **Code Reuse:** Check `dotfiles` repo first. Import/overlay existing modules instead of copying code (see **Code Reuse Policy**).
-6. **Verify Changes:** Run `agent-skills/verify-change/scripts/check.sh` before finishing the task.
+6. **Verify Changes:** Run `skills/verify-change/scripts/check.sh` before finishing the task.

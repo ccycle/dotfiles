@@ -12,7 +12,7 @@ This skill provides a comprehensive check suite to ensure that your changes to t
 Run the verification script from the repository root:
 
 ```bash
-agent-skills/verify-change/scripts/check.sh
+skills/verify-change/scripts/check.sh
 ```
 
 ## Checks Performed

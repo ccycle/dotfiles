@@ -22,12 +22,13 @@
   #   darwin-rebuild switch --flake .
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/25.05";
+    nixpkgs-2511.url = "github:nixos/nixpkgs/25.11";
     nix-darwin.url = "github:LnL7/nix-darwin/nix-darwin-25.05";
     home-manager.url = "github:nix-community/home-manager/release-25.05";
     sops-nix.url = "github:Mic92/sops-nix";
   };
 
-  outputs = inputs@{ self, nixpkgs, nix-darwin, ... }:
+  outputs = inputs@{ self, nixpkgs, nixpkgs-2511, nix-darwin, ... }:
     let
       darwinSystems = [ "aarch64-darwin" "x86_64-darwin" ];
       forDarwinSystems = nixpkgs.lib.genAttrs darwinSystems;
@@ -56,5 +57,22 @@
           program = "${nix-darwin.packages.${system}.darwin-rebuild}/bin/darwin-rebuild";
         };
       });
+
+      devShells = forDarwinSystems (system:
+        let
+          pkgs = nixpkgs-2511.legacyPackages.${system};
+        in {
+          secrets = pkgs.mkShell {
+            packages = with pkgs; [ rbw pinentry_mac ];
+            shellHook = ''
+              # Configure pinentry if not set
+              if ! rbw config show | grep -q "pinentry"; then
+                rbw config set pinentry "${pkgs.pinentry_mac}/bin/pinentry-mac"
+              fi
+              echo "Bitwarden shell ready. Run 'rbw login' to authenticate."
+            '';
+          };
+        }
+      );
     };
 }
