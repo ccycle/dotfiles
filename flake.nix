@@ -34,6 +34,7 @@
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-25.05-darwin";
     ghostty.url = "github:ghostty-org/ghostty";
+    tailscale.url = "github:tailscale/tailscale/v1.92.5";
     pip2nix.url = "github:nix-community/pip2nix";
     serena.url = "github:oraios/serena";
     sops-nix.url = "github:Mic92/sops-nix";
@@ -61,6 +62,7 @@
           inherit inputs;
           inherit (inputs) self;
           inherit system;
+          tailscalePackage = inputs.tailscale.packages.${system}.tailscale;
           pkgs-2211 = mkPkgs inputs.nixpkgs-2211;
           pkgs-2305 = mkPkgs inputs.nixpkgs-2305;
           pkgs-2311 = mkPkgs inputs.nixpkgs-2311;
