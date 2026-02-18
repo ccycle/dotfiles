@@ -21,7 +21,7 @@
     gwq.url = "github:d-kuro/gwq";
     gwq.flake = false;
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
-    home-manager.url = "github:nix-community/home-manager/release-25.05";
+    home-manager.url = "github:nix-community/home-manager/release-25.11";
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
     nix-darwin.url = "github:LnL7/nix-darwin/nix-darwin-25.05";
     nixpkgs-2211.url = "github:nixos/nixpkgs/22.11";
