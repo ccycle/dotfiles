@@ -1,5 +1,8 @@
 { username, homeDirectory, ... }:
 {
+  # Required for system.defaults.* and other primary-user options (nix-darwin migration).
+  system.primaryUser = username;
+
   imports = [
     ./system/darwin.nix
     ./home-manager/darwin.nix
