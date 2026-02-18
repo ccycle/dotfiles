@@ -34,6 +34,7 @@
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-25.05-darwin";
     ghostty.url = "github:ghostty-org/ghostty";
+    stylix.url = "github:nix-community/stylix";
     tailscale.url = "github:tailscale/tailscale/v1.92.5";
     pip2nix.url = "github:nix-community/pip2nix";
     serena.url = "github:oraios/serena";
