@@ -61,7 +61,8 @@
       devShells = forDarwinSystems (system:
         let
           pkgs = nixpkgs-2511.legacyPackages.${system};
-        in {
+        in
+        {
           secrets = pkgs.mkShell {
             packages = with pkgs; [ rbw pinentry_mac ];
             shellHook = ''
