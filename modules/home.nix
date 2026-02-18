@@ -2,6 +2,7 @@
   imports = [
     ./attic/home.nix
     ./brew-nix/home.nix
+    ./claude/home.nix
     ./cursor/home.nix
     ./direnv/home.nix
     ./docker/home.nix

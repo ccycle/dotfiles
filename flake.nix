@@ -8,6 +8,7 @@
   inputs = {
     attic.url = "github:zhaofengli/attic";
     brew-nix.url = "github:BatteredBunny/brew-nix";
+    claude-code-nix.url = "github:sadjow/claude-code-nix";
     devx.url = "github:input-output-hk/devx";
     flake-parts.inputs.nixpkgs-lib.follows = "nixpkgs";
     flake-parts.url = "github:hercules-ci/flake-parts";
