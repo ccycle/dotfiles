@@ -1,4 +1,4 @@
-{ inputs, pkgs, pkgs-unstable, ... }:
+{ inputs, pkgs, ... }:
 
 {
   programs.ghostty = {

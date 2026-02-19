@@ -1,4 +1,4 @@
-{ pkgs, pip2nix, system, ... }:
+{ pkgs, inputs, system, ... }:
 {
-  home.packages = [ pip2nix.defaultPackage.${system} ];
+  home.packages = [ inputs.pip2nix.defaultPackage.${system} ];
 }

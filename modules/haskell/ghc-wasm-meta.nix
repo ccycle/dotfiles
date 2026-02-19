@@ -1,6 +1,6 @@
-{ ghc-wasm-meta, system, ... }:
+{ inputs, system, ... }:
 {
-  home.packages = with ghc-wasm-meta.packages.${system}; [
+  home.packages = with inputs.ghc-wasm-meta.packages.${system}; [
     wasm32-wasi-ghc-9_10
   ];
 }

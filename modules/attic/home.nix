@@ -1,4 +1,4 @@
-{ attic, system, ... }:
+{ inputs, system, ... }:
 {
-  home.packages = [ attic.packages.${system}.default ];
+  home.packages = [ inputs.attic.packages.${system}.default ];
 }

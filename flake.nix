@@ -59,7 +59,7 @@
           mkPkgs = input: input.legacyPackages.${system};
           env = if builtins.pathExists ./generated/env.nix then import ./generated/env.nix else import ./env-impure.nix;
         in
-        inputs // {
+        {
           inherit inputs;
           inherit (inputs) self;
           inherit system;
