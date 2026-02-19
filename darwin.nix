@@ -1,4 +1,4 @@
-{ config, pkgs, inputs, system, username, homeDirectory, ... }:
+{ config, pkgs, inputs, username, homeDirectory, ... }:
 
 {
   imports = [
@@ -15,7 +15,7 @@
   };
 
   # Home Manager configuration
-  home-manager.extraSpecialArgs = inputs.self.extraSpecialArgs.${system};
+  home-manager.extraSpecialArgs = inputs.self.extraSpecialArgs.${pkgs.system};
   home-manager.users."${username}" = {
     imports = [
       ./home.nix

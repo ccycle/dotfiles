@@ -1,4 +1,4 @@
-{ inputs, system, ... }:
+{ inputs, pkgs, ... }:
 {
-  home.packages = [ inputs.attic.packages.${system}.default ];
+  home.packages = [ inputs.attic.packages.${pkgs.system}.default ];
 }
