@@ -24,6 +24,25 @@ To ensure maintainability and clear dependency trees, we follow a strict aggrega
 - **Recursive Imports:** Top-level `modules/darwin.nix` imports `modules/<feature>/darwin.nix`, which in turn imports `modules/<feature>/<subfeature>/darwin.nix`.
 - Never import a grandchild file directly if a child aggregation file exists.
 
+## Flake Inputs Access Policy
+
+Modules must access external flake inputs through the `inputs` attribute, not as direct function arguments.
+
+**Rule:**
+- **Use `inputs.xxx`:** Always receive `inputs` in the module arguments and access dependencies as `inputs.sops-nix`, `inputs.attic`, etc.
+- **Do not spread inputs into specialArgs:** `mkSpecialArgs` must not use `inputs // { ... }`. Only explicitly defined attributes (`pkgs-*`, `tailscalePackage`, `system`, etc.) and `inputs` itself should be in `specialArgs`.
+- **Derived values are OK:** Convenience aliases like `pkgs-unstable`, `tailscalePackage` that are computed from inputs may remain as explicit `specialArgs`.
+
+```nix
+# Good
+{ inputs, system, ... }:
+{ home.packages = [ inputs.attic.packages.${system}.default ]; }
+
+# Bad - direct input as argument
+{ attic, system, ... }:
+{ home.packages = [ attic.packages.${system}.default ]; }
+```
+
 ## Configuration Policy
 
 **Rule:**
