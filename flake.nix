@@ -61,7 +61,6 @@
         in
         {
           inherit inputs;
-          inherit (inputs) self;
           inherit system;
           tailscalePackage = inputs.tailscale.packages.${system}.tailscale;
           pkgs-2211 = mkPkgs inputs.nixpkgs-2211;
@@ -91,12 +90,6 @@
           };
         });
 
-        pkgs = forAllSystems (system:
-          inputs.nixpkgs.legacyPackages.${system}
-        );
-        modules = forAllSystems (system: [
-          ./home.nix
-        ]);
         homeManagerModules.default = { ... }: {
           imports = [
             ./home.nix

@@ -1,6 +1,5 @@
 { inputs, ... }: # arguments
 { config
-, self
 , ...
 }:
 {
