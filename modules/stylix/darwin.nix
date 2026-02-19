@@ -9,7 +9,8 @@ let
       runHook postInstall
     '';
   });
-in {
+in
+{
   imports = [ inputs.stylix.darwinModules.stylix ];
   stylix.enable = true;
   stylix.image = ./wp4725691-mac-os-x-earth-horizon-wallpapers.jpg;
