@@ -30,7 +30,8 @@
       "Bash(npm install:*)",
       "Bash(skills/verify-change/scripts/check.sh:*)",
       "WebFetch(domain:raw.githubusercontent.com)",
-      "Bash(git restore:*)"
+      "Bash(git restore:*)",
+      "Bash(git rebase:*)"
     ]
   }
 }
