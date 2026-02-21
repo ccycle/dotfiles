@@ -1,5 +1,5 @@
 { pkgs, config, ... }: {
-  programs.git.extraConfig = {
+  programs.git.settings = {
     ghq.root = "${config.home.homeDirectory}/repositories";
   };
   home.packages = with pkgs; [

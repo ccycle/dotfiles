@@ -1,6 +1,6 @@
 { pkgs, ... }: {
   programs.git = {
-    extraConfig = {
+    settings = {
       rebase.updateRefs = true;
       core.ignorecase = false;
     };
