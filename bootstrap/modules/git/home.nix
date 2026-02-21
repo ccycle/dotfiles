@@ -20,28 +20,28 @@
       credential = {
         helper = "manager";
       };
-    };
-    aliases = {
-      rh = "reset HEAD^";
-      stash-abort = "reset --merge";
-      push-origin-head = "push origin HEAD";
-      push-origin-head-force-with-lease = "push origin HEAD --force-with-lease";
-      pull-origin-head = "pull origin HEAD";
-      discard-unstaged-changes = "restore .";
-      ca = "commit --amend";
-      merged-branch-list = ''
-        !git branch --merged | egrep -v "(^\*|master|main|dev)"
-      '';
-      merged-branch-delete = ''
-        !git branch --merged | egrep -v "(^\*|master|main|dev)" | xargs git branch -d
-      '';
-      aliases-list = ''
-        !git config --get-regexp ^alias;
-      '';
-      # https://zenn.dev/mary_pp/articles/eaac544eaf600a
-      push-force-with-lease = ''
-        !git push --force-with-lease --force-if-includes
-      '';
+      alias = {
+        rh = "reset HEAD^";
+        stash-abort = "reset --merge";
+        push-origin-head = "push origin HEAD";
+        push-origin-head-force-with-lease = "push origin HEAD --force-with-lease";
+        pull-origin-head = "pull origin HEAD";
+        discard-unstaged-changes = "restore .";
+        ca = "commit --amend";
+        merged-branch-list = ''
+          !git branch --merged | egrep -v "(^\*|master|main|dev)"
+        '';
+        merged-branch-delete = ''
+          !git branch --merged | egrep -v "(^\*|master|main|dev)" | xargs git branch -d
+        '';
+        aliases-list = ''
+          !git config --get-regexp ^alias;
+        '';
+        # https://zenn.dev/mary_pp/articles/eaac544eaf600a
+        push-force-with-lease = ''
+          !git push --force-with-lease --force-if-includes
+        '';
+      };
     };
   };
   imports = [

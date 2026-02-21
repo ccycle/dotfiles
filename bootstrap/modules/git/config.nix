@@ -5,6 +5,8 @@
     userEmail = "ccycle713@gmail.com";
     signing = {
       key = builtins.readFile ./id_ed25519_signing.pub;
+      gpgPath = "";
+      signByDefault = true;
     };
     extraConfig = {
       gpg.format = "ssh";
