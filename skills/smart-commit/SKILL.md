@@ -1,3 +1,8 @@
+---
+name: smart-commit
+description: Smart Commit & Branching
+---
+
 # Smart Commit & Branching
 
 ## Overview
