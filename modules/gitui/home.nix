@@ -1,7 +1,5 @@
-{ ... }:
+{ pkgs,... }:
 
 {
-  programs.gitui = {
-    enable = true;
-  };
+  home.packages = [ pkgs.gitui ];
 }
