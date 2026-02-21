@@ -12,7 +12,7 @@
       "result"
       ".my-local-workspace/"
     ];
-    extraConfig = {
+    settings = {
       core.ignorecase = false;
       init.defaultbranch = "main";
       fetch.prune = true;

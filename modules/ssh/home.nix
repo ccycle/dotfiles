@@ -3,6 +3,7 @@
 {
   programs.ssh = {
     enable = true;
+    enableDefaultConfig = false;
     matchBlocks."*".addKeysToAgent = "yes";
     # Use system SSH on macOS to enable Keychain integration
     package = lib.mkIf pkgs.stdenv.isDarwin null;

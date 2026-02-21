@@ -1,14 +1,14 @@
 { ... }:
 {
   programs.git = {
-    userName = "ccycle";
-    userEmail = "ccycle713@gmail.com";
     signing = {
       key = builtins.readFile ./id_ed25519_signing.pub;
-      gpgPath = "";
+      signer = "";
       signByDefault = true;
     };
-    extraConfig = {
+    settings = {
+      user.name = "ccycle";
+      user.email = "ccycle713@gmail.com";
       gpg.format = "ssh";
       commit.gpgsign = "true";
       url = {

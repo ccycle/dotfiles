@@ -15,7 +15,7 @@
   };
 
   # Home Manager configuration
-  home-manager.extraSpecialArgs = inputs.self.extraSpecialArgs.${pkgs.system};
+  home-manager.extraSpecialArgs = inputs.self.extraSpecialArgs.${pkgs.stdenv.hostPlatform.system};
   home-manager.users."${username}" = {
     imports = [
       ./home.nix

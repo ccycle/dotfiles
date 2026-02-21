@@ -1,4 +1,4 @@
 { inputs, pkgs, ... }:
 {
-  home.packages = [ inputs.attic.packages.${pkgs.system}.default ];
+  home.packages = [ inputs.attic.packages.${pkgs.stdenv.hostPlatform.system}.default ];
 }
