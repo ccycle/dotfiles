@@ -10,7 +10,7 @@
     ./fzf/home.nix
     ./ghostty/home.nix
     ./git/home.nix
-    ./gitui/home.nix
+    # ./gitui/home.nix
     ./gmake/home.nix
     ./go-task/home.nix
     ./haskell/home.nix
