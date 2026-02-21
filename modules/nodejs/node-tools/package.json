@@ -10,6 +10,9 @@
     "stylus": "*",
     "typeorm": "*"
   },
+  "overrides": {
+    "minimatch": ">=10.2.1"
+  },
   "pnpm": {
     "onlyBuiltDependencies": [
       "esbuild",
