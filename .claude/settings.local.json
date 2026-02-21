@@ -12,7 +12,25 @@
       "Bash(git reset:*)",
       "Bash(git checkout:*)",
       "Bash(nix flake check:*)",
-      "Bash(skills/verify-change/scripts/check.sh:*)"
+      "Bash(sudo tailscale status:*)",
+      "Bash(tailscale version:*)",
+      "Bash(tailscaled --version:*)",
+      "Bash(brew list:*)",
+      "Bash(ln:*)",
+      "Bash(claude:*)",
+      "WebSearch",
+      "Bash(bash:*)",
+      "Bash(xargs:*)",
+      "Bash(ls:*)",
+      "WebFetch(domain:nix-community.github.io)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:mynixos.com)",
+      "Bash(npm audit:*)",
+      "Bash(npm ls:*)",
+      "Bash(npm install:*)",
+      "Bash(skills/verify-change/scripts/check.sh:*)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(git restore:*)"
     ]
   }
 }
