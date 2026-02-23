@@ -24,4 +24,13 @@
   # Require full disk access
   system.defaults.universalaccess.reduceTransparency = true;
   system.defaults.universalaccess.reduceMotion = true;
+
+  # Disable auto-correct
+  system.defaults.NSGlobalDomain = {
+    NSAutomaticCapitalizationEnabled = false;
+    NSAutomaticSpellingCorrectionEnabled = false;
+    NSAutomaticPeriodSubstitutionEnabled = false;
+    NSAutomaticDashSubstitutionEnabled = false;
+    NSAutomaticQuoteSubstitutionEnabled = false;
+  };
 }
