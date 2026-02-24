@@ -32,7 +32,9 @@
       "WebFetch(domain:raw.githubusercontent.com)",
       "Bash(git restore:*)",
       "Bash(git rebase:*)",
-      "Bash(git:*)"
+      "Bash(git:*)",
+      "Bash(/Users/mfuruki/repositories/github.com/ccycle/dotfiles/skills/verify-change/scripts/check.sh:*)",
+      "Bash(chmod +x:*)"
     ]
   }
 }
