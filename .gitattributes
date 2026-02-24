@@ -1,1 +1,2 @@
 ./modules/common/zsh/p10k-config/.p10k.zsh linguist-vendored
+./home-files/* linguist-vendored
