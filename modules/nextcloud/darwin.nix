@@ -45,11 +45,12 @@ in
       StandardErrorPath = "/var/log/nextcloud.log";
     };
     script = ''
-      # Wait for Docker Desktop to start and expose its socket
-      until [ -S /var/run/docker.sock ]; do
-        echo "Waiting for Docker socket..."
+      # Wait for Colima to start and expose its socket
+      until [ -S /Users/mfuruki/.colima/default/docker.sock ]; do
+        echo "Waiting for Colima socket..."
         sleep 5
       done
+      export DOCKER_HOST="unix:///Users/mfuruki/.colima/default/docker.sock"
       exec ${pkgs.docker-compose}/bin/docker-compose \
         -f ${composeFile} \
         up --no-build

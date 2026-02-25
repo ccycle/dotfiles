@@ -1,4 +1,13 @@
 { pkgs, ... }: {
+  # Remove the Docker Desktop symlink at /var/run/docker.sock if it exists.
+  # Docker Desktop creates this symlink, but we use Colima instead.
+  system.activationScripts.cleanDockerDesktopSocket.text = ''
+    if [ -L /var/run/docker.sock ]; then
+      echo "Removing Docker Desktop socket symlink..."
+      rm -f /var/run/docker.sock
+    fi
+  '';
+
   launchd.user.agents.colima = {
     serviceConfig = {
       KeepAlive = true;
