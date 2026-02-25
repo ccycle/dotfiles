@@ -1,7 +1,4 @@
 { pkgs, ... }: {
-  home.packages = with pkgs;
-    [
-      colima
-      docker
-    ];
+  home.packages = [ pkgs.docker ];
+  imports = [ ./colima/home.nix ];
 }

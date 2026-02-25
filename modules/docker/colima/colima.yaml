@@ -1,0 +1,51 @@
+# Number of CPUs to be allocated to the virtual machine.
+cpu: 2
+
+# Size of the disk in GiB to be allocated to the virtual machine for container data.
+# NOTE: value can only be increased after virtual machine has been created.
+disk: 100
+
+# Size of the memory in GiB to be allocated to the virtual machine.
+memory: 2
+
+# Architecture of the virtual machine (x86_64, aarch64, host).
+# NOTE: value cannot be changed after virtual machine is created.
+arch: aarch64
+
+# Container runtime to be used (docker, containerd).
+# NOTE: value cannot be changed after virtual machine is created.
+runtime: docker
+
+# Set custom hostname for the virtual machine.
+hostname: colima
+
+# Auto-activate on the Host for client access.
+autoActivate: true
+
+# Virtual Machine type (qemu, vz)
+# NOTE: value cannot be changed after virtual machine is created.
+vmType: vz
+
+# Utilise rosetta for amd64 emulation (requires m1 mac and vmType `vz`)
+rosetta: false
+
+# Enable foreign architecture emulation via binfmt (e.g. amd64 on arm64, arm64 on amd64)
+binfmt: true
+
+# Volume mount driver for the virtual machine (virtiofs, 9p, sshfs).
+# NOTE: value cannot be changed after virtual machine is created.
+mountType: virtiofs
+
+# Propagate inotify file events to the VM.
+mountInotify: true
+
+# Network configurations for the virtual machine.
+network:
+  address: false
+  mode: shared
+  dns: []
+  dnsHosts: {}
+
+# Kubernetes configuration for the virtual machine.
+kubernetes:
+  enabled: false
