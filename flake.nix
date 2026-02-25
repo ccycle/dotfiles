@@ -7,6 +7,7 @@
   # See `bootstrap/flake.nix` for details.
   inputs = {
     attic.url = "github:zhaofengli/attic";
+    bootstrap.url = "path:./bootstrap";
     brew-nix.url = "github:BatteredBunny/brew-nix";
     claude-code-nix.url = "github:sadjow/claude-code-nix";
     devx.url = "github:input-output-hk/devx";
@@ -20,10 +21,8 @@
     haskellNix.url = "github:input-output-hk/haskell.nix";
     gwq.url = "github:d-kuro/gwq";
     gwq.flake = false;
-    home-manager.inputs.nixpkgs.follows = "nixpkgs";
-    home-manager.url = "github:nix-community/home-manager/release-25.11";
-    nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
-    nix-darwin.url = "github:nix-darwin/nix-darwin/nix-darwin-25.11";
+    home-manager.follows = "bootstrap/home-manager";
+    nix-darwin.follows = "bootstrap/nix-darwin";
     nixpkgs-2211.url = "github:nixos/nixpkgs/22.11";
     nixpkgs-2305.url = "github:nixos/nixpkgs/23.05";
     nixpkgs-2311.url = "github:nixos/nixpkgs/23.11";

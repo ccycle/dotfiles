@@ -25,7 +25,7 @@ in
 
     targetDir = mkOption {
       type = types.str;
-      default = "${config.programs.git.extraConfig.ghq.root}/github.com/ccycle/dotfiles/home-files";
+      default = "${config.programs.git.settings.ghq.root}/github.com/ccycle/dotfiles/home-files";
       description = "Directory where the files should be copied to.";
     };
 

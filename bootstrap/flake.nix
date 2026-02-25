@@ -21,14 +21,15 @@
   # After this runs successfully, tokens will be in place, and you can switch to the main flake:
   #   darwin-rebuild switch --flake .
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/25.05";
-    nixpkgs-2511.url = "github:nixos/nixpkgs/25.11";
-    nix-darwin.url = "github:LnL7/nix-darwin/nix-darwin-25.05";
-    home-manager.url = "github:nix-community/home-manager/release-25.05";
+    nixpkgs.url = "github:nixos/nixpkgs/25.11";
+    nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
+    nix-darwin.url = "github:nix-darwin/nix-darwin/nix-darwin-25.11";
+    home-manager.inputs.nixpkgs.follows = "nixpkgs";
+    home-manager.url = "github:nix-community/home-manager/release-25.11";
     sops-nix.url = "github:Mic92/sops-nix";
   };
 
-  outputs = inputs@{ self, nixpkgs, nixpkgs-2511, nix-darwin, ... }:
+  outputs = inputs@{ self, nixpkgs, nix-darwin, ... }:
     let
       darwinSystems = [ "aarch64-darwin" "x86_64-darwin" ];
       forDarwinSystems = nixpkgs.lib.genAttrs darwinSystems;
@@ -60,7 +61,7 @@
 
       devShells = forDarwinSystems (system:
         let
-          pkgs = nixpkgs-2511.legacyPackages.${system};
+          pkgs = nixpkgs.legacyPackages.${system};
         in
         {
           secrets = pkgs.mkShell {
