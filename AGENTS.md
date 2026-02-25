@@ -52,9 +52,36 @@ Modules must access external flake inputs through the `inputs` attribute, not as
 
 We are migrating to [Agent Skills](https://agentskills.io) for task automation and guideline enforcement.
 
-- **[nix-module](./skills/nix-module/SKILL.md):** Use this skill when creating new features or modules. It handles the directory structure and boilerplate generation.
-- **[credentials-manager](./skills/credentials-manager/SKILL.md):** Use this skill for managing secrets and Nix access tokens.
-- **[verify-change](./skills/verify-change/SKILL.md):** Use this skill to verify changes before committing. It runs syntax checks, lints, and build dry-runs.
+- **[nix-module](./skills/project/nix-module/SKILL.md):** Use this skill when creating new features or modules. It handles the directory structure and boilerplate generation.
+- **[credentials-manager](./skills/project/credentials-manager/SKILL.md):** Use this skill for managing secrets and Nix access tokens.
+- **[verify-change](./skills/project/verify-change/SKILL.md):** Use this skill to verify changes before committing. It runs syntax checks, lints, and build dry-runs.
+
+## Profile Build Attribute Paths
+
+Each profile has a different `nix build` attribute path due to how they are defined in `flake.nix`:
+
+| Profile     | nix build 属性パス                                                        |
+|-------------|---------------------------------------------------------------------------|
+| bootstrap   | `./bootstrap#darwinConfigurations.bootstrap.aarch64-darwin.system`        |
+| private     | `.#darwinConfigurations.private.aarch64-darwin.system`                    |
+| mac-mini-m4 | `.#darwinConfigurations.mac-mini-m4.system`  ← no architecture suffix    |
+
+**Why the difference:** `private` is wrapped with `forDarwinSystems`, so the key includes the architecture name. `mac-mini-m4` calls `darwinSystem` directly, so there is no architecture suffix. See `flake.nix:110-125` for details.
+
+## Claude Code Workflow
+
+This section is specific to Claude Code (the Anthropic CLI tool).
+
+**Invoking skills via slash commands:**
+- `/nix-module` — create a new feature module
+- `/verify-change` — run syntax checks, lints, and build dry-runs
+- `/credentials-manager` — manage secrets and Nix access tokens
+
+**Plan Mode:** Start complex or multi-file changes with Plan Mode (enter automatically or via `/plan`) to design an approach before writing code.
+
+**Settings files:**
+- `settings.json` (managed by home-manager, in the Nix store) — contains the global deny list for dangerous commands
+- `.claude/settings.local.json` (tracked in this repository) — contains repository-specific allow-list permissions and hooks
 
 ## Legacy Guidelines
 
@@ -72,4 +99,4 @@ When asked to implement a feature:
 3. **Check Structure:** Does it fit into an existing feature directory? If not, create `modules/<feature>`. Ensure file dependencies are clear from the structure.
 4. **Separate Platforms:** Use `darwin/` for system config and `home-manager/` for user config.
 5. **Code Reuse:** Check `dotfiles` repo first. Import/overlay existing modules instead of copying code (see **Code Reuse Policy**).
-6. **Verify Changes:** Run `skills/verify-change/scripts/check.sh` before finishing the task.
+6. **Verify Changes:** Run `skills/project/verify-change/scripts/check.sh` before finishing the task.
