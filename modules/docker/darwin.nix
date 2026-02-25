@@ -7,6 +7,7 @@
       StandardErrorPath = "/tmp/colima.log";
     };
     script = ''
+      export PATH="${pkgs.docker}/bin:$PATH"
       exec ${pkgs.colima}/bin/colima start --foreground
     '';
   };
