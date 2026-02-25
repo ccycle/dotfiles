@@ -4,7 +4,7 @@
   "description": "Managed Node.js tools for Nix environment",
   "private": true,
   "dependencies": {
-    "@google/gemini-cli": "*",
+    "@google/gemini-cli": "^0.30.0",
     "jest": "*",
     "prettier": "^3.8.1",
     "stylus": "*",
