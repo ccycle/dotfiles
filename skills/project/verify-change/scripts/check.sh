@@ -12,6 +12,10 @@ git add .
 nix build "./bootstrap#darwinConfigurations.bootstrap.aarch64-darwin.system" --impure -L --dry-run
 nix build ".#darwinConfigurations.private.aarch64-darwin.system" --impure -L --dry-run
 
+echo ""
+echo "--- mac-mini-m4 ---"
+nix build ".#darwinConfigurations.mac-mini-m4.system" --impure -L --dry-run
+
 echo "✅ Build dry-run passed."
 echo ""
 echo "🎉 All checks passed! You are safe to commit."
