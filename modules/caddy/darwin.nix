@@ -10,6 +10,11 @@
       tls internal
       reverse_proxy 127.0.0.1:8080
     }
+
+    https://opencloud.mac-mini-m4.internal {
+      tls internal
+      reverse_proxy 127.0.0.1:9200
+    }
   '';
 
   launchd.daemons.caddy = {
