@@ -20,8 +20,10 @@
       StandardErrorPath = "/var/log/caddy.log";
       # Store Caddy data (including the local CA cert) in a predictable location.
       # CA cert will be at /var/lib/caddy/pki/authorities/local/root.crt
+      # HOME must be set so Caddy can resolve OS config/cache directories.
       EnvironmentVariables = {
         CADDY_DATA_DIR = "/var/lib/caddy";
+        HOME = "/var/lib/caddy";
       };
     };
     script = ''
