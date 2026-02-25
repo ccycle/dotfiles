@@ -45,6 +45,11 @@ in
       StandardErrorPath = "/var/log/nextcloud.log";
     };
     script = ''
+      # Wait for Docker Desktop to start and expose its socket
+      until [ -S /var/run/docker.sock ]; do
+        echo "Waiting for Docker socket..."
+        sleep 5
+      done
       exec ${pkgs.docker-compose}/bin/docker-compose \
         -f ${composeFile} \
         up --no-build
