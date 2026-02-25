@@ -10,11 +10,11 @@
       EnvironmentVariables = {
         OC_BASE_DATA_PATH = "/var/lib/opencloud";
         OC_CONFIG_DIR = "/var/lib/opencloud/config";
-        OPENCLOUD_URL = "https://opencloud.mac-mini-m4.internal";
+        OC_URL = "https://opencloud.mac-mini-m4.internal";
         PROXY_HTTP_ADDR = "127.0.0.1:9200";
-        # Disable TLS for internal proxying as Caddy handles it
-        PROXY_TRANSPORT_TLS = "false";
         OC_INSECURE = "true";
+        IDP_ASSET_PATH = "${pkgs.opencloud.idp-web}/assets";
+        WEB_ASSET_CORE_PATH = "${pkgs.opencloud.web}";
       };
     };
     script = ''
