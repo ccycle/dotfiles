@@ -6,6 +6,7 @@
   "dependencies": {
     "@google/gemini-cli": "^0.30.0",
     "jest": "*",
+    "opencode-ai": "latest",
     "prettier": "^3.8.1",
     "stylus": "*",
     "typeorm": "*"

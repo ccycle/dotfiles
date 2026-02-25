@@ -33,7 +33,7 @@
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     nixpkgs.url = "github:nixos/nixpkgs/25.11";
     ghostty.url = "github:ghostty-org/ghostty";
-    opencode.url = "github:anomalyco/opencode/dev";
+    # opencode.url = "github:anomalyco/opencode/dev";
     stylix.url = "github:nix-community/stylix/release-25.11";
     tailscale.url = "github:tailscale/tailscale/v1.92.5";
     pip2nix.url = "github:nix-community/pip2nix";
