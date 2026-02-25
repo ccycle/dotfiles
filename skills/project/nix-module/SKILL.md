@@ -12,7 +12,7 @@ This skill automates the creation of new Nix modules in the `modules/` directory
 Run the generation script to create a new module structure:
 
 ```bash
-skills/nix-module/scripts/generate-module.sh <module-name>
+skills/project/nix-module/scripts/generate-module.sh <module-name>
 ```
 
 This will:

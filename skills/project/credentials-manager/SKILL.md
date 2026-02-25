@@ -13,19 +13,19 @@ This skill helps you manage secrets and access tokens in the dotfiles, following
 Safely edit `secrets.yaml` files using the `sops` wrapper.
 
 ```bash
-skills/credentials-manager/scripts/edit-secrets.sh <path/to/secrets.yaml>
+skills/project/credentials-manager/scripts/edit-secrets.sh <path/to/secrets.yaml>
 ```
 
 ### 2. Configure Nix Access Tokens
 Generate the necessary Nix configuration to securely inject access tokens (e.g., GitHub PAT) into `/etc/nix/nix-access-tokens-work.conf`.
 
 ```bash
-skills/credentials-manager/scripts/setup-token.sh <token_variable_name>
+skills/project/credentials-manager/scripts/setup-token.sh <token_variable_name>
 ```
 
 Example:
 ```bash
-skills/credentials-manager/scripts/setup-token.sh github_pat_work
+skills/project/credentials-manager/scripts/setup-token.sh github_pat_work
 ```
 This will output the `sops.templates` and `nix.extraOptions` configuration to be added to your `darwin.nix`.
 

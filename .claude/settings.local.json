@@ -28,12 +28,12 @@
       "Bash(npm audit:*)",
       "Bash(npm ls:*)",
       "Bash(npm install:*)",
-      "Bash(skills/verify-change/scripts/check.sh:*)",
+      "Bash(skills/project/verify-change/scripts/check.sh:*)",
       "WebFetch(domain:raw.githubusercontent.com)",
       "Bash(git restore:*)",
       "Bash(git rebase:*)",
       "Bash(git:*)",
-      "Bash(/Users/mfuruki/repositories/github.com/ccycle/dotfiles/skills/verify-change/scripts/check.sh:*)",
+      "Bash(/Users/mfuruki/repositories/github.com/ccycle/dotfiles/skills/project/verify-change/scripts/check.sh:*)",
       "Bash(chmod +x:*)"
     ]
   }
