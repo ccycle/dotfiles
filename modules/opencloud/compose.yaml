@@ -1,0 +1,24 @@
+name: opencloud
+
+services:
+  opencloud:
+    image: opencloudeu/opencloud-rolling:latest
+    user: root
+    entrypoint: ["/bin/sh", "-c"]
+    command: ["-c", "opencloud init --insecure true || true; opencloud server"]
+    ports:
+      - "127.0.0.1:9200:9200"
+    environment:
+      OC_URL: https://opencloud.mac-mini-m4.internal
+      PROXY_TLS: "false"
+      OC_INSECURE: "true"
+      IDM_ADMIN_PASSWORD: "${OPENCLOUD_ADMIN_PASSWORD}"
+      OC_LOG_LEVEL: info
+      STORAGE_USERS_DRIVER: ocis
+      STORAGE_METADATA_DRIVER: ocis
+    volumes:
+      - ${OPENCLOUD_CONFIG_DIR:-/var/lib/opencloud/config}:/etc/opencloud
+      - ${OPENCLOUD_DATA_DIR:-/var/lib/opencloud/data}:/var/lib/opencloud
+    extra_hosts:
+      - "opencloud.mac-mini-m4.internal:host-gateway"
+    restart: always
