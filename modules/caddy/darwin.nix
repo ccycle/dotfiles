@@ -1,21 +1,51 @@
 { pkgs, ... }:
 
 {
-  environment.etc."caddy/Caddyfile".text = ''
-    {
-      admin off
-    }
+  environment.etc = {
+    "caddy/Caddyfile".text = ''
+      {
+        admin off
+      }
 
-    https://nextcloud.mac-mini-m4.internal {
-      tls internal
-      reverse_proxy 127.0.0.1:8080
-    }
+      # Common snippets
+      (internal_tls) {
+        tls internal
+      }
 
-    https://opencloud.mac-mini-m4.internal {
-      tls internal
-      reverse_proxy 127.0.0.1:9200
-    }
-  '';
+      import /etc/caddy/sites/*.caddy
+    '';
+
+    "caddy/sites/nextcloud.caddy".text = ''
+      https://nextcloud.mac-mini-m4.internal {
+        import internal_tls
+        reverse_proxy 127.0.0.1:8080
+      }
+    '';
+
+    "caddy/sites/opencloud.caddy".text = ''
+      https://opencloud.mac-mini-m4.internal {
+        import internal_tls
+        reverse_proxy 127.0.0.1:9200
+      }
+    '';
+
+    "caddy/sites/ca.caddy".text = ''
+      http://ca.mac-mini-m4.internal, https://ca.mac-mini-m4.internal {
+        import internal_tls
+        handle /ca.crt {
+          root * "/var/lib/caddy/Library/Application Support/Caddy/pki/authorities/local"
+          rewrite * /root.crt
+          header Content-Type "application/x-x509-ca-cert"
+          header Content-Disposition "attachment; filename=ca.crt"
+          file_server
+        }
+        handle {
+          header Content-Type "text/html; charset=utf-8"
+          respond `${builtins.readFile ./ca.html}` 200
+        }
+      }
+    '';
+  };
 
   launchd.daemons.caddy = {
     serviceConfig = {
