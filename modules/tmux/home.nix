@@ -1,7 +1,31 @@
-{ ... }: {
+{ pkgs, ... }: {
   programs.tmux = {
     enable = true;
     terminal = "screen-256color"; # https://zenn.dev/ymotongpoo/articles/d3b38bee191e3b
     mouse = true;
+    keyMode = "vi";
+    plugins = with pkgs.tmuxPlugins; [
+      {
+        plugin = yank;
+        extraConfig = ''
+          # コピー時にコピーモードを終了する (ご提示の回答の挙動に合わせる)
+          set -g @yank_action 'copy-pipe-and-cancel'
+        '';
+      }
+    ];
+    extraConfig = ''
+      # Explicitly enable UTF-8 support
+      set -as terminal-features ",xterm-256color:UTF-8"
+      
+      # --- コピーモードの設定 (Vim風操作) ---
+      # v で選択開始
+      bind-key -T copy-mode-vi v send-keys -X begin-selection
+      # V で行選択
+      bind-key -T copy-mode-vi V send-keys -X select-line
+      # C-v で矩形選択の切り替え
+      bind-key -T copy-mode-vi C-v send-keys -X rectangle-toggle
+      
+      # y でコピー (tmux-yankがシステムのクリップボード pbcopy と連携します)
+    '';
   };
 }
