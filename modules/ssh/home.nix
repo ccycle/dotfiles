@@ -7,9 +7,11 @@
     matchBlocks."*".addKeysToAgent = "yes";
     # Use system SSH on macOS to enable Keychain integration
     package = lib.mkIf pkgs.stdenv.isDarwin null;
-    extraConfig = lib.mkIf pkgs.stdenv.isDarwin ''
+    extraConfig = ''
+      SendEnv LANG LC_*
+    '' + (if pkgs.stdenv.isDarwin then ''
       UseKeychain yes
-    '';
+    '' else "");
   };
 
   # home.file.".ssh/authorized_keys".text = ''
