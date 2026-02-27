@@ -798,6 +798,22 @@
         "type": "github"
       }
     },
+    "gitui": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1770206807,
+        "narHash": "sha256-BRkUMP961t6vzSlHRRO+MK6HboSeqiikm2yeYVKVBck=",
+        "owner": "extrawurst",
+        "repo": "gitui",
+        "rev": "e29b9010e591361b473881c6ad605089f8145147",
+        "type": "github"
+      },
+      "original": {
+        "owner": "extrawurst",
+        "repo": "gitui",
+        "type": "github"
+      }
+    },
     "gnome-shell": {
       "flake": false,
       "locked": {
@@ -2375,6 +2391,7 @@
         "ghcup": "ghcup",
         "ghostty": "ghostty",
         "ghq-migrator": "ghq-migrator",
+        "gitui": "gitui",
         "gwq": "gwq",
         "haskellNix": "haskellNix_2",
         "home-manager": [

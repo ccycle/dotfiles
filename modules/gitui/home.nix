@@ -1,5 +1,5 @@
-{ pkgs,... }:
+{ gituiPackage, ... }:
 
 {
-  home.packages = [ pkgs.gitui ];
+  home.packages = [ gituiPackage ];
 }

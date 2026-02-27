@@ -19,6 +19,8 @@
     ghq-migrator.flake = false;
     ghq-migrator.url = "github:astj/ghq-migrator";
     haskellNix.url = "github:input-output-hk/haskell.nix";
+    gitui.url = "github:extrawurst/gitui";
+    gitui.flake = false;
     gwq.url = "github:d-kuro/gwq";
     gwq.flake = false;
     home-manager.follows = "bootstrap/home-manager";
@@ -63,6 +65,8 @@
           inherit inputs;
           inherit system;
           tailscalePackage = inputs.tailscale.packages.${system}.tailscale;
+          gituiPackage = inputs.nixpkgs.legacyPackages.${system}.callPackage
+            ./modules/gitui/drv.nix { src = inputs.gitui; };
           pkgs-2211 = mkPkgs inputs.nixpkgs-2211;
           pkgs-2305 = mkPkgs inputs.nixpkgs-2305;
           pkgs-2311 = mkPkgs inputs.nixpkgs-2311;
@@ -79,6 +83,9 @@
         packages = forAllSystems (system: {
           gwq = inputs.nixpkgs.legacyPackages.${system}.callPackage ./modules/git/gwq/drv.nix {
             src = inputs.gwq;
+          };
+          gitui = inputs.nixpkgs.legacyPackages.${system}.callPackage ./modules/gitui/drv.nix {
+            src = inputs.gitui;
           };
         });
 
