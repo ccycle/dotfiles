@@ -15,7 +15,7 @@ fi
 
 profile="$1"
 repo_root="$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)"
-arch="$(nix eval --impure --raw --expr 'builtins.currentSystem')"
+arch="$(nix --extra-experimental-features "nix-command flakes" eval --impure --raw --expr 'builtins.currentSystem')"
 
 case "${profile}" in
   bootstrap)
