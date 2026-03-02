@@ -14,6 +14,7 @@
     ./go-task/home.nix
     ./haskell/home.nix
     ./just/home.nix
+    ./lazygit/home.nix
     ./nix-formatter/home.nix
     ./nodejs/home.nix
     # ./opencode/home.nix
