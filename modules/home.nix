@@ -8,7 +8,6 @@
     ./docker/home.nix
     ./emacs/home.nix
     ./fzf/home.nix
-    ./ghostty/home.nix
     ./git/home.nix
     # ./gitui/home.nix
     ./gmake/home.nix
