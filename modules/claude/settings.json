@@ -72,7 +72,8 @@
       "Glob",
       "Grep",
       "WebSearch",
-      "WebFetch"
+      "WebFetch",
+      "Update"
     ],
     "deny": [
       "Bash(rm -rf *)",
