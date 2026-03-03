@@ -13,6 +13,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: nixbuild/nix-quick-install-action@v34
+      - uses: cachix/cachix-action@v14
+        with:
+          name: ccycle
 
       # Mock generated/env.nix to ensure pure evaluation
       - run: |
@@ -25,7 +28,7 @@ jobs:
     name: Build Home Manager
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -33,7 +36,6 @@ jobs:
       - uses: cachix/cachix-action@v14
         with:
           name: ccycle
-          # authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
 
       - run: |
           mkdir -p generated
@@ -47,6 +49,11 @@ jobs:
           SYSTEM=$(nix eval --raw --impure --expr 'builtins.currentSystem')
           echo "Building for system: $SYSTEM"
           nix build .#homeConfigurations.private.${SYSTEM}.activationPackage --impure --no-update-lock-file
+
+      - uses: cachix/cachix-action@v14
+        with:
+          name: ccycle
+          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
 
   build-darwin:
     name: Build Darwin System
@@ -66,3 +73,8 @@ jobs:
           SYSTEM=$(nix eval --raw --impure --expr 'builtins.currentSystem')
           echo "Building for system: $SYSTEM"
           nix build .#darwinConfigurations.private.${SYSTEM}.system --impure --no-update-lock-file
+
+      - uses: cachix/cachix-action@v14
+        with:
+          name: ccycle
+          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
