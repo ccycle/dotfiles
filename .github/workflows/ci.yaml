@@ -36,6 +36,7 @@ jobs:
       - uses: cachix/cachix-action@v14
         with:
           name: ccycle
+          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
 
       - run: |
           mkdir -p generated
@@ -50,11 +51,6 @@ jobs:
           echo "Building for system: $SYSTEM"
           nix build .#homeConfigurations.private.${SYSTEM}.activationPackage --impure --no-update-lock-file
 
-      - uses: cachix/cachix-action@v14
-        with:
-          name: ccycle
-          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
-
   build-darwin:
     name: Build Darwin System
     runs-on: macos-latest
@@ -64,6 +60,7 @@ jobs:
       - uses: cachix/cachix-action@v14
         with:
           name: ccycle
+          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
 
       - run: |
           mkdir -p generated
@@ -73,8 +70,3 @@ jobs:
           SYSTEM=$(nix eval --raw --impure --expr 'builtins.currentSystem')
           echo "Building for system: $SYSTEM"
           nix build .#darwinConfigurations.private.${SYSTEM}.system --impure --no-update-lock-file
-
-      - uses: cachix/cachix-action@v14
-        with:
-          name: ccycle
-          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
