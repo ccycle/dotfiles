@@ -59,7 +59,14 @@
       "Bash(gh release download*)",
       "Bash(gh search*)",
       "Bash(gh auth status*)",
-      "Bash",
+      "Bash(ls*)",
+      "Bash(cat*)",
+      "Bash(echo*)",
+      "Bash(pwd*)",
+      "Bash(which*)",
+      "Bash(type*)",
+      "Bash(env*)",
+      "Bash(printenv*)",
       "Read",
       "Edit",
       "Glob",
@@ -110,3 +117,4 @@
     ]
   }
 }
+
