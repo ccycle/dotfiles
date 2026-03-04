@@ -48,6 +48,7 @@ Analyze the current work, create an appropriate branch, and commit only the rele
    - Follow **Conventional Commits** format: `type(scope): subject`
    - Keep the subject concise and descriptive.
    - Use English for commit messages.
+   - **Do NOT add a `Co-Authored-By` trailer** or any AI attribution to the commit message.
 
 5. **Execute Immediately**
    - Run the necessary commands sequentially without waiting for approval:
