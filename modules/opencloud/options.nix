@@ -30,6 +30,11 @@ in
   };
 
   config = mkIf cfg.enable {
+    environment.etc."newsyslog.d/opencloud.conf".text = ''
+      # logfilename          [owner:group]  mode  count  size  when  flags
+      /var/log/opencloud.log                644   7      10240 *     GZ
+    '';
+
     sops.secrets.opencloud_admin_password = {
       sopsFile = ./secrets.yaml;
     };

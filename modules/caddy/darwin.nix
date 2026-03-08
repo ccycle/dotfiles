@@ -25,7 +25,12 @@
     "caddy/sites/opencloud.caddy".text = ''
       https://opencloud.mac-mini-m4.internal {
         import internal_tls
-        reverse_proxy 127.0.0.1:9200
+        reverse_proxy 127.0.0.1:9200 {
+          flush_interval -1
+          transport http {
+            response_header_timeout 120s
+          }
+        }
       }
     '';
 
