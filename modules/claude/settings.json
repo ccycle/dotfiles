@@ -115,5 +115,6 @@
       "Bash(gh gpg-key delete*)"
     ],
     "defaultMode": "plan"
-  }
+  },
+  "model": "opus"
 }
