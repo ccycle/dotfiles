@@ -18,7 +18,7 @@
   security.pam.services.sudo_local = {
     enable = true;
     touchIdAuth = true; # use Touch ID for sudo authentication
-    reattach = true; # equired for Touch ID to work inside tmux/screen
+    reattach = false; # disabled: causes sudo to freeze in SSH+tmux sessions (Touch ID prompt appears on physical Mac)
   };
 
   # Require full disk access
@@ -35,13 +35,18 @@
   };
 
   # https://discourse.nixos.org/t/ssl-ca-cert-error-on-macos/31171/11
+  # Always regenerate so the cert stays fresh and is recreated if deleted.
   system.activationScripts."ssl-ca-cert-fix".text = ''
-    if [ ! -f /etc/nix/ca_cert.pem ]; then
-      security export -t certs -f pemseq -k /Library/Keychains/System.keychain -o /tmp/certs-system.pem
-      security export -t certs -f pemseq -k /System/Library/Keychains/SystemRootCertificates.keychain -o /tmp/certs-root.pem
-      cat /tmp/certs-root.pem /tmp/certs-system.pem > /tmp/ca_cert.pem
-      sudo mv /tmp/ca_cert.pem /etc/nix/
-    fi
+    echo "Regenerating /etc/nix/ca_cert.pem from macOS keychain..."
+    security export -t certs -f pemseq \
+      -k /System/Library/Keychains/SystemRootCertificates.keychain \
+      -o /tmp/nix-certs-root.pem
+    security export -t certs -f pemseq \
+      -k /Library/Keychains/System.keychain \
+      -o /tmp/nix-certs-system.pem 2>/dev/null || cp /dev/null /tmp/nix-certs-system.pem
+    cat /tmp/nix-certs-root.pem /tmp/nix-certs-system.pem > /etc/nix/ca_cert.pem
+    rm -f /tmp/nix-certs-root.pem /tmp/nix-certs-system.pem
+    echo "Done."
   '';
 
   # This is the main part
