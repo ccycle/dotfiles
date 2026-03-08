@@ -21,4 +21,10 @@ services:
       - ${OPENCLOUD_DATA_DIR:-/var/lib/opencloud/data}:/var/lib/opencloud
     extra_hosts:
       - "opencloud.mac-mini-m4.internal:host-gateway"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9200/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
     restart: always
