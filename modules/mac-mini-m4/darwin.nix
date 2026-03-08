@@ -7,4 +7,6 @@
     ../caddy/darwin.nix
     ../dnsmasq/darwin.nix
   ];
+
+  networking.hostName = "mac-mini-m4";
 }
