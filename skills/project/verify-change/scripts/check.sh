@@ -53,6 +53,23 @@ function build_dry_run() {
 
 # --- Main Execution ---
 
+# 0. Ensure Nix SSL cert exists (required to reach binary caches)
+if [ -f /etc/nix/nix.conf ] && grep -q 'ssl-cert-file' /etc/nix/nix.conf; then
+  CERT_FILE=$(grep 'ssl-cert-file' /etc/nix/nix.conf | awk '{print $3}')
+  if [ -n "$CERT_FILE" ] && [ ! -f "$CERT_FILE" ]; then
+    echo "=== 🔐 Regenerating missing Nix SSL cert: $CERT_FILE ==="
+    security export -t certs -f pemseq \
+      -k /System/Library/Keychains/SystemRootCertificates.keychain \
+      -o /tmp/nix-certs-root.pem
+    security export -t certs -f pemseq \
+      -k /Library/Keychains/System.keychain \
+      -o /tmp/nix-certs-system.pem 2>/dev/null || cp /dev/null /tmp/nix-certs-system.pem
+    cat /tmp/nix-certs-root.pem /tmp/nix-certs-system.pem | sudo tee "$CERT_FILE" > /dev/null
+    rm -f /tmp/nix-certs-root.pem /tmp/nix-certs-system.pem
+    echo "✅ SSL cert regenerated."
+  fi
+fi
+
 # 1. Syntax check
 check_syntax
 echo ""
