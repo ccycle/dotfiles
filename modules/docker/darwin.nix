@@ -17,6 +17,9 @@
     };
     script = ''
       export PATH="${pkgs.docker}/bin:$PATH"
+      # Clean up stale state from previous unclean shutdown
+      # (prevents "vz driver is running but host agent is not" error)
+      ${pkgs.colima}/bin/colima stop --force 2>/dev/null || true
       exec ${pkgs.colima}/bin/colima start --foreground
     '';
   };
