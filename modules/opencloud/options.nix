@@ -21,6 +21,12 @@ in
       default = "/var/lib/opencloud/config";
       description = "Directory for OpenCloud configuration on the host.";
     };
+
+    mountPoint = mkOption {
+      type = types.str;
+      default = "";
+      description = "If set, wait for this path to exist before starting (e.g. /Volumes/KIOXIA for an external drive).";
+    };
   };
 
   config = mkIf cfg.enable {
@@ -36,21 +42,32 @@ in
         StandardErrorPath = "/var/log/opencloud.log";
       };
       script = ''
+        ${optionalString (cfg.mountPoint != "") ''
+          until [ -d ${cfg.mountPoint} ]; do
+            echo "Waiting for volume ${cfg.mountPoint} to be mounted..."
+            sleep 10
+          done
+          echo "Volume ${cfg.mountPoint} is mounted."
+        ''}
+
         until [ -S /Users/mfuruki/.colima/default/docker.sock ]; do
           echo "Waiting for Colima socket..."
           sleep 5
         done
+
+        # Ensure the socket is accessible by root (launchd daemon)
+        chmod 666 /Users/mfuruki/.colima/default/docker.sock 2>/dev/null || true
+
         export DOCKER_HOST="unix:///Users/mfuruki/.colima/default/docker.sock"
         export OPENCLOUD_ADMIN_PASSWORD=$(cat ${config.sops.secrets.opencloud_admin_password.path})
         export OPENCLOUD_DATA_DIR="${cfg.dataDir}"
         export OPENCLOUD_CONFIG_DIR="${cfg.configDir}"
 
-        # Ensure directories exist (may require sudo if outside home)
         mkdir -p "$OPENCLOUD_DATA_DIR" "$OPENCLOUD_CONFIG_DIR"
 
         exec ${pkgs.docker-compose}/bin/docker-compose \
           -f ${composeFile} \
-          up --no-build
+          up --no-build --force-recreate
       '';
     };
   };
