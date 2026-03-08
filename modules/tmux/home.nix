@@ -10,6 +10,8 @@
         extraConfig = ''
           # コピー時にコピーモードを終了する (ご提示の回答の挙動に合わせる)
           set -g @yank_action 'copy-pipe-and-cancel'
+          # マウスドラッグを離した瞬間にクリップボードへ自動コピー
+          set -g @yank_with_mouse on
         '';
       }
     ];
