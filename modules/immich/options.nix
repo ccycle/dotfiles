@@ -55,15 +55,11 @@ in
           echo "Volume ${cfg.mountPoint} is mounted."
         ''}
 
-        until [ -S /Users/mfuruki/.colima/default/docker.sock ]; do
-          echo "Waiting for Colima socket..."
+        until [ -S /var/run/docker.sock ]; do
+          echo "Waiting for OrbStack socket..."
           sleep 5
         done
 
-        # Ensure the socket is accessible by root (launchd daemon)
-        chmod 666 /Users/mfuruki/.colima/default/docker.sock 2>/dev/null || true
-
-        export DOCKER_HOST="unix:///Users/mfuruki/.colima/default/docker.sock"
         export IMMICH_DB_PASSWORD=$(cat ${config.sops.secrets.immich_db_password.path})
         export IMMICH_UPLOAD_DIR="${cfg.uploadDir}"
         export IMMICH_DB_DIR="${cfg.dbDir}"

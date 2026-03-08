@@ -55,15 +55,11 @@ in
           echo "Volume ${cfg.mountPoint} is mounted."
         ''}
 
-        until [ -S /Users/mfuruki/.colima/default/docker.sock ]; do
-          echo "Waiting for Colima socket..."
+        until [ -S /var/run/docker.sock ]; do
+          echo "Waiting for OrbStack socket..."
           sleep 5
         done
 
-        # Ensure the socket is accessible by root (launchd daemon)
-        chmod 666 /Users/mfuruki/.colima/default/docker.sock 2>/dev/null || true
-
-        export DOCKER_HOST="unix:///Users/mfuruki/.colima/default/docker.sock"
         export OPENCLOUD_ADMIN_PASSWORD=$(cat ${config.sops.secrets.opencloud_admin_password.path})
         export OPENCLOUD_DATA_DIR="${cfg.dataDir}"
         export OPENCLOUD_CONFIG_DIR="${cfg.configDir}"
