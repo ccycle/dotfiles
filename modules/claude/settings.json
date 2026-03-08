@@ -1,6 +1,5 @@
 {
   "permissions": {
-    "defaultMode": "plan",
     "allow": [
       "Bash(git status*)",
       "Bash(git log*)",
@@ -114,7 +113,7 @@
       "Bash(gh ssh-key delete*)",
       "Bash(gh gpg-key add*)",
       "Bash(gh gpg-key delete*)"
-    ]
+    ],
+    "defaultMode": "plan"
   }
 }
-
