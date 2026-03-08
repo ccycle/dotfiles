@@ -15,6 +15,9 @@
       oc-logs = "sudo tail -f /var/log/opencloud.log";
       oc-docker = "DOCKER_HOST=unix:///Users/mfuruki/.colima/default/docker.sock docker compose -p opencloud logs -f --tail=100";
       oc-status = "DOCKER_HOST=unix:///Users/mfuruki/.colima/default/docker.sock docker compose -p opencloud ps";
+      immich-logs = "sudo tail -f /var/log/immich.log";
+      immich-docker = "DOCKER_HOST=unix:///Users/mfuruki/.colima/default/docker.sock docker compose -p immich logs -f --tail=100";
+      immich-status = "DOCKER_HOST=unix:///Users/mfuruki/.colima/default/docker.sock docker compose -p immich ps";
     };
     syntaxHighlighting.enable = true;
     autosuggestion.enable = true;

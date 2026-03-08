@@ -34,6 +34,13 @@
       }
     '';
 
+    "caddy/sites/immich.caddy".text = ''
+      https://immich.mac-mini-m4.internal {
+        import internal_tls
+        reverse_proxy 127.0.0.1:2283
+      }
+    '';
+
     "caddy/sites/ca.caddy".text = ''
       http://ca.mac-mini-m4.internal, https://ca.mac-mini-m4.internal {
         import internal_tls
