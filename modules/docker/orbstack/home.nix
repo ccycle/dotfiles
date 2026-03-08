@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
 let
   orbstack = pkgs.brewCasks.orbstack.overrideAttrs (old: {
     # brew-nix's installPhase does not call runHook postInstall, so we append directly.
@@ -15,4 +15,10 @@ let
 in
 {
   home.packages = [ orbstack ];
+
+  home.activation.orbstack-start-at-login = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    if [ -x "${orbstack}/bin/orb" ]; then
+      "${orbstack}/bin/orb" config set app.start_at_login true 2>/dev/null || echo "Warning: OrbStack is not running. Run 'orb config set app.start_at_login true' after starting OrbStack."
+    fi
+  '';
 }
