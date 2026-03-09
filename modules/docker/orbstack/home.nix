@@ -21,4 +21,10 @@ in
       "${orbstack}/bin/orb" config set app.start_at_login true 2>/dev/null || echo "Warning: OrbStack is not running. Run 'orb config set app.start_at_login true' after starting OrbStack."
     fi
   '';
+
+  home.activation.orbstack-docker-context = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    if command -v docker &>/dev/null; then
+      docker context use orbstack 2>/dev/null || echo "Warning: Failed to set Docker context to orbstack"
+    fi
+  '';
 }
