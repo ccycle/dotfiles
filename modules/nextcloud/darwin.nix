@@ -23,8 +23,8 @@ in
       StandardErrorPath = "/var/log/nextcloud.log";
     };
     script = ''
-      until [ -S /var/run/docker.sock ]; do
-        echo "Waiting for OrbStack Docker socket..."
+      until ${pkgs.docker}/bin/docker info >/dev/null 2>&1; do
+        echo "Waiting for Docker to be ready..."
         sleep 5
       done
 

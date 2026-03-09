@@ -55,8 +55,8 @@ in
           echo "Volume ${cfg.mountPoint} is mounted."
         ''}
 
-        until [ -S /var/run/docker.sock ]; do
-          echo "Waiting for OrbStack socket..."
+        until ${pkgs.docker}/bin/docker info >/dev/null 2>&1; do
+          echo "Waiting for Docker to be ready..."
           sleep 5
         done
 
