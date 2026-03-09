@@ -1,4 +1,4 @@
-{ config, pkgs, inputs, system, ... }:
+{ config, pkgs, inputs, system, username, ... }:
 
 {
   nixpkgs.hostPlatform = system;
@@ -20,6 +20,11 @@
     touchIdAuth = true; # use Touch ID for sudo authentication
     reattach = false; # disabled: causes sudo to freeze in SSH+tmux sessions (Touch ID prompt appears on physical Mac)
   };
+
+  security.sudo.extraConfig = ''
+    ${username} ALL=(ALL) NOPASSWD: /run/current-system/sw/bin/nix *
+    ${username} ALL=(ALL) NOPASSWD: /nix/var/nix/profiles/default/bin/nix *
+  '';
 
   # Require full disk access
   system.defaults.universalaccess.reduceTransparency = true;
