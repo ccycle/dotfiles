@@ -21,6 +21,12 @@
 
   programs.zsh.initContent =
     if pkgs.stdenv.isDarwin then ''
+      # Expose launchd-managed ssh-agent socket for tools that require SSH_AUTH_SOCK
+      # (e.g., git commit signing with gpg.format=ssh)
+      if [ -z "$SSH_AUTH_SOCK" ]; then
+        export SSH_AUTH_SOCK=$(launchctl asuser $(id -u) launchctl getenv SSH_AUTH_SOCK)
+      fi
+
       # SSH Signing: keys in keychain to agent
       # macOS: --apple-load-keychain automatically loads keys from keychain with passphrases.
       # This avoids manual ssh-add and leverages macOS native keychain integration.
