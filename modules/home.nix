@@ -17,6 +17,7 @@
     ./lazygit/home.nix
     ./nix-formatter/home.nix
     ./nodejs/home.nix
+    ./openclaw/home.nix
     # ./opencode/home.nix
     ./php/home.nix
     ./pinentry/home.nix

@@ -1,0 +1,8 @@
+{
+  "name": "nix-openclaw",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "openclaw": "latest"
+  }
+}
