@@ -68,6 +68,7 @@ in
         mkdir -p "$MONITORING_DATA_DIR/prometheus" \
                  "$MONITORING_DATA_DIR/grafana" \
                  "$MONITORING_DATA_DIR/loki"
+        chmod -R 777 "$MONITORING_DATA_DIR"
 
         exec ${pkgs.docker-compose}/bin/docker-compose \
           -f ${composeFile} \
