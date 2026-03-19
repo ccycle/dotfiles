@@ -33,7 +33,7 @@ in
     # bun
     # ffmpeg_5
     # llvm_12
-    # poppler_utils
+    poppler-utils
     # rclone
     age
     arrow-cpp
