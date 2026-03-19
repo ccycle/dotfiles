@@ -28,25 +28,30 @@
 
         <div class="card">
             <h2>CA 証明書のダウンロード</h2>
-            <p>証明書ファイル: <code>ca.crt</code> (PEM 形式)</p>
+            <p>証明書ファイル: <code>ca.crt</code> (DER 形式)</p>
             <a href="/ca.crt" class="btn">CA 証明書をダウンロード</a>
         </div>
 
         <div class="card">
             <h2>インストール方法</h2>
             <h3>iOS</h3>
+            <p><strong>※ 必ず Safari で直接このページを開いてください。</strong>Chrome や他のブラウザではプロファイルのインストールが開始されません。</p>
             <ol>
-                <li>ダウンロードした <code>ca.crt</code> を開きます。</li>
+                <li>上のボタンをタップして証明書を開きます。</li>
                 <li>「設定」アプリに移動し、<strong>一般 → VPNとデバイス管理</strong> から
                     ダウンロードされたプロファイルを開いてインストールします。</li>
                 <li><strong>（重要）</strong> 続けて <strong>一般 → 情報 → 証明書の信頼設定</strong> を開き、
                     この CA 証明書のトグルを有効にしてください。</li>
             </ol>
 
-            <h3>macOS</h3>
+            <h3>macOS (Chrome / Safari)</h3>
             <ol>
                 <li>ダウンロードした <code>ca.crt</code> を開きます。</li>
-                <li>キーチェーンアクセスで証明書を開き、「常に信頼」に設定してください。</li>
+                <li>「キーチェーンアクセス」アプリが開き、証明書が追加されます。</li>
+                <li><strong>「システム」</strong>キーチェーンにある <strong>「Caddy Local Authority」</strong> をダブルクリックして開きます。</li>
+                <li><strong>「信頼」</strong>セクションを展開し、<strong>「この証明書を使用するとき」</strong>を <strong>「常に信頼」</strong> に変更します。</li>
+                <li>ウィンドウを閉じ、管理者パスワードを入力して設定を保存します。</li>
+                <li><strong>（重要）</strong> 設定後、Chrome などのブラウザを一度完全に終了（Cmd + Q）して再起動してください。</li>
             </ol>
         </div>
     </div>
@@ -57,25 +62,30 @@
 
         <div class="card">
             <h2>Download CA Certificate</h2>
-            <p>Certificate file: <code>ca.crt</code> (PEM format)</p>
+            <p>Certificate file: <code>ca.crt</code> (DER format)</p>
             <a href="/ca.crt" class="btn">Download CA Certificate</a>
         </div>
 
         <div class="card">
             <h2>Installation Instructions</h2>
             <h3>iOS</h3>
+            <p><strong>* You must open this page directly in Safari.</strong> Profile installation will not start in Chrome or other browsers.</p>
             <ol>
-                <li>Open the downloaded <code>ca.crt</code> file.</li>
+                <li>Tap the button above to open the certificate.</li>
                 <li>Go to the Settings app and navigate to <strong>General → VPN &amp; Device Management</strong>,
                     then open the downloaded profile and tap Install.</li>
                 <li><strong>(Important)</strong> Next, go to <strong>General → About → Certificate Trust Settings</strong>
                     and enable full trust for this CA certificate.</li>
             </ol>
 
-            <h3>macOS</h3>
+            <h3>macOS (Chrome / Safari)</h3>
             <ol>
                 <li>Open the downloaded <code>ca.crt</code> file.</li>
-                <li>In Keychain Access, open the certificate and set it to <strong>Always Trust</strong>.</li>
+                <li>Keychain Access will open and the certificate will be added.</li>
+                <li>In the <strong>"System"</strong> keychain, find and double-click <strong>"Caddy Local Authority"</strong>.</li>
+                <li>Expand the <strong>"Trust"</strong> section and set <strong>"When using this certificate"</strong> to <strong>"Always Trust"</strong>.</li>
+                <li>Close the window and enter your administrator password to save the changes.</li>
+                <li><strong>(Important)</strong> After setting this, completely restart Chrome or Safari (Cmd + Q).</li>
             </ol>
         </div>
     </div>
