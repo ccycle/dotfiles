@@ -13,6 +13,8 @@
     devx.url = "github:input-output-hk/devx";
     flake-parts.inputs.nixpkgs-lib.follows = "nixpkgs";
     flake-parts.url = "github:hercules-ci/flake-parts";
+    fresh.flake = false;
+    fresh.url = "github:sinelaw/fresh";
     ghc-wasm-meta.url = "gitlab:haskell-wasm/ghc-wasm-meta?host=gitlab.haskell.org";
     ghcup.flake = false;
     ghcup.url = "github:haskell/ghcup-hs";
@@ -75,6 +77,8 @@
           pkgs-2505 = mkPkgs inputs.nixpkgs-2505;
           pkgs-2511 = mkPkgs inputs.nixpkgs-2511;
           pkgs-unstable = mkPkgs inputs.nixpkgs-unstable;
+          freshPackage = inputs.nixpkgs.legacyPackages.${system}.callPackage
+            ./modules/fresh/drv.nix { src = inputs.fresh; };
         } // env;
     in
     flake-parts.lib.mkFlake { inherit inputs; } {

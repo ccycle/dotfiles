@@ -1,0 +1,5 @@
+{ freshPackage, ... }:
+
+{
+  home.packages = [ freshPackage ];
+}

@@ -6,6 +6,7 @@
     ./direnv/home.nix
     ./docker/home.nix
     ./emacs/home.nix
+    ./fresh/home.nix
     ./fzf/home.nix
     ./git/home.nix
     ./gitui/home.nix
