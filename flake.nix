@@ -134,6 +134,14 @@
             ];
             specialArgs = mkSpecialArgs "aarch64-darwin";
           };
+          "mac-mini-m4-pro" = inputs.nix-darwin.lib.darwinSystem {
+            system = "aarch64-darwin";
+            modules = [
+              ./darwin.nix
+              ./modules/mac-mini-m4-pro/darwin.nix
+            ];
+            specialArgs = mkSpecialArgs "aarch64-darwin";
+          };
         };
 
         apps = forDarwinSystems (system: {
