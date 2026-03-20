@@ -1,4 +1,4 @@
-{ ... }:
+{ lib, ... }:
 
 {
   imports = [
@@ -6,5 +6,5 @@
   ];
 
   services.monitoring.enable = true;
-  services.monitoring.dataDir = "/Volumes/KIOXIA/monitoring";
+  services.monitoring.dataDir = lib.mkDefault "/Volumes/KIOXIA/monitoring";
 }

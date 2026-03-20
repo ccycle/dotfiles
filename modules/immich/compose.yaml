@@ -11,14 +11,14 @@ services:
       DB_PASSWORD: ${IMMICH_DB_PASSWORD}
       DB_DATABASE_NAME: immich
       REDIS_HOSTNAME: redis
-      IMMICH_SERVER_URL: https://immich.mac-mini-m4.internal
+      IMMICH_SERVER_URL: ${IMMICH_SERVER_URL}
     volumes:
       - ${IMMICH_UPLOAD_DIR}:/usr/src/app/upload
     depends_on:
       - redis
       - database
     extra_hosts:
-      - "immich.mac-mini-m4.internal:host-gateway"
+      - "${IMMICH_HOST_DOMAIN}:host-gateway"
     restart: always
 
   immich-machine-learning:

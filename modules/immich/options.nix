@@ -63,6 +63,8 @@ in
         export IMMICH_DB_PASSWORD=$(cat ${config.sops.secrets.immich_db_password.path})
         export IMMICH_UPLOAD_DIR="${cfg.uploadDir}"
         export IMMICH_DB_DIR="${cfg.dbDir}"
+        export IMMICH_SERVER_URL="https://immich.${config.networking.hostName}.internal"
+        export IMMICH_HOST_DOMAIN="immich.${config.networking.hostName}.internal"
 
         mkdir -p "$IMMICH_UPLOAD_DIR" "$IMMICH_DB_DIR"
 

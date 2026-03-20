@@ -1,5 +1,9 @@
-{ pkgs, ... }:
+{ config, pkgs, ... }:
 
+let
+  hostName = config.networking.hostName;
+  domain = "${hostName}.internal";
+in
 {
   environment.etc = {
     "caddy/Caddyfile".text = ''
@@ -16,7 +20,7 @@
     '';
 
     "caddy/sites/opencloud.caddy".text = ''
-      https://opencloud.mac-mini-m4.internal {
+      https://opencloud.${domain} {
         import internal_tls
         reverse_proxy 127.0.0.1:9200 {
           flush_interval -1
@@ -28,14 +32,14 @@
     '';
 
     "caddy/sites/immich.caddy".text = ''
-      https://immich.mac-mini-m4.internal {
+      https://immich.${domain} {
         import internal_tls
         reverse_proxy 127.0.0.1:2283
       }
     '';
 
     "caddy/sites/index.caddy".text = ''
-      https://mac-mini-m4.internal {
+      https://${domain} {
         import internal_tls
         handle /index {
           header Content-Type "text/html; charset=utf-8"
@@ -48,7 +52,7 @@
     '';
 
     "caddy/sites/ca.caddy".text = ''
-      http://ca.mac-mini-m4.internal, https://ca.mac-mini-m4.internal {
+      http://ca.${domain}, https://ca.${domain} {
         import internal_tls
         handle /ca.crt {
           root * /var/lib/caddy

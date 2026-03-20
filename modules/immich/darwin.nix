@@ -1,4 +1,4 @@
-{ ... }:
+{ lib, ... }:
 
 {
   imports = [
@@ -6,7 +6,7 @@
   ];
 
   services.immich.enable = true;
-  services.immich.uploadDir = "/Volumes/KIOXIA/immich/upload";
-  services.immich.dbDir = "/Volumes/KIOXIA/immich/db";
-  services.immich.mountPoint = "/Volumes/KIOXIA";
+  services.immich.uploadDir = lib.mkDefault "/Volumes/KIOXIA/immich/upload";
+  services.immich.dbDir = lib.mkDefault "/Volumes/KIOXIA/immich/db";
+  services.immich.mountPoint = lib.mkDefault "/Volumes/KIOXIA";
 }

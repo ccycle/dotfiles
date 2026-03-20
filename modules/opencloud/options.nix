@@ -63,6 +63,8 @@ in
         export OPENCLOUD_ADMIN_PASSWORD=$(cat ${config.sops.secrets.opencloud_admin_password.path})
         export OPENCLOUD_DATA_DIR="${cfg.dataDir}"
         export OPENCLOUD_CONFIG_DIR="${cfg.configDir}"
+        export OPENCLOUD_URL="https://opencloud.${config.networking.hostName}.internal"
+        export OPENCLOUD_HOST_DOMAIN="opencloud.${config.networking.hostName}.internal"
 
         mkdir -p "$OPENCLOUD_DATA_DIR" "$OPENCLOUD_CONFIG_DIR"
 

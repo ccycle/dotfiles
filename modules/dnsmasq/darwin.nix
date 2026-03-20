@@ -1,10 +1,13 @@
-{ pkgs, tailscalePackage, ... }:
+{ config, pkgs, tailscalePackage, ... }:
 
+let
+  domain = "${config.networking.hostName}.internal";
+in
 {
-  # To register this as the authoritative DNS for *.mac-mini-m4.internal
+  # To register this as the authoritative DNS for *.${domain}
   # across the tailnet, configure Split DNS in the Tailscale admin console:
   #   https://login.tailscale.com/admin/dns
-  #   → Add nameserver → Custom → IP: <tailscale-ip>, Domain: mac-mini-m4.internal
+  #   → Add nameserver → Custom → IP: <tailscale-ip>, Domain: ${domain}
   #   → Enable "Restrict to domain" (Split DNS)
   #
   # The Tailscale IP is resolved dynamically at daemon startup via `tailscale ip -4`,
@@ -25,7 +28,7 @@
       echo "Tailscale IP: $TAILSCALE_IP"
 
       exec ${pkgs.dnsmasq}/bin/dnsmasq \
-        --address=/.mac-mini-m4.internal/"$TAILSCALE_IP" \
+        --address=/.${domain}/"$TAILSCALE_IP" \
         --listen-address="$TAILSCALE_IP" \
         --bind-interfaces \
         --port=53 \

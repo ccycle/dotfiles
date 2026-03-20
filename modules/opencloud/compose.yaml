@@ -9,7 +9,7 @@ services:
     ports:
       - "127.0.0.1:9200:9200"
     environment:
-      OC_URL: https://opencloud.mac-mini-m4.internal
+      OC_URL: ${OPENCLOUD_URL}
       PROXY_TLS: "false"
       OC_INSECURE: "true"
       IDM_ADMIN_PASSWORD: "${OPENCLOUD_ADMIN_PASSWORD}"
@@ -20,7 +20,7 @@ services:
       - ${OPENCLOUD_CONFIG_DIR:-/var/lib/opencloud/config}:/etc/opencloud
       - ${OPENCLOUD_DATA_DIR:-/var/lib/opencloud/data}:/var/lib/opencloud
     extra_hosts:
-      - "opencloud.mac-mini-m4.internal:host-gateway"
+      - "${OPENCLOUD_HOST_DOMAIN}:host-gateway"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9200/health"]
       interval: 30s

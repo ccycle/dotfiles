@@ -1,4 +1,4 @@
-{ ... }:
+{ lib, ... }:
 
 {
   imports = [
@@ -6,7 +6,7 @@
   ];
 
   services.opencloud.enable = true;
-  services.opencloud.dataDir = "/Volumes/KIOXIA/opencloud/data";
-  services.opencloud.configDir = "/Volumes/KIOXIA/opencloud/config";
-  services.opencloud.mountPoint = "/Volumes/KIOXIA";
+  services.opencloud.dataDir = lib.mkDefault "/Volumes/KIOXIA/opencloud/data";
+  services.opencloud.configDir = lib.mkDefault "/Volumes/KIOXIA/opencloud/config";
+  services.opencloud.mountPoint = lib.mkDefault "/Volumes/KIOXIA";
 }

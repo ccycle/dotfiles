@@ -28,14 +28,14 @@ in
     '';
 
     environment.etc."caddy/sites/grafana.caddy".text = ''
-      https://grafana.mac-mini-m4.internal {
+      https://grafana.${config.networking.hostName}.internal {
         import internal_tls
         reverse_proxy 127.0.0.1:3000
       }
     '';
 
     environment.etc."caddy/sites/prometheus.caddy".text = ''
-      https://prometheus.mac-mini-m4.internal {
+      https://prometheus.${config.networking.hostName}.internal {
         import internal_tls
         reverse_proxy 127.0.0.1:9090
       }
