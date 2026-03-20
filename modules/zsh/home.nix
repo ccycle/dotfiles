@@ -40,7 +40,7 @@
     };
   };
   imports = [ ./powerlevel10k.nix ];
-  custom.syncHomeFiles.enable = true;
+  custom.syncHomeFiles.enable = false;
   custom.syncHomeFiles.files = [
     # ".zshenv"
     # ".zshrc"
