@@ -31,4 +31,11 @@
   services.gitlab.configDir = "/Volumes/WD_BLACK/gitlab/config";
   services.gitlab.logsDir = "/Volumes/WD_BLACK/gitlab/logs";
   services.gitlab.mountPoint = "/Volumes/WD_BLACK";
+
+  # Enable macOS Remote Login (SSH on port 22)
+  system.activationScripts.postActivation.text = ''
+    if ! systemsetup -getremotelogin | grep -q "On"; then
+      systemsetup -setremotelogin on
+    fi
+  '';
 }
