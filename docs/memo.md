@@ -7,5 +7,4 @@
 - 初期状態だと ca 周りで失敗するため
 
 nix以外
-- google日本語入力
 - google chrome
