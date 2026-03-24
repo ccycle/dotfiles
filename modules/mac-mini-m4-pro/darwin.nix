@@ -12,6 +12,9 @@
 
   networking.hostName = "mac-mini-m4-pro";
 
+  services.tailscale.splitDns.enable = true;
+  services.tailscale.splitDns.tailnet = ""; # TODO: set tailnet name
+
   # Override paths for WD_BLACK external drive
   services.opencloud.dataDir = "/Volumes/WD_BLACK/opencloud/data";
   services.opencloud.configDir = "/Volumes/WD_BLACK/opencloud/config";

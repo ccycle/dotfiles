@@ -4,14 +4,9 @@ let
   domain = "${config.networking.hostName}.internal";
 in
 {
-  # To register this as the authoritative DNS for *.${domain}
-  # across the tailnet, configure Split DNS in the Tailscale admin console:
-  #   https://login.tailscale.com/admin/dns
-  #   → Add nameserver → Custom → IP: <tailscale-ip>, Domain: ${domain}
-  #   → Enable "Restrict to domain" (Split DNS)
-  #
-  # The Tailscale IP is resolved dynamically at daemon startup via `tailscale ip -4`,
-  # so no hardcoding is required.
+  # Split DNS registration for *.${domain} is automated via
+  # the tailscale-split-dns launchd daemon (see modules/tailscale/options.nix).
+  # The Tailscale IP is resolved dynamically at daemon startup via `tailscale ip -4`.
   launchd.daemons.dnsmasq = {
     serviceConfig = {
       KeepAlive = true;
