@@ -8,6 +8,7 @@
     ../immich/darwin.nix
     ../monitoring/darwin.nix
     ../gitlab/darwin.nix
+    ../lm-studio/darwin.nix
   ];
 
   networking.hostName = "mac-mini-m4-pro";
