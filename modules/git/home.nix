@@ -1,9 +1,7 @@
 { pkgs, ... }: {
   programs.git = {
-    aliases = {
-      fetch-branch = "!f() { git fetch origin \"$1:$1\"; }; f";
-    };
     settings = {
+      alias.fetch-branch = "!f() { git fetch origin \"$1:$1\"; }; f";
       rebase.updateRefs = true;
       core.ignorecase = false;
     };
