@@ -7,7 +7,7 @@ description: Merge the current branch into main, push, and delete the branch
 
 ## Overview
 
-Merge the current feature branch into main using `--no-ff`, push main to origin, and delete the feature branch.
+Merge the current feature branch into main using fast-forward only (`--ff-only`), push main to origin, and delete the feature branch. Do NOT create merge commits.
 
 ## Workflow
 
@@ -24,28 +24,24 @@ Merge the current feature branch into main using `--no-ff`, push main to origin,
    - Run `git checkout main`. If that fails, fall back to `git checkout master`.
    - Run `git pull origin main` (or `git pull origin master`) to bring the local main up to date.
 
-4. **Execute Merge**
-   - Run `git merge --no-ff <FEATURE_BRANCH>` to merge the feature branch with a merge commit.
+4. **Rebase Feature Branch onto main**
+   - Run `git checkout <FEATURE_BRANCH>` to switch back to the feature branch.
+   - Run `git rebase main` to rebase the feature branch onto the latest main.
+   - If conflicts occur during rebase:
+     - For each conflicted file, read it using the Read tool to inspect conflict markers.
+     - Resolve conflicts by integrating both sides, then stage with `git add <file>`.
+     - Run `git rebase --continue` to proceed.
+     - Repeat until the rebase completes.
+   - Run `git checkout main` to switch back to main.
 
-5. **Conflict Resolution Loop**
-   - After the merge, run `git status` to check for conflicts.
-   - For each conflicted file:
-     - Read the file using the Read tool to inspect conflict markers (`<<<<<<<`, `=======`, `>>>>>>>`).
-     - Understand both sides:
-       - `HEAD` (main): what the target branch has
-       - Incoming (feature branch): what the feature commits introduce
-     - Resolution principles:
-       - **Integrate both sides** — preserve the intent of each change.
-       - If main deleted a line the feature branch modifies, **keep the modification** (prefer change over deletion).
-       - If both sides touched the same logic differently, merge them logically rather than picking one blindly.
-     - Write the resolved content back and stage the file with `git add <file>`.
-   - Run `git merge --continue` to complete the merge.
-   - Repeat until `git status` shows no more conflicts and the merge completes.
+5. **Execute Merge (fast-forward only)**
+   - Run `git merge --ff-only <FEATURE_BRANCH>`.
+   - This should always succeed after the rebase. If it fails, abort and notify the user.
 
-6. **Push to origin**
+6. **Push to origin (main and rebased feature branch)**
    - Run `git push origin main` to push the merged main to the remote.
 
-7. **Cleanup: Delete Feature Branch**
+7. **Cleanup: Delete Feature Branch (local and remote)**
    - Run `git branch -d <FEATURE_BRANCH>` to delete the local feature branch.
    - If changes were stashed in step 1, run `git stash pop` to restore them.
 
