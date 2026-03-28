@@ -1,7 +1,6 @@
 { pkgs, inputs, ... }: {
   brew-nix.enable = true;
   imports = [ inputs.brew-nix.darwinModules.default ];
-  home-manager.sharedModules = [ ./home.nix ];
 
   environment.systemPackages = [
     (pkgs.brewCasks.desktoppr.overrideAttrs (o: {
