@@ -11,12 +11,14 @@ let
     let
       modulePaths = map (n: "node_modules/${n}") names;
       stripDeps = _: pkg:
-        builtins.foldl' (acc: depAttr:
-          if acc ? ${depAttr} then
-            acc // { ${depAttr} = builtins.removeAttrs acc.${depAttr} names; }
-          else
-            acc
-        ) pkg [ "dependencies" "optionalDependencies" ];
+        builtins.foldl'
+          (acc: depAttr:
+            if acc ? ${depAttr} then
+              acc // { ${depAttr} = builtins.removeAttrs acc.${depAttr} names; }
+            else
+              acc
+          )
+          pkg [ "dependencies" "optionalDependencies" ];
     in
     lock // {
       packages = builtins.mapAttrs stripDeps (builtins.removeAttrs lock.packages modulePaths);
@@ -29,7 +31,8 @@ let
       "libsignal/node_modules/@types/node"
       "libsignal/node_modules/long"
       "libsignal/node_modules/protobufjs"
-    ] rawLock;
+    ]
+      rawLock;
     inherit nodejs;
   };
 in

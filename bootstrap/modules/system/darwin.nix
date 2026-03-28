@@ -12,12 +12,12 @@
   system.defaults.NSGlobalDomain.KeyRepeat = 2; # key repeat rate: fast
   system.defaults.NSGlobalDomain.InitialKeyRepeat = 15; # delay until repeat: short
   system.defaults.NSGlobalDomain.AppleInterfaceStyle = "Dark"; # dark mode
-  
+
   system.defaults.dock.mineffect = "scale";
 
   system.defaults.trackpad.Clicking = true; # tap to click
   system.defaults.trackpad.TrackpadThreeFingerDrag = true;
-  
+
   security.pam.services.sudo_local = {
     enable = true;
     touchIdAuth = true; # use Touch ID for sudo authentication
