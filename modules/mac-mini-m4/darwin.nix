@@ -10,4 +10,6 @@
   ];
 
   networking.hostName = "mac-mini-m4";
+
+  services.tailscale.splitDns.enable = true;
 }

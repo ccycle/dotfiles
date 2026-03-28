@@ -8,11 +8,6 @@ in
 {
   options.services.tailscale.splitDns = {
     enable = mkEnableOption "Tailscale Split DNS auto-registration";
-
-    tailnet = mkOption {
-      type = types.str;
-      description = "Tailnet name (org name or email domain).";
-    };
   };
 
   config = mkIf cfg.splitDns.enable {
@@ -22,6 +17,10 @@ in
     '';
 
     sops.secrets.tailscale_api_key = {
+      sopsFile = ./secrets.yaml;
+    };
+
+    sops.secrets.tailscale_tailnet = {
       sopsFile = ./secrets.yaml;
     };
 
@@ -40,11 +39,12 @@ in
 
         DOMAIN="${config.networking.hostName}.internal"
         API_KEY=$(cat ${config.sops.secrets.tailscale_api_key.path})
+        TAILNET=$(cat ${config.sops.secrets.tailscale_tailnet.path})
 
         echo "Registering Split DNS: $DOMAIN -> $TAILSCALE_IP"
 
         ${pkgs.curl}/bin/curl -sf -X PUT \
-          "https://api.tailscale.com/api/v2/tailnet/${cfg.splitDns.tailnet}/dns/splitdns/$DOMAIN" \
+          "https://api.tailscale.com/api/v2/tailnet/$TAILNET/dns/splitdns/$DOMAIN" \
           -u "$API_KEY:" \
           -H "Content-Type: application/json" \
           -d "[\"$TAILSCALE_IP\"]"
