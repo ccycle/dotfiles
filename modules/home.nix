@@ -1,5 +1,6 @@
 {
   imports = [
+    ./ai-rules/home.nix
     ./attic/home.nix
     ./claude/home.nix
     ./cursor/home.nix
