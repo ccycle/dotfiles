@@ -5,7 +5,7 @@ This document outlines the development policies and conventions for the `dotfile
 ## Communication Guidelines
 
 - **Clarify Ambiguities:** If there is ambiguity in the user's instructions regarding the policy, always ask for clarification on the points of contention before starting actual work.
-- **Verify Claims:** Always run the necessary confirmation steps (e.g., read files, execute commands) to back up any claims or assertions made. Do not state facts about code, configuration, or system state without first verifying them through actual tool use.
+- **Verify Claims:** See the global behavioral rules in `~/.claude/CLAUDE.md` for the full verification policy. In short: never state facts without first verifying them through tool use.
 - **Push Back When Needed:** You are not required to follow instructions literally at all times. If an instruction seems redundant, overly complex, or potentially dangerous, always ask for clarification before proceeding.
 
 ## Code Reuse Policy
