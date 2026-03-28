@@ -43,6 +43,9 @@
     NSAutomaticQuoteSubstitutionEnabled = false;
   };
 
+  # Disable "play sound on startup"
+  system.startup.chime = false;
+
   # https://discourse.nixos.org/t/ssl-ca-cert-error-on-macos/31171/11
   # Always regenerate so the cert stays fresh and is recreated if deleted.
   system.activationScripts."ssl-ca-cert-fix".text = ''
