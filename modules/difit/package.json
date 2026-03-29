@@ -1,0 +1,8 @@
+{
+  "name": "nix-difit",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "difit": "latest"
+  }
+}
