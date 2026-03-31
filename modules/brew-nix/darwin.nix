@@ -28,5 +28,6 @@
       '';
     }))
     pkgs.brewCasks.betterdisplay
+    pkgs.brewCasks.zotero
   ];
 }
