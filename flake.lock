@@ -2434,6 +2434,7 @@
         "stylix": "stylix",
         "tailscale": "tailscale",
         "uv2nix": "uv2nix_2",
+        "worktrunk": "worktrunk",
         "yazi-plugins": "yazi-plugins"
       }
     },
@@ -2859,6 +2860,22 @@
       "original": {
         "owner": "pyproject-nix",
         "repo": "uv2nix",
+        "type": "github"
+      }
+    },
+    "worktrunk": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1775797567,
+        "narHash": "sha256-WO4kDLurkpC9Ve81kP5u4XwfDEjCyvJnq5zVRqQyCCw=",
+        "owner": "max-sixty",
+        "repo": "worktrunk",
+        "rev": "34b87fde969c5b5908499b67a51d916ade172096",
+        "type": "github"
+      },
+      "original": {
+        "owner": "max-sixty",
+        "repo": "worktrunk",
         "type": "github"
       }
     },

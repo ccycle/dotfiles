@@ -30,6 +30,7 @@
     ./sync-home-files/home.nix
     ./tmux/home.nix
     ./vscode/home.nix
+    ./worktrunk/home.nix
     ./yazi/home.nix
     ./zsh/home.nix
   ];

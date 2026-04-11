@@ -45,6 +45,8 @@
     sops-nix.url = "github:Mic92/sops-nix";
     uv2nix.inputs.nixpkgs.follows = "nixpkgs";
     uv2nix.url = "github:pyproject-nix/uv2nix";
+    worktrunk.flake = false;
+    worktrunk.url = "github:max-sixty/worktrunk";
     yazi-plugins.flake = false;
     yazi-plugins.url = "github:yazi-rs/plugins";
   };
@@ -81,6 +83,9 @@
           freshPackage = inputs.nixpkgs.legacyPackages.${system}.callPackage
             ./modules/fresh/drv.nix
             { src = inputs.fresh; };
+          worktrunkPackage = inputs.nixpkgs.legacyPackages.${system}.callPackage
+            ./modules/worktrunk/drv.nix
+            { src = inputs.worktrunk; };
         } // env;
     in
     flake-parts.lib.mkFlake { inherit inputs; } {

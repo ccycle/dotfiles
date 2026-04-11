@@ -1,0 +1,5 @@
+{ worktrunkPackage, ... }:
+
+{
+  home.packages = [ worktrunkPackage ];
+}
