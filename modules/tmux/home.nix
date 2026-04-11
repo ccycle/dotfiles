@@ -28,6 +28,11 @@
       bind-key -T copy-mode-vi C-v send-keys -X rectangle-toggle
       
       # y でコピー (tmux-yankがシステムのクリップボード pbcopy と連携します)
+
+      # Tree Mode (Prefix + w や s) の時に 'x' キーでセッションを終了できるようにする
+      bind-key -T copy-mode-vi x confirm-before -p "kill-session #S? (y/n)" "kill-session"
+      # ※ tmuxのバージョンによっては以下が推奨されます
+      bind-key -T root x if-shell -F "#{==:#{pane_mode},tree-mode}" "confirm-before -p \"kill-session #S? (y/n)\" \"kill-session\"" ""
     '';
   };
 }
