@@ -9,7 +9,7 @@
     attic.url = "github:zhaofengli/attic";
     bootstrap.url = "path:./bootstrap";
     brew-nix.url = "github:BatteredBunny/brew-nix";
-    claude-code-nix.url = "github:sadjow/claude-code-nix";
+    nix-claude-code.url = "github:ryoppippi/nix-claude-code";
     devx.url = "github:input-output-hk/devx";
     flake-parts.inputs.nixpkgs-lib.follows = "nixpkgs";
     flake-parts.url = "github:hercules-ci/flake-parts";

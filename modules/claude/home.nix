@@ -1,6 +1,6 @@
 { pkgs, inputs, config, ... }: {
   home.packages = [
-    inputs.claude-code-nix.packages.${pkgs.stdenv.hostPlatform.system}.claude-code
+    inputs.nix-claude-code.packages.${pkgs.stdenv.hostPlatform.system}.default
   ];
 
   home.file."${config.home.homeDirectory}/.claude/skills".source = config.lib.file.mkOutOfStoreSymlink "${config.programs.git.settings.ghq.root}/github.com/ccycle/dotfiles/skills/user";
