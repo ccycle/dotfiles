@@ -6,16 +6,33 @@ NIX="nix --extra-experimental-features nix-command --extra-experimental-features
 repo_root="$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)"
 arch="$(${NIX} eval --impure --raw --expr 'builtins.currentSystem')"
 
-# Discover available profiles from the main flake's darwinConfigurations
-main_profiles="$(${NIX} eval "${repo_root}#darwinConfigurations" --apply 'x: builtins.concatStringsSep "\n" (builtins.attrNames x)' --raw 2>/dev/null || echo "")"
+# Discover available profiles from the main flake's darwinConfigurations.
+# Enumerates fully-qualified config paths (e.g. "private.aarch64-darwin",
+# "mac-mini-m4") by checking whether each top-level attr is a direct
+# darwinSystem (has .system) or a per-architecture attrset.
+all_configs="$(${NIX} eval "${repo_root}#darwinConfigurations" --apply '
+  configs:
+  let
+    isConfig = v: v ? system;
+    resolve = name:
+      let v = configs.${name};
+      in if isConfig v then [ name ]
+         else map (sub: "${name}.${sub}")
+           (builtins.filter (sub: isConfig v.${sub}) (builtins.attrNames v));
+  in builtins.concatStringsSep "\n"
+    (builtins.concatMap resolve (builtins.attrNames configs))
+' --raw 2>/dev/null || echo "")"
+
+# User-facing short names (strip architecture suffix for display)
+display_profiles="$(echo "${all_configs}" | sed 's/\.\(aarch64-darwin\|x86_64-darwin\)$//' | sort -u)"
 
 show_usage() {
   echo "Usage: $(basename -- "$0") <profile>"
   echo ""
   echo "Profiles:"
   echo "  bootstrap        Run bootstrap flake (provisions sops-nix secrets on fresh install)"
-  if [ -n "${main_profiles}" ]; then
-    echo "${main_profiles}" | while IFS= read -r p; do
+  if [ -n "${display_profiles}" ]; then
+    echo "${display_profiles}" | while IFS= read -r p; do
       printf "  %-18s Run main flake configuration\n" "${p}"
     done
   fi
@@ -36,11 +53,9 @@ else
   flake_root="${repo_root}"
   app="darwin-rebuild"
 
-  # Check if the profile exists as-is in darwinConfigurations
-  if echo "${main_profiles}" | grep -qx "${profile}"; then
+  if echo "${all_configs}" | grep -qx "${profile}"; then
     config="${profile}"
-  # Check if profile.${arch} exists
-  elif echo "${main_profiles}" | grep -qx "${profile}\.${arch}"; then
+  elif echo "${all_configs}" | grep -qx "${profile}\.${arch}"; then
     config="${profile}.${arch}"
   else
     echo "Unknown profile: ${profile}" >&2
