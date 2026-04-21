@@ -1,0 +1,29 @@
+#!/usr/bin/env sh
+# Ensure local main is in sync with origin/main before pushing.
+# Prevents push conflicts caused by pushing a stale main.
+
+set -eu
+
+branch=$(git symbolic-ref --short HEAD 2>/dev/null || echo "")
+
+if [ "$branch" != "main" ]; then
+    exit 0
+fi
+
+# Fetch latest origin/main
+if ! git fetch origin main 2>/dev/null; then
+    printf '\033[33mWarning: could not fetch origin/main (offline?). Skipping sync check.\033[0m\n' >&2
+    exit 0
+fi
+
+local_main=$(git rev-parse HEAD)
+origin_main=$(git rev-parse origin/main)
+
+# Local main must be a fast-forward of origin/main
+if ! git merge-base --is-ancestor "$origin_main" "$local_main"; then
+    printf '\033[31mLocal main (%s) is not a fast-forward of origin/main (%s).\033[0m\n' \
+        "$(echo "$local_main" | cut -c1-8)" "$(echo "$origin_main" | cut -c1-8)" >&2
+    printf 'Pull or rebase first:\n' >&2
+    printf '  git pull --rebase origin main\n' >&2
+    exit 1
+fi
