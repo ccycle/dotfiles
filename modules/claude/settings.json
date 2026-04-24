@@ -171,5 +171,39 @@
       "Bash(gh gpg-key delete *)"
     ]
   },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/mfuruki/.claude/hooks/protect-critical-files.sh"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/mfuruki/.claude/hooks/post-nix-edit-reminder.sh"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Review the assistant's last response. Check whether any factual claims about code, files, configuration, or system state were made WITHOUT prior verification through tool use (Read, Grep, Glob, Bash, etc.). If unverified claims exist, respond with {\"ok\": false, \"reason\": \"Unverified claims found: [list them]. Verify these before finishing.\"}. If all claims were verified through tool use or the response contains no factual claims, respond with {\"ok\": true}."
+          }
+        ]
+      }
+    ]
+  },
   "model": "opus"
 }

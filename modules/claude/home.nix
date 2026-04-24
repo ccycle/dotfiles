@@ -8,6 +8,9 @@
   home.file."${config.home.homeDirectory}/.claude/settings.json".source =
     config.lib.file.mkOutOfStoreSymlink "${config.programs.git.settings.ghq.root}/github.com/ccycle/dotfiles/modules/claude/settings.json";
 
+  home.file."${config.home.homeDirectory}/.claude/hooks".source =
+    config.lib.file.mkOutOfStoreSymlink "${config.programs.git.settings.ghq.root}/github.com/ccycle/dotfiles/modules/claude/hooks";
+
   programs.git.ignores = [
     ".claude/worktrees/"
   ];
