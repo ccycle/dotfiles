@@ -1,0 +1,15 @@
+#!/usr/bin/env sh
+# Reject non-fast-forward merges on main.
+# This hook only fires when a merge commit is about to be created,
+# meaning the merge is NOT a fast-forward. Block it to enforce linear history.
+
+set -eu
+
+branch=$(git symbolic-ref --short HEAD 2>/dev/null || echo "")
+
+if [ "$branch" = "main" ]; then
+    printf '\033[31mNon-fast-forward merge to main is not allowed.\033[0m\n' >&2
+    printf 'Rebase your branch onto main first:\n' >&2
+    printf '  git rebase main\n' >&2
+    exit 1
+fi

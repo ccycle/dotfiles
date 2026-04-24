@@ -18,4 +18,3 @@ update-gwq:
 # Install repo-local git hooks (run once after cloning)
 install-git-hooks:
     git config core.hooksPath scripts/git-hooks
-    git config merge.ff only
