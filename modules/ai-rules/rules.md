@@ -21,3 +21,15 @@ Do not mix speculation into your claims or assertions. Every factual statement a
 
 - Review your response and verify every factual claim was backed by tool use.
 - If any claim remains unverified, verify it now or explicitly mark it as unverified.
+
+## English-Only for LLM-Facing Instructions
+
+All instructions intended for AI consumption MUST be written in English. This includes:
+
+- CLAUDE.md and AGENTS.md content
+- SKILL.md files and skill descriptions
+- Hook prompts and hook script user-facing messages
+- Rule files (`~/.claude/rules/`)
+- Code comments that serve as agent directives
+
+User-facing documentation (README, commit messages) may use any language.
