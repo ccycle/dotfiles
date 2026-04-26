@@ -8,7 +8,7 @@
       prompt = "enabled";
     };
 
-    # GitHub CLIのcredential helperを無効にして、git-credential-managerを使用
+    # gh module は独自に credential helper を設定するので無効にする
     gitCredentialHelper.enable = false;
   };
 }
