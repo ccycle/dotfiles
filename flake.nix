@@ -47,6 +47,8 @@
     uv2nix.url = "github:pyproject-nix/uv2nix";
     worktrunk.flake = false;
     worktrunk.url = "github:max-sixty/worktrunk";
+    workmux.url = "github:raine/workmux";
+    workmux.inputs.nixpkgs.follows = "nixpkgs";
     yazi-plugins.flake = false;
     yazi-plugins.url = "github:yazi-rs/plugins";
   };
@@ -86,6 +88,7 @@
           worktrunkPackage = inputs.nixpkgs.legacyPackages.${system}.callPackage
             ./modules/worktrunk/drv.nix
             { src = inputs.worktrunk; };
+          workmuxPackage = inputs.workmux.packages.${system}.default;
         } // env;
     in
     flake-parts.lib.mkFlake { inherit inputs; } {
