@@ -1,6 +1,5 @@
 {
   "permissions": {
-    "defaultMode": "plan",
     "allow": [
       "Bash(awk*)",
       "Bash(brew info*)",
@@ -130,13 +129,6 @@
       "WebFetch",
       "WebSearch"
     ],
-    "ask": [
-      "Bash(git push --force *)",
-      "Bash(git push -f *)",
-      "Bash(git reset --hard *)",
-      "Bash(git clean -f *)",
-      "Bash(git branch -D *)"
-    ],
     "deny": [
       "Bash(rm -rf *)",
       "Bash(sudo rm *)",
@@ -169,7 +161,15 @@
       "Bash(gh ssh-key delete *)",
       "Bash(gh gpg-key add *)",
       "Bash(gh gpg-key delete *)"
-    ]
+    ],
+    "ask": [
+      "Bash(git push --force *)",
+      "Bash(git push -f *)",
+      "Bash(git reset --hard *)",
+      "Bash(git clean -f *)",
+      "Bash(git branch -D *)"
+    ],
+    "defaultMode": "plan"
   },
   "hooks": {
     "PreToolUse": [
@@ -204,6 +204,5 @@
         ]
       }
     ]
-  },
-  "model": "opus"
+  }
 }
