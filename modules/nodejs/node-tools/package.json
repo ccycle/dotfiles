@@ -4,7 +4,7 @@
   "description": "Managed Node.js tools for Nix environment",
   "private": true,
   "dependencies": {
-    "@google/gemini-cli": "^0.30.0",
+    "@helpfeel/cosense-cli": "^1.5.1",
     "jest": "*",
     "opencode-ai": "latest",
     "prettier": "^3.8.1",
