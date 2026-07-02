@@ -6,6 +6,7 @@
     yarn
     typescript
     devcontainer
+    node2nix
 
     # Node packages
     nodePackages.npm-check-updates
