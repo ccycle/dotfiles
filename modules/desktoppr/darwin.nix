@@ -18,15 +18,16 @@ in
   #   ls /run/current-system/user/Library/LaunchAgents/
   #   ls -la "$HOME/Library/LaunchAgents/"
   # and ensure ~/Library/LaunchAgents exists; then log out and log in again.
-  launchd.user.agents.set-wallpaper = lib.mkIf config.stylix.enable {
-    serviceConfig.RunAtLoad = true;
-    serviceConfig.StandardOutPath = "/tmp/set-wallpaper.log";
-    serviceConfig.StandardErrorPath = "/tmp/set-wallpaper.log";
-    script = ''
-      echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) set-wallpaper starting"
-      sleep 3
-      "${desktoppr}/bin/desktoppr" "${config.stylix.image}" && echo "desktoppr ok" || echo "desktoppr failed: $?"
-      echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) set-wallpaper done"
-    '';
-  };
+  
+  # launchd.user.agents.set-wallpaper = lib.mkIf config.stylix.enable {
+  #   serviceConfig.RunAtLoad = true;
+  #   serviceConfig.StandardOutPath = "/tmp/set-wallpaper.log";
+  #   serviceConfig.StandardErrorPath = "/tmp/set-wallpaper.log";
+  #   script = ''
+  #     echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) set-wallpaper starting"
+  #     sleep 3
+  #     "${desktoppr}/bin/desktoppr" "${config.stylix.image}" && echo "desktoppr ok" || echo "desktoppr failed: $?"
+  #     echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) set-wallpaper done"
+  #   '';
+  # };
 }
