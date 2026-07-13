@@ -13,8 +13,8 @@
     devx.url = "github:input-output-hk/devx";
     flake-parts.inputs.nixpkgs-lib.follows = "nixpkgs";
     flake-parts.url = "github:hercules-ci/flake-parts";
-    fresh.flake = false;
     fresh.url = "github:sinelaw/fresh";
+    fresh.inputs.nixpkgs.follows = "nixpkgs";
     ghc-wasm-meta.url = "gitlab:haskell-wasm/ghc-wasm-meta?host=gitlab.haskell.org";
     ghcup.flake = false;
     ghcup.url = "github:haskell/ghcup-hs";
@@ -45,8 +45,8 @@
     sops-nix.url = "github:Mic92/sops-nix";
     uv2nix.inputs.nixpkgs.follows = "nixpkgs";
     uv2nix.url = "github:pyproject-nix/uv2nix";
-    worktrunk.flake = false;
     worktrunk.url = "github:max-sixty/worktrunk";
+    worktrunk.inputs.nixpkgs.follows = "nixpkgs";
     workmux.url = "github:raine/workmux";
     workmux.inputs.nixpkgs.follows = "nixpkgs";
     yazi-plugins.flake = false;
@@ -82,12 +82,8 @@
           pkgs-2505 = mkPkgs inputs.nixpkgs-2505;
           pkgs-2511 = mkPkgs inputs.nixpkgs-2511;
           pkgs-unstable = mkPkgs inputs.nixpkgs-unstable;
-          freshPackage = inputs.nixpkgs.legacyPackages.${system}.callPackage
-            ./modules/fresh/drv.nix
-            { src = inputs.fresh; };
-          worktrunkPackage = inputs.nixpkgs.legacyPackages.${system}.callPackage
-            ./modules/worktrunk/drv.nix
-            { src = inputs.worktrunk; };
+          freshPackage = inputs.fresh.packages.${system}.default;
+          worktrunkPackage = inputs.worktrunk.packages.${system}.default;
           workmuxPackage = inputs.workmux.packages.${system}.default;
         } // env;
     in
@@ -95,7 +91,7 @@
       systems = allSystems;
       flake = {
         packages = forAllSystems (system: {
-          gwq = inputs.nixpkgs.legacyPackages.${system}.callPackage ./modules/git/gwq/drv.nix {
+          gwq = inputs.nixpkgs-unstable.legacyPackages.${system}.callPackage ./modules/git/gwq/drv.nix {
             src = inputs.gwq;
           };
           gitui = inputs.nixpkgs.legacyPackages.${system}.callPackage ./modules/gitui/drv.nix {

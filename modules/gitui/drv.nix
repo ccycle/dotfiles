@@ -5,8 +5,7 @@ rustPlatform.buildRustPackage {
   version = "from-flake-input";
   inherit src;
 
-  # Update this hash if the build fails with a hash mismatch
-  cargoHash = "sha256-EiDWwKOS8xbhPctK4QK+/zMF3CxwglXczc5cy7YNUNg=";
+  cargoLock.lockFile = "${src}/Cargo.lock";
 
   nativeBuildInputs = [ pkg-config cmake ];
   buildInputs = [ openssl ]
