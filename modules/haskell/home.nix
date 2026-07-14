@@ -1,10 +1,10 @@
 { ... }:
 {
   imports = [
-    # ./ghcup.nix
-    ./compiler.nix
-    ./haskell-language-server.nix
-    ./cabal.nix
-    ./dev-tools.nix
+    ./cabal/home.nix
+    ./compiler/home.nix
+    ./dev-tools/home.nix
+    # ./ghc-wasm-meta/home.nix
+    ./haskell-language-server/home.nix
   ];
 }

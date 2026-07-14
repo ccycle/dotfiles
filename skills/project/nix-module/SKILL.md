@@ -28,5 +28,17 @@ This will:
   - `darwin.nix`: nix-darwin configuration.
   - `home.nix`: home-manager configuration.
 - **Strict Imports:** Parent modules must explicitly import their children.
+- **No flat sub-modules:** Sub-features must be directories with their own `home.nix`/`darwin.nix`, not flat `<name>.nix` files.
+
+## Host-Toggled Features
+
+For features that should only activate on specific hosts (e.g., server services):
+
+1. Create `options.nix` with an enable option.
+2. Gate the feature's `darwin.nix` config with `lib.mkIf`.
+3. Import the feature from `modules/darwin.nix` (unconditionally).
+4. Set `enable = true` in the host module (`modules/<hostname>/darwin.nix`).
+
+See `references/conventions.md` §6 for the full pattern and namespace rules.
 
 For detailed conventions, see `references/conventions.md`.

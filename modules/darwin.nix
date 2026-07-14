@@ -3,10 +3,17 @@
   imports = [
     ./brew-nix/darwin.nix
     ./cachix/darwin.nix
+    ./caddy/darwin.nix
     ./desktoppr/darwin.nix
+    ./dnsmasq/darwin.nix
     ./docker/darwin.nix
     ./ghostty/darwin.nix
+    ./gitlab/darwin.nix
+    ./immich/darwin.nix
+    ./lm-studio/darwin.nix
+    ./monitoring/darwin.nix
     ./nix/darwin.nix
+    ./opencloud/darwin.nix
     ./ssh/darwin.nix
     ./stylix/darwin.nix
     ./tailscale/darwin.nix

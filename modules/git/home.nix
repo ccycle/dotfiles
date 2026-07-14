@@ -8,9 +8,9 @@
   };
 
   imports = [
-    ./ghq.nix
-    ./gwq.nix
-    ./github.nix
-    ./gitlab.nix
+    ./ghq/home.nix
+    ./github/home.nix
+    ./gitlab/home.nix
+    ./gwq/home.nix
   ];
 }

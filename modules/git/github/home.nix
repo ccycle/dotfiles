@@ -1,5 +1,5 @@
 { ... }: {
   imports = [
-    ./github/gh.nix
+    ./gh/home.nix
   ];
 }

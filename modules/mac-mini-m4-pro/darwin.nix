@@ -1,19 +1,16 @@
 { ... }:
 
 {
-  imports = [
-    ../opencloud/darwin.nix
-    ../caddy/darwin.nix
-    ../dnsmasq/darwin.nix
-    ../immich/darwin.nix
-    ../monitoring/darwin.nix
-    ../gitlab/darwin.nix
-    ../lm-studio/darwin.nix
-  ];
-
   networking.hostName = "mac-mini-m4-pro";
 
   services.tailscale.splitDns.enable = true;
+  services.opencloud.enable = true;
+  services.caddy.enable = true;
+  custom.dnsmasq.enable = true;
+  services.immich.enable = true;
+  services.monitoring.enable = true;
+  services.gitlab.enable = true;
+  custom.lm-studio.enable = true;
 
   # Override paths for WD_BLACK external drive
   services.opencloud.dataDir = "/Volumes/WD_BLACK/opencloud/data";

@@ -1,6 +1,6 @@
 { pkgs-unstable, inputs, ... }:
 let
-  gwq = pkgs-unstable.callPackage ./gwq/drv.nix {
+  gwq = pkgs-unstable.callPackage ./drv.nix {
     src = inputs.gwq;
   };
 in

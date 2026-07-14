@@ -15,7 +15,7 @@
     (callPackage ./node-tools/drv.nix { })
   ];
   imports = [
-    ./eslint.nix
     ./bun/home.nix
+    ./eslint/home.nix
   ];
 }

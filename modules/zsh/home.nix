@@ -12,12 +12,6 @@
       nix-daemon-restart = "sudo launchctl kickstart -k system/org.nixos.nix-daemon";
       nix-flake-update-input = "nix flake lock --update-input ";
       grep-colorize-only = "grep --color=auto -z ";
-      oc-logs = "sudo tail -f /var/log/opencloud.log";
-      oc-docker = "docker compose -p opencloud logs -f --tail=100";
-      oc-status = "docker compose -p opencloud ps";
-      immich-logs = "sudo tail -f /var/log/immich.log";
-      immich-docker = "docker compose -p immich logs -f --tail=100";
-      immich-status = "docker compose -p immich ps";
     };
     syntaxHighlighting.enable = true;
     autosuggestion.enable = true;
@@ -39,7 +33,7 @@
       extended = true;
     };
   };
-  imports = [ ./powerlevel10k.nix ];
+  imports = [ ./powerlevel10k/home.nix ];
   custom.syncHomeFiles.enable = false;
   custom.syncHomeFiles.files = [
     # ".zshenv"

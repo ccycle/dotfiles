@@ -6,7 +6,7 @@
     ghq
   ];
   imports = [
-    ./ghq/ghq-migrator.nix
-    ./ghq/peco.nix
+    ./ghq-migrator/home.nix
+    ./peco/home.nix
   ];
 }

@@ -1,6 +1,11 @@
 { pkgs, ... }:
 
 {
+  home.packages = with pkgs; [
+    bat
+    fd
+  ];
+
   programs.fzf = {
     enable = true;
     enableZshIntegration = true;

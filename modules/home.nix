@@ -2,8 +2,14 @@
   imports = [
     ./ai-rules/home.nix
     ./attic/home.nix
+    ./build-tools/home.nix
+    ./cachix/home.nix
+    ./caddy/home.nix
     ./claude/home.nix
+    ./cli-tools/home.nix
+    ./cloud-tools/home.nix
     ./cursor/home.nix
+    ./databases/home.nix
     ./difit/home.nix
     ./direnv/home.nix
     ./docker/home.nix
@@ -14,17 +20,24 @@
     ./gitui/home.nix
     ./gmake/home.nix
     ./go-task/home.nix
+    ./gpg/home.nix
+    ./graphics-tools/home.nix
     ./haskell/home.nix
     ./herdr/home.nix
+    ./immich/home.nix
     ./just/home.nix
+    ./languages/home.nix
     ./lazygit/home.nix
+    ./nix/home.nix
     ./nix-formatter/home.nix
     ./nodejs/home.nix
     ./openclaw/home.nix
+    ./opencloud/home.nix
     # ./opencode/home.nix
     ./php/home.nix
     ./pinentry/home.nix
     ./python/home.nix
+    ./rust/home.nix
     ./serena/home.nix
     ./sops/home.nix
     ./ssh/home.nix
