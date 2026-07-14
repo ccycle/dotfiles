@@ -28,8 +28,9 @@ Each profile has a different `nix build` attribute path due to how they are defi
 | bootstrap | `./bootstrap#darwinConfigurations.bootstrap.aarch64-darwin.system` |
 | private | `.#darwinConfigurations.private.aarch64-darwin.system` |
 | mac-mini-m4 | `.#darwinConfigurations.mac-mini-m4.system` (no architecture suffix) |
+| mac-mini-m4-pro | `.#darwinConfigurations.mac-mini-m4-pro.system` (no architecture suffix) |
 
-**Why the difference:** `private` is wrapped with `forDarwinSystems`, so the key includes the architecture name. `mac-mini-m4` calls `darwinSystem` directly, so there is no architecture suffix. See `flake.nix` for details.
+**Why the difference:** `private` is wrapped with `forDarwinSystems`, so the key includes the architecture name. `mac-mini-m4` and `mac-mini-m4-pro` call `darwinSystem` directly, so there is no architecture suffix. See `flake.nix` for details.
 
 ### Settings Files
 
