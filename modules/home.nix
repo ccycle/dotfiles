@@ -15,6 +15,7 @@
     ./gmake/home.nix
     ./go-task/home.nix
     ./haskell/home.nix
+    ./herdr/home.nix
     ./just/home.nix
     ./lazygit/home.nix
     ./nix-formatter/home.nix

@@ -25,6 +25,8 @@
     gitui.flake = false;
     gwq.url = "github:d-kuro/gwq";
     gwq.flake = false;
+    herdr.url = "github:ogulcancelik/herdr";
+    herdr.inputs.nixpkgs.follows = "nixpkgs";
     home-manager.follows = "bootstrap/home-manager";
     nix-darwin.follows = "bootstrap/nix-darwin";
     nixpkgs-2211.url = "github:nixos/nixpkgs/22.11";
@@ -74,6 +76,7 @@
           gituiPackage = inputs.nixpkgs.legacyPackages.${system}.callPackage
             ./modules/gitui/drv.nix
             { src = inputs.gitui; };
+          herdrPackage = inputs.herdr.packages.${system}.default;
           pkgs-2211 = mkPkgs inputs.nixpkgs-2211;
           pkgs-2305 = mkPkgs inputs.nixpkgs-2305;
           pkgs-2311 = mkPkgs inputs.nixpkgs-2311;

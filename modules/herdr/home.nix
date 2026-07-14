@@ -1,0 +1,5 @@
+{ herdrPackage, ... }:
+
+{
+  home.packages = [ herdrPackage ];
+}
