@@ -14,6 +14,8 @@ This document outlines the development policies and conventions for this dotfile
 
 To ensure maintainability and clear dependency trees, we follow a strict **Package by Feature** aggregation pattern. For full conventions, see `skills/project/nix-module/references/conventions.md`.
 
+These rules are enforced mechanically: `scripts/package-by-feature/check.nix` validates the module trees against the declarative rule set in `scripts/package-by-feature/rules.nix` (run automatically by the verify-change skill). Intentional exceptions (disabled modules, generated code) belong in `rules.nix`, not in the checker.
+
 **Rules:**
 
 - **Aggregation Files:** Every directory that contains sub-modules must have a `darwin.nix` (for system config) and/or `home.nix` (for user config) that imports the corresponding files from its children.

@@ -20,7 +20,8 @@ Available profiles: `bootstrap`, `private`, `mac-mini-m4`. If no profile is spec
 ## Checks Performed
 
 1.  **Syntax Check:** Parses all `.nix` files using `nix-instantiate --parse` to catch syntax errors immediately.
-2.  **Build Dry-Run:** Attempts to build the darwin configuration for the specified (or all) profiles without switching, ensuring that all dependencies and modules can be resolved.
+2.  **Structure Check:** Validates the Package by Feature layout of `modules/` and `bootstrap/modules/` (aggregation imports, support-file whitelist, no cross-hierarchy imports, host modules set options only). Rules are declared in `scripts/package-by-feature/rules.nix` and evaluated by `scripts/package-by-feature/check.nix`; to allow an intentional exception, edit `rules.nix` (e.g. `allowUnimported`, `exemptPaths`).
+3.  **Build Dry-Run:** Attempts to build the darwin configuration for the specified (or all) profiles without switching, ensuring that all dependencies and modules can be resolved.
     - **bootstrap**: Builds `./bootstrap#darwinConfigurations.bootstrap.<system>.system`
     - **private**: Builds `.#darwinConfigurations.private.<system>.system`
     - **mac-mini-m4**: Builds `.#darwinConfigurations.mac-mini-m4.system` (if on aarch64-darwin)

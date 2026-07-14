@@ -11,6 +11,20 @@ function check_syntax() {
   echo "✅ Syntax check passed."
 }
 
+function check_structure() {
+  echo "=== 📦 Checking Package by Feature structure ==="
+  local report
+  report=$(nix eval --json --impure \
+    --expr 'import ./scripts/package-by-feature/check.nix { repoRoot = ./.; }')
+  if [ "$(echo "$report" | jq -r '.ok')" != "true" ]; then
+    echo "$report" | jq -r '.violations[] | "❌ [\(.rule)] \(.file): \(.message)"'
+    echo "Structure check failed ($(echo "$report" | jq -r '.count') violation(s))."
+    echo "Rules are declared in scripts/package-by-feature/rules.nix."
+    return 1
+  fi
+  echo "✅ Structure check passed."
+}
+
 function get_profiles() {
   local flake_path=$1
   nix eval "${flake_path}#darwinConfigurations" --json --apply 'builtins.attrNames' --impure
@@ -74,7 +88,11 @@ fi
 check_syntax
 echo ""
 
-# 2. Extract and check profiles from root flake
+# 2. Package by Feature structure check
+check_structure
+echo ""
+
+# 3. Extract and check profiles from root flake
 echo "=== 📋 Discovering profiles in root flake ==="
 ROOT_PROFILES=$(get_profiles ".")
 echo "Found: $ROOT_PROFILES"
@@ -84,7 +102,7 @@ for profile in $(echo "$ROOT_PROFILES" | jq -r '.[]'); do
   echo ""
 done
 
-# 3. Extract and check profiles from bootstrap flake
+# 4. Extract and check profiles from bootstrap flake
 if [ -d "./bootstrap" ]; then
   echo "=== 📋 Discovering profiles in bootstrap flake ==="
   BOOTSTRAP_PROFILES=$(get_profiles "./bootstrap")
