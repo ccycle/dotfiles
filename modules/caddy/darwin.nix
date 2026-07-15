@@ -1,4 +1,4 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, tailscalePackage, ... }:
 
 let
   hostName = config.networking.hostName;
@@ -14,6 +14,11 @@ in
       "caddy/Caddyfile".text = ''
         {
           admin off
+          # Listen on the Tailscale interface only, so vhosts are not
+          # reachable from the LAN. TAILSCALE_IP is resolved by the launchd
+          # script before Caddy starts; if the Tailscale IP ever changes,
+          # Caddy must be restarted to rebind.
+          default_bind {$TAILSCALE_IP}
         }
 
         # Common snippets
@@ -92,6 +97,15 @@ in
         };
       };
       script = ''
+        # Wait for Tailscale so default_bind in the Caddyfile can resolve;
+        # KeepAlive restarts us until the IP is available.
+        until TAILSCALE_IP=$(${tailscalePackage}/bin/tailscale ip -4 2>/dev/null) && [ -n "$TAILSCALE_IP" ]; do
+          echo "Waiting for Tailscale..."
+          sleep 2
+        done
+        export TAILSCALE_IP
+        echo "Binding Caddy to Tailscale IP: $TAILSCALE_IP"
+
         mkdir -p /var/lib/caddy
         # Ensure Caddy has permissions to write to its data dir (running as root)
         chmod 755 /var/lib/caddy
