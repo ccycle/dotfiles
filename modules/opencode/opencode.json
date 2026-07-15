@@ -1,0 +1,17 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "lmstudio": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "LM Studio (mac-mini-m4-pro)",
+      "options": {
+        "baseURL": "http://llm.mac-mini-m4-pro.internal/v1"
+      },
+      "models": {
+        "google/gemma-3-27b": {
+          "name": "Gemma 3 27B"
+        }
+      }
+    }
+  }
+}
