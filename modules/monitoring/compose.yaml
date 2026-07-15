@@ -8,6 +8,7 @@ services:
     volumes:
       - ${MONITORING_DATA_DIR:-/var/lib/monitoring}/prometheus:/prometheus
       - ${PROMETHEUS_CONFIG}:/etc/prometheus/prometheus.yml:ro
+      - ${PROMETHEUS_RULES}:/etc/prometheus/rules.yml:ro
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
       - "--storage.tsdb.path=/prometheus"
@@ -29,10 +30,11 @@ services:
     volumes:
       - ${MONITORING_DATA_DIR:-/var/lib/monitoring}/grafana:/var/lib/grafana
       - ${GRAFANA_PROVISIONING_DIR}:/etc/grafana/provisioning:ro
+      - ${GRAFANA_DASHBOARDS_DIR}:/var/lib/grafana/dashboards:ro
     environment:
       GF_SECURITY_ADMIN_USER: admin
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD}
-      GF_SERVER_ROOT_URL: https://grafana.mac-mini-m4.internal
+      GF_SERVER_ROOT_URL: ${GRAFANA_ROOT_URL}
     depends_on:
       - prometheus
       - loki
@@ -61,6 +63,10 @@ services:
       - ${ALLOY_CONFIG}:/etc/alloy/config.alloy:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /var/log:/var/log/host:ro
+      # GitLab writes its real logs (rails, sidekiq, gitaly, ...) to this
+      # host directory, not to the container's stdout. Empty fallback dir
+      # keeps the stack working when GitLab is disabled.
+      - ${GITLAB_LOGS_DIR:-/var/empty}:/var/log/gitlab-host:ro
     command:
       - "run"
       - "/etc/alloy/config.alloy"

@@ -6,9 +6,11 @@ let
   cfg = config.services.monitoring;
   composeFile = ./compose.yaml;
   prometheusConfig = ./prometheus.yml;
+  prometheusRules = ./prometheus-rules.yml;
   lokiConfig = ./loki-config.yml;
   alloyConfig = ./alloy-config.alloy;
   grafanaProvisioningDir = ./grafana/provisioning;
+  grafanaDashboardsDir = ./grafana/dashboards;
 in
 {
   options.services.monitoring = {
@@ -18,6 +20,12 @@ in
       type = types.str;
       default = "/var/lib/monitoring";
       description = "Base directory for monitoring data storage on the host.";
+    };
+
+    gitlabLogsDir = mkOption {
+      type = types.str;
+      default = "";
+      description = "GitLab host log directory to collect into Loki. Empty disables collection.";
     };
   };
 
@@ -45,6 +53,14 @@ in
       sopsFile = ./secrets.yaml;
     };
 
+    # CLI query tools for log/metrics investigation (see the
+    # investigate-service skill): logcli from grafana-loki, promtool
+    # from prometheus.
+    environment.systemPackages = [
+      pkgs.grafana-loki
+      pkgs.prometheus
+    ];
+
     launchd.daemons.monitoring-compose = {
       serviceConfig = {
         KeepAlive = true;
@@ -61,9 +77,13 @@ in
         export GRAFANA_ADMIN_PASSWORD=$(cat ${config.sops.secrets.grafana_admin_password.path})
         export MONITORING_DATA_DIR="${cfg.dataDir}"
         export PROMETHEUS_CONFIG="${prometheusConfig}"
+        export PROMETHEUS_RULES="${prometheusRules}"
         export LOKI_CONFIG="${lokiConfig}"
         export ALLOY_CONFIG="${alloyConfig}"
         export GRAFANA_PROVISIONING_DIR="${grafanaProvisioningDir}"
+        export GRAFANA_DASHBOARDS_DIR="${grafanaDashboardsDir}"
+        export GRAFANA_ROOT_URL="https://grafana.${config.networking.hostName}.internal"
+        export GITLAB_LOGS_DIR="${cfg.gitlabLogsDir}"
 
         mkdir -p "$MONITORING_DATA_DIR/prometheus" \
                  "$MONITORING_DATA_DIR/grafana" \

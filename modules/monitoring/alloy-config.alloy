@@ -26,7 +26,7 @@ discovery.relabel "docker_logs" {
 loki.source.docker "containers" {
   host       = "unix:///var/run/docker.sock"
   targets    = discovery.relabel.docker_logs.output
-  forward_to = [loki.write.default.receiver]
+  forward_to = [loki.process.extract_level.receiver]
 }
 
 // Host log files
@@ -38,7 +38,65 @@ local.file_match "host_logs" {
 
 loki.source.file "host_logs" {
   targets    = local.file_match.host_logs.targets
+  forward_to = [loki.process.extract_level.receiver]
+}
+
+// GitLab file logs. GitLab Omnibus writes its real logs (rails, sidekiq,
+// gitaly, nginx, ...) to /var/log/gitlab inside the container — mounted on
+// the host and remounted here — not to the container's stdout, so the docker
+// source above never sees them. `compose_project=gitlab` is set statically so
+// one selector covers both stdout and file logs.
+local.file_match "gitlab_logs" {
+  path_targets = [
+    {__path__ = "/var/log/gitlab-host/**/*.log", source = "gitlab-file", compose_project = "gitlab"},
+    {__path__ = "/var/log/gitlab-host/**/current", source = "gitlab-file", compose_project = "gitlab"},
+  ]
+}
+
+// Subdirectory name = GitLab component (gitlab-rails, sidekiq, gitaly, ...)
+discovery.relabel "gitlab_logs" {
+  targets = local.file_match.gitlab_logs.targets
+
+  rule {
+    source_labels = ["__path__"]
+    regex         = "/var/log/gitlab-host/([^/]+)/.*"
+    target_label  = "gitlab_component"
+  }
+}
+
+loki.source.file "gitlab_logs" {
+  targets    = discovery.relabel.gitlab_logs.output
+  forward_to = [loki.process.extract_level.receiver]
+}
+
+// Extract a normalized `level` label from JSON logs so LogQL can filter
+// errors cheaply ({level="error"}). Non-JSON lines pass through unlabeled.
+// GitLab rails logs use `severity` instead of `level`.
+loki.process "extract_level" {
   forward_to = [loki.write.default.receiver]
+
+  stage.json {
+    expressions = {
+      level    = "level",
+      severity = "severity",
+    }
+  }
+
+  stage.template {
+    source   = "level"
+    template = "{{ if .level }}{{ .level }}{{ else if .severity }}{{ .severity }}{{ end }}"
+  }
+
+  stage.template {
+    source   = "level"
+    template = "{{ ToLower .Value }}"
+  }
+
+  stage.labels {
+    values = {
+      level = "",
+    }
+  }
 }
 
 // Send logs to Loki

@@ -1,0 +1,53 @@
+# Alert rules are evaluated without an Alertmanager: no notifications are
+# sent. Firing state is the machine-readable triage entry point, queryable at
+# http://127.0.0.1:9090/api/v1/alerts (see the investigate-service skill).
+groups:
+  - name: availability
+    rules:
+      - alert: ScrapeTargetDown
+        expr: up == 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Scrape target {{ $labels.job }} ({{ $labels.instance }}) is down"
+
+      - alert: ContainerRestarting
+        expr: changes(container_start_time_seconds{container_label_com_docker_compose_project!=""}[30m]) > 2
+        labels:
+          severity: warning
+        annotations:
+          summary: "Container {{ $labels.name }} restarted more than twice in 30m"
+
+  - name: gitlab
+    rules:
+      - alert: GitLabPostgresDown
+        expr: pg_up == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "GitLab bundled PostgreSQL is unreachable from postgres_exporter"
+
+      - alert: GitLabRedisDown
+        expr: redis_up == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "GitLab bundled Redis is unreachable from redis_exporter"
+
+      - alert: GitLabSidekiqJobsFailing
+        expr: increase(sidekiq_jobs_failed_total[10m]) > 10
+        labels:
+          severity: warning
+        annotations:
+          summary: "Sidekiq failed {{ $value | printf \"%.0f\" }} jobs in the last 10m"
+
+      - alert: GitLabSidekiqQueueBacklog
+        expr: sidekiq_queue_size > 100
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Sidekiq queue {{ $labels.name }} has {{ $value | printf \"%.0f\" }} pending jobs"
