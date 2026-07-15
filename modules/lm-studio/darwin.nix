@@ -39,10 +39,9 @@ in
     })
 
     (lib.mkIf cfg.server.enable {
-      # HTTP on purpose: Tailscale WireGuard encrypts transport; plain HTTP
-      # avoids internal-CA trust setup in Bun-based clients (opencode).
       environment.etc."caddy/sites/lm-studio.caddy".text = ''
-        http://llm.${config.networking.hostName}.internal {
+        http://llm.${config.networking.hostName}.internal, https://llm.${config.networking.hostName}.internal {
+          import internal_tls
           reverse_proxy 127.0.0.1:1234
         }
       '';

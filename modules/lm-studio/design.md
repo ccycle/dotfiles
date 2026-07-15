@@ -17,18 +17,15 @@ code assistance without external API calls.
   the LM Studio GUI. LM Studio JIT-loads a requested model if it is not
   already in memory; this module does not preload or pin models.
 
-## Why HTTP, Not `internal_tls`
+## Why Both HTTP and HTTPS (ca.caddy Pattern)
 
-Every other Caddy vhost in this repo uses `import internal_tls` (Caddy's
-internal CA). This vhost deliberately uses plain HTTP instead. Reasons:
-
-- **Tailscale WireGuard already encrypts transport** — the vhost is only
-  reachable via the tailnet (dnsmasq answers `*.internal` on the Tailscale
-  IP only, `--bind-interfaces`), so TLS is defense-in-depth, not required.
-- **opencode is Bun-based** and does not trust Caddy's internal CA out of
-  the box. Adding `NODE_EXTRA_CA_CERTS` or equivalent on every client
-  machine is high friction for negligible security gain on a personal
-  tailnet.
+The vhost listens on both `http://` and `https://` with `import
+internal_tls`, following the `ca.caddy` precedent. Caddy's auto-HTTPS
+generates a 308 redirect for any hostname that appears in an HTTPS site
+block; an HTTP-only vhost for `llm.*` would be redirected to an HTTPS
+endpoint with no certificate, breaking the connection. Listing both
+addresses ensures HTTP works directly (useful for clients that don't trust
+the internal CA) while HTTPS also works for clients that do.
 
 ## Why a launchd User Agent, Not a System Daemon
 
@@ -52,8 +49,9 @@ watch-store precedent and avoids those issues.
 - **`tailscale serve`** to expose the port — rejected to keep all vhost
   routing in Caddy (single configuration surface, consistent with every
   other service).
-- **HTTPS with `import internal_tls`** — rejected for the Bun CA-trust
-  friction described above.
+- **HTTP-only vhost** — rejected because Caddy's auto-HTTPS generates a
+  308 redirect for hostnames that appear in other HTTPS site blocks,
+  breaking the connection. The ca.caddy dual-listen pattern is required.
 - **Binding LM Studio to 0.0.0.0 directly** (no Caddy) — rejected
   because it breaks the vhost routing pattern, requires remembering a
   port number instead of a hostname, and bypasses Caddy's access logging.
