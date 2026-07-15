@@ -12,6 +12,8 @@ Declarative system and home configuration using nix-darwin, home-manager, and fl
 | `/verify-change` | Run syntax checks, lints, and build dry-runs |
 | `/credentials-manager` | Manage secrets and Nix access tokens |
 | `/darwin-rebuild` | Apply Darwin system configuration |
+| `/setup-local-storage` | Create or update machine-local storage config |
+| `/investigate-service` | Root-cause a service problem via Prometheus/Loki APIs |
 | `/cachix-push` | Build and push to Cachix cache |
 | `/smart-commit` | Smart commit with conventional format |
 | `/push` | Push current branch to origin |
