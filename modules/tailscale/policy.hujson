@@ -1,0 +1,72 @@
+// Tailscale ACL policy — default-deny, grant access per role.
+//
+// Apply with: tailscale set --policy-file or via the Tailscale admin console.
+// See modules/tailscale/design.md for the zero-trust roadmap.
+{
+  // --- Tag ownership ---
+  // Tags let us assign roles to devices independently of user identity.
+  "tagOwners": {
+    "tag:server": ["autogroup:admin"],
+    "tag:client": ["autogroup:admin"],
+  },
+
+  // --- Groups (for readability in ACLs) ---
+  "groups": {
+    // All human users. In a personal tailnet this is just the owner.
+    "group:users": ["autogroup:member"],
+  },
+
+  // --- ACLs: default-deny, explicit grants ---
+  "acls": [
+    // Allow all users/clients to reach server HTTP(S) vhosts (Caddy).
+    // Caddy is the only tailnet-facing listener; backend ports (1234,
+    // 2283, 3000, 8929, 9090, 9200) bind to 127.0.0.1 and are not
+    // directly exposed.
+    {
+      "action": "accept",
+      "src":    ["group:users"],
+      "dst":    ["tag:server:80,443"],
+    },
+
+    // DNS — dnsmasq serves wildcard *.internal on port 53.
+    {
+      "action": "accept",
+      "src":    ["group:users"],
+      "dst":    ["tag:server:53"],
+    },
+
+    // SSH — only the owner's devices can SSH into servers.
+    {
+      "action": "accept",
+      "src":    ["group:users"],
+      "dst":    ["tag:server:22"],
+    },
+
+    // Allow servers to reach each other for cross-host services
+    // (e.g. monitoring scraping, replication).
+    {
+      "action": "accept",
+      "src":    ["tag:server"],
+      "dst":    ["tag:server:80,443,53"],
+    },
+  ],
+
+  // --- SSH policy (Tailscale SSH, optional) ---
+  "ssh": [
+    {
+      "action": "check",
+      "src":    ["group:users"],
+      "dst":    ["tag:server"],
+      "users":  ["autogroup:nonroot"],
+    },
+  ],
+
+  // --- Node attributes ---
+  "nodeAttrs": [
+    {
+      // Disable key expiry on servers so they don't go offline unattended.
+      "target": ["tag:server"],
+      "attr":   ["funnel:off"],
+    },
+  ],
+}
