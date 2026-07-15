@@ -33,3 +33,17 @@ All instructions intended for AI consumption MUST be written in English. This in
 - Code comments that serve as agent directives
 
 User-facing documentation (README, commit messages) may use any language.
+
+## Documentation Placement Principle
+
+Never maintain the same fact in two places. Implementation details belong in code comments; documentation carries only design intent that code cannot express.
+
+**What this means in practice:**
+
+- Code comments explain the "why" at code level: non-obvious constraints, invariants, gotchas, and reasons a simpler approach was not used.
+- Design intent that code cannot express — rationale for structure, non-goals, rejected alternatives, trade-offs, cross-cutting constraints — goes in a `design.md` next to the code it describes.
+- Never restate in documentation what the code or its comments already say (signatures, option values, file lists, step-by-step behavior).
+- If a documented statement would become wrong after a mechanical code change (rename, reorder, restructure), it belongs in or next to the code, not in a doc.
+- Docs MUST NOT duplicate comments, and comments MUST NOT duplicate docs.
+
+Use the `design-doc` skill to create or update a `design.md`, and the `doc-audit` skill to find code/doc duplication and drift.
