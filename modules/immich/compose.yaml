@@ -5,6 +5,10 @@ services:
     image: ghcr.io/immich-app/immich-server:${IMMICH_VERSION:-release}
     ports:
       - "127.0.0.1:2283:2283"
+      # Metrics ports remapped: host 8081 is taken by cAdvisor, 8082 by the
+      # GitLab sidekiq metrics server.
+      - "127.0.0.1:8091:8081" # API metrics
+      - "127.0.0.1:8092:8082" # microservices metrics
     environment:
       DB_HOSTNAME: database
       DB_USERNAME: immich
@@ -12,6 +16,7 @@ services:
       DB_DATABASE_NAME: immich
       REDIS_HOSTNAME: redis
       IMMICH_SERVER_URL: ${IMMICH_SERVER_URL}
+      IMMICH_TELEMETRY_INCLUDE: all
     volumes:
       - ${IMMICH_UPLOAD_DIR}:/usr/src/app/upload
     depends_on:
