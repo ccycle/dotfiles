@@ -6,6 +6,10 @@ services:
     ports:
       - "127.0.0.1:8929:80"
       - "127.0.0.1:2222:22"
+      - "127.0.0.1:8082:8082" # sidekiq metrics server
+      - "127.0.0.1:9121:9121" # redis_exporter
+      - "127.0.0.1:9168:9168" # gitlab_exporter (/sidekiq: queue depth/latency)
+      - "127.0.0.1:9187:9187" # postgres_exporter
     environment:
       GITLAB_OMNIBUS_CONFIG: |
         external_url '${GITLAB_EXTERNAL_URL}'
@@ -13,6 +17,24 @@ services:
         nginx['listen_port'] = 80
         nginx['listen_https'] = false
         gitlab_rails['gitlab_shell_ssh_port'] = 2222
+        # Expose bundled exporters to the external Prometheus (scraped via
+        # host-gateway; docker-proxy connects over the bridge, so exporters
+        # must bind 0.0.0.0, not the in-container loopback default).
+        gitlab_rails['monitoring_whitelist'] = ['127.0.0.0/8', '10.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16']
+        sidekiq['listen_address'] = '0.0.0.0'
+        sidekiq['listen_port'] = 8082
+        postgres_exporter['listen_address'] = '0.0.0.0:9187'
+        redis_exporter['listen_address'] = '0.0.0.0:9121'
+        gitlab_exporter['listen_address'] = '0.0.0.0'
+        gitlab_exporter['listen_port'] = '9168'
+        # cAdvisor already covers container resources; the in-container
+        # node_exporter would only measure the Docker VM.
+        node_exporter['enable'] = false
+        # The external Prometheus scrapes directly; keep the exporters but
+        # drop the bundled server/alerting (prometheus_monitoring['enable']
+        # would disable the exporters too).
+        prometheus['enable'] = false
+        alertmanager['enable'] = false
     volumes:
       - ${GITLAB_CONFIG_DIR}:/etc/gitlab
       - ${GITLAB_LOGS_DIR}:/var/log/gitlab
