@@ -15,6 +15,7 @@
     ./nix/darwin.nix
     ./opencloud/darwin.nix
     ./ssh/darwin.nix
+    ./storage/darwin.nix
     ./stylix/darwin.nix
     ./tailscale/darwin.nix
     ./zsh/darwin.nix

@@ -1,11 +1,15 @@
-{ lib, ... }:
+{ config, lib, ... }:
 
+let
+  vol = config.custom.storage.volumeRoot;
+  hasVol = vol != "";
+in
 {
   imports = [
     ./options.nix
   ];
 
-  services.immich.uploadDir = lib.mkDefault "/Volumes/KIOXIA/immich/upload";
-  services.immich.dbDir = lib.mkDefault "/Volumes/KIOXIA/immich/db";
-  services.immich.mountPoint = lib.mkDefault "/Volumes/KIOXIA";
+  services.immich.uploadDir = lib.mkIf hasVol (lib.mkDefault "${vol}/immich/upload");
+  services.immich.dbDir = lib.mkIf hasVol (lib.mkDefault "${vol}/immich/db");
+  services.immich.mountPoint = lib.mkIf hasVol (lib.mkDefault vol);
 }

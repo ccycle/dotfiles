@@ -40,27 +40,38 @@ function is_system_nested() {
 function build_dry_run() {
   local flake_path=$1
   local profile=$2
-  
+
   echo "=== 🏗️ Build Dry-Run: ${profile} (${flake_path}) ==="
-  
+
+  local storage_override=()
+  if [ "${flake_path}" != "./bootstrap" ]; then
+    local repo_root
+    repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../.." && pwd)"
+    local storage_local="${repo_root}/.local/storage"
+    if [ -d "${storage_local}" ]; then
+      storage_override=(--override-input storage-config "path:${storage_local}")
+    fi
+  fi
+
   if [ "$(is_system_nested "$flake_path" "$profile")" == "true" ]; then
     # Nested: profile.system.system
     local target="${flake_path}#darwinConfigurations.${profile}.${SYSTEM}.system"
     echo "Target: $target"
-    nix build "$target" --impure -L --dry-run
+    nix build "$target" --impure -L --dry-run "${storage_override[@]}"
   else
     # Direct: profile.system
     local target="${flake_path}#darwinConfigurations.${profile}.system"
-    
+
     # Verify if it's compatible with current system if possible
-    local profile_system=$(nix eval "${flake_path}#darwinConfigurations.${profile}.pkgs.system" --raw --impure 2>/dev/null || echo "$SYSTEM")
+    local profile_system
+    profile_system=$(nix eval "${flake_path}#darwinConfigurations.${profile}.pkgs.system" --raw --impure 2>/dev/null || echo "$SYSTEM")
     if [ "$profile_system" != "$SYSTEM" ]; then
       echo "Skipping $profile (incompatible system: $profile_system)"
       return 0
     fi
-    
+
     echo "Target: $target"
-    nix build "$target" --impure -L --dry-run
+    nix build "$target" --impure -L --dry-run "${storage_override[@]}"
   fi
   echo "✅ $profile dry-run passed."
 }

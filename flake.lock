@@ -2575,6 +2575,7 @@
         "pip2nix": "pip2nix",
         "serena": "serena",
         "sops-nix": "sops-nix_2",
+        "storage-config": "storage-config",
         "stylix": "stylix",
         "tailscale": "tailscale",
         "uv2nix": "uv2nix_2",
@@ -2765,6 +2766,17 @@
         "repo": "stackage.nix",
         "type": "github"
       }
+    },
+    "storage-config": {
+      "locked": {
+        "path": "./modules/storage/default-config",
+        "type": "path"
+      },
+      "original": {
+        "path": "./modules/storage/default-config",
+        "type": "path"
+      },
+      "parent": []
     },
     "stylix": {
       "inputs": {

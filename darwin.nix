@@ -4,6 +4,7 @@
   imports = [
     ./bootstrap/modules/darwin.nix
     ./modules/darwin.nix
+    inputs.storage-config.darwinModules.default
   ];
 
   # Required for launchd.user.agents

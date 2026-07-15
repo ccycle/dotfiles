@@ -45,6 +45,7 @@
     pip2nix.url = "github:nix-community/pip2nix";
     serena.url = "github:oraios/serena";
     sops-nix.url = "github:Mic92/sops-nix";
+    storage-config.url = "path:./modules/storage/default-config";
     uv2nix.inputs.nixpkgs.follows = "nixpkgs";
     uv2nix.url = "github:pyproject-nix/uv2nix";
     worktrunk.url = "github:max-sixty/worktrunk";
