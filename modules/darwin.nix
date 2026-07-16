@@ -10,6 +10,7 @@
     ./ghostty/darwin.nix
     ./gitlab/darwin.nix
     ./immich/darwin.nix
+    ./llm-server/darwin.nix
     ./lm-studio/darwin.nix
     ./monitoring/darwin.nix
     ./nix/darwin.nix
