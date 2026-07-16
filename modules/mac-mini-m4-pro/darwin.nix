@@ -11,7 +11,7 @@
   services.monitoring.enable = true;
   services.gitlab.enable = true;
   custom.lm-studio.enable = true;
-  custom.lm-studio.server.enable = true;
+  services.llm-server.enable = true;
 
   # Enable macOS Remote Login (SSH on port 22)
   system.activationScripts.postActivation.text = ''
