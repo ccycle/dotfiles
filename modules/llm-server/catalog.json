@@ -7,7 +7,7 @@
   "models": {
     "google/gemma-4-26b-a4b": {
       "name": "Gemma 4 26B A4B",
-      "contextLength": 65536,
+      "contextLength": 131072,
       "files": [
         {
           "url": "https://huggingface.co/ggml-org/gemma-4-26B-A4B-it-GGUF/resolve/main/gemma-4-26B-A4B-it-Q4_K_M.gguf",
@@ -18,7 +18,7 @@
     },
     "qwen/qwen3.5-27b": {
       "name": "Qwen 3.5 27B",
-      "contextLength": 65536,
+      "contextLength": 131072,
       "files": [
         {
           "url": "https://huggingface.co/unsloth/Qwen3.5-27B-GGUF/resolve/main/Qwen3.5-27B-Q4_K_M.gguf",
@@ -29,7 +29,7 @@
     },
     "google/gemma-4-e4b": {
       "name": "Gemma 4 E4B",
-      "contextLength": 65536,
+      "contextLength": 131072,
       "files": [
         {
           "url": "https://huggingface.co/ggml-org/gemma-4-E4B-it-GGUF/resolve/main/gemma-4-E4B-it-Q4_K_M.gguf",

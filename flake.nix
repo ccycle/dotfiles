@@ -36,6 +36,7 @@
     nixpkgs-2411.url = "github:NixOS/nixpkgs/24.11";
     nixpkgs-2505.url = "github:NixOS/nixpkgs/25.05";
     nixpkgs-2511.url = "github:NixOS/nixpkgs/25.11";
+    nixpkgs-2605.url = "github:NixOS/nixpkgs/26.05";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     nixpkgs.url = "github:nixos/nixpkgs/25.11";
     ghostty.url = "github:ghostty-org/ghostty";
@@ -85,6 +86,7 @@
           pkgs-2411 = mkPkgs inputs.nixpkgs-2411;
           pkgs-2505 = mkPkgs inputs.nixpkgs-2505;
           pkgs-2511 = mkPkgs inputs.nixpkgs-2511;
+          pkgs-2605 = mkPkgs inputs.nixpkgs-2605;
           pkgs-unstable = mkPkgs inputs.nixpkgs-unstable;
           freshPackage = inputs.fresh.packages.${system}.default;
           worktrunkPackage = inputs.worktrunk.packages.${system}.default;

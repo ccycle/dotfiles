@@ -1,4 +1,4 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, pkgs-2605, ... }:
 
 with lib;
 
@@ -16,7 +16,7 @@ let
   llamaSwapConfig = {
     healthCheckTimeout = 300;
     macros = {
-      llama_server = "${pkgs.llama-cpp}/bin/llama-server --host 127.0.0.1 --port \${PORT} --jinja -ngl 99";
+      llama_server = "${pkgs-2605.llama-cpp}/bin/llama-server --host 127.0.0.1 --port \${PORT} --jinja -ngl 99";
     };
     models = listToAttrs (map
       (m: nameValuePair m.id {

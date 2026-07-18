@@ -2105,6 +2105,22 @@
         "type": "github"
       }
     },
+    "nixpkgs-2605": {
+      "locked": {
+        "lastModified": 1780145889,
+        "narHash": "sha256-md0zn0RnwNvPyASas1yG5YUuwQ4ALA6ucL50l0DvqCo=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "8c50a710ddca43d7a530fb805ad55bde8d0141c5",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "26.05",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
     "nixpkgs-lib": {
       "locked": {
         "lastModified": 1765674936,
@@ -2571,6 +2587,7 @@
         "nixpkgs-2411": "nixpkgs-2411_3",
         "nixpkgs-2505": "nixpkgs-2505_3",
         "nixpkgs-2511": "nixpkgs-2511_3",
+        "nixpkgs-2605": "nixpkgs-2605",
         "nixpkgs-unstable": "nixpkgs-unstable_3",
         "pip2nix": "pip2nix",
         "serena": "serena",

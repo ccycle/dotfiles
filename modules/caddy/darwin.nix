@@ -3,6 +3,19 @@
 let
   hostName = config.networking.hostName;
   domain = "${hostName}.internal";
+
+  # Build HTML content with domain/hostname placeholders resolved at build time
+  # so the page correctly reflects the serving machine's hostname.
+  indexHtml = builtins.replaceStrings ["__DOMAIN__" "__HOSTNAME__"] [domain hostName]
+    (builtins.readFile ./index.html);
+  caHtml = builtins.replaceStrings ["__DOMAIN__" "__HOSTNAME__"] [domain hostName]
+    (builtins.readFile ./ca.html);
+
+  # Hash all Caddy etc entries so the launchd plist changes (and nix-darwin
+  # restarts the daemon) whenever any site config is added, removed, or modified.
+  caddyEtcHash = builtins.hashString "sha256" (lib.concatStrings
+    (lib.mapAttrsToList (_: v: v.text or "")
+      (lib.filterAttrs (n: _: lib.hasPrefix "caddy/" n) config.environment.etc)));
 in
 {
   imports = [
@@ -18,7 +31,7 @@ in
           # reachable from the LAN. TAILSCALE_IP is resolved by the launchd
           # script before Caddy starts; if the Tailscale IP ever changes,
           # Caddy must be restarted to rebind.
-          default_bind {$TAILSCALE_IP}
+          default_bind {$TAILSCALE_IP} 127.0.0.1
         }
 
         # Common snippets
@@ -53,7 +66,7 @@ in
           import internal_tls
           handle /index {
             header Content-Type "text/html; charset=utf-8"
-            respond `${builtins.readFile ./index.html}` 200
+            respond `${indexHtml}` 200
           }
           handle {
             redir / /index
@@ -74,7 +87,7 @@ in
           }
           handle {
             header Content-Type "text/html; charset=utf-8"
-            respond `${builtins.readFile ./ca.html}` 200
+            respond `${caHtml}` 200
           }
         }
       '';
@@ -97,6 +110,7 @@ in
         };
       };
       script = ''
+        # caddy config hash: ${caddyEtcHash}
         # Wait for Tailscale so default_bind in the Caddyfile can resolve;
         # KeepAlive restarts us until the IP is available.
         until TAILSCALE_IP=$(${tailscalePackage}/bin/tailscale ip -4 2>/dev/null) && [ -n "$TAILSCALE_IP" ]; do
