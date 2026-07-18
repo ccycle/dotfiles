@@ -5,6 +5,7 @@ with lib;
 let
   cfg = config.services.opencloud;
   composeFile = ./compose.yaml;
+  waitForMount = import ../../utils/waitForMount.nix;
 in
 {
   options.services.opencloud = {
@@ -25,7 +26,7 @@ in
     mountPoint = mkOption {
       type = types.str;
       default = "";
-      description = "If set, wait for this path to exist before starting (e.g. /Volumes/KIOXIA for an external drive).";
+      description = "If set, wait for this volume to be mounted before starting (e.g. /Volumes/<YOUR_DRIVE>).";
     };
   };
 
@@ -47,13 +48,7 @@ in
         StandardErrorPath = "/var/log/opencloud.log";
       };
       script = ''
-        ${optionalString (cfg.mountPoint != "") ''
-          until [ -d ${cfg.mountPoint} ]; do
-            echo "Waiting for volume ${cfg.mountPoint} to be mounted..."
-            sleep 10
-          done
-          echo "Volume ${cfg.mountPoint} is mounted."
-        ''}
+        ${optionalString (cfg.mountPoint != "") (waitForMount cfg.mountPoint)}
 
         until [ -S /var/run/docker.sock ]; do
           echo "Waiting for OrbStack socket..."

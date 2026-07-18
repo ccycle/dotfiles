@@ -13,6 +13,10 @@ services:
     environment:
       GITLAB_OMNIBUS_CONFIG: |
         external_url '${GITLAB_EXTERNAL_URL}'
+        # Applied only on the very first DB seed; changing it later has no effect.
+        # Must pass GitLab's weak-password denylist (e.g. "changeme" is rejected).
+        # A rejected value does NOT fail the boot — it leaves the instance with zero users.
+        # Recovery: create root manually with Users::CreateService, mirroring db/fixtures/production/003_admin.rb.
         gitlab_rails['initial_root_password'] = '${GITLAB_ROOT_PASSWORD}'
         nginx['listen_port'] = 80
         nginx['listen_https'] = false

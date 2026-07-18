@@ -5,6 +5,7 @@ with lib;
 let
   cfg = config.services.monitoring;
   composeFile = ./compose.yaml;
+  waitForMount = import ../../utils/waitForMount.nix;
   prometheusConfig = ./prometheus.yml;
   prometheusRules = ./prometheus-rules.yml;
   lokiConfig = ./loki-config.yml;
@@ -26,6 +27,12 @@ in
       type = types.str;
       default = "";
       description = "GitLab host log directory to collect into Loki. Empty disables collection.";
+    };
+
+    mountPoint = mkOption {
+      type = types.str;
+      default = "";
+      description = "If set, wait for this volume to be mounted before starting (e.g. /Volumes/<YOUR_DRIVE>).";
     };
   };
 
@@ -69,6 +76,8 @@ in
         StandardErrorPath = "/var/log/monitoring.log";
       };
       script = ''
+        ${optionalString (cfg.mountPoint != "") (waitForMount cfg.mountPoint)}
+
         until ${pkgs.docker}/bin/docker info >/dev/null 2>&1; do
           echo "Waiting for Docker to be ready..."
           sleep 5

@@ -5,6 +5,7 @@ with lib;
 let
   cfg = config.services.immich;
   composeFile = ./compose.yaml;
+  waitForMount = import ../../utils/waitForMount.nix;
 in
 {
   options.services.immich = {
@@ -25,7 +26,7 @@ in
     mountPoint = mkOption {
       type = types.str;
       default = "";
-      description = "If set, wait for this path to exist before starting (e.g. /Volumes/KIOXIA for an external drive).";
+      description = "If set, wait for this volume to be mounted before starting (e.g. /Volumes/<YOUR_DRIVE>).";
     };
   };
 
@@ -47,13 +48,7 @@ in
         StandardErrorPath = "/var/log/immich.log";
       };
       script = ''
-        ${optionalString (cfg.mountPoint != "") ''
-          until [ -d ${cfg.mountPoint} ]; do
-            echo "Waiting for volume ${cfg.mountPoint} to be mounted..."
-            sleep 10
-          done
-          echo "Volume ${cfg.mountPoint} is mounted."
-        ''}
+        ${optionalString (cfg.mountPoint != "") (waitForMount cfg.mountPoint)}
 
         until ${pkgs.docker}/bin/docker info >/dev/null 2>&1; do
           echo "Waiting for Docker to be ready..."
