@@ -31,6 +31,14 @@ in
   };
 
   config = mkIf cfg.enable {
+    services.caddy.portalEntries = [{
+      name = "OpenCloud";
+      url = "https://opencloud.${config.networking.hostName}.internal";
+      descriptionJa = "クラウドストレージ (ownCloud Infinite)";
+      descriptionEn = "Cloud Storage (ownCloud Infinite)";
+      logoSvg = ''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="#e2baff" d="m256 373.2 21.5-12.4V271l77.3-44.6v-24.8l-21.5-12.4-77.8 44.9-76.7-44.3-21.5 12.4V227l77.3 44.6v89.2zm197.2-259.3L256 0 58.8 113.9v49.6L256 49.6l197.2 113.9zm0 234.7L256 462.4 58.8 348.6v49.6L256 512l197.2-113.9z"/></svg>'';
+    }];
+
     environment.etc."newsyslog.d/opencloud.conf".text = ''
       # logfilename          [owner:group]  mode  count  size  when  flags
       /var/log/opencloud.log                644   7      10240 *     GZ

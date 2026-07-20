@@ -31,6 +31,14 @@ in
   };
 
   config = mkIf cfg.enable {
+    services.caddy.portalEntries = [{
+      name = "Immich";
+      url = "https://immich.${config.networking.hostName}.internal";
+      descriptionJa = "フォト＆ビデオ管理";
+      descriptionEn = "Photo & Video Management";
+      logoSvg = builtins.readFile ./immich-logo.svg;
+    }];
+
     environment.etc."newsyslog.d/immich.conf".text = ''
       # logfilename          [owner:group]  mode  count  size  when  flags
       /var/log/immich.log                  644   7      10240 *     GZ

@@ -23,6 +23,14 @@ in
   };
 
   config = mkIf cfg.enable {
+    services.caddy.portalEntries = [{
+      name = "Forgejo";
+      url = "https://forgejo.${config.networking.hostName}.internal";
+      descriptionJa = "軽量 Git フォージ";
+      descriptionEn = "Lightweight Git Forge";
+      logoSvg = ''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 212 212"><g transform="translate(6,6)"><path d="M58 168v-98a50 50 0 0 1 50-50h20" fill="none" stroke="#ff6600" stroke-width="25"/><path d="M58 168v-30a50 50 0 0 1 50-50h20" fill="none" stroke="#d40000" stroke-width="25"/><circle cx="142" cy="20" r="18" fill="none" stroke="#ff6600" stroke-width="15"/><circle cx="142" cy="88" r="18" fill="none" stroke="#d40000" stroke-width="15"/><circle cx="58" cy="180" r="18" fill="none" stroke="#d40000" stroke-width="15"/></g></svg>'';
+    }];
+
     environment.etc."newsyslog.d/forgejo.conf".text = ''
       # logfilename          [owner:group]  mode  count  size  when  flags
       /var/log/forgejo.log                  644   7      10240 *     GZ
