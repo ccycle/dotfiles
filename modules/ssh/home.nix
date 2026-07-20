@@ -20,31 +20,25 @@
   # '';
 
   programs.zsh.initContent =
-    if pkgs.stdenv.isDarwin then ''
-      # Expose launchd-managed ssh-agent socket for tools that require SSH_AUTH_SOCK
-      # (e.g., git commit signing with gpg.format=ssh)
-      if [ -z "$SSH_AUTH_SOCK" ]; then
-        export SSH_AUTH_SOCK=$(launchctl asuser $(id -u) launchctl getenv SSH_AUTH_SOCK)
-      fi
-
-      # SSH Signing: keys in keychain to agent
-      # macOS: --apple-load-keychain automatically loads keys from keychain with passphrases.
-      # This avoids manual ssh-add and leverages macOS native keychain integration.
-      ssh-add --apple-load-keychain > /dev/null 2>&1
-
-      # Add all private keys in ~/.ssh to the agent
-      for key in ~/.ssh/*; do
-        if [ -f "$key" ] && grep -q "PRIVATE KEY" "$key"; then
-          ssh-add --apple-use-keychain "$key" > /dev/null 2>&1
+    let
+      agentSetup = ''
+        _AGENT_SOCK="$HOME/.ssh/agent.sock"
+        if [ -S "$_AGENT_SOCK" ]; then
+          # Verify the agent behind the socket is alive (exit 2 = can't connect)
+          SSH_AUTH_SOCK="$_AGENT_SOCK" ssh-add -l >/dev/null 2>&1 || [ $? -ne 2 ] || rm -f "$_AGENT_SOCK"
         fi
-      done
+        if [ ! -S "$_AGENT_SOCK" ]; then
+          eval "$(ssh-agent -a "$_AGENT_SOCK" -s)" > /dev/null
+        fi
+        export SSH_AUTH_SOCK="$_AGENT_SOCK"
+        unset _AGENT_SOCK
+      '';
+    in
+    if pkgs.stdenv.isDarwin then ''
+      ${agentSetup}
+      ssh-add --apple-load-keychain > /dev/null 2>&1
     '' else ''
-      # SSH Signing: load key to agent
-      # Linux: Requires manual agent startup and key addition since no native keychain integration exists.
-      # Checks for existing agent (SSH_AUTH_SOCK) to avoid spawning duplicate agents per shell.
-      if [ -z "$SSH_AUTH_SOCK" ]; then
-         eval "$(ssh-agent -s)" > /dev/null
-      fi
+      ${agentSetup}
       ssh-add ~/.ssh/id_ed25519_signing > /dev/null 2>&1
     '';
 }
