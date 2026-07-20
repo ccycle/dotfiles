@@ -1,0 +1,38 @@
+name: Verify
+
+on:
+  push:
+    branches:
+      - '**'
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'issues/**'
+      - 'skills/**'
+      - '.claude/**'
+  pull_request:
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'issues/**'
+      - 'skills/**'
+      - '.claude/**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Syntax + Structure + Build
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate env.nix
+        run: |
+          mkdir -p generated
+          echo '{ username = "runner"; homeDirectory = "/Users/runner"; }' > generated/env.nix
+
+      - name: Run verify-change
+        run: skills/project/verify-change/scripts/check.sh

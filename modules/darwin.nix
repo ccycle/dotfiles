@@ -7,6 +7,7 @@
     ./desktoppr/darwin.nix
     ./dnsmasq/darwin.nix
     ./docker/darwin.nix
+    ./forgejo/darwin.nix
     ./ghostty/darwin.nix
     ./gitlab/darwin.nix
     ./immich/darwin.nix

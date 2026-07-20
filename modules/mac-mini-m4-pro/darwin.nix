@@ -10,6 +10,7 @@
   services.immich.enable = true;
   services.monitoring.enable = true;
   services.gitlab.enable = true;
+  services.forgejo.enable = true;
   custom.lm-studio.enable = true;
   services.llm-server.enable = true;
 

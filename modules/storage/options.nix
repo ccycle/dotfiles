@@ -20,6 +20,6 @@ in
           message = "services.${svc} requires custom.storage.volumeRoot to be set. ${hint}";
         };
       in
-      map require [ "immich" "opencloud" "gitlab" "monitoring" "llm-server" ];
+      map require [ "immich" "opencloud" "gitlab" "forgejo" "monitoring" "llm-server" ];
   };
 }

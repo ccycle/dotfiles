@@ -1,0 +1,25 @@
+name: forgejo
+
+services:
+  forgejo:
+    image: codeberg.org/forgejo/forgejo:11
+    ports:
+      - "127.0.0.1:3000:3000"
+      - "127.0.0.1:2223:22"
+    environment:
+      - FORGEJO__server__ROOT_URL=${FORGEJO_EXTERNAL_URL}
+      - FORGEJO__server__SSH_PORT=2223
+      - FORGEJO__server__SSH_LISTEN_PORT=22
+      - FORGEJO__server__LFS_START_SERVER=true
+      - FORGEJO__actions__ENABLED=true
+    volumes:
+      - ${FORGEJO_DATA_DIR}:/data
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+    restart: always
