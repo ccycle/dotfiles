@@ -1,4 +1,5 @@
-{ pkgs, ... }: {
+{ pkgs, ... }:
+{
   home.packages = with pkgs; [
     nodejs
     prefetch-npm-deps
@@ -6,10 +7,7 @@
     yarn
     typescript
     devcontainer
-    node2nix
-
-    # Node packages
-    nodePackages.npm-check-updates
+    npm-check-updates
 
     # Custom packages managed via pnpm
     (callPackage ./node-tools/drv.nix { })

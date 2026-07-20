@@ -5,7 +5,7 @@
     arrow-cpp
     arrow-glib
     # mongodb # requires pkgs-2505
-    mysql80
+    mysql84
     neo4j
     sqlite
     sqlitebrowser

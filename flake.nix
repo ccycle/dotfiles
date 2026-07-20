@@ -13,7 +13,7 @@
     devx.url = "github:input-output-hk/devx";
     flake-parts.inputs.nixpkgs-lib.follows = "nixpkgs";
     flake-parts.url = "github:hercules-ci/flake-parts";
-    fresh.url = "github:sinelaw/fresh";
+    fresh.url = "github:sinelaw/fresh/v0.4.4";
     fresh.inputs.nixpkgs.follows = "nixpkgs";
     ghc-wasm-meta.url = "gitlab:haskell-wasm/ghc-wasm-meta?host=gitlab.haskell.org";
     ghcup.flake = false;
@@ -38,10 +38,10 @@
     nixpkgs-2511.url = "github:NixOS/nixpkgs/25.11";
     nixpkgs-2605.url = "github:NixOS/nixpkgs/26.05";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
-    nixpkgs.url = "github:nixos/nixpkgs/25.11";
+    nixpkgs.url = "github:nixos/nixpkgs/26.05";
     ghostty.url = "github:ghostty-org/ghostty";
     # opencode.url = "github:anomalyco/opencode/dev";
-    stylix.url = "github:nix-community/stylix/release-25.11";
+    stylix.url = "github:nix-community/stylix/release-26.05";
     tailscale.url = "github:tailscale/tailscale/v1.92.5";
     pip2nix.url = "github:nix-community/pip2nix";
     serena.url = "github:oraios/serena";
