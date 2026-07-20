@@ -4,12 +4,28 @@ let
   hostName = config.networking.hostName;
   domain = "${hostName}.internal";
 
-  # Build HTML content with domain/hostname placeholders resolved at build time
-  # so the page correctly reflects the serving machine's hostname.
-  indexHtml = builtins.replaceStrings ["__DOMAIN__" "__HOSTNAME__"] [domain hostName]
-    (builtins.readFile ./index.html);
-  caHtml = builtins.replaceStrings ["__DOMAIN__" "__HOSTNAME__"] [domain hostName]
+  caHtml = builtins.replaceStrings [ "__DOMAIN__" "__HOSTNAME__" ] [ domain hostName ]
     (builtins.readFile ./ca.html);
+
+  sortedEntries = lib.sort (a: b: a.name < b.name) config.services.caddy.portalEntries;
+
+  portalCardsHtml = lib.concatMapStringsSep "\n"
+    (entry: ''
+      <a href="${entry.url}" class="card">
+        <div class="logo">${entry.logoSvg}</div>
+        <div class="card-body">
+          <h2>${entry.name}</h2>
+          <p data-lang="ja">${entry.descriptionJa}</p>
+          <p data-lang="en" hidden>${entry.descriptionEn}</p>
+        </div>
+      </a>
+    '')
+    sortedEntries;
+
+  indexHtml = builtins.replaceStrings
+    [ "@domain@" "@hostName@" "@portalCards@" ]
+    [ domain hostName portalCardsHtml ]
+    (builtins.readFile ./index.html);
 
   # Hash all Caddy etc entries so the launchd plist changes (and nix-darwin
   # restarts the daemon) whenever any site config is added, removed, or modified.
@@ -23,6 +39,16 @@ in
   ];
 
   config = lib.mkIf config.services.caddy.enable {
+    services.caddy.portalEntries = [
+      {
+        name = "CA Certificate";
+        url = "https://ca.${domain}";
+        descriptionJa = "ルート証明書のダウンロード";
+        descriptionEn = "Download Root Certificate";
+        logoSvg = ''<svg viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><circle cx="12" cy="16" r="1"/></svg>'';
+      }
+    ];
+
     environment.etc = {
       "caddy/Caddyfile".text = ''
         {
