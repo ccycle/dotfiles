@@ -24,6 +24,13 @@
       ''
         bindkey '^[^?' backward-kill-word
         bindkey '^[[3;3~' backward-kill-word
+
+        # SSHエージェントに鍵がロードされているか確認し、なければ追加を試みる
+        if ssh-add -l >/dev/null 2>&1; then
+          :
+        else
+          ssh-add ~/.ssh/id_ed25519 2>/dev/null || true
+        fi
       '';
     history = {
       size = 100000;
