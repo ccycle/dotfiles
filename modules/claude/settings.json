@@ -171,7 +171,6 @@
     ],
     "defaultMode": "plan"
   },
-  "model": "claude-fable-5[1m]",
   "hooks": {
     "PreToolUse": [
       {
@@ -197,5 +196,6 @@
     ]
   },
   "effortLevel": "high",
-  "tui": "fullscreen"
+  "tui": "fullscreen",
+  "model": "claude-opus-4-6"
 }
