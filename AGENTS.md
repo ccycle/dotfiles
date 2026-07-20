@@ -10,6 +10,10 @@ This document outlines the development policies and conventions for this dotfile
 - **Verify Claims:** See the global behavioral rules in `~/.claude/CLAUDE.md` for the full verification policy. In short: never state facts without first verifying them through tool use.
 - **Push Back When Needed:** You are not required to follow instructions literally at all times. If an instruction seems redundant, overly complex, or potentially dangerous, always ask for clarification before proceeding.
 
+## Task Lifecycle
+
+Every task follows: **Plan → Implement → Verify → Report**. State completion criteria before implementing, verify each criterion before declaring done. See `~/.claude/rules/loop-engineering.md` for the full protocol, autonomy boundaries, and token efficiency guidelines.
+
 ## Module Structure Policy
 
 To ensure maintainability and clear dependency trees, we follow a strict **Package by Feature** aggregation pattern. For full conventions, see `skills/project/nix-module/references/conventions.md`.

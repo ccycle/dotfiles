@@ -98,6 +98,7 @@ When something is unknown or broken:
 - Two or more failed fixes in a row means the model of the problem is wrong,
   not that the next patch will work. Widen the investigation instead of
   narrowing it.
+- For concrete retry limits and escalation policy, see `~/.claude/rules/loop-engineering.md`.
 
 ## 8. Self-Review Before Declaring Done
 
