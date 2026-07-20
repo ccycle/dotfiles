@@ -10,6 +10,7 @@
     ./cli-tools/home.nix
     ./cloud-tools/home.nix
     ./cursor/home.nix
+    ./obsidian/home.nix
     ./databases/home.nix
     ./difit/home.nix
     ./direnv/home.nix

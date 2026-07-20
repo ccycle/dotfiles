@@ -2430,6 +2430,17 @@
         "type": "github"
       }
     },
+    "obsidian-vault-config": {
+      "locked": {
+        "path": "./modules/obsidian/default-config",
+        "type": "path"
+      },
+      "original": {
+        "path": "./modules/obsidian/default-config",
+        "type": "path"
+      },
+      "parent": []
+    },
     "old-ghc-nix": {
       "flake": false,
       "locked": {
@@ -2589,6 +2600,7 @@
         "nixpkgs-2511": "nixpkgs-2511_3",
         "nixpkgs-2605": "nixpkgs-2605",
         "nixpkgs-unstable": "nixpkgs-unstable_3",
+        "obsidian-vault-config": "obsidian-vault-config",
         "pip2nix": "pip2nix",
         "serena": "serena",
         "sops-nix": "sops-nix_2",

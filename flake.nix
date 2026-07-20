@@ -47,6 +47,7 @@
     serena.url = "github:oraios/serena";
     sops-nix.url = "github:Mic92/sops-nix";
     storage-config.url = "path:./modules/storage/default-config";
+    obsidian-vault-config.url = "path:./modules/obsidian/default-config";
     uv2nix.inputs.nixpkgs.follows = "nixpkgs";
     uv2nix.url = "github:pyproject-nix/uv2nix";
     worktrunk.url = "github:max-sixty/worktrunk";

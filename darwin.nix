@@ -21,6 +21,7 @@
     imports = [
       ./home.nix
       inputs.sops-nix.homeManagerModules.sops
+      inputs.obsidian-vault-config.homeManagerModules.default
     ];
   };
 }

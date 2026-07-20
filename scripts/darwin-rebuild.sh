@@ -65,13 +65,24 @@ else
   fi
 fi
 
+overrides=""
+
 storage_local="${repo_root}/.local/storage"
 if [ -d "${storage_local}" ]; then
-  sudo -H ${NIX} run "${flake_root}#${app}" -- switch --flake "${flake_root}#${config}" --impure -L \
-    --override-input storage-config "path:${storage_local}"
+  overrides="${overrides} --override-input storage-config \"path:${storage_local}\""
 else
   echo "Note: .local/storage/ not found. Services requiring external storage will fail." >&2
   echo "  Run: scripts/setup-local-storage.sh /Volumes/<YOUR_DRIVE>" >&2
   echo "" >&2
-  sudo -H ${NIX} run "${flake_root}#${app}" -- switch --flake "${flake_root}#${config}" --impure -L
 fi
+
+obsidian_local="${repo_root}/.local/obsidian-vault"
+if [ -d "${obsidian_local}" ]; then
+  overrides="${overrides} --override-input obsidian-vault-config \"path:${obsidian_local}\""
+else
+  echo "Note: .local/obsidian-vault/ not found. Obsidian vault config will use defaults." >&2
+  echo "  Run: scripts/setup-obsidian-vault.sh /path/to/your/vault" >&2
+  echo "" >&2
+fi
+
+eval sudo -H ${NIX} run "${flake_root}#${app}" -- switch --flake "${flake_root}#${config}" --impure -L ${overrides}
