@@ -5,6 +5,7 @@ with lib;
 let
   cfg = config.services.llm-server;
   catalog = builtins.fromJSON (builtins.readFile ./catalog.json);
+  waitForMount = import ../../utils/waitForMount.nix;
 
   modelEntries = mapAttrsToList (id: m: {
     inherit id;
@@ -91,13 +92,7 @@ in
         StandardErrorPath = "/var/tmp/llm-server.log";
       };
       script = ''
-        ${optionalString (cfg.mountPoint != "") ''
-          until [ -d ${cfg.mountPoint} ]; do
-            echo "Waiting for volume ${cfg.mountPoint} to be mounted..."
-            sleep 10
-          done
-          echo "Volume ${cfg.mountPoint} is mounted."
-        ''}
+        ${optionalString (cfg.mountPoint != "") (waitForMount cfg.mountPoint)}
 
         mkdir -p "${cfg.modelsDir}"
 
