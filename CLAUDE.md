@@ -14,6 +14,7 @@ Declarative system and home configuration using nix-darwin, home-manager, and fl
 | `/darwin-rebuild` | Apply Darwin system configuration |
 | `/setup-local-storage` | Create or update machine-local storage config |
 | `/investigate-service` | Root-cause a service problem via Prometheus/Loki APIs |
+| `/obsidian-manager` | Draft zettelkasten notes in the user's style (expand stubs, conversation → note, find related notes) |
 | `/cachix-push` | Build and push to Cachix cache |
 | `/smart-commit` | Smart commit with conventional format |
 | `/push` | Push current branch to origin |

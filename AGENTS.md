@@ -57,6 +57,7 @@ We use [Agent Skills](https://agentskills.io) for task automation and guideline 
 - **[nix-module](./skills/project/nix-module/SKILL.md):** Use this skill when creating new features or modules. It handles the directory structure and boilerplate generation.
 - **[credentials-manager](./skills/project/credentials-manager/SKILL.md):** Use this skill for managing secrets and Nix access tokens.
 - **[verify-change](./skills/project/verify-change/SKILL.md):** Use this skill to verify changes before committing. It runs syntax checks, lints, and build dry-runs.
+- **[obsidian-manager](./skills/project/obsidian-manager/SKILL.md):** Use this skill to draft zettelkasten notes on the user's behalf. Note conventions live in `references/note-conventions.md`; it never edits existing notes.
 
 ## Legacy Guidelines
 
