@@ -26,7 +26,7 @@ services:
   grafana:
     image: grafana/grafana:latest
     ports:
-      - "127.0.0.1:3000:3000"
+      - "127.0.0.1:3200:3000"
     volumes:
       - ${MONITORING_DATA_DIR:-/var/lib/monitoring}/grafana:/var/lib/grafana
       - ${GRAFANA_PROVISIONING_DIR}:/etc/grafana/provisioning:ro

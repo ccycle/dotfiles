@@ -62,7 +62,7 @@ in
     environment.etc."caddy/sites/grafana.caddy".text = ''
       https://grafana.${config.networking.hostName}.internal {
         import internal_tls
-        reverse_proxy 127.0.0.1:3000
+        reverse_proxy 127.0.0.1:3200
       }
     '';
 
