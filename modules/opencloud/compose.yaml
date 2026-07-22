@@ -7,7 +7,7 @@ services:
     entrypoint: ["/bin/sh", "-c"]
     command: ["-c", "opencloud init --insecure true || true; opencloud server"]
     ports:
-      - "9200:9200"
+      - "127.0.0.1:9200:9200"
     environment:
       OC_URL: ${OPENCLOUD_URL}
       PROXY_TLS: "false"
