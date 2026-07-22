@@ -36,13 +36,24 @@ is explicitly excluded.
   remain open from localhost for the `investigate-service` skill;
   remote access goes through `forward_auth`.
 
-### Phase 3 — audit and device posture (future)
+### Phase 3 — audit (future)
 
 - Caddy access logs → Loki (requires lifting the "no Caddy logs"
   non-goal in `modules/monitoring/design.md`).
 - Device posture checks (Tailscale paid feature, evaluate when needed).
-- Consider `tailscale serve` for ts.net certificates to eliminate the
-  internal CA trust friction entirely.
+
+## Why `.internal` TLD
+
+`.internal` is an ICANN-reserved TLD (July 2024) guaranteed never to
+be delegated in the public DNS root — the DNS equivalent of RFC 1918
+private IP ranges. Unlike `.local` (mDNS collision), `.home`, `.lan`,
+or `.corp` (no reservation, future gTLD risk), `.internal` is the
+only TLD with an official private-use guarantee. Tailscale's
+`tailscale serve` and automatic TLS certificates only work with
+`*.ts.net` domains and do not support custom TLDs like `.internal`
+(tailscale/tailscale#11563), but the benefits of a stable,
+collision-free namespace outweigh the CA trust friction that
+`*.ts.net` would eliminate.
 
 ## Why `default_bind` Instead of Per-Site `bind`
 
