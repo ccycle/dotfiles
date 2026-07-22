@@ -2,7 +2,9 @@
 {
   programs.git = {
     signing = {
-      key = builtins.readFile ./id_ed25519_signing.pub;
+      # Path (not literal key content) so security-key-style (sk-ssh-*) formats work too:
+      # https://dev.to/li/correctly-telling-git-about-your-ssh-key-for-signing-commits-4c2c
+      key = "${./id_ed25519_signing.pub}";
       signer = "";
       signByDefault = true;
     };
