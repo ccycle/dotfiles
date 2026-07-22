@@ -15,6 +15,11 @@
   # 2. Importing necessary modules from the parent directory (via `src` input) to configure `sops-nix`.
   # 3. Provisioning the `access-tokens.conf` file.
   #
+  # Maintenance:
+  # - Keep this flake minimal — only what is strictly required for credential provisioning.
+  # - Prefer stability over code reuse — self-contained is safer than shared abstractions.
+  # - Focus on credentials — its only job is to provision secrets and configure Git access.
+  #
   # Usage:
   #   nix run ./bootstrap -- switch --flake ./bootstrap
   #

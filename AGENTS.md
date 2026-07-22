@@ -65,10 +65,7 @@ We use [Agent Skills](https://agentskills.io) for task automation and guideline 
 
 ## Legacy Guidelines
 
-Detailed guidelines are available in the `docs/agents/` directory:
-
-- [Bootstrap Configuration](./docs/agents/bootstrap.md)
-  - Purpose and maintenance of the bootstrap profile
+- Bootstrap configuration: rationale and maintenance guidelines are documented as comments in `bootstrap/flake.nix`.
 
 ## Summary Checklist
 
