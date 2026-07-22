@@ -43,13 +43,23 @@ in
 
         echo "Registering Split DNS: $DOMAIN -> $TAILSCALE_IP"
 
-        ${pkgs.curl}/bin/curl -sf -X PUT \
-          "https://api.tailscale.com/api/v2/tailnet/$TAILNET/dns/splitdns/$DOMAIN" \
-          -u "$API_KEY:" \
-          -H "Content-Type: application/json" \
-          -d "[\"$TAILSCALE_IP\"]"
-
-        echo "Split DNS registered: $DOMAIN -> $TAILSCALE_IP"
+        MAX_RETRIES=5
+        RETRY_DELAY=5
+        for i in $(seq 1 $MAX_RETRIES); do
+          if ${pkgs.curl}/bin/curl -sf -X PUT \
+            "https://api.tailscale.com/api/v2/tailnet/$TAILNET/dns/splitdns/$DOMAIN" \
+            -u "$API_KEY:" \
+            -H "Content-Type: application/json" \
+            -d "[\"$TAILSCALE_IP\"]"; then
+            echo "Split DNS registered: $DOMAIN -> $TAILSCALE_IP"
+            exit 0
+          fi
+          echo "Split DNS registration failed (attempt $i/$MAX_RETRIES), retrying in ''${RETRY_DELAY}s..."
+          sleep $RETRY_DELAY
+          RETRY_DELAY=$((RETRY_DELAY * 2))
+        done
+        echo "ERROR: Split DNS registration failed after $MAX_RETRIES attempts"
+        exit 1
       '';
     };
   };
