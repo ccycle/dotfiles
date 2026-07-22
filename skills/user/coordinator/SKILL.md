@@ -7,30 +7,33 @@ disable-model-invocation: true
 
 # Worktree Agent Coordinator
 
-You are a coordinator agent. You orchestrate multiple worktree agents using
-`workmux` CLI commands. You do NOT implement tasks yourself. You spawn agents,
-monitor them, send instructions, and trigger merges.
+You are a coordinator agent. You orchestrate multiple worktree agents. You do
+NOT implement tasks yourself. You spawn agents, monitor them, send instructions,
+and trigger merges.
+
+## Backend detection
+
+Check `HERDR_ENV`:
+
+```bash
+test "${HERDR_ENV:-}" = "1"
+```
+
+- If `HERDR_ENV=1`: use **herdr** commands throughout
+- Otherwise: use **workmux** commands throughout
 
 ## Core Concepts
 
 - **Worktree agent**: a Claude Code session running in its own git
   worktree/branch
-- **Handle**: the worktree directory name, used to address agents in all
-  commands
-- **Cross-project targeting**: agent commands (`send`, `capture`, `status`,
-  `wait`, `run`) can target agents in other projects. If a handle is not found
-  locally, workmux searches all active agents globally. Use `project:handle`
-  syntax to disambiguate when names collide across projects
-- **Statuses**: `working` (processing), `waiting` (needs user input), `done`
-  (finished). Set automatically by agent hooks. Agents typically go `working` ->
-  `done`; `waiting` only occurs if the agent prompts for input
-- Agents run in background tmux windows; you interact via CLI only
+- **Handle / Name**: the identifier used to address agents in all commands
+- **Statuses**: `working` (processing), `waiting`/`blocked` (needs user input),
+  `done`/`idle` (finished)
+- Agents run in background; you interact via CLI only
 
-## Command Reference
+## Spawn Agents
 
-### Spawn Agents
-
-For each task, write a prompt file then run `workmux add`. You are a dispatcher.
+For each task, write a prompt file then spawn the agent. You are a dispatcher.
 Do NOT read source files, edit code, or implement tasks yourself.
 
 **Prompt file rules:**
@@ -59,128 +62,114 @@ Write API tests...
 EOF
 
 # Step 2: Spawn all agents (in parallel, after ALL files exist)
-workmux add auth-module -b -P "$tmpfile_a"
-workmux add api-tests -b -P "$tmpfile_b"
+# See backend-specific sections below
 ```
 
-Flags:
+## Command Reference
 
-- `-b`: background (do not switch to the new window)
-- `-P <file>`: prompt file (contents sent to agent on launch)
-- `-p <text>`: inline prompt (short tasks only)
-- `--name <handle>`: explicit handle name (otherwise derived from branch)
-- `--base <branch>`: base branch to branch from (default: current)
+### herdr backend
 
-### Monitor Status
+**Spawn:**
 
 ```bash
-# Table of all active agents
-workmux status
+result=$(herdr worktree create --branch auth-module --no-focus --json)
+pane_id=$(echo "$result" | jq -r '.result.root_pane.pane_id')
+herdr agent start auth-module --kind claude --pane "$pane_id"
+herdr agent prompt auth-module "$(cat "$tmpfile_a")" --timeout 600000
+```
 
-# Specific agents only
+**Monitor:**
+
+```bash
+herdr agent list
+```
+
+**Wait:**
+
+```bash
+# Wait for agent to finish (idle, done, or blocked)
+herdr agent wait auth-module --timeout 3600000
+
+# Wait for agent to start working (confirm launch)
+herdr agent wait auth-module --until working --timeout 120000
+```
+
+**Read output:**
+
+```bash
+herdr agent read auth-module --source recent-unwrapped --lines 200
+```
+
+**Send instructions:**
+
+```bash
+herdr agent prompt auth-module "fix the failing tests" --wait --timeout 600000
+```
+
+**Merge & cleanup:**
+
+```bash
+# Tell agent to merge its own branch
+herdr agent prompt auth-module "/merge" --wait --timeout 120000
+```
+
+### workmux backend
+
+**Spawn:**
+
+```bash
+workmux add auth-module -b -P "$tmpfile_a"
+```
+
+Flags: `-b` (background), `-P <file>` (prompt file), `-p <text>` (inline
+prompt), `--name <handle>` (explicit handle), `--base <branch>` (base branch)
+
+**Monitor:**
+
+```bash
+workmux status
 workmux status auth api-tests
 ```
 
-### Wait for Status
+**Wait:**
 
 ```bash
-# Block until all agents finish
 workmux wait agent-a agent-b agent-c
-
-# Wait with timeout (seconds)
 workmux wait agent-a --timeout 3600
-
-# Wait for first to finish
 workmux wait agent-a agent-b --any
-
-# Wait for agents to start (confirm launch)
 workmux wait agent-a agent-b --status working --timeout 120
 ```
 
 Exit codes: 0 = reached target, 1 = timeout, 2 = worktree not found, 3 = agent
 exited unexpectedly.
 
-### Capture Output
+**Read output:**
 
 ```bash
-# Read last 200 lines (default)
 workmux capture agent-a
-
-# Read last 50 lines
 workmux capture agent-a -n 50
 ```
 
-Output is ANSI-stripped plain text.
-
-### Send Instructions
+**Send instructions:**
 
 ```bash
-# Send a short instruction
 workmux send agent-a "fix the failing tests"
-
-# Send a skill command
 workmux send agent-a "/commit"
-
-# Send from file (for long prompts)
 workmux send agent-a -f followup.md
-
-# Send to an agent in another project (global fallback)
-workmux send other-worktree "run the tests"
-
-# Disambiguate with project:handle when names collide
-workmux send myproject:docs-update "also add the API reference"
 ```
 
-### Run Commands
-
-Run shell commands directly in a worktree's pane, with captured output and exit
-code.
+**Merge & cleanup:**
 
 ```bash
-# Run a command (waits and streams output by default)
-workmux run agent-a -- pytest tests/
-
-# Run in background (fire and forget)
-workmux run agent-a -b -- npm run build
-
-# With timeout (seconds)
-workmux run agent-a --timeout 300 -- make test
-
-# Keep run artifacts for debugging
-workmux run agent-a --keep -- ./scripts/deploy.sh
-```
-
-The command runs in a new split pane. Exit code is propagated (exits 124 on timeout).
-
-### Merge & Cleanup
-
-Tell the agent to merge its own branch via `/merge`. This lets the agent handle
-rebasing and conflict resolution.
-
-```bash
-# Tell agent to commit, rebase, and merge
 workmux send agent-a "/merge"
-
-# Remove a worktree without merging
 workmux remove agent-a
 ```
 
-### Cross-Project Targeting
+### Cross-project targeting (workmux only)
 
-Agent commands (`send`, `capture`, `status`, `wait`, `run`) automatically
-resolve handles across projects. If the handle is not found in the current repo,
-workmux searches all active agents globally by their worktree directory name.
-
-```bash
-# Target an agent in another project (resolved globally)
-workmux send other-worktree "run the tests"
-
-# Use project:handle to disambiguate when names collide
-workmux send myproject:feature-auth "check the edge cases"
-```
-
-Lifecycle commands (`add`, `open`, `merge`, `remove`, `close`) remain scoped to
-the current repository.
+Agent commands (`send`, `capture`, `status`, `wait`, `run`) can target agents in
+other projects. If a handle is not found locally, workmux searches all active
+agents globally. Use `project:handle` syntax to disambiguate.
 
 ## Workflow Patterns
 
@@ -190,46 +179,31 @@ Spawn multiple agents, wait for all, review, merge:
 
 ```bash
 # 1. Write ALL prompt files first (see "Spawn Agents" above)
-# 2. Spawn agents in background
-workmux add auth-module -b -P "$tmpfile_auth"
-workmux add api-tests -b -P "$tmpfile_tests"
-workmux add docs-update -b -P "$tmpfile_docs"
-
+# 2. Spawn agents in background (use appropriate backend)
 # 3. Confirm they started
-workmux wait auth-module api-tests docs-update --status working --timeout 120
-
+#    herdr: herdr agent wait <name> --until working --timeout 120000
+#    workmux: workmux wait <names> --status working --timeout 120
 # 4. Wait for completion
-workmux wait auth-module api-tests docs-update --timeout 7200
-
+#    herdr: herdr agent wait <name> --timeout 7200000
+#    workmux: workmux wait <names> --timeout 7200
 # 5. Review results
-workmux status
-workmux capture auth-module -n 50
-workmux capture api-tests -n 50
-
+#    herdr: herdr agent read <name> --source recent-unwrapped --lines 50
+#    workmux: workmux capture <name> -n 50
 # 6. Merge successful agents (one at a time, wait between each)
-workmux send auth-module "/merge"
-workmux wait auth-module --timeout 120
-workmux send api-tests "/merge"
-workmux wait api-tests --timeout 120
-
+#    herdr: herdr agent prompt <name> "/merge" --wait --timeout 120000
+#    workmux: workmux send <name> "/merge" && workmux wait <name> --timeout 120
 # 7. Send follow-up if needed
-workmux send docs-update "also add the API reference section"
-workmux wait docs-update
-workmux send docs-update "/merge"
 ```
 
 ## Rules
 
 1. **Write ALL prompt files before spawning any agents.** Prompts should be
    self-contained with full context. Agents cannot see your conversation.
-2. **Use `-b` (background) for all `workmux add` calls** so you stay in your own
-   session.
-3. **Always confirm agents started** with `workmux wait --status working` before
-   waiting for completion.
+2. **Spawn agents in background** so you stay in your own session.
+3. **Always confirm agents started** before waiting for completion.
 4. **Capture and review output** before merging. Do not blindly merge.
 5. **Merge one at a time** by sending `/merge` to each agent sequentially. Wait
    for each merge to complete before starting the next to avoid conflicts.
-6. **Use `--timeout`** to avoid waiting forever. Handle timeout exits
-   gracefully.
+6. **Use timeouts** to avoid waiting forever. Handle timeout exits gracefully.
 7. **Prompt files should use relative paths** (each worktree has its own root).
 8. You are a coordinator, not an implementer. Never edit source files directly.

@@ -11,18 +11,21 @@ allowed-tools: Read, Bash, Glob, Grep
 
 Check the arguments for flags:
 
-- `--keep`, `-k` → pass `--keep` to `workmux merge` (keeps the worktree and tmux window after merging)
-- `--no-verify`, `-n` → pass `--no-verify` to `workmux merge`
+- `--keep`, `-k` → keep the worktree after merging (herdr: skip worktree remove; workmux: pass `--keep`)
+- `--no-verify`, `-n` → workmux only: pass `--no-verify` to `workmux merge`
 
 Strip all flags from arguments.
 
-Commit, rebase, and merge the current branch.
+## Backend detection
 
-This command finishes work on the current branch by:
+Check `HERDR_ENV`:
 
-1. Committing any staged changes
-2. Rebasing onto the base branch
-3. Running `workmux merge` to merge and clean up
+```bash
+test "${HERDR_ENV:-}" = "1"
+```
+
+- If `HERDR_ENV=1`: use **herdr** merge flow (step 3a)
+- Otherwise: use **workmux** merge flow (step 3b)
 
 ## Step 1: Commit
 
@@ -30,13 +33,10 @@ If there are staged changes, commit them. Use lowercase, imperative mood, no con
 
 ## Step 2: Rebase
 
-Get the base branch from git config:
+Get the base branch. Try these sources in order:
 
-```
-git config --local --get "branch.$(git branch --show-current).workmux-base"
-```
-
-If no base branch is configured, default to "main".
+1. `git config --local --get "branch.$(git branch --show-current).workmux-base"`
+2. Fall back to `main`
 
 Rebase onto the local base branch (do NOT fetch from origin first):
 
@@ -58,7 +58,22 @@ If conflicts occur:
   `git rebase --continue`
 - If a conflict is too complex or unclear, ask for guidance before proceeding
 
-## Step 3: Merge
+## Step 3a: herdr merge flow
+
+After a successful rebase, the branch is fast-forward mergeable. Update the base
+branch ref from within the worktree:
+
+```bash
+git push . HEAD:<base-branch>
+```
+
+Then, unless `--keep` was passed, remove the worktree and its herdr workspace:
+
+```bash
+herdr worktree remove --json
+```
+
+## Step 3b: workmux merge flow
 
 Run: `workmux merge --rebase --notification [--keep] [--no-verify]`
 

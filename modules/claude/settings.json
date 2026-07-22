@@ -69,6 +69,7 @@
       "Bash(git tag*)",
       "Bash(git worktree*)",
       "Bash(gunzip*)",
+      "Bash(herdr *)",
       "Bash(gzip*)",
       "Bash(home-manager*)",
       "Bash(hostname)",
@@ -173,6 +174,18 @@
   },
   "model": "claude-opus-4-6",
   "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/herdr-agent-state.sh session",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Edit|Write",
