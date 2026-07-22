@@ -17,6 +17,7 @@
     autosuggestion.enable = true;
     completionInit =
       ''
+        # compinit must be called before bashcompinit for both completion systems to work.
         # https://stackoverflow.com/questions/67136714/how-to-properly-call-compinit-and-bashcompinit-in-zsh
         autoload -Uz compinit bashcompinit && compinit && bashcompinit
       '';

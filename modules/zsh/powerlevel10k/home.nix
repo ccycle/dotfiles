@@ -1,3 +1,5 @@
+# Nix makes .zshrc read-only, so zplug cannot write to it.
+# Use programs.zsh.plugins instead.
 # https://discourse.nixos.org/t/zsh-zplug-powerlevel10k-zshrc-is-readonly/30333/3
 
 { pkgs, ... }:

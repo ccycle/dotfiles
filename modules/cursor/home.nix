@@ -14,6 +14,7 @@ in
 
   programs.zsh = {
     shellAliases = {
+      # Cursor loses keychain access after sleep; manual unlock restores auth.
       # https://github.com/cursor/cursor/issues/3490#issuecomment-3733405558
       security-unlock-keychain = "security unlock-keychain ~/Library/Keychains/login.keychain-db";
     };

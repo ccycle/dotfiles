@@ -1,7 +1,9 @@
 { pkgs, ... }: {
   programs.tmux = {
     enable = true;
-    terminal = "screen-256color"; # https://zenn.dev/ymotongpoo/articles/d3b38bee191e3b
+    # screen-256color avoids color/key issues inside tmux.
+    # https://zenn.dev/ymotongpoo/articles/d3b38bee191e3b
+    terminal = "screen-256color";
     mouse = true;
     keyMode = "vi";
     plugins = with pkgs.tmuxPlugins; [

@@ -16,6 +16,7 @@
       core.ignorecase = false;
       init.defaultbranch = "main";
       fetch.prune = true;
+      # GCM is required for OAuth device-flow auth.
       # https://qiita.com/skkzsh/items/11dd107a0734fec682b8
       credential = {
         helper = "manager";
@@ -39,6 +40,7 @@
         aliases-list = ''
           !git config --get-regexp ^alias;
         '';
+        # --force-if-includes rejects push if remote has commits not yet fetched.
         # https://zenn.dev/mary_pp/articles/eaac544eaf600a
         push-force-with-lease = ''
           !git push --force-with-lease --force-if-includes
