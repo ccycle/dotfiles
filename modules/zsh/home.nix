@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ config, pkgs, ... }:
 {
   home.packages = with pkgs; [
     findutils
@@ -6,6 +6,7 @@
   ];
   programs.zsh = {
     enable = true;
+    dotDir = "${config.xdg.configHome}/zsh";
     shellAliases = {
       hm-switch = "home-manager switch -L --impure"; # 環境変数を読み取る処理を入れるため `--impure` をつけている
       zsh-restart = "exec zsh -l";
