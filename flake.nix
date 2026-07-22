@@ -67,6 +67,7 @@
       forAllSystems = inputs.nixpkgs.lib.genAttrs allSystems;
       forDarwinSystems = inputs.nixpkgs.lib.genAttrs darwinSystems;
 
+      # Only pass `inputs` itself and explicit derived values — do not spread inputs.
       mkSpecialArgs = system:
         let
           mkPkgs = input: input.legacyPackages.${system};
@@ -130,6 +131,10 @@
             ./bootstrap/modules/darwin.nix
           ];
         };
+        # `private` uses forDarwinSystems, so the attr path includes the arch
+        # (e.g. .private.aarch64-darwin.system).
+        # `mac-mini-m4` / `mac-mini-m4-pro` call darwinSystem directly,
+        # so there is no arch suffix (e.g. .mac-mini-m4.system).
         darwinConfigurations = {
           private = forDarwinSystems (system:
             inputs.nix-darwin.lib.darwinSystem {
