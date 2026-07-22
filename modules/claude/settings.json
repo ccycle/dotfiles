@@ -171,6 +171,7 @@
     ],
     "defaultMode": "plan"
   },
+  "model": "claude-opus-4-6",
   "hooks": {
     "PreToolUse": [
       {
@@ -196,6 +197,5 @@
     ]
   },
   "effortLevel": "high",
-  "tui": "fullscreen",
-  "model": "claude-opus-4-6"
+  "tui": "fullscreen"
 }
