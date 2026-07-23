@@ -12,7 +12,7 @@ show_agent_labels_on_pane_borders = true
 resume_agents_on_restore = true
 
 [[keys.command]]
-key = "prefix+cmd+r"
+key = "prefix+ctrl+r"
 type = "plugin_action"
 command = "persiyanov.reviewr.toggle"
 
