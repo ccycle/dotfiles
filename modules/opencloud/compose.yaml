@@ -14,7 +14,8 @@ services:
       OC_INSECURE: "true"
       IDM_ADMIN_PASSWORD: "${OPENCLOUD_ADMIN_PASSWORD}"
       OC_LOG_LEVEL: info
-      STORAGE_USERS_DRIVER: ocis
+      STORAGE_USERS_DRIVER: posix
+      STORAGE_USERS_ID_CACHE_STORE: nats-js-kv
       STORAGE_METADATA_DRIVER: ocis
     volumes:
       - ${OPENCLOUD_CONFIG_DIR:-/var/lib/opencloud/config}:/etc/opencloud
