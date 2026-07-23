@@ -38,7 +38,7 @@ Requires `jq`.
 ## When to Use
 
 - After `darwin-rebuild switch` to verify herdr-reviewr deployed correctly.
-- When debugging why the `cmd+r` toggle or `persiyanov.reviewr.toggle` keybinding isn't opening
+- When debugging why the `cmd+shift+r` toggle or `persiyanov.reviewr.toggle` keybinding isn't opening
   the sidebar.
 
 ## Notes
