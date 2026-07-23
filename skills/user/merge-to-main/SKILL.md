@@ -1,13 +1,13 @@
 ---
 name: merge-to-main
-description: Merge the current branch into main, push, and delete the branch
+description: Merge the current branch into main and delete the branch
 ---
 
 # Merge to Main
 
 ## Overview
 
-Merge the current feature branch into main using fast-forward only (`--ff-only`), push main to origin, and delete the feature branch. Do NOT create merge commits.
+Merge the current feature branch into main using fast-forward only (`--ff-only`), then delete the feature branch. Do NOT create merge commits. Pushing main to origin is left to the user — it requires an interactive OTP step this skill cannot perform.
 
 ## Workflow
 
@@ -38,15 +38,12 @@ Merge the current feature branch into main using fast-forward only (`--ff-only`)
    - Run `git merge --ff-only <FEATURE_BRANCH>`.
    - This should always succeed after the rebase. If it fails, abort and notify the user.
 
-6. **Push to origin (main and rebased feature branch)**
-   - Run `git push origin main` to push the merged main to the remote.
-
-7. **Cleanup: Delete Feature Branch (local and remote)**
+6. **Cleanup: Delete Feature Branch (local)**
    - Run `git branch -d <FEATURE_BRANCH>` to delete the local feature branch.
    - If changes were stashed in step 1, run `git stash pop` to restore them.
 
-8. **Result Report**
+7. **Result Report**
    - Display the name of the merged branch.
    - Run `git log --oneline -5` to show the latest commits on main.
    - Confirm the feature branch was deleted.
-   - Confirm the push to origin main completed successfully.
+   - Remind the user that `main` is ahead of `origin/main` and needs to be pushed manually.
