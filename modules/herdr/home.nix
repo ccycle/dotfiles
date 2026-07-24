@@ -26,30 +26,42 @@
   # herdr-reviewr ships prebuilt binaries through herdr's plugin system, not as a flake,
   # so the binary cannot be managed by Nix. Install it once here; updates are manual
   # (uninstall then install, per upstream's instructions).
+  #
+  # home-manager activation runs with a minimal PATH (Nix coreutils/findutils/etc.
+  # only) that excludes git and curl, both of which `herdr plugin install` shells
+  # out to when fetching from GitHub. Prepend /usr/bin:/bin (Xcode CLT git, system
+  # curl/tar) inside a subshell so the addition doesn't leak into later steps.
   home.activation.herdr-reviewr-install = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
-    if "${herdrPackage}/bin/herdr" plugin list 2>/dev/null | grep -q "persiyanov.reviewr"; then
-      echo "[herdr-reviewr-install] already installed, skipping"
-    else
-      echo "[herdr-reviewr-install] not found, installing persiyanov/herdr-reviewr"
-      if "${herdrPackage}/bin/herdr" plugin install persiyanov/herdr-reviewr -y; then
-        echo "[herdr-reviewr-install] install succeeded"
+    (
+      export PATH="/usr/bin:/bin:$PATH"
+      if "${herdrPackage}/bin/herdr" plugin list 2>/dev/null | grep -q "persiyanov.reviewr"; then
+        echo "[herdr-reviewr-install] already installed, skipping"
       else
-        echo "[herdr-reviewr-install] Warning: install failed. Run 'herdr plugin install persiyanov/herdr-reviewr' manually."
+        echo "[herdr-reviewr-install] not found, installing persiyanov/herdr-reviewr"
+        if "${herdrPackage}/bin/herdr" plugin install persiyanov/herdr-reviewr -y; then
+          echo "[herdr-reviewr-install] install succeeded"
+        else
+          echo "[herdr-reviewr-install] Warning: install failed. Run 'herdr plugin install persiyanov/herdr-reviewr' manually."
+        fi
       fi
-    fi
+    )
   '';
 
   # herdr-file-viewer also ships through herdr's plugin system rather than as a flake.
+  # Same minimal-PATH issue as herdr-reviewr-install above.
   home.activation.herdr-file-viewer-install = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
-    if "${herdrPackage}/bin/herdr" plugin list 2>/dev/null | grep -q "herdr-file-viewer"; then
-      echo "[herdr-file-viewer-install] already installed, skipping"
-    else
-      echo "[herdr-file-viewer-install] not found, installing smarzban/herdr-file-viewer"
-      if "${herdrPackage}/bin/herdr" plugin install smarzban/herdr-file-viewer -y; then
-        echo "[herdr-file-viewer-install] install succeeded"
+    (
+      export PATH="/usr/bin:/bin:$PATH"
+      if "${herdrPackage}/bin/herdr" plugin list 2>/dev/null | grep -q "herdr-file-viewer"; then
+        echo "[herdr-file-viewer-install] already installed, skipping"
       else
-        echo "[herdr-file-viewer-install] Warning: install failed. Run 'herdr plugin install smarzban/herdr-file-viewer' manually."
+        echo "[herdr-file-viewer-install] not found, installing smarzban/herdr-file-viewer"
+        if "${herdrPackage}/bin/herdr" plugin install smarzban/herdr-file-viewer -y; then
+          echo "[herdr-file-viewer-install] install succeeded"
+        else
+          echo "[herdr-file-viewer-install] Warning: install failed. Run 'herdr plugin install smarzban/herdr-file-viewer' manually."
+        fi
       fi
-    fi
+    )
   '';
 }
