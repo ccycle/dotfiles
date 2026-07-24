@@ -26,7 +26,7 @@
   # herdr-reviewr ships prebuilt binaries through herdr's plugin system, not as a flake,
   # so the binary cannot be managed by Nix. Install it once here; updates are manual
   # (uninstall then install, per upstream's instructions).
-  home.activation.herdr-reviewr-install = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+  home.activation.herdr-reviewr-install = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
     if "${herdrPackage}/bin/herdr" plugin list 2>/dev/null | grep -q "persiyanov.reviewr"; then
       echo "[herdr-reviewr-install] already installed, skipping"
     else
@@ -40,7 +40,7 @@
   '';
 
   # herdr-file-viewer also ships through herdr's plugin system rather than as a flake.
-  home.activation.herdr-file-viewer-install = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+  home.activation.herdr-file-viewer-install = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
     if "${herdrPackage}/bin/herdr" plugin list 2>/dev/null | grep -q "herdr-file-viewer"; then
       echo "[herdr-file-viewer-install] already installed, skipping"
     else
