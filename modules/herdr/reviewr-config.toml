@@ -1,3 +1,5 @@
 # reviewr rejects the whole file when any unknown key or invalid value is present.
 # Only keys documented in https://github.com/persiyanov/herdr-reviewr#configuration are allowed.
 theme = "catppuccin"
+# zoomed: toggle fills the whole tab instead of splitting beside the agent.
+toggle_placement = "zoomed"
