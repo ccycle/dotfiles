@@ -107,6 +107,8 @@
           };
         });
 
+        formatter = forAllSystems (system: inputs.nixpkgs.legacyPackages.${system}.nixpkgs-fmt);
+
         devShells = forAllSystems (system: {
           default = inputs.nixpkgs.legacyPackages.${system}.mkShell {
             packages = [
