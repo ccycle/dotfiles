@@ -11,6 +11,11 @@
   services.monitoring.enable = true;
   services.gitlab.enable = true;
   services.forgejo.enable = true;
+  services.forgejo.pushMirrors = [{
+    owner = "ccycle";
+    repo = "dotfiles";
+    remoteUrl = "https://github.com/ccycle/dotfiles.git";
+  }];
   custom.lm-studio.enable = true;
   services.llm-server.enable = true;
 
