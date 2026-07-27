@@ -28,4 +28,5 @@ When adding or managing a configuration file for a tool, place the source file i
 
 3. **Verify**
    - Run the `verify-change` skill to check the Nix configuration is valid.
-   - After rebuilding, confirm the symlink exists at the target path and points to the source in the dotfiles repo.
+   - After rebuilding, confirm the symlink resolves to the source in the dotfiles repo.
+   - Use `readlink -f <target>` (or read the file's contents), not just `ls -la <target>`. A plain `ls -la` only shows the first hop, which points into the nix store and looks unlinked from dotfiles — `mkOutOfStoreSymlink` deploys through an intermediate store path that itself symlinks out to the dotfiles file, so only the fully-resolved path confirms the live link.
