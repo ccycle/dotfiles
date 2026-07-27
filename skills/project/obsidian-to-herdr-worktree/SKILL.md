@@ -179,7 +179,7 @@ herdr agent prompt <slug> "$(cat <<'EOF'
 対象ノート(<title>)の中身:
 <note content>
 EOF
-)" --timeout 600000
+)"$'\n' --timeout 600000
 ```
 
 Do not pass `--wait`. This skill's job ends once all prompts are sent — do not
