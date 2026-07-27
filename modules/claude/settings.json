@@ -168,7 +168,7 @@
       "Bash(git clean -f *)",
       "Bash(git branch -D *)"
     ],
-    "defaultMode": "plan"
+    "defaultMode": "auto"
   },
   "hooks": {
     "SessionStart": [
