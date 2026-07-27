@@ -1,0 +1,5 @@
+{ hunkPackage, ... }:
+
+{
+  home.packages = [ hunkPackage ];
+}

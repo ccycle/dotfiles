@@ -27,6 +27,7 @@
     ./graphics-tools/home.nix
     ./haskell/home.nix
     ./herdr/home.nix
+    ./hunk/home.nix
     ./immich/home.nix
     ./just/home.nix
     ./languages/home.nix

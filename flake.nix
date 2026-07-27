@@ -28,6 +28,8 @@
     herdr.url = "github:ogulcancelik/herdr";
     herdr.inputs.nixpkgs.follows = "nixpkgs";
     home-manager.follows = "bootstrap/home-manager";
+    hunk.url = "github:modem-dev/hunk";
+    hunk.inputs.nixpkgs.follows = "nixpkgs";
     nix-darwin.follows = "bootstrap/nix-darwin";
     nixpkgs-2211.url = "github:nixos/nixpkgs/22.11";
     nixpkgs-2305.url = "github:nixos/nixpkgs/23.05";
@@ -81,6 +83,7 @@
             ./modules/gitui/drv.nix
             { src = inputs.gitui; };
           herdrPackage = inputs.herdr.packages.${system}.default;
+          hunkPackage = inputs.hunk.packages.${system}.default;
           pkgs-2211 = mkPkgs inputs.nixpkgs-2211;
           pkgs-2305 = mkPkgs inputs.nixpkgs-2305;
           pkgs-2311 = mkPkgs inputs.nixpkgs-2311;
