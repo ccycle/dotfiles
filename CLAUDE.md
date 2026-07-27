@@ -15,6 +15,7 @@ Declarative system and home configuration using nix-darwin, home-manager, and fl
 | `/setup-local-storage` | Create or update machine-local storage config |
 | `/investigate-service` | Root-cause a service problem via Prometheus/Loki APIs |
 | `/obsidian-manager` | Draft zettelkasten notes in the user's style (expand stubs, conversation → note, find related notes) |
+| `/obsidian-to-herdr-worktree` | Dispatch Obsidian TODO notes to parallel herdr worktrees for plan-only discussion in chat (no code changes, nothing written back to the vault) |
 | `/cachix-push` | Build and push to Cachix cache |
 | `/smart-commit` | Smart commit with conventional format |
 | `/push` | Push current branch to origin |
