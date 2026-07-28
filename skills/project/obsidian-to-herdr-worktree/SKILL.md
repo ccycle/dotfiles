@@ -52,9 +52,9 @@ test -f "$state_file" || echo '{}' > "$state_file"
 ```
 
 1. **Count currently busy workers** from prior batches — a worker still
-   `working`/`blocked` competes for the same local-LLM `n_parallel=4` slots
-   and CPU/GPU headroom described in Step 4, regardless of which invocation
-   started it:
+   `working`/`blocked` is one more parallel design discussion competing for
+   the same 4-slot batch ceiling described in Step 4, regardless of which
+   invocation started it:
 
    ```bash
    busy_count=$(herdr agent list | jq \
@@ -118,44 +118,29 @@ judgment about what the note is actually about.
 
 ## Step 4 — Choose a backend per note (token/cost efficiency)
 
-First, check that the local LLM server is actually up — it lives only on
-`mac-mini-m4-pro`, and since it is now every worker's default (not a single
-opt-in pilot slot), a sleeping/down server would otherwise fail all 4 workers
-at once:
+Default every worker to `--kind opencode -- --model
+opencode/deepseek-v4-flash-free` — a free-tier model hosted through opencode
+zen (`opencode models` lists it; no local machine or Nix config is involved,
+unlike the old `llamaswap/*` models). Because it is a hosted API rather than a
+single local llama-swap process, there is no model-swap serialization
+concern, so workers are not required to share one model ID the way local
+`llamaswap/*` models were.
 
-```bash
-curl -sf --max-time 3 http://llm.mac-mini-m4-pro.internal/v1/models >/dev/null
-```
-
-If this fails, skip the opencode default entirely for this batch and fall
-back to `--kind claude --permission-mode auto` for every worker instead — do
-not retry per-note or half-fall-back, since the server being down affects all
-opencode workers identically.
-
-If it succeeds, default every worker to `--kind opencode -- --model
-llamaswap/google/gemma-4-e4b` (the mac-mini-m4-pro llm-server). This is why
-this skill's ceiling is 4 notes total, not 3: llama-server auto-configures
-`n_parallel=4` for whichever single model is loaded, and that model's
-footprint (~13GB RSS for the 26B-A4B variant) leaves ample headroom under the
-~55GB Metal working-set ceiling on 64GB unified memory — so 4 concurrent
-opencode workers genuinely run in parallel, without reloading the model
-between them. `available_slots` from Step 1 enforces that this ceiling holds
-across invocations, not just within one.
-
-- **All 4 opencode workers in a batch must use the identical model ID** —
-  llama-swap only keeps one model loaded at a time, so mixed model IDs
-  serialize instead of running in parallel (each swap costs up to ~1 minute of
-  reload).
+- The 4-note ceiling from Step 1 (`available_slots`) still applies — it now
+  exists as general concurrency/review-load discipline (how many parallel
+  design discussions a human can reasonably keep track of) rather than to
+  respect a local GPU/RAM budget. Free-tier hosted models can also carry
+  their own rate limits; keeping the batch small is the conservative choice
+  until this is exercised at scale.
 - **Escalate an individual note to Claude** (`--kind claude --permission-mode
   auto`) when it likely needs real architectural judgment — the worker must be
   able to find and reason against existing precedent, the way the real `hunk
   導入` trial run found `modules/difit/` and corrected its own initial (wrong)
-  plan after reading it. Local-LLM instruction-following quality for this
-  skill's task (deciding what's in scope, correcting its own wrong
-  assumptions, keeping the conclusion tight enough for a chat) is still only
-  validated on a single-note pilot, not at 4-way scale — treat every
-  escalation to Claude as a per-note judgment call, not a reason to abandon
-  the local-LLM default across the board.
+  plan after reading it. Free-tier model instruction-following quality for
+  this skill's task (deciding what's in scope, correcting its own wrong
+  assumptions, keeping the conclusion tight enough for a chat) is unvalidated
+  — treat every escalation to Claude as a per-note judgment call, not a
+  reason to abandon the opencode-zen default across the board.
 - **Cheaper Claude model** (add `--model <alias>` such as `haiku`) and
   **`--bare`** remain available for any note you escalate to Claude, same as
   before: `--bare` skips hooks/LSP/plugin sync/CLAUDE.md auto-discovery, which
@@ -176,7 +161,7 @@ genuinely in parallel rather than one after another:
 ```bash
 result=$(herdr worktree create --cwd "$PWD" --branch <slug> --base main --label "<title>" --no-focus --json)
 pane_id=$(echo "$result" | jq -r '.result.root_pane.pane_id')
-herdr agent start <slug> --kind <kind from step 3> --pane "$pane_id" -- <native args from step 3, e.g. --permission-mode auto, or --model llamaswap/google/gemma-4-e4b>
+herdr agent start <slug> --kind <kind from step 4> --pane "$pane_id" -- <native args from step 4, e.g. --permission-mode auto, or --model opencode/deepseek-v4-flash-free>
 ```
 
 Pass `--permission-mode auto` explicitly on every `claude` `agent start` — do
@@ -241,11 +226,9 @@ per Step 1's pruning).
    check is a one-shot query at the start of a run, not a polling loop.
 5. Note selection is autonomous (your own judgment, Step 2) — do not ask the
    user which notes to pick, and do not ask which in-flight notes to skip.
-6. Never mix different local-LLM model IDs across opencode workers in the
-   same batch.
-7. Escalating a note from the local-LLM default to Claude (Step 4) is a
-   per-note judgment call, not a standing configuration — apply it selectively
-   when a note looks architecturally non-trivial.
-8. Never edit `dispatched.json` by hand or skip Step 1's prune — the human's
+6. Escalating a note from the opencode-zen free-tier default to Claude (Step
+   4) is a per-note judgment call, not a standing configuration — apply it
+   selectively when a note looks architecturally non-trivial.
+7. Never edit `dispatched.json` by hand or skip Step 1's prune — the human's
    only supported way to make a note re-eligible is `herdr worktree remove`,
    which the prune step then detects automatically.
