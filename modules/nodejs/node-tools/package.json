@@ -6,7 +6,7 @@
   "dependencies": {
     "@helpfeel/cosense-cli": "^1.5.1",
     "jest": "*",
-    "opencode-ai": "latest",
+    "opencode-ai": "1.18.7",
     "prettier": "^3.8.1",
     "stylus": "*",
     "typeorm": "*"
