@@ -118,13 +118,17 @@ judgment about what the note is actually about.
 
 ## Step 4 — Choose a backend per note (token/cost efficiency)
 
-Default every worker to `--kind opencode -- --model
+Default every worker to `--kind opencode -- --auto --model
 opencode/deepseek-v4-flash-free` — a free-tier model hosted through opencode
 zen (`opencode models` lists it; no local machine or Nix config is involved,
 unlike the old `llamaswap/*` models). Because it is a hosted API rather than a
 single local llama-swap process, there is no model-swap serialization
 concern, so workers are not required to share one model ID the way local
-`llamaswap/*` models were.
+`llamaswap/*` models were. `--auto` auto-approves permissions that opencode
+would otherwise prompt for — required here because these workers run
+unattended (no human present to answer a permission prompt) and are meant to
+read/research freely; it is opencode's equivalent of the `--permission-mode
+auto` passed to Claude workers below.
 
 - The 4-note ceiling from Step 1 (`available_slots`) still applies — it now
   exists as general concurrency/review-load discipline (how many parallel
@@ -161,11 +165,12 @@ genuinely in parallel rather than one after another:
 ```bash
 result=$(herdr worktree create --cwd "$PWD" --branch <slug> --base main --label "<title>" --no-focus --json)
 pane_id=$(echo "$result" | jq -r '.result.root_pane.pane_id')
-herdr agent start <slug> --kind <kind from step 4> --pane "$pane_id" -- <native args from step 4, e.g. --permission-mode auto, or --model opencode/deepseek-v4-flash-free>
+herdr agent start <slug> --kind <kind from step 4> --pane "$pane_id" -- <native args from step 4, e.g. --permission-mode auto, or --auto --model opencode/deepseek-v4-flash-free>
 ```
 
-Pass `--permission-mode auto` explicitly on every `claude` `agent start` — do
-not rely on whatever the session's default happens to be.
+Pass `--permission-mode auto` explicitly on every `claude` `agent start`, and
+`--auto` explicitly on every `opencode` `agent start` — do not rely on
+whatever the session's default happens to be.
 
 ## Step 6 — Send each worker its task (no `--wait`)
 
