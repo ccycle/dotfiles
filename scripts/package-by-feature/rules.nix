@@ -25,7 +25,6 @@
 
   # Paths (repo-relative) fully exempt from every check.
   exemptPaths = [
-    "modules/nodejs/node-tools" # node2nix output (default.nix, node-env.nix, node-packages.nix)
     "modules/storage/default-config" # standalone flake used as --override-input stub
     "modules/obsidian/default-config" # standalone flake used as --override-input stub
   ];
