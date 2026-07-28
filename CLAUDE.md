@@ -9,6 +9,7 @@ Declarative system and home configuration using nix-darwin, home-manager, and fl
 | Command | Description |
 |---|---|
 | `/nix-module` | Create a new feature module |
+| `/node-package` | Add or update an npm-managed CLI tool in `modules/nodejs/node-tools` |
 | `/verify-change` | Run syntax checks, lints, and build dry-runs |
 | `/credentials-manager` | Manage secrets and Nix access tokens |
 | `/darwin-rebuild` | Apply Darwin system configuration |
