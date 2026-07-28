@@ -20,5 +20,6 @@ in
   imports = [
     # ./pip2nix/home.nix
     ./uv/home.nix
+    ./pyzotero-cli/home.nix
   ];
 }

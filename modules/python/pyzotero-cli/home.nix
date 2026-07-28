@@ -1,0 +1,4 @@
+{ pyzoteroCliPackage, ... }:
+{
+  home.packages = [ pyzoteroCliPackage ];
+}

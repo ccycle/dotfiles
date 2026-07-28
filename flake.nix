@@ -46,6 +46,8 @@
     stylix.url = "github:nix-community/stylix/release-26.05";
     tailscale.url = "github:tailscale/tailscale/v1.92.5";
     pip2nix.url = "github:nix-community/pip2nix";
+    pyzotero-cli.flake = false;
+    pyzotero-cli.url = "github:chriscarrollsmith/pyzotero-cli";
     serena.url = "github:oraios/serena";
     sops-nix.url = "github:Mic92/sops-nix";
     storage-config.url = "path:./modules/storage/default-config";
@@ -96,17 +98,23 @@
           freshPackage = inputs.fresh.packages.${system}.default;
           worktrunkPackage = inputs.worktrunk.packages.${system}.default;
           workmuxPackage = inputs.workmux.packages.${system}.default;
+          pyzoteroCliPackage = inputs.nixpkgs.legacyPackages.${system}.python3Packages.callPackage
+            ./modules/python/pyzotero-cli/drv.nix
+            { src = inputs.pyzotero-cli; };
         } // env;
     in
     flake-parts.lib.mkFlake { inherit inputs; } {
       systems = allSystems;
       flake = {
         packages = forAllSystems (system: {
-          gwq = inputs.nixpkgs-unstable.legacyPackages.${system}.callPackage ./modules/git/gwq/drv.nix {
+          gwq = inputs.nixpkgs.legacyPackages.${system}.callPackage ./modules/git/gwq/drv.nix {
             src = inputs.gwq;
           };
           gitui = inputs.nixpkgs.legacyPackages.${system}.callPackage ./modules/gitui/drv.nix {
             src = inputs.gitui;
+          };
+          pyzotero-cli = inputs.nixpkgs.legacyPackages.${system}.python3Packages.callPackage ./modules/python/pyzotero-cli/drv.nix {
+            src = inputs.pyzotero-cli;
           };
         });
 

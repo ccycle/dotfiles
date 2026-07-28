@@ -2658,6 +2658,22 @@
         "type": "github"
       }
     },
+    "pyzotero-cli": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1775674071,
+        "narHash": "sha256-klPhLo0a+60JlzNT1GYgysT+VKlgVTXhFpm6jdSu4L4=",
+        "owner": "chriscarrollsmith",
+        "repo": "pyzotero-cli",
+        "rev": "e0e31ff3918164e3b1a0b123e0137ed807148c1e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "chriscarrollsmith",
+        "repo": "pyzotero-cli",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "attic": "attic",
@@ -2696,6 +2712,7 @@
         "nixpkgs-unstable": "nixpkgs-unstable_3",
         "obsidian-vault-config": "obsidian-vault-config",
         "pip2nix": "pip2nix",
+        "pyzotero-cli": "pyzotero-cli",
         "serena": "serena",
         "sops-nix": "sops-nix_2",
         "storage-config": "storage-config",
