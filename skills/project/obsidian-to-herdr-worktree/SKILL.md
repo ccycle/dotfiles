@@ -87,6 +87,15 @@ test -f "$state_file" || echo '{}' > "$state_file"
    in_flight_titles=$(jq -r '[.[].title] | join("\n")' "$state_file")
    ```
 
+4. **Collect existing branch names** — for the Step 3 slug similarity check,
+   gather all worktree branch names (excluding `main`) so they can be
+   consulted during slug generation:
+
+   ```bash
+   existing_branches=$(herdr worktree list | jq -r \
+     '[.result.worktrees[].branch | select(. != "main")]')
+   ```
+
 ## Step 2 — Select up to `available_slots` target notes
 
 - If `$ARGUMENTS` names one or more note titles, use those directly (max 4,
@@ -115,6 +124,14 @@ This becomes the git branch name, the herdr agent name, and the worktree
 label. Branch names must be ASCII; note titles are Japanese sentences, so this
 translation step cannot be skipped or automated mechanically — use your own
 judgment about what the note is actually about.
+
+After generating each slug, **check it against `existing_branches`** (from
+Step 1). If the generated slug describes the same concept as an existing
+branch (even with different wording — e.g., `per-machine-age-key` vs
+`per-machine-age-keys`), then this note is already in flight under a slightly
+different name — drop it from this batch and do not create a duplicate
+worktree. Selection remains autonomous: use your own judgment about what
+counts as "the same topic."
 
 ## Step 4 — Choose a backend per note (token/cost efficiency)
 
