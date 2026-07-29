@@ -36,3 +36,12 @@ jobs:
 
       - name: Run verify-change
         run: skills/project/verify-change/scripts/check.sh
+
+      - name: Build and push to Attic
+        env:
+          ATTIC_TOKEN: ${{ secrets.ATTIC_CI_TOKEN }}
+        run: |
+          nix run github:zhaofengli/attic -- watch-exec dotfiles -- \
+            nix build .#darwinConfigurations.mac-mini-m4-pro.system \
+                     .#darwinConfigurations.mac-mini-m4.system \
+              --impure --no-update-lock-file
