@@ -1,20 +1,27 @@
 { config, lib, ... }:
 
+with lib;
+
 let
   vol = config.custom.storage.volumeRoot;
-  hasVol = vol != "";
+  cfg = config.services.monitoring;
 in
 {
   imports = [
     ./options.nix
   ];
 
-  services.monitoring.dataDir = lib.mkIf hasVol (lib.mkDefault "${vol}/monitoring");
-  services.monitoring.mountPoint = lib.mkIf hasVol (lib.mkDefault vol);
+  config = mkIf cfg.enable {
+    assertions = [{
+      assertion = vol != "";
+      message = "custom.storage.volumeRoot must be set for monitoring. Run: scripts/setup-local-storage.sh /Volumes/<YOUR_DRIVE>";
+    }];
 
-  # Collect GitLab's file logs (rails, sidekiq, gitaly, ...) into Loki; they
-  # never reach the container's stdout.
-  services.monitoring.gitlabLogsDir = lib.mkIf config.services.gitlab.enable (
-    lib.mkDefault config.services.gitlab.logsDir
-  );
+    services.monitoring.dataDir = mkDefault "${vol}/monitoring";
+    services.monitoring.mountPoint = mkDefault vol;
+
+    services.monitoring.gitlabLogsDir = mkIf config.services.gitlab.enable (
+      mkDefault config.services.gitlab.logsDir
+    );
+  };
 }

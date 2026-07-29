@@ -1,15 +1,24 @@
 { config, lib, ... }:
 
+with lib;
+
 let
   vol = config.custom.storage.volumeRoot;
-  hasVol = vol != "";
+  cfg = config.services.opencloud;
 in
 {
   imports = [
     ./options.nix
   ];
 
-  services.opencloud.dataDir = lib.mkIf hasVol (lib.mkDefault "${vol}/opencloud/data");
-  services.opencloud.configDir = lib.mkIf hasVol (lib.mkDefault "${vol}/opencloud/config");
-  services.opencloud.mountPoint = lib.mkIf hasVol (lib.mkDefault vol);
+  config = mkIf cfg.enable {
+    assertions = [{
+      assertion = vol != "";
+      message = "custom.storage.volumeRoot must be set for opencloud. Run: scripts/setup-local-storage.sh /Volumes/<YOUR_DRIVE>";
+    }];
+
+    services.opencloud.dataDir = mkDefault "${vol}/opencloud/data";
+    services.opencloud.configDir = mkDefault "${vol}/opencloud/config";
+    services.opencloud.mountPoint = mkDefault vol;
+  };
 }
