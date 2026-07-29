@@ -17,11 +17,11 @@
 
   home.file."${config.home.homeDirectory}/.config/herdr/config.toml".source =
     config.lib.file.mkOutOfStoreSymlink
-      "${config.programs.git.settings.ghq.root}/github.com/ccycle/dotfiles/modules/herdr/config.toml";
+      "${config.custom.dotfiles.dir}/modules/herdr/config.toml";
 
   home.file."${config.home.homeDirectory}/.config/herdr/plugins/config/persiyanov.reviewr/config.toml".source =
     config.lib.file.mkOutOfStoreSymlink
-      "${config.programs.git.settings.ghq.root}/github.com/ccycle/dotfiles/modules/herdr/reviewr-config.toml";
+      "${config.custom.dotfiles.dir}/modules/herdr/reviewr-config.toml";
 
   # herdr-reviewr ships prebuilt binaries through herdr's plugin system, not as a flake,
   # so the binary cannot be managed by Nix. Install it once here; updates are manual

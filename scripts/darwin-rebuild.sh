@@ -85,4 +85,6 @@ else
   echo "" >&2
 fi
 
-eval sudo -H ${NIX} run "${flake_root}#${app}" -- switch --flake "${flake_root}#${config}" --impure -L ${overrides}
+export DOTFILES_DIR="${repo_root}"
+
+eval sudo -H DOTFILES_DIR="${DOTFILES_DIR}" ${NIX} run "${flake_root}#${app}" -- switch --flake "${flake_root}#${config}" --impure -L ${overrides}

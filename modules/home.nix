@@ -13,6 +13,7 @@
     ./obsidian/home.nix
     ./databases/home.nix
     ./difit/home.nix
+    ./dotfiles/home.nix
     ./direnv/home.nix
     ./docker/home.nix
     ./emacs/home.nix
