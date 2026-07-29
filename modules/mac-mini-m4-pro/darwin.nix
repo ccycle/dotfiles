@@ -19,6 +19,12 @@
   custom.lm-studio.enable = true;
   services.llm-server.enable = true;
 
+  services.atticd.enable = true;
+  services.attic-watch-store = {
+    enable = true;
+    cacheName = "dotfiles";
+  };
+
   # Enable macOS Remote Login (SSH on port 22)
   system.activationScripts.postActivation.text = ''
     if ! systemsetup -getremotelogin | grep -q "On"; then

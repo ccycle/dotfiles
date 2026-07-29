@@ -1,15 +1,24 @@
 { config, lib, ... }:
 
+with lib;
+
 let
   vol = config.custom.storage.volumeRoot;
-  hasVol = vol != "";
+  cfg = config.services.immich;
 in
 {
   imports = [
     ./options.nix
   ];
 
-  services.immich.uploadDir = lib.mkIf hasVol (lib.mkDefault "${vol}/immich/upload");
-  services.immich.dbDir = lib.mkIf hasVol (lib.mkDefault "${vol}/immich/db");
-  services.immich.mountPoint = lib.mkIf hasVol (lib.mkDefault vol);
+  config = mkIf cfg.enable {
+    assertions = [{
+      assertion = vol != "";
+      message = "custom.storage.volumeRoot must be set for immich. Run: scripts/setup-local-storage.sh /Volumes/<YOUR_DRIVE>";
+    }];
+
+    services.immich.uploadDir = mkDefault "${vol}/immich/upload";
+    services.immich.dbDir = mkDefault "${vol}/immich/db";
+    services.immich.mountPoint = mkDefault vol;
+  };
 }
