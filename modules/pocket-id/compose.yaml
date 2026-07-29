@@ -1,0 +1,30 @@
+name: pocket-id
+
+services:
+  pocket-id:
+    # Pinned to a version past all published GHSA advisories at time of
+    # writing (client-credentials audience confusion, fixed in v2.10.0;
+    # see design.md). Do not switch to a floating tag for this service.
+    image: ghcr.io/pocket-id/pocket-id:v2.11.0
+    ports:
+      - "127.0.0.1:1411:1411"
+    environment:
+      APP_URL: ${POCKET_ID_APP_URL}
+      TRUST_PROXY: "true"
+      ENCRYPTION_KEY_FILE: /run/secrets/encryption_key
+      # Passkey-only posture: no email-based bypass of WebAuthn, for the
+      # unauthenticated self-service path or the admin-assisted path.
+      EMAIL_ONE_TIME_ACCESS_AS_UNAUTHENTICATED_ENABLED: "false"
+      EMAIL_ONE_TIME_ACCESS_AS_ADMIN_ENABLED: "false"
+      # Single-owner homelab: no open or token-gated signups.
+      ALLOW_USER_SIGNUPS: disabled
+    volumes:
+      - ${POCKET_ID_DATA_DIR:-/var/lib/pocket-id/data}:/app/data
+      - ${POCKET_ID_ENCRYPTION_KEY_FILE}:/run/secrets/encryption_key:ro
+    healthcheck:
+      test: ["CMD", "/app/pocket-id", "healthcheck"]
+      interval: 90s
+      timeout: 5s
+      retries: 2
+      start_period: 10s
+    restart: always

@@ -10,6 +10,7 @@
   services.immich.enable = true;
   services.monitoring.enable = true;
   services.gitlab.enable = true;
+  services.pocket-id.enable = true;
   services.forgejo.enable = true;
   services.forgejo.pushMirrors = [{
     owner = "ccycle";

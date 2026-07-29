@@ -41,6 +41,7 @@
     ./opencode/home.nix
     ./php/home.nix
     ./pinentry/home.nix
+    ./pocket-id/home.nix
     ./python/home.nix
     ./rust/home.nix
     ./serena/home.nix

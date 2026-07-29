@@ -17,6 +17,7 @@
     ./monitoring/darwin.nix
     ./nix/darwin.nix
     ./opencloud/darwin.nix
+    ./pocket-id/darwin.nix
     ./ssh/darwin.nix
     ./storage/darwin.nix
     ./stylix/darwin.nix
