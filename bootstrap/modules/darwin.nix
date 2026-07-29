@@ -7,7 +7,6 @@
     ./attic/darwin.nix
     ./system/darwin.nix
     ./home-manager/darwin.nix
-    ./cachix/darwin.nix
     ./git/darwin.nix
     ./nix/darwin.nix
     ./sops/darwin.nix

@@ -3,7 +3,6 @@
   imports = [
     ./attic/darwin.nix
     ./brew-nix/darwin.nix
-    ./cachix/darwin.nix
     ./caddy/darwin.nix
     ./desktoppr/darwin.nix
     ./dnsmasq/darwin.nix

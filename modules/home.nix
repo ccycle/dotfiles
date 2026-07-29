@@ -4,7 +4,6 @@
     ./ai-rules/home.nix
     ./attic/home.nix
     ./build-tools/home.nix
-    ./cachix/home.nix
     ./caddy/home.nix
     ./claude/home.nix
     ./cli-tools/home.nix
