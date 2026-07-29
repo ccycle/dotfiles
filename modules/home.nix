@@ -21,6 +21,7 @@
     ./fzf/home.nix
     ./git/home.nix
     ./gitui/home.nix
+    ./grafana/home.nix
     ./gmake/home.nix
     ./go-task/home.nix
     ./gpg/home.nix

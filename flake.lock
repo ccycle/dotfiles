@@ -798,6 +798,22 @@
         "type": "github"
       }
     },
+    "gcx": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1785318970,
+        "narHash": "sha256-FxtMsLUSzyBTp5ANzZiGGzsCGRncj+/ZIgeWjgQWCdk=",
+        "owner": "grafana",
+        "repo": "gcx",
+        "rev": "62ba308c12f67ddea73eb0a10acc2aef44a47336",
+        "type": "github"
+      },
+      "original": {
+        "owner": "grafana",
+        "repo": "gcx",
+        "type": "github"
+      }
+    },
     "ghc-wasm-meta": {
       "inputs": {
         "flake-utils": "flake-utils_2",
@@ -2694,6 +2710,7 @@
         "dotfiles-config": "dotfiles-config",
         "flake-parts": "flake-parts_2",
         "fresh": "fresh",
+        "gcx": "gcx",
         "ghc-wasm-meta": "ghc-wasm-meta",
         "ghcup": "ghcup",
         "ghostty": "ghostty",

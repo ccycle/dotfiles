@@ -23,6 +23,8 @@
     haskellNix.url = "github:input-output-hk/haskell.nix";
     gitui.url = "github:extrawurst/gitui";
     gitui.flake = false;
+    gcx.url = "github:grafana/gcx";
+    gcx.flake = false;
     gwq.url = "github:d-kuro/gwq";
     gwq.flake = false;
     herdr.url = "github:ogulcancelik/herdr";
@@ -110,6 +112,9 @@
         packages = forAllSystems (system: {
           gwq = inputs.nixpkgs.legacyPackages.${system}.callPackage ./modules/git/gwq/drv.nix {
             src = inputs.gwq;
+          };
+          gcx = inputs.nixpkgs.legacyPackages.${system}.callPackage ./modules/grafana/drv.nix {
+            src = inputs.gcx;
           };
           gitui = inputs.nixpkgs.legacyPackages.${system}.callPackage ./modules/gitui/drv.nix {
             src = inputs.gitui;
