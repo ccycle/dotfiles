@@ -422,6 +422,17 @@
         "type": "github"
       }
     },
+    "dotfiles-config": {
+      "locked": {
+        "path": "./modules/dotfiles/default-config",
+        "type": "path"
+      },
+      "original": {
+        "path": "./modules/dotfiles/default-config",
+        "type": "path"
+      },
+      "parent": []
+    },
     "fenix": {
       "inputs": {
         "nixpkgs": [
@@ -2680,6 +2691,7 @@
         "bootstrap": "bootstrap",
         "brew-nix": "brew-nix",
         "devx": "devx",
+        "dotfiles-config": "dotfiles-config",
         "flake-parts": "flake-parts_2",
         "fresh": "fresh",
         "ghc-wasm-meta": "ghc-wasm-meta",

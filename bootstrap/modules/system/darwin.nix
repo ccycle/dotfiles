@@ -25,6 +25,7 @@
   };
 
   security.sudo.extraConfig = ''
+    Defaults env_keep+=DOTFILES_DIR
     ${username} ALL=(ALL) NOPASSWD: /run/current-system/sw/bin/nix *
     ${username} ALL=(ALL) NOPASSWD: /nix/var/nix/profiles/default/bin/nix *
     ${username} ALL=(ALL) NOPASSWD: /bin/launchctl *
