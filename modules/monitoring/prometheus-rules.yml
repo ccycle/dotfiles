@@ -22,7 +22,7 @@ groups:
   - name: gitlab
     rules:
       - alert: GitLabPostgresDown
-        expr: pg_up == 0
+        expr: pg_up{job="gitlab-postgres"} == 0
         for: 2m
         labels:
           severity: critical
@@ -30,7 +30,7 @@ groups:
           summary: "GitLab bundled PostgreSQL is unreachable from postgres_exporter"
 
       - alert: GitLabRedisDown
-        expr: redis_up == 0
+        expr: redis_up{job="gitlab-redis"} == 0
         for: 2m
         labels:
           severity: critical
@@ -51,3 +51,32 @@ groups:
           severity: warning
         annotations:
           summary: "Sidekiq queue {{ $labels.name }} has {{ $value | printf \"%.0f\" }} pending jobs"
+
+  - name: immich
+    rules:
+      # immich-server exposes http_server_response_count_total with a status
+      # label (IMMICH_TELEMETRY_INCLUDE=all); this is the only user-facing
+      # symptom signal currently available (job queue depth isn't exposed
+      # upstream, only in-flight active count, so it isn't alertable).
+      - alert: ImmichAPIErrorRate
+        expr: increase(http_server_response_count_total{job="immich-api", status=~"5.."}[10m]) > 5
+        labels:
+          severity: warning
+        annotations:
+          summary: "Immich API returned {{ $value | printf \"%.0f\" }} 5xx responses in the last 10m"
+
+      - alert: ImmichPostgresDown
+        expr: pg_up{job="immich-postgres"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Immich PostgreSQL is unreachable from postgres_exporter"
+
+      - alert: ImmichRedisDown
+        expr: redis_up{job="immich-redis"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Immich Redis is unreachable from redis_exporter"

@@ -46,5 +46,31 @@ services:
       - ${IMMICH_DB_DIR}:/var/lib/postgresql/data
     restart: always
 
+  # Neither bundled image ships a Prometheus exporter (unlike GitLab
+  # Omnibus), so availability is instrumented the same way GitLab's is:
+  # one sidecar exporter per dependency, published on the host so the
+  # monitoring stack's Prometheus can scrape it via host-gateway.
+  postgres-exporter:
+    image: quay.io/prometheuscommunity/postgres-exporter:latest
+    environment:
+      DATA_SOURCE_NAME: "postgresql://immich:${IMMICH_DB_PASSWORD}@database:5432/immich?sslmode=disable"
+    ports:
+      # Host ports 9187/9121 are taken by GitLab's own postgres/redis
+      # exporters; remapped here to stay unique across stacks.
+      - "127.0.0.1:9188:9187"
+    depends_on:
+      - database
+    restart: always
+
+  redis-exporter:
+    image: oliver006/redis_exporter:latest
+    environment:
+      REDIS_ADDR: "redis://redis:6379"
+    ports:
+      - "127.0.0.1:9122:9121"
+    depends_on:
+      - redis
+    restart: always
+
 volumes:
   model_cache:

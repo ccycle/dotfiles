@@ -46,6 +46,22 @@ for agent-driven investigation.
   the Prometheus and Loki HTTP APIs directly (localhost, no auth); the
   `investigate-service` skill documents that contract. This is why datasource
   UIDs are pinned: dashboard JSONs and queries must be stable references.
+- **Immich is instrumented the same way as GitLab**, one signal per failure
+  domain: the app itself already exposes API/job telemetry
+  (`IMMICH_TELEMETRY_INCLUDE=all`), so only the two dependencies it doesn't
+  control — its bundled Postgres and Redis, neither of which ships an
+  exporter — get sidecar `postgres_exporter`/`redis_exporter` containers.
+  Immich's job-queue metrics only expose in-flight active count, not queued
+  backlog, so there is no backlog alert for it (unlike GitLab's Sidekiq,
+  which has a real backlog metric via `gitlab_exporter`).
+- **OpenCloud is scraped from its debug port** (`PROXY_DEBUG_ADDR`), not
+  port 9200 — oCIS/OpenCloud exposes Prometheus metrics on a separate debug
+  HTTP server, not the app port. `opencloud-health.json` uses the
+  `opencloud_proxy_*` and `reva_upload/download_active` metrics confirmed
+  live post-deploy; `opencloud_proxy_requests_total` has no `status` label
+  (unlike GitLab/Immich's HTTP metrics), so the error panel uses the
+  dedicated `opencloud_proxy_errors_total` counter instead of a status-code
+  breakdown.
 
 ## Rejected Alternatives
 

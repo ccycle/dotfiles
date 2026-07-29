@@ -8,6 +8,9 @@ services:
     command: ["-c", "opencloud init --insecure true || true; opencloud server"]
     ports:
       - "127.0.0.1:9200:9200"
+      # Prometheus metrics live on the debug port, not 9200
+      # (https://doc.owncloud.com/ocis/next/admin/monitoring/prometheus.html).
+      - "127.0.0.1:9205:9205"
     environment:
       OC_URL: ${OPENCLOUD_URL}
       PROXY_TLS: "false"
@@ -17,6 +20,7 @@ services:
       STORAGE_USERS_DRIVER: posix
       STORAGE_USERS_ID_CACHE_STORE: nats-js-kv
       STORAGE_METADATA_DRIVER: ocis
+      PROXY_DEBUG_ADDR: "0.0.0.0:9205"
     volumes:
       - ${OPENCLOUD_CONFIG_DIR:-/var/lib/opencloud/config}:/etc/opencloud
       - ${OPENCLOUD_DATA_DIR:-/var/lib/opencloud/data}:/var/lib/opencloud
