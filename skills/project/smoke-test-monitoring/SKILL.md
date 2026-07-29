@@ -20,7 +20,7 @@ skills/project/smoke-test-monitoring/scripts/test.sh
 1. **Container Status**: Verifies all 5 monitoring containers are in `running` state via `docker compose -p monitoring ps`.
 2. **Health Endpoints**: Curls each service's health endpoint on localhost to confirm HTTP 200:
    - Prometheus: `http://127.0.0.1:9090/-/healthy`
-   - Grafana: `http://127.0.0.1:3000/api/health`
+   - Grafana: `http://127.0.0.1:3200/api/health`
    - Loki: `http://127.0.0.1:3100/ready`
    - cAdvisor: `http://127.0.0.1:8081/healthz`
 3. **Caddy Reverse Proxy**: Verifies HTTPS access through Caddy:

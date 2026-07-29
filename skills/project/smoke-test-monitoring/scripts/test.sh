@@ -47,7 +47,7 @@ echo ""
 echo "=== 🏥 Health Endpoints ==="
 
 check_http "Prometheus" "http://127.0.0.1:9090/-/healthy"
-check_http "Grafana"    "http://127.0.0.1:3000/api/health"
+check_http "Grafana"    "http://127.0.0.1:3200/api/health"
 check_http "Loki"       "http://127.0.0.1:3100/ready"
 check_http "cAdvisor"   "http://127.0.0.1:8081/healthz"
 
@@ -64,7 +64,7 @@ echo ""
 # --- 4. Prometheus Scrape Targets ---
 echo "=== 🎯 Prometheus Scrape Targets ==="
 
-EXPECTED_JOBS="prometheus cadvisor immich-api immich-microservices gitlab-rails gitlab-sidekiq gitlab-postgres gitlab-redis gitlab-exporter-sidekiq"
+EXPECTED_JOBS="prometheus cadvisor immich-api immich-microservices immich-postgres immich-redis gitlab-rails gitlab-sidekiq gitlab-postgres gitlab-redis gitlab-exporter-sidekiq opencloud"
 targets_json=$(curl -sf --max-time 10 "http://127.0.0.1:9090/api/v1/targets" || true)
 if [ -z "$targets_json" ]; then
   fail "Cannot fetch Prometheus targets API"
@@ -84,7 +84,7 @@ echo ""
 # --- 5. Provisioned Grafana Dashboards ---
 echo "=== 📊 Provisioned Dashboards ==="
 
-EXPECTED_DASHBOARDS="services-overview gitlab-health logs-explorer"
+EXPECTED_DASHBOARDS="services-overview gitlab-health immich-health opencloud-health logs-explorer"
 for uid in $EXPECTED_DASHBOARDS; do
   if docker compose -p "$PROJECT_NAME" exec -T grafana \
     test -f "/var/lib/grafana/dashboards/${uid}.json" > /dev/null 2>&1; then
