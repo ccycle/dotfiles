@@ -23,18 +23,41 @@ is explicitly excluded.
   It must be applied to the tailnet manually via the Tailscale admin
   console or API; there is no automated GitOps sync yet.
 
-### Phase 2 — L7 per-request authentication (future)
+### Phase 2 — L7 per-request authentication (in progress)
 
-- Add `forward_auth` to Caddy vhosts, backed by an OIDC IdP.
-- **Candidate IdP: tsidp** (Tailscale's OIDC IdP) — maps tailnet
-  identity to OIDC tokens, no external account DB needed. Still
-  experimental/community, so evaluate maturity before adopting.
-- SSO-capable services (Grafana, GitLab, Immich, OpenCloud) get OIDC
-  login. Non-interactive API clients (opencode → LM Studio) use API
-  keys distributed via sops-nix.
-- Prometheus and Loki APIs (currently unauthenticated on localhost)
-  remain open from localhost for the `investigate-service` skill;
-  remote access goes through `forward_auth`.
+- **Chosen IdP: Pocket ID** (`modules/pocket-id`) — a passkey-only,
+  OIDC Certified™ provider. Deployed and reachable at
+  `https://auth.<hostname>.internal` via Caddy, Tailscale-only like
+  every other vhost.
+- **tsidp was the original candidate and was rejected**: it
+  authenticates by tailnet device identity rather than WebAuthn/
+  passkeys, so it doesn't meet the passkey requirement regardless of
+  maturity, and its own README states it is experimental and not
+  intended for production. See `modules/pocket-id/design.md` for the
+  full rejection rationale and Pocket ID's own security posture
+  (it has a nontrivial CVE history in core OIDC flows — all patched,
+  but the module pins to a specific version rather than floating).
+- Each SSO-capable service (Forgejo, GitLab, OpenCloud, Immich) is
+  wired to Pocket ID as an OIDC client individually, following that
+  service's own auth settings (admin console or config file) — this
+  is a manual, per-service step done after Pocket ID is confirmed
+  healthy, not something expressed in `modules/pocket-id` itself.
+- Caddy `forward_auth` (a shared L7 gate in front of vhosts, as
+  opposed to each app doing its own OIDC login) has not been adopted
+  for Forgejo/GitLab/OpenCloud/Immich; every one of them already has
+  native OIDC support, so per-app login is sufficient there.
+- **Gap: `prometheus.<hostname>.internal` (via Caddy, see
+  `modules/monitoring/options.nix`) is reachable over Tailscale with
+  no authentication at all.** Prometheus has no native OIDC support,
+  so it cannot join the per-app-login list above; `forward_auth`
+  backed by Pocket ID is the candidate fix and remains unimplemented.
+  Grafana has native OIDC support and could be wired to Pocket ID
+  directly like the other services, but that has not been done here
+  either — both are follow-up work, not part of this change.
+- Loki has no Caddy vhost and stays localhost-only for the
+  `investigate-service` skill; no remote access path exists today.
+- Non-interactive API clients (opencode → LM Studio) use API keys
+  distributed via sops-nix, not OIDC.
 
 ### Phase 3 — audit (future)
 
