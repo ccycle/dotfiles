@@ -85,6 +85,22 @@ else
   echo "" >&2
 fi
 
-export DOTFILES_DIR="${repo_root}"
+dotfiles_local="${repo_root}/.local/dotfiles"
+if [ -d "${dotfiles_local}" ]; then
+  overrides="${overrides} --override-input dotfiles-config \"path:${dotfiles_local}\""
+else
+  # Auto-create with the current repo root path so DOTFILES_DIR env var is never needed.
+  mkdir -p "${dotfiles_local}"
+  cat > "${dotfiles_local}/flake.nix" <<- LOCALEOF
+		{
+		  outputs = { ... }: {
+		    darwinModules.default = { ... }: {
+		      custom.dotfiles.dir = "${repo_root}";
+		    };
+		  };
+		}
+	LOCALEOF
+  overrides="${overrides} --override-input dotfiles-config \"path:${dotfiles_local}\""
+fi
 
-eval sudo -H DOTFILES_DIR="${DOTFILES_DIR}" ${NIX} run "${flake_root}#${app}" -- switch --flake "${flake_root}#${config}" --impure -L ${overrides}
+eval sudo -H ${NIX} run "${flake_root}#${app}" -- switch --flake "${flake_root}#${config}" --impure -L ${overrides}

@@ -12,5 +12,4 @@
         "/home/${builtins.getEnv "SUDO_USER"}"
     else
       builtins.getEnv "HOME";
-  dotfilesDir = builtins.getEnv "DOTFILES_DIR";
 }

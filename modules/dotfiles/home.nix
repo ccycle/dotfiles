@@ -8,8 +8,7 @@ in {
     type = types.str;
     description = ''
       Absolute path to the dotfiles repository checkout directory.
-      Set automatically by darwin-rebuild.sh via the DOTFILES_DIR environment variable.
-      When undefined (DOTFILES_DIR unset), evaluation fails with a clear error.
+      Set automatically by darwin-rebuild.sh via .local/dotfiles/flake.nix.
     '';
   };
 

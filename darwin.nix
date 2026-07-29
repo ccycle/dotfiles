@@ -5,6 +5,7 @@
     ./bootstrap/modules/darwin.nix
     ./modules/darwin.nix
     inputs.storage-config.darwinModules.default
+    inputs.dotfiles-config.darwinModules.default
   ];
 
   # Required for launchd.user.agents
@@ -16,7 +17,9 @@
   };
 
   # Home Manager configuration
-  home-manager.extraSpecialArgs = inputs.self.extraSpecialArgs.${pkgs.stdenv.hostPlatform.system};
+  home-manager.extraSpecialArgs = inputs.self.extraSpecialArgs.${pkgs.stdenv.hostPlatform.system} // {
+    dotfilesDir = config.custom.dotfiles.dir;
+  };
   home-manager.users."${username}" = {
     imports = [
       ./home.nix

@@ -2,6 +2,7 @@
 {
   imports = [
     ./attic/darwin.nix
+    ./dotfiles/darwin.nix
     ./brew-nix/darwin.nix
     ./caddy/darwin.nix
     ./desktoppr/darwin.nix
