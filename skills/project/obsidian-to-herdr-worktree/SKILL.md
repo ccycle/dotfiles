@@ -10,7 +10,7 @@ allowed-tools: Bash, Read
 Turn Obsidian TODO notes into parallel, isolated design discussions. Up to 4
 notes are selected — named directly via `$ARGUMENTS`, or picked autonomously
 by the AI if none are given — and each gets its own git worktree and its own
-Claude/opencode agent whose job is to research and propose an implementation
+opencode agent whose job is to research and propose an implementation
 approach — never to write code. The agent's conclusion stays in the chat, for
 the human to 壁打ち with directly by attaching to the pane — it is not written
 back into the Obsidian vault.
@@ -133,46 +133,19 @@ different name — drop it from this batch and do not create a duplicate
 worktree. Selection remains autonomous: use your own judgment about what
 counts as "the same topic."
 
-## Step 4 — Choose a backend per note (token/cost efficiency)
+## Step 4 — Worker configuration
 
-Default every worker to `--kind opencode -- --auto --model
+Every worker runs as `--kind opencode -- --auto --model
 opencode/deepseek-v4-flash-free` — a free-tier model hosted through opencode
-zen (`opencode models` lists it; no local machine or Nix config is involved,
-unlike the old `llamaswap/*` models). Because it is a hosted API rather than a
-single local llama-swap process, there is no model-swap serialization
-concern, so workers are not required to share one model ID the way local
-`llamaswap/*` models were. `--auto` auto-approves permissions that opencode
-would otherwise prompt for — required here because these workers run
-unattended (no human present to answer a permission prompt) and are meant to
-read/research freely; it is opencode's equivalent of the `--permission-mode
-auto` passed to Claude workers below.
+zen. `--auto` auto-approves permissions that opencode would otherwise prompt
+for — required here because these workers run unattended (no human present to
+answer a permission prompt).
 
-- The 4-note ceiling from Step 1 (`available_slots`) still applies — it now
-  exists as general concurrency/review-load discipline (how many parallel
-  design discussions a human can reasonably keep track of) rather than to
-  respect a local GPU/RAM budget. Free-tier hosted models can also carry
-  their own rate limits; keeping the batch small is the conservative choice
-  until this is exercised at scale.
-- **Escalate an individual note to Claude** (`--kind claude --permission-mode
-  auto`) when it likely needs real architectural judgment — the worker must be
-  able to find and reason against existing precedent, the way the real `hunk
-  導入` trial run found `modules/difit/` and corrected its own initial (wrong)
-  plan after reading it. Free-tier model instruction-following quality for
-  this skill's task (deciding what's in scope, correcting its own wrong
-  assumptions, keeping the conclusion tight enough for a chat) is unvalidated
-  — treat every escalation to Claude as a per-note judgment call, not a
-  reason to abandon the opencode-zen default across the board.
-- **Cheaper Claude model** (add `--model <alias>` such as `haiku`) and
-  **`--bare`** remain available for any note you escalate to Claude, same as
-  before: `--bare` skips hooks/LSP/plugin sync/CLAUDE.md auto-discovery, which
-  is fine for genuinely plan-only, non-nix items, but means that worker does
-  not inherit the global CLAUDE.md rules (verification-first, nix rules,
-  etc.).
-
-Do not add generic "explore efficiently" instructions to the Step 6 prompt —
-`loop-engineering.md`'s Token Efficiency section already applies automatically
-to every Claude worker that isn't `--bare`, and repeating it here would
-duplicate that documentation.
+The 4-note ceiling from Step 1 (`available_slots`) exists as general
+concurrency/review-load discipline (how many parallel design discussions a
+human can reasonably keep track of), not a GPU/RAM budget. Free-tier hosted
+models can also carry their own rate limits; keeping the batch small is the
+conservative choice until this is exercised at scale.
 
 ## Step 5 — Create all worktrees and start all agents first
 
@@ -182,12 +155,11 @@ genuinely in parallel rather than one after another:
 ```bash
 result=$(herdr worktree create --cwd "$PWD" --branch <slug> --base main --label "<title>" --no-focus --json)
 pane_id=$(echo "$result" | jq -r '.result.root_pane.pane_id')
-herdr agent start <slug> --kind <kind from step 4> --pane "$pane_id" -- <native args from step 4, e.g. --permission-mode auto, or --auto --model opencode/deepseek-v4-flash-free>
+herdr agent start <slug> --kind opencode --pane "$pane_id" -- --auto --model opencode/deepseek-v4-flash-free
 ```
 
-Pass `--permission-mode auto` explicitly on every `claude` `agent start`, and
-`--auto` explicitly on every `opencode` `agent start` — do not rely on
-whatever the session's default happens to be.
+Pass `--auto` explicitly — do not rely on whatever the session's default
+happens to be.
 
 ## Step 6 — Send each worker its task (no `--wait`)
 
@@ -248,9 +220,8 @@ per Step 1's pruning).
    check is a one-shot query at the start of a run, not a polling loop.
 5. Note selection is autonomous (your own judgment, Step 2) — do not ask the
    user which notes to pick, and do not ask which in-flight notes to skip.
-6. Escalating a note from the opencode-zen free-tier default to Claude (Step
-   4) is a per-note judgment call, not a standing configuration — apply it
-   selectively when a note looks architecturally non-trivial.
+6. All workers use the same backend (`opencode + deepseek-v4-flash-free`).
+   No per-note backend escalation — the backend is uniform.
 7. Never edit `dispatched.json` by hand or skip Step 1's prune — the human's
    only supported way to make a note re-eligible is `herdr worktree remove`,
    which the prune step then detects automatically.
