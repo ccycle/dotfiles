@@ -1,6 +1,6 @@
 ---
 name: obsidian-to-herdr-worktree
-description: Dispatch up to 4 Obsidian TODO/idea notes (named via $ARGUMENTS, or picked autonomously by the AI if omitted) to parallel herdr worktrees for implementation-plan discussion only (no code changes). Self-throttles against already-running workers from prior invocations and skips notes still in flight, so repeated invocations drain the backlog gradually instead of piling load on the machine. Each worker keeps its conclusion in the chat for live 壁打ち with the human via `herdr agent attach` — nothing is written back to the vault. Use when the user wants to turn vault TODO notes into parallel design discussions without touching code or Obsidian.
+description: Dispatch up to 4 Obsidian TODO/idea notes (named via $ARGUMENTS, or picked autonomously by the AI if omitted) to parallel herdr worktrees for implementation-plan discussion only (no code changes). Self-throttles against already-running workers from prior invocations and skips notes still in flight, so repeated invocations drain the backlog gradually instead of piling load on the machine. Each worker is spawned via a priority/fallback chain (Claude Sonnet 5, then free-tier opencode models) and keeps its conclusion in the chat for live 壁打ち with the human via `herdr agent attach` — nothing is written back to the vault. Use when the user wants to turn vault TODO notes into parallel design discussions without touching code or Obsidian.
 disable-model-invocation: true
 allowed-tools: Bash, Read
 ---
@@ -10,10 +10,12 @@ allowed-tools: Bash, Read
 Turn Obsidian TODO notes into parallel, isolated design discussions. Up to 4
 notes are selected — named directly via `$ARGUMENTS`, or picked autonomously
 by the AI if none are given — and each gets its own git worktree and its own
-opencode agent whose job is to research and propose an implementation
-approach — never to write code. The agent's conclusion stays in the chat, for
-the human to 壁打ち with directly by attaching to the pane — it is not written
-back into the Obsidian vault.
+worker agent whose job is to research and propose an implementation
+approach — never to write code. The worker is spawned via a priority/fallback
+chain (Step 4): Claude Sonnet 5 first, falling back to a free-tier
+opencode-hosted model if Sonnet 5 is unavailable. The agent's conclusion
+stays in the chat, for the human to 壁打ち with directly by attaching to the
+pane — it is not written back into the Obsidian vault.
 
 This is a narrower, opinionated sibling of the generic `/worktree` skill:
 `/worktree` dispatches implementation work; this skill dispatches plan-only
@@ -135,31 +137,64 @@ counts as "the same topic."
 
 ## Step 4 — Worker configuration
 
-Every worker runs as `--kind opencode -- --auto --model
-opencode/deepseek-v4-flash-free` — a free-tier model hosted through opencode
-zen. `--auto` auto-approves permissions that opencode would otherwise prompt
-for — required here because these workers run unattended (no human present to
-answer a permission prompt).
+Each worker is spawned from a fixed priority/fallback chain, tried in order
+until one starts successfully:
+
+1. **Claude Sonnet 5** — `--kind claude -- --model claude-sonnet-5
+   --dangerously-skip-permissions`. `--dangerously-skip-permissions` is the
+   `--kind claude` equivalent of opencode's `--auto` below — required because
+   these workers run unattended (no human present to answer a permission
+   prompt).
+2. **opencode zen deepseek** — `--kind opencode -- --auto --model
+   opencode/deepseek-v4-flash-free`, a free-tier model hosted through
+   opencode zen.
+3. **opencode gemma (llamaswap)** — `--kind opencode -- --auto --model
+   llamaswap/google/gemma-4-26b-a4b`. Note this one is *not* an opencode-zen
+   hosted model like tier 2 — `llamaswap/` means it is routed to a
+   locally/self-hosted model server, not zen's hosted API. Confirm with
+   `opencode models` that this identifier is still current before relying on
+   it; opencode's free-tier catalog changes.
+
+In all cases pass `--auto` (opencode) or `--dangerously-skip-permissions`
+(claude) explicitly — do not rely on whatever the session's default happens
+to be.
 
 The 4-note ceiling from Step 1 (`available_slots`) exists as general
 concurrency/review-load discipline (how many parallel design discussions a
-human can reasonably keep track of), not a GPU/RAM budget. Free-tier hosted
-models can also carry their own rate limits; keeping the batch small is the
+human can reasonably keep track of), not a GPU/RAM budget. Tier 1 is a paid,
+quota-limited flagship model — burning up to 4 concurrent Sonnet 5 sessions
+on what are often thin 1-3 line TODO notes is a real cost tradeoff, not just
+a rate-limit concern. Tiers 2-3 are free-tier/self-hosted and can carry their
+own rate limits or availability gaps; keeping the batch small is the
 conservative choice until this is exercised at scale.
 
 ## Step 5 — Create all worktrees and start all agents first
 
 Do this for every selected note before sending any prompts, so all workers run
-genuinely in parallel rather than one after another:
+genuinely in parallel rather than one after another. For each note, create the
+worktree once, then walk the Step 4 priority chain until `herdr agent start`
+succeeds:
 
 ```bash
 result=$(herdr worktree create --cwd "$PWD" --branch <slug> --base main --label "<title>" --no-focus --json)
 pane_id=$(echo "$result" | jq -r '.result.root_pane.pane_id')
-herdr agent start <slug> --kind opencode --pane "$pane_id" -- --auto --model opencode/deepseek-v4-flash-free
+
+if herdr agent start <slug> --kind claude --pane "$pane_id" -- --model claude-sonnet-5 --dangerously-skip-permissions; then
+  backend="claude-sonnet-5"
+elif herdr agent start <slug> --kind opencode --pane "$pane_id" -- --auto --model opencode/deepseek-v4-flash-free; then
+  backend="opencode/deepseek-v4-flash-free"
+elif herdr agent start <slug> --kind opencode --pane "$pane_id" -- --auto --model llamaswap/google/gemma-4-26b-a4b; then
+  backend="llamaswap/google/gemma-4-26b-a4b"
+else
+  backend=""
+fi
 ```
 
-Pass `--auto` explicitly — do not rely on whatever the session's default
-happens to be.
+If all three attempts fail, drop this note from the batch (do not consume a
+prompt step for it) and report it to the user as skipped in Step 7 rather
+than silently losing track of it. Record the resolved `backend` per slug —
+Step 7's report and the dispatch state should reflect which tier actually
+started, since it is no longer uniform across notes.
 
 ## Step 6 — Send each worker its task (no `--wait`)
 
@@ -191,19 +226,22 @@ Step 1 so future invocations know it is in flight:
 ```bash
 tmp=$(mktemp)
 jq --arg slug "<slug>" --arg title "<title>" --arg branch "<slug>" \
+   --arg backend "<backend>" \
    --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-   '. + {($slug): {title: $title, branch: $branch, dispatched_at: $ts}}' \
+   '. + {($slug): {title: $title, branch: $branch, backend: $backend, dispatched_at: $ts}}' \
    "$state_file" > "$tmp" && mv "$tmp" "$state_file"
 ```
 
 Then tell the user which slugs/branches/worktrees were created, which backend
-each one is running, how many slots were skipped due to prior in-flight
-workers (if any), and that the plan discussion is visible by attaching to
-each pane or watching the herdr TUI. Do not read the workers' output, merge
-anything, or clean up worktrees yourself — that is a separate, later human
-step (converse with the worker directly, then `herdr worktree remove` when
-done with a branch — this also frees the note up for re-selection next run,
-per Step 1's pruning).
+tier each one actually started on (Sonnet 5 vs. one of the fallback models —
+per Step 5 this can differ note to note), which notes were dropped because
+all three tiers failed to start, how many slots were skipped due to prior
+in-flight workers (if any), and that the plan discussion is visible by
+attaching to each pane or watching the herdr TUI. Do not read the workers'
+output, merge anything, or clean up worktrees yourself — that is a separate,
+later human step (converse with the worker directly, then `herdr worktree
+remove` when done with a branch — this also frees the note up for
+re-selection next run, per Step 1's pruning).
 
 ## Rules
 
@@ -220,8 +258,11 @@ per Step 1's pruning).
    check is a one-shot query at the start of a run, not a polling loop.
 5. Note selection is autonomous (your own judgment, Step 2) — do not ask the
    user which notes to pick, and do not ask which in-flight notes to skip.
-6. All workers use the same backend (`opencode + deepseek-v4-flash-free`).
-   No per-note backend escalation — the backend is uniform.
+6. Every worker is spawned through the same fixed priority chain (Step 4:
+   Claude Sonnet 5 → opencode deepseek → opencode/llamaswap gemma) — the
+   *chain* is uniform across notes, but which tier actually ends up running
+   is not, since it depends on tier availability at spawn time. Never skip a
+   tier or reorder the chain per note.
 7. Never edit `dispatched.json` by hand or skip Step 1's prune — the human's
    only supported way to make a note re-eligible is `herdr worktree remove`,
    which the prune step then detects automatically.
