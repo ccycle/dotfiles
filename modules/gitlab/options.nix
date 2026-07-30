@@ -60,6 +60,12 @@ in
     sops.secrets.gitlab_root_password = {
       sopsFile = ./secrets.yaml;
     };
+    sops.secrets.gitlab_oidc_client_id = {
+      sopsFile = ./secrets.yaml;
+    };
+    sops.secrets.gitlab_oidc_client_secret = {
+      sopsFile = ./secrets.yaml;
+    };
 
     launchd.daemons.gitlab-compose = {
       serviceConfig = {
@@ -81,6 +87,9 @@ in
         export GITLAB_CONFIG_DIR="${cfg.configDir}"
         export GITLAB_LOGS_DIR="${cfg.logsDir}"
         export GITLAB_EXTERNAL_URL="https://gitlab.${config.networking.hostName}.internal"
+        export GITLAB_OIDC_ISSUER="https://auth.${config.networking.hostName}.internal"
+        export GITLAB_OIDC_CLIENT_ID=$(cat ${config.sops.secrets.gitlab_oidc_client_id.path})
+        export GITLAB_OIDC_CLIENT_SECRET=$(cat ${config.sops.secrets.gitlab_oidc_client_secret.path})
 
         mkdir -p "$GITLAB_DATA_DIR" "$GITLAB_CONFIG_DIR" "$GITLAB_LOGS_DIR"
 

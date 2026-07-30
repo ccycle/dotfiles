@@ -37,23 +37,33 @@ is explicitly excluded.
   full rejection rationale and Pocket ID's own security posture
   (it has a nontrivial CVE history in core OIDC flows — all patched,
   but the module pins to a specific version rather than floating).
-- Each SSO-capable service (Forgejo, GitLab, OpenCloud, Immich) is
-  wired to Pocket ID as an OIDC client individually, following that
-  service's own auth settings (admin console or config file) — this
-  is a manual, per-service step done after Pocket ID is confirmed
-  healthy, not something expressed in `modules/pocket-id` itself.
+- Each SSO-capable service is wired to Pocket ID as an OIDC client
+  through its own Nix configuration (compose.yaml env vars or
+  `GITLAB_OMNIBUS_CONFIG`):
+  - **OpenCloud** — public client (PKCE), client ID `web` matches
+    WebFinger default. Desktop/mobile use hardcoded IDs
+    (`OpenCloudDesktop`, `OpenCloudIOS`, `OpenCloudAndroid`).
+    Role assignment via `PROXY_ROLE_ASSIGNMENT_DRIVER=oidc` with
+    default mapping (opencloudAdmin → admin, etc.).
+    Pocket ID groups with custom claims must be created manually.
+  - **Forgejo** — confidential client, client ID and secret via sops.
+  - **GitLab** — confidential client via OmniAuth, ID/secret via sops.
+  - **Immich** — confidential client, ID/secret via sops.
+    Auto-registration enabled (`IMMICH_OIDC_AUTO_REGISTER=true`).
+  - **Grafana** — confidential client via `GF_AUTH_GENERIC_OAUTH_*`
+    env vars, ID/secret via sops.
+- Pocket ID OIDC clients are created manually in the Pocket ID admin
+  UI (one-time bootstrap). Client IDs and secrets are then added to
+  the respective module's `secrets.yaml` via `sops`.
 - Caddy `forward_auth` (a shared L7 gate in front of vhosts, as
   opposed to each app doing its own OIDC login) has not been adopted
   for Forgejo/GitLab/OpenCloud/Immich; every one of them already has
   native OIDC support, so per-app login is sufficient there.
-- **Gap: `prometheus.<hostname>.internal` (via Caddy, see
-  `modules/monitoring/options.nix`) is reachable over Tailscale with
-  no authentication at all.** Prometheus has no native OIDC support,
-  so it cannot join the per-app-login list above; `forward_auth`
-  backed by Pocket ID is the candidate fix and remains unimplemented.
-  Grafana has native OIDC support and could be wired to Pocket ID
-  directly like the other services, but that has not been done here
-  either — both are follow-up work, not part of this change.
+- **Prometheus** uses Caddy `basicauth` with a bcrypt hash set via
+  `services.monitoring.prometheusAuthHash`. The hash is generated
+  manually (`caddy hash-password --plaintext <PASSWORD>`) and set
+  in the host profile. No OIDC support in Prometheus means this is
+  the only practical per-app auth option.
 - Loki has no Caddy vhost and stays localhost-only for the
   `investigate-service` skill; no remote access path exists today.
 - Non-interactive API clients (opencode → LM Studio) use API keys

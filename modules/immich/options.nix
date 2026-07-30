@@ -47,6 +47,12 @@ in
     sops.secrets.immich_db_password = {
       sopsFile = ./secrets.yaml;
     };
+    sops.secrets.immich_oidc_client_id = {
+      sopsFile = ./secrets.yaml;
+    };
+    sops.secrets.immich_oidc_client_secret = {
+      sopsFile = ./secrets.yaml;
+    };
 
     launchd.daemons.immich-compose = {
       serviceConfig = {
@@ -68,6 +74,9 @@ in
         export IMMICH_DB_DIR="${cfg.dbDir}"
         export IMMICH_SERVER_URL="https://immich.${config.networking.hostName}.internal"
         export IMMICH_HOST_DOMAIN="immich.${config.networking.hostName}.internal"
+        export IMMICH_OIDC_ISSUER="https://auth.${config.networking.hostName}.internal"
+        export IMMICH_OIDC_CLIENT_ID=$(cat ${config.sops.secrets.immich_oidc_client_id.path})
+        export IMMICH_OIDC_CLIENT_SECRET=$(cat ${config.sops.secrets.immich_oidc_client_secret.path})
 
         mkdir -p "$IMMICH_UPLOAD_DIR" "$IMMICH_DB_DIR"
 

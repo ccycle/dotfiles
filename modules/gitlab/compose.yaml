@@ -39,6 +39,29 @@ services:
         # would disable the exporters too).
         prometheus['enable'] = false
         alertmanager['enable'] = false
+        # OIDC (Pocket ID)
+        gitlab_rails['omniauth_enabled'] = true
+        gitlab_rails['omniauth_allow_single_on'] = ['openid_connect']
+        gitlab_rails['omniauth_block_auto_created_users'] = false
+        gitlab_rails['omniauth_providers'] = [
+          {
+            name: 'openid_connect',
+            label: 'Pocket ID',
+            args: {
+              openid_connect: {
+                issuer: '${GITLAB_OIDC_ISSUER}',
+                scope: ['openid', 'profile', 'email'],
+                response_type: 'code',
+                uid_field: 'preferred_username',
+                client__options: {
+                  identifier: '${GITLAB_OIDC_CLIENT_ID}',
+                  secret: '${GITLAB_OIDC_CLIENT_SECRET}',
+                  redirect_uri: '${GITLAB_EXTERNAL_URL}/users/auth/openid_connect/callback'
+                }
+              }
+            }
+          }
+        ]
     volumes:
       - ${GITLAB_CONFIG_DIR}:/etc/gitlab
       - ${GITLAB_LOGS_DIR}:/var/log/gitlab

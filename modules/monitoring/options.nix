@@ -17,6 +17,16 @@ in
   options.services.monitoring = {
     enable = mkEnableOption "Monitoring stack";
 
+    prometheusAuthHash = mkOption {
+      type = types.str;
+      default = "";
+      description = ''
+        bcrypt hash for Prometheus basic auth. Generate with:
+        nix run nixpkgs#caddy -- hash-password --plaintext <PASSWORD>
+        Set to empty string to disable auth.
+      '';
+    };
+
     dataDir = mkOption {
       type = types.str;
       default = "/var/lib/monitoring";
@@ -69,11 +79,18 @@ in
     environment.etc."caddy/sites/prometheus.caddy".text = ''
       https://prometheus.${config.networking.hostName}.internal {
         import internal_tls
+        ${lib.optionalString (cfg.prometheusAuthHash != "") "basicauth / prometheus ${cfg.prometheusAuthHash}"}
         reverse_proxy 127.0.0.1:9090
       }
     '';
 
     sops.secrets.grafana_admin_password = {
+      sopsFile = ./secrets.yaml;
+    };
+    sops.secrets.grafana_oidc_client_id = {
+      sopsFile = ./secrets.yaml;
+    };
+    sops.secrets.grafana_oidc_client_secret = {
       sopsFile = ./secrets.yaml;
     };
 
@@ -101,6 +118,9 @@ in
         done
 
         export GRAFANA_ADMIN_PASSWORD=$(cat ${config.sops.secrets.grafana_admin_password.path})
+        export GRAFANA_OIDC_CLIENT_ID=$(cat ${config.sops.secrets.grafana_oidc_client_id.path})
+        export GRAFANA_OIDC_CLIENT_SECRET=$(cat ${config.sops.secrets.grafana_oidc_client_secret.path})
+        export GRAFANA_OIDC_ISSUER="https://auth.${config.networking.hostName}.internal"
         export MONITORING_DATA_DIR="${cfg.dataDir}"
         export PROMETHEUS_CONFIG="${prometheusConfig}"
         export PROMETHEUS_RULES="${prometheusRules}"

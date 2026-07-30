@@ -68,6 +68,8 @@ in
         export OPENCLOUD_CONFIG_DIR="${cfg.configDir}"
         export OPENCLOUD_URL="https://opencloud.${config.networking.hostName}.internal"
         export OPENCLOUD_HOST_DOMAIN="opencloud.${config.networking.hostName}.internal"
+        export OPENCLOUD_OIDC_ISSUER="https://auth.${config.networking.hostName}.internal"
+        export OPENCLOUD_OIDC_DOMAIN="auth.${config.networking.hostName}.internal"
 
         mkdir -p "$OPENCLOUD_DATA_DIR" "$OPENCLOUD_CONFIG_DIR"
 

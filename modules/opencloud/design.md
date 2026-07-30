@@ -47,9 +47,36 @@ driver — only user-file storage was moved to the posix driver.
   filesystem tree, so files placed directly into the host directory
   outside of OpenCloud would never be recognized.
 
-## Constraints
+## External OIDC (Pocket ID)
 
-- Switching a deployment's user-storage driver requires the host data
-  and config directories to be cleared first — the old and new
-  drivers use incompatible on-disk layouts, and the new driver will
-  not read data written by the old one.
+OpenCloud uses Pocket ID as its external OIDC identity provider, replacing
+the built-in `idp` service (excluded via `OC_EXCLUDE_RUN_SERVICES=idp`).
+
+**OIDC clients (all public / PKCE):**
+
+| Client | Client ID | Callback URLs |
+|--------|-----------|---------------|
+| Web | `web` | `https://opencloud.<host>/*` |
+| Desktop | `OpenCloudDesktop` | `http://127.0.0.1:*` |
+| iOS | `OpenCloudIOS` | `oc://ios.opencloud.com` |
+| Android | `OpenCloudAndroid` | `oc://android.opencloud.com` |
+
+Clients are created manually in Pocket ID admin (`Settings > OIDC Clients`).
+The `web` client ID is set to match OpenCloud's WebFinger default so no
+sops secret is needed. Desktop and mobile client IDs are hardcoded in the
+OpenCloud apps.
+
+**User groups (created manually in Pocket ID):**
+
+| Group | Custom Claim | Maps to OpenCloud role |
+|-------|-------------|----------------------|
+| OpenCloud Admin | `roles: opencloudAdmin` | admin |
+| OpenCloud Space Admin | `roles: opencloudSpaceAdmin` | spaceadmin |
+| OpenCloud User | `roles: opencloudUser` | user |
+| OpenCloud Guest | `roles: opencloudGuest` | user-light |
+
+Role mapping uses the oidc driver with default role_claim `roles` and the
+four claim values above. Add the admin user to the "OpenCloud Admin" group
+in Pocket ID.
+
+## Constraints

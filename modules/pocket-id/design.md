@@ -9,14 +9,6 @@ service's own local-account login with a single passkey-gated sign-in.
 
 ## Non-Goals
 
-- Wiring individual services (Forgejo, GitLab, OpenCloud, Immich) to
-  Pocket ID as an OIDC client. Each of those requires either a manual
-  admin-console step (Forgejo, Immich, OpenCloud) or a client
-  secret that only exists after the corresponding OIDC client is
-  created through Pocket ID's own admin UI — this is a per-service,
-  post-deployment task, not something this module can express
-  declaratively. Track it as a follow-up once Pocket ID is confirmed
-  healthy.
 - LDAP sync, MaxMind geolocation, and email notifications. Not needed
   for a single-owner homelab.
 

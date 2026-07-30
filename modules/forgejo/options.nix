@@ -49,6 +49,13 @@ in
 
   config = mkIf cfg.enable (mkMerge [
     {
+      sops.secrets.forgejo_oidc_client_id = {
+        sopsFile = ./secrets.yaml;
+      };
+      sops.secrets.forgejo_oidc_client_secret = {
+        sopsFile = ./secrets.yaml;
+      };
+
       services.caddy.portalEntries = [{
         name = "Forgejo";
         url = "https://forgejo.${config.networking.hostName}.internal";
@@ -86,6 +93,9 @@ in
 
           export FORGEJO_DATA_DIR="${cfg.dataDir}"
           export FORGEJO_EXTERNAL_URL="https://forgejo.${config.networking.hostName}.internal"
+          export FORGEJO_OIDC_CLIENT_ID=$(cat ${config.sops.secrets.forgejo_oidc_client_id.path})
+          export FORGEJO_OIDC_CLIENT_SECRET=$(cat ${config.sops.secrets.forgejo_oidc_client_secret.path})
+          export FORGEJO_OIDC_DISCOVERY_URL="https://auth.${config.networking.hostName}.internal/.well-known/openid-configuration"
 
           mkdir -p "$FORGEJO_DATA_DIR"
 

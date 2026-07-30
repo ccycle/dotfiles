@@ -12,6 +12,12 @@ services:
       - FORGEJO__server__SSH_LISTEN_PORT=22
       - FORGEJO__server__LFS_START_SERVER=true
       - FORGEJO__actions__ENABLED=true
+      # OIDC (Pocket ID)
+      - FORGEJO__oauth2__ENABLED=true
+      - FORGEJO__oauth2__PROVIDER=openidConnect
+      - FORGEJO__oauth2__CLIENT_ID=${FORGEJO_OIDC_CLIENT_ID}
+      - FORGEJO__oauth2__CLIENT_SECRET=${FORGEJO_OIDC_CLIENT_SECRET}
+      - FORGEJO__oauth2__OPENID_CONNECT_DISCOVERY_URL=${FORGEJO_OIDC_DISCOVERY_URL}
     volumes:
       - ${FORGEJO_DATA_DIR}:/data
       - /etc/timezone:/etc/timezone:ro

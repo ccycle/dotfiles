@@ -21,6 +21,18 @@ services:
       STORAGE_USERS_ID_CACHE_STORE: nats-js-kv
       STORAGE_METADATA_DRIVER: ocis
       PROXY_DEBUG_ADDR: "0.0.0.0:9205"
+      # External OIDC (Pocket ID)
+      OC_OIDC_ISSUER: ${OPENCLOUD_OIDC_ISSUER}
+      IDP_DOMAIN: ${OPENCLOUD_OIDC_DOMAIN}
+      IDP_ISSUER_URL: ${OPENCLOUD_OIDC_ISSUER}
+      OC_EXCLUDE_RUN_SERVICES: idp
+      PROXY_OIDC_ACCESS_TOKEN_VERIFY_METHOD: jwt
+      PROXY_OIDC_REWRITE_WELLKNOWN: "true"
+      PROXY_USER_OIDC_CLAIM: preferred_username
+      PROXY_USER_CS3_CLAIM: username
+      PROXY_AUTOPROVISION_ACCOUNTS: "true"
+      PROXY_ROLE_ASSIGNMENT_DRIVER: oidc
+      GRAPH_ASSIGN_DEFAULT_USER_ROLE: "false"
     volumes:
       - ${OPENCLOUD_CONFIG_DIR:-/var/lib/opencloud/config}:/etc/opencloud
       - ${OPENCLOUD_DATA_DIR:-/var/lib/opencloud/data}:/var/lib/opencloud
