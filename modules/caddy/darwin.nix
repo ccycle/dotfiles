@@ -45,14 +45,14 @@ in
         url = "https://ca.${domain}";
         descriptionJa = "ルート証明書のダウンロード";
         descriptionEn = "Download Root Certificate";
-        logoSvg = ''<svg viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><circle cx="12" cy="16" r="1"/></svg>'';
+        logoSvg = builtins.readFile ./ca-certificate-logo.svg;
       }
     ] ++ lib.optionals config.services.atticd.enable [{
       name = "Attic Cache";
       url = "https://cache.${domain}";
       descriptionJa = "Nix バイナリキャッシュ";
       descriptionEn = "Nix Binary Cache";
-      logoSvg = ''<svg viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/><path d="M8 8v2"/><path d="M16 8v2"/></svg>'';
+      logoSvg = builtins.readFile ./attic-logo.svg;
     }];
 
     environment.etc = {
