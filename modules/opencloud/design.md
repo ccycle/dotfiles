@@ -30,6 +30,39 @@ into the container.
 System/metadata storage is intentionally left on the decomposed
 driver — only user-file storage was moved to the posix driver.
 
+### Host directory layout
+
+User files are stored on the host at `${vol}/opencloud/user-files/`,
+separate from internal OpenCloud data (metadata cache, service
+configs) which lives at `${vol}/opencloud/data/`. The separation
+is enforced by a dedicated Docker volume mount for the posix root.
+
+```
+${vol}/opencloud/
+├── user-files/           # STORAGE_USERS_POSIX_ROOT
+│   └── alice/            # STORAGE_USERS_POSIX_PERSONAL_SPACE_PATH_TEMPLATE
+│       ├── Documents/    # UI tree matches disk tree
+│       │   └── report.pdf
+│       └── Photos/
+│           └── vacation.jpg
+└── data/                 # decomposed/metadata storage
+    └── ...
+```
+
+### Path templates
+
+`STORAGE_USERS_POSIX_PERSONAL_SPACE_PATH_TEMPLATE` is set to
+`{{.User.Username}}` instead of the default
+`users/{{.User.Id.OpaqueId}}`. This replaces the opaque UUID
+directory with the human-readable username, so the on-disk tree
+mirrors the UI hierarchy (e.g. `alice/Documents/` instead of
+`a1b2c3d4-.../Documents/`).
+
+The general (project) space template cannot be made human-readable
+because `{{.SpaceId}}` is always a new UUID assigned by
+`GenerateSpaceID()` — upstream explicitly lists this as a
+limitation. Only personal spaces benefit from the template change.
+
 ## Rejected Alternatives
 
 - **Collaborative mode** (real-time filesystem watching): rejected

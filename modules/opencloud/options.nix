@@ -23,6 +23,12 @@ in
       description = "Directory for OpenCloud configuration on the host.";
     };
 
+    userFilesDir = mkOption {
+      type = types.str;
+      default = "/var/lib/opencloud/user-files";
+      description = "Directory for OpenCloud user-visible file tree on the host. Mapped to STORAGE_USERS_POSIX_ROOT inside the container.";
+    };
+
     mountPoint = mkOption {
       type = types.str;
       default = "";
@@ -66,6 +72,7 @@ in
         export OPENCLOUD_ADMIN_PASSWORD=$(cat ${config.sops.secrets.opencloud_admin_password.path})
         export OPENCLOUD_DATA_DIR="${cfg.dataDir}"
         export OPENCLOUD_CONFIG_DIR="${cfg.configDir}"
+        export OPENCLOUD_USER_FILES_DIR="${cfg.userFilesDir}"
         export OPENCLOUD_URL="https://opencloud.${config.networking.hostName}.internal"
         export OPENCLOUD_HOST_DOMAIN="opencloud.${config.networking.hostName}.internal"
         export OPENCLOUD_OIDC_ISSUER="https://auth.${config.networking.hostName}.internal"
@@ -74,7 +81,7 @@ in
         export OPENCLOUD_OIDC_CLIENT_ID="web"
         export OPENCLOUD_OIDC_PROXY_CLIENT_ID="web"
 
-        mkdir -p "$OPENCLOUD_DATA_DIR" "$OPENCLOUD_CONFIG_DIR"
+        mkdir -p "$OPENCLOUD_DATA_DIR" "$OPENCLOUD_CONFIG_DIR" "$OPENCLOUD_USER_FILES_DIR"
 
         exec ${pkgs.docker-compose}/bin/docker-compose \
           -f ${composeFile} \

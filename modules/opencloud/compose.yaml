@@ -19,6 +19,8 @@ services:
       OC_LOG_LEVEL: info
       STORAGE_USERS_DRIVER: posix
       STORAGE_USERS_ID_CACHE_STORE: nats-js-kv
+      STORAGE_USERS_POSIX_ROOT: /host/user-files
+      STORAGE_USERS_POSIX_PERSONAL_SPACE_PATH_TEMPLATE: "{{.User.Username}}"
       STORAGE_METADATA_DRIVER: ocis
       PROXY_DEBUG_ADDR: "0.0.0.0:9205"
       # External OIDC (Pocket ID)
@@ -49,6 +51,7 @@ services:
     volumes:
       - ${OPENCLOUD_CONFIG_DIR:-/var/lib/opencloud/config}:/etc/opencloud
       - ${OPENCLOUD_DATA_DIR:-/var/lib/opencloud/data}:/var/lib/opencloud
+      - ${OPENCLOUD_USER_FILES_DIR}:/host/user-files
     extra_hosts:
       - "${OPENCLOUD_HOST_DOMAIN}:host-gateway"
     healthcheck:

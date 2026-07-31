@@ -57,6 +57,47 @@ check_http "OpenCloud (HTTPS)" "https://opencloud.${HOSTNAME}.internal" "--insec
 
 echo ""
 
+# --- 4. Directory Structure (PosixFS layout) ---
+echo "=== 📁 PosixFS Directory Structure ==="
+
+container="${PROJECT_NAME}-opencloud-1"
+if docker inspect "$container" > /dev/null 2>&1; then
+  # Get host-side bind mount paths
+  data_host=$(docker inspect "$container" --format '{{range .Mounts}}{{if eq .Destination "/var/lib/opencloud"}}{{.Source}}{{end}}{{end}}')
+  userfiles_host=$(docker inspect "$container" --format '{{range .Mounts}}{{if eq .Destination "/host/user-files"}}{{.Source}}{{end}}{{end}}')
+
+  if [ -n "$data_host" ] && [ -d "$data_host" ]; then
+    pass "data dir exists at $data_host"
+  else
+    fail "data dir not found at $data_host"
+  fi
+
+  if [ -n "$userfiles_host" ] && [ -d "$userfiles_host" ]; then
+    pass "user-files dir exists at $userfiles_host"
+  else
+    fail "user-files dir not found or not mounted"
+  fi
+
+  # Verify they are separate directories
+  if [ -n "$data_host" ] && [ -n "$userfiles_host" ] && [ "$data_host" != "$userfiles_host" ]; then
+    pass "user-files and data are separate directories"
+  elif [ -n "$data_host" ] && [ -n "$userfiles_host" ]; then
+    fail "user-files and data are the SAME directory"
+  fi
+
+  # Verify STORAGE_USERS_POSIX_ROOT inside the container
+  posix_root=$(docker exec "$container" stat /host/user-files 2>/dev/null && echo "exists" || echo "missing")
+  if [ "$posix_root" = "exists" ]; then
+    pass "STORAGE_USERS_POSIX_ROOT (/host/user-files) is accessible inside container"
+  else
+    fail "STORAGE_USERS_POSIX_ROOT (/host/user-files) not accessible inside container"
+  fi
+else
+  fail "Container $container not found — cannot inspect directory structure"
+fi
+
+echo ""
+
 # --- Result ---
 if [ "$FAILED" -eq 0 ]; then
   echo "🎉 All smoke tests passed!"

@@ -19,6 +19,7 @@ in
 
     services.opencloud.dataDir = mkDefault "${vol}/opencloud/data";
     services.opencloud.configDir = mkDefault "${vol}/opencloud/config";
+    services.opencloud.userFilesDir = mkDefault "${vol}/opencloud/user-files";
     services.opencloud.mountPoint = mkDefault vol;
   };
 }
