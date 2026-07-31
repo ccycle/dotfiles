@@ -113,3 +113,8 @@ four claim values above. Add the admin user to the "OpenCloud Admin" group
 in Pocket ID.
 
 ## Constraints
+
+- Switching a deployment's user-storage driver requires the host data
+  and config directories to be cleared first — the old and new
+  drivers use incompatible on-disk layouts, and the new driver will
+  not read data written by the old one.
