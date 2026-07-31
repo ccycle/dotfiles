@@ -70,6 +70,9 @@ in
         export OPENCLOUD_HOST_DOMAIN="opencloud.${config.networking.hostName}.internal"
         export OPENCLOUD_OIDC_ISSUER="https://auth.${config.networking.hostName}.internal"
         export OPENCLOUD_OIDC_DOMAIN="auth.${config.networking.hostName}.internal"
+        export OPENCLOUD_OIDC_ROLE_CLAIM="opencloud_role"
+        export OPENCLOUD_OIDC_CLIENT_ID="web"
+        export OPENCLOUD_OIDC_PROXY_CLIENT_ID="web"
 
         mkdir -p "$OPENCLOUD_DATA_DIR" "$OPENCLOUD_CONFIG_DIR"
 

@@ -58,9 +58,15 @@ in
 
         export POCKET_ID_APP_URL="https://auth.${domain}"
         export POCKET_ID_DATA_DIR="${cfg.dataDir}"
-        export POCKET_ID_ENCRYPTION_KEY_FILE="${config.sops.secrets.pocket_id_encryption_key.path}"
+        export POCKET_ID_ENCRYPTION_KEY_FILE="/tmp/pocket_id_encryption_key"
 
         mkdir -p "$POCKET_ID_DATA_DIR"
+
+        # Copy encryption key to /tmp/ so OrbStack's Docker VM can reach it
+        # (/run/ is not shared with the Linux VM, but /tmp/ is).
+        cp "${config.sops.secrets.pocket_id_encryption_key.path}" \
+          "$POCKET_ID_ENCRYPTION_KEY_FILE" && \
+          chmod 444 "$POCKET_ID_ENCRYPTION_KEY_FILE"
 
         exec ${pkgs.docker-compose}/bin/docker-compose \
           -f ${composeFile} \
