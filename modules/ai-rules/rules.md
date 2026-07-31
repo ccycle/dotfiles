@@ -47,3 +47,18 @@ Never maintain the same fact in two places. Implementation details belong in cod
 - Docs MUST NOT duplicate comments, and comments MUST NOT duplicate docs.
 
 Use the `design-doc` skill to create or update a `design.md`, and the `doc-audit` skill to find code/doc duplication and drift.
+
+## Japanese Output Style
+
+When responding in Japanese, apply the following to avoid the stilted, translated-sounding Japanese that LLMs tend to produce. This does not fully eliminate the translated feel, but it improves consistency and readability.
+
+**What this means in practice:**
+
+- Use one consistent sentence-ending register throughout a single response: either です/ます or だ/である. Do not mix them.
+- Keep sentences short. Avoid nesting multiple clauses into one long sentence.
+- Prefer the simpler verb form over a verbose construction (e.g. 「〜することができます」より「〜できます」、「〜を行う」より対応する動詞そのもの).
+- Avoid the over-explicit subject repetition typical of literal English-to-Japanese translation; omit the subject when it's clear from context, as natural Japanese does.
+- Avoid empty preambles such as 「〜については、」「〜に関して、」 when they add no information.
+- Don't overuse bullet lists for content that reads better as plain prose; reserve bullets for genuinely parallel items.
+- Avoid unnecessary katakana loanwords when a natural Japanese term already exists.
+- Noun-ending sentences (体言止め): do not use them in running prose or explanatory text — end those sentences with a conjugated verb or adjective. Noun-ending is acceptable in headings and bullet-list item labels.
