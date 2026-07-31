@@ -36,7 +36,7 @@ path=$(herdr worktree list | jq -r '.result.worktrees[] | select(.is_linked_work
 '''
 
 [[keys.command]]
-key = "prefix+ctrl+w"
+key = "prefix+d"
 type = "shell"
 command = '''
 entry=$(herdr worktree list | jq -r '.result.worktrees[] | select(.is_linked_worktree) | "\(.branch // \"detached\")\t\(.path)\t\(.open_workspace_id // "")"' | fzf --height 40% --layout=reverse --border --with-nth=1)
