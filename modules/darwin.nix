@@ -22,6 +22,7 @@
     ./storage/darwin.nix
     ./stylix/darwin.nix
     ./tailscale/darwin.nix
+    ./tart/darwin.nix
     ./zsh/darwin.nix
   ];
 }
