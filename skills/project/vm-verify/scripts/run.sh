@@ -27,14 +27,14 @@ if [ "$(uname -m)" != "arm64" ]; then
 fi
 
 if ! command -v tart >/dev/null 2>&1; then
-  echo "tart not found. Install it with:" >&2
-  echo "  brew install cirruslabs/cli/tart" >&2
+  echo "tart not found. It's declared in modules/tart/darwin.nix; run:" >&2
+  echo "  scripts/darwin-rebuild.sh private" >&2
   exit 1
 fi
 
 if ! command -v sshpass >/dev/null 2>&1; then
-  echo "sshpass not found. Install it with:" >&2
-  echo "  brew install hudochenkov/sshpass/sshpass" >&2
+  echo "sshpass not found. It's declared in modules/tart/darwin.nix; run:" >&2
+  echo "  scripts/darwin-rebuild.sh private" >&2
   exit 1
 fi
 

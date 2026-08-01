@@ -20,11 +20,12 @@ from any worktree without affecting the main checkout or other worktrees.
 ## Prerequisites
 
 - Apple Silicon Mac (Tart requires an Apple Silicon host to run macOS guests).
-- [Tart](https://tart.run/): `brew install cirruslabs/cli/tart`. Personal use is
-  royalty-free under Tart's Fair Source 100 license
-  ([tart.run/licensing](https://tart.run/licensing/)).
-- `sshpass`: `brew install hudochenkov/sshpass/sshpass` (used to authenticate
-  against the default `admin`/`admin` credentials on Cirrus Labs' base image).
+- [Tart](https://tart.run/) and `sshpass` (used to authenticate against the
+  default `admin`/`admin` credentials on Cirrus Labs' base image). Both are
+  declared in `modules/tart/darwin.nix` and installed automatically by
+  `darwin-rebuild switch` for the `private` profile — no manual `brew install`
+  needed. `tart` is packaged in nixpkgs under a Fair Source license (`unfree`),
+  allowed via a predicate scoped to just that package.
 
 ## Usage
 
