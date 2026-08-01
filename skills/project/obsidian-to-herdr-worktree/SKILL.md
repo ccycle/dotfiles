@@ -141,10 +141,11 @@ Each worker is spawned from a fixed priority/fallback chain, tried in order
 until one starts successfully:
 
 1. **Claude Sonnet 5** — `--kind claude -- --model claude-sonnet-5
-   --dangerously-skip-permissions`. `--dangerously-skip-permissions` is the
-   `--kind claude` equivalent of opencode's `--auto` below — required because
-   these workers run unattended (no human present to answer a permission
-   prompt).
+   --permission-mode auto`. `--permission-mode auto` is the `--kind claude`
+   equivalent of opencode's `--auto` below — required because these workers
+   run unattended (no human present to answer a permission prompt). Use this
+   over `--dangerously-skip-permissions`, which bypasses permission checks
+   entirely rather than applying the auto-mode classifier.
 2. **opencode zen deepseek** — `--kind opencode -- --auto --model
    opencode/deepseek-v4-flash-free`, a free-tier model hosted through
    opencode zen.
@@ -155,9 +156,8 @@ until one starts successfully:
    `opencode models` that this identifier is still current before relying on
    it; opencode's free-tier catalog changes.
 
-In all cases pass `--auto` (opencode) or `--dangerously-skip-permissions`
-(claude) explicitly — do not rely on whatever the session's default happens
-to be.
+In all cases pass `--auto` (opencode) or `--permission-mode auto` (claude)
+explicitly — do not rely on whatever the session's default happens to be.
 
 The 4-note ceiling from Step 1 (`available_slots`) exists as general
 concurrency/review-load discipline (how many parallel design discussions a
@@ -179,7 +179,7 @@ succeeds:
 result=$(herdr worktree create --cwd "$PWD" --branch <slug> --base main --label "<title>" --no-focus --json)
 pane_id=$(echo "$result" | jq -r '.result.root_pane.pane_id')
 
-if herdr agent start <slug> --kind claude --pane "$pane_id" -- --model claude-sonnet-5 --dangerously-skip-permissions; then
+if herdr agent start <slug> --kind claude --pane "$pane_id" -- --model claude-sonnet-5 --permission-mode auto; then
   backend="claude-sonnet-5"
 elif herdr agent start <slug> --kind opencode --pane "$pane_id" -- --auto --model opencode/deepseek-v4-flash-free; then
   backend="opencode/deepseek-v4-flash-free"
