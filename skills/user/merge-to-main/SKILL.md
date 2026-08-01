@@ -1,21 +1,20 @@
 ---
 name: merge-to-main
-description: Merge the current branch into main, delete the branch, and clean up
+description: Merge the current branch into main and delete the branch
 ---
 
 # Merge to Main
 
 ## Overview
 
-Merge the current feature branch into main using fast-forward only (`--ff-only`), then delete the feature branch and remove the herdr worktree. Do NOT create merge commits. Pushing main to origin is left to the user — it requires an interactive OTP step this skill cannot perform.
+Merge the current feature branch into main using fast-forward only (`--ff-only`), then delete the feature branch. Do NOT create merge commits. Pushing main to origin is left to the user — it requires an interactive OTP step this skill cannot perform.
 
-Pass `--keep` / `-k` to skip worktree removal.
+Worktree removal is NOT part of this skill. After the merge, suggest the user run `/cleanup-worktrees` from the worktree to remove it interactively.
 
 ## Workflow
 
 1. **Pre-flight Check**
    - Run `git branch --show-current` to identify the current branch. Record it as `FEATURE_BRANCH`.
-   - Check if `$ARGUMENTS` contains `--keep` or `-k`. If so, set `KEEP_WORKTREE=true`.
    - If on `main` or `master`, warn the user and abort — there is nothing to merge.
    - Run `git status` to check for uncommitted changes.
    - If unstaged or staged changes exist, run `git stash` to save them and record that a stash was made.
@@ -45,17 +44,9 @@ Pass `--keep` / `-k` to skip worktree removal.
    - Run `git branch -d <FEATURE_BRANCH>` to delete the local feature branch.
    - If changes were stashed in step 1, run `git stash pop` to restore them.
 
-7. **Remove herdr worktree (unless --keep)**
-   - If `KEEP_WORKTREE` is `true`, skip this step.
-   - If `herdr` is available, run:
-     ```bash
-     herdr worktree remove --json 2>/dev/null || true
-     ```
-   - This removes the current git worktree and its herdr workspace.
-   - Note: after this step the working directory no longer exists, so any remaining work must be directory-independent.
-
-8. **Result Report**
+7. **Result Report**
    - Display the name of the merged branch.
    - Run `git log --oneline -5` to show the latest commits on main.
    - Confirm the feature branch was deleted.
    - Remind the user that `main` is ahead of `origin/main` and needs to be pushed manually.
+   - If running inside a herdr worktree, tell the user they can now remove it with `/cleanup-worktrees`.

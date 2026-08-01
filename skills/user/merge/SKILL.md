@@ -11,7 +11,7 @@ allowed-tools: Read, Bash, Glob, Grep
 
 Check the arguments for flags:
 
-- `--keep`, `-k` → keep the worktree after merging (herdr: skip worktree remove; workmux: pass `--keep`)
+- `--keep`, `-k` → workmux only: keep the worktree after merging (pass `--keep`)
 - `--no-verify`, `-n` → workmux only: pass `--no-verify` to `workmux merge`
 
 Strip all flags from arguments.
@@ -67,11 +67,9 @@ branch ref from within the worktree:
 git push . HEAD:<base-branch>
 ```
 
-Then, unless `--keep` was passed, remove the worktree and its herdr workspace:
-
-```bash
-herdr worktree remove --json
-```
+Do NOT remove the worktree here. After the merge, tell the user the branch is
+merged and they can remove this worktree with `/cleanup-worktrees` (or
+`./scripts/cleanup-worktree.sh --dry-run` to check).
 
 ## Step 3b: workmux merge flow
 

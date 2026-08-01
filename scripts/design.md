@@ -2,9 +2,10 @@
 
 ## Purpose
 
-Automatically remove herdr-managed git worktrees after their branches are
-merged to main, and enforce a linear (fast-forward-only) history on the
-main branch so the commit log remains a single straight line.
+Clean up herdr-managed git worktrees once their branches are merged to
+main, and enforce a linear (fast-forward-only) history on the main branch
+so the commit log remains a single straight line. Worktree removal is an
+explicit, interactive action — nothing removes a worktree automatically.
 
 ## Non-Goals
 
@@ -18,27 +19,29 @@ main branch so the commit log remains a single straight line.
 
 ## How It Works
 
-Four layers work together:
+Two layers work together:
 
-1. **Git hooks (event-driven)** catch merge events locally and clean up
-   immediately:
+1. **Git hooks (event-driven)** keep the history linear locally:
    - `pre-commit` — blocks direct commits on main.
    - `pre-merge-commit` — blocks non-fast-forward merges into main.
    - `pre-push` — ensures local main is an ancestor of origin/main.
-   - `post-merge` — removes herdr worktrees whose branches are now merged.
+   - There is deliberately **no `post-merge` hook**: cleanup is never
+     automatic (see Rejected Alternatives).
 
-2. **Merge skills (agent-driven)** clean up when an agent performs the merge:
-   - `/merge` skill runs `herdr worktree remove` after merge.
-   - `/merge-to-main` skill does the same.
+2. **On-demand cleanup (agent-driven, interactive)** handles worktree
+   removal:
+   - `cleanup-worktree.sh` — classifies and removes **the current worktree**
+     from inside its session. The sole entry point.
+   - `/cleanup-worktrees` skill — wraps the script in an interactive flow:
+     classify → report → confirm → remove. It is the only way a worktree
+     is removed.
+   - Merge skills (`/merge`, `/merge-to-main`) never remove worktrees;
+     they finish by pointing the user at `/cleanup-worktrees`.
 
-3. **On-demand scripts** handle cases hooks cannot reach:
-   - `cleanup-merged-worktrees.sh` — for GitHub/Forgejo PR merges and other
-     out-of-band merges.
-   - `detect-stale-worktrees.sh` — for worktrees that were never merged
-     (abandoned, plan-only discussions, etc.).
-
-4. **Just recipes** provide uniform entry points for all on-demand
-   operations.
+The all-branch scanning scripts (`cleanup-merged-worktrees.sh`,
+`detect-stale-worktrees.sh`) from the earlier hook-driven design are kept as
+supporting tools for inspecting all worktrees at once; removal itself always
+happens per-worktree from inside the target session.
 
 ## Worktree Classification
 
@@ -58,16 +61,19 @@ checked in order:
   entries but the branch now points at a plain main commit (e.g. the
   work was rebased away or abandoned). These are removal candidates.
 
-The same `branch_was_started` check is duplicated in the post-merge hook
-and both scripts because each is a self-contained POSIX script following
-the existing standalone-script convention.
+The same `branch_was_started` check is duplicated in each script because
+each is a self-contained POSIX script following the existing
+standalone-script convention.
 
 ## Constraints
 
 - Scripts must work with only POSIX sh, git, jq, and herdr — all already
   present on the development machine.
 - `herdr worktree remove` requires a workspace ID (not a branch name), so
-  scripts map branch to workspace via `herdr worktree list --json`.
+  scripts map the current directory to its branch/workspace via
+  `herdr worktree list --json` and match on `path`.
+- The main checkout is identified by `is_linked_worktree == false` and is
+  never removable.
 - The repo enforces linear history locally; server-side enforcement
   (Forgejo branch protection) is documented but not scripted.
 - Reflog-based detection is local-only and reflog entries expire (default
@@ -76,19 +82,23 @@ the existing standalone-script convention.
 
 ## Rejected Alternatives
 
-- **Single cleanup script run from cron/systemd timer.** Rejected because
-  event-driven (post-merge hook) gives instant cleanup with zero overhead.
-  On-demand scripts exist as complement, not replacement.
+- **Automatic cleanup via `post-merge` hook.** Rejected. Instant cleanup
+  sounded attractive, but a hook cannot confirm intent, so it can delete a
+  worktree the user wants to keep (e.g. to inspect the merged diff or open
+  the session again). Every removal is now an explicit, confirmed action.
+- **Cleanup script run from cron/systemd timer.** Rejected for the same
+  reason: no interactive confirmation, and it cannot know which worktree
+  the user is working in.
+- **Merge skills removing the worktree after merge.** Rejected in favor of
+  separation of concerns: merging and deleting are different decisions.
+  The merge skills now only suggest `/cleanup-worktrees`.
 - **Detecting merged branch via ORIG_HEAD in post-merge.** Rejected in
-  favor of checking all herdr branches against `git merge-base
-  --is-ancestor`. The ORIG_HEAD approach is fragile for squash merges and
-  the all-branches scan is idempotent and safe.
+  favor of checking the current branch against `git merge-base
+  --is-ancestor` main. The ORIG_HEAD approach is fragile for squash merges;
+  the ancestor check is idempotent and safe.
 - **Detecting "never started" via git topology.** Rejected: a never-started
   branch and a fast-forward-merged branch are topologically identical
   (both are ancestors of main with zero unique commits). Only the branch
   reflog distinguishes them.
 - **Deleting the local branch automatically after worktree removal.**
   Rejected to leave branch lifetime under user control.
-- **post-rewrite hook for rebase-based merges.** Rejected because the
-  repo workflow always uses fast-forward merge (not rebase-merge), so
-  post-merge covers the only entry point.

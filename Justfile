@@ -19,22 +19,18 @@ update-gwq:
 install-git-hooks:
     git config core.hooksPath scripts/git-hooks
 
-# Remove herdr worktrees for branches already merged to main
-cleanup-worktrees:
-    ./scripts/cleanup-merged-worktrees.sh
-
-# Preview merged worktrees without removing
+# Inspect herdr worktrees whose branches are already merged to main
 cleanup-worktrees-dry-run:
     ./scripts/cleanup-merged-worktrees.sh --dry-run
+
+# Classify and remove the CURRENT worktree (interactive, safe-only)
+cleanup-worktree:
+    ./scripts/cleanup-worktree.sh
+
+# Classify the current worktree without removing
+cleanup-worktree-dry-run:
+    ./scripts/cleanup-worktree.sh --dry-run
 
 # Preview stale worktrees (no diff from main / old + no activity)
 stale-worktrees:
     ./scripts/detect-stale-worktrees.sh
-
-# Auto-remove worktrees with no diff from main (safe)
-stale-worktrees-auto-clean:
-    ./scripts/detect-stale-worktrees.sh --auto-clean
-
-# Interactive cleanup of all stale worktrees
-stale-worktrees-confirm:
-    ./scripts/detect-stale-worktrees.sh --force-confirm
