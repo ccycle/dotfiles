@@ -54,10 +54,10 @@ writeShellApplication {
       exit 1
     fi
 
-    # The empty credential.helper clears GCM so no device-flow prompt can
-    # trigger; GIT_TERMINAL_PROMPT=0 makes auth failures fail fast instead
-    # of hanging. The helper passes only the token file path on the command
-    # line, never the token itself.
+    # The empty credential.helper clears the configured helpers (osxkeychain,
+    # oauth) so no device-flow prompt can trigger; GIT_TERMINAL_PROMPT=0 makes
+    # auth failures fail fast instead of hanging. The helper passes only the
+    # token file path on the command line, never the token itself.
     # shellcheck disable=SC2016 # $(cat ...) is expanded by git at credential-fill time, not here
     GIT_TERMINAL_PROMPT=0 exec git \
       -c credential.helper= \

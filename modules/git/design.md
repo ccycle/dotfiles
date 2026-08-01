@@ -8,10 +8,10 @@ Provide a consistent Git configuration across all machines, with credential mana
 
 There are two deliberately separate HTTPS authentication paths, split by who is pushing.
 
-**Human pushes** use Git Credential Manager (GCM) with OAuth device flow.
+**Human pushes** use `git-credential-oauth` (`credential.helper = [ "osxkeychain" "oauth -device" ]`), an OAuth credential helper that stores tokens (including refresh tokens, on Git ≥ 2.45) in the macOS keychain and falls back to device flow only when no valid token is cached.
 Device flow displays a URL and a one-time code in the terminal; the user completes authentication on any device with a browser.
-This avoids the browser-launch requirement that breaks in headless SSH sessions.
-The interactive OTP step also acts as an intentional human-in-the-loop gate: full-privilege pushes always require a human at the keyboard.
+The `-device` flag avoids the browser-launch requirement that breaks in headless SSH sessions.
+The interactive device-flow step also acts as an intentional human-in-the-loop gate for first-time or expired auth: full-privilege pushes always require a human to have completed authentication at some point, never a bare static token.
 
 **Agent pushes** go exclusively through the safe-push wrapper, which authenticates with a fine-grained PAT (selected repositories only, contents read/write, expiring) stored via sops-nix.
 The security boundary for agents is the token's scope plus server-side branch rulesets — not client-side command pattern matching, which a shell-capable agent can route around.
@@ -21,17 +21,20 @@ Dangerous irreversible operations (history rewrite, branch deletion on the defau
 ## Non-Goals
 
 - SSH transport for Git remotes.
-  HTTPS is the standard; SSH URLs add a transport-level auth path to maintain.
+HTTPS is the standard; SSH URLs add a transport-level auth path to maintain.
 - GUI-based OAuth flow.
-  Disabled globally because the primary development environment is SSH into macOS.
+Disabled globally because the primary development environment is SSH into macOS.
 - Non-interactive full-privilege pushes.
-  Only the scoped agent PAT works without a human; anything beyond its scope requires the device-flow gate.
+Only the scoped agent PAT works without a human; anything beyond its scope requires the device-flow gate.
 
 ## Rejected Alternatives
 
 - **`osxkeychain` credential helper with manual PAT**: simpler, but requires the user to generate, rotate, and store PATs manually.
-  GCM automates the full token lifecycle for the human path.
+The `oauth` helper automates the full token lifecycle for the human path; `osxkeychain` is kept only as the storage layer underneath it, not as a manual-PAT target.
 - **SSH URLs for Git remotes**: would bypass credential helpers entirely, but introduces a parallel authentication mechanism at the transport level.
-- **Caching the GCM token for non-interactive agent use**: would let agents push, but with the human's full-privilege token and no scope limit, and it removes the OTP gate for everyone.
+- **Caching the human OAuth token for non-interactive agent use**: would let agents push, but with the human's full-privilege token and no scope limit, and it removes the device-flow gate for everyone.
 - **Reusing the gh CLI OAuth token for agent pushes**: the token is broad-scoped (all repos, full `repo` scope); a fine-grained PAT bounds the blast radius per repository and permission.
-  For the same reason, gh's git credential helper stays disabled.
+For the same reason, gh's git credential helper stays disabled.
+- **Git Credential Manager (GCM)**: used previously for the human path.
+Replaced because the git credential protocol has no attribute for GCM to persist an OAuth refresh token, so it fell back to a full device-flow prompt more often than the design intended (compounded by known upstream macOS keychain reuse bugs, e.g. git-ecosystem/git-credential-manager#1157 and #2079).
+`git-credential-oauth` supports storing refresh tokens under Git ≥ 2.45, so the device-flow prompt now recurs only when the refresh token itself expires, not on every push.

@@ -4,12 +4,15 @@
       alias.fetch-branch = "!f() { git fetch origin \"$1:$1\"; }; f";
       rebase.updateRefs = true;
       core.ignorecase = false;
-      credential.helper = "manager";
+      credential.helper = [
+        "osxkeychain"
+        "oauth -device"
+      ];
     };
   };
 
   home.packages = [
-    pkgs.git-credential-manager
+    pkgs.git-credential-oauth
   ];
 
   imports = [
