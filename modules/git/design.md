@@ -18,6 +18,12 @@ The security boundary for agents is the token's scope plus server-side branch ru
 The wrapper constrains what can be expressed (current branch to origin only, no force/delete/refspec, github.com host pinned) for accident prevention on top of that boundary.
 Dangerous irreversible operations (history rewrite, branch deletion on the default branch) are blocked by GitHub rulesets regardless of which credential is used.
 
+## Token Lifecycle
+
+Fine-grained PATs must be created through the GitHub web UI — there is no API path for it — so rotation cannot be fully automated.
+The rotation workflow (`skills/project/safe-push-credentials`) treats this as intentional rather than a gap to close: forcing a human into the token-creation step reintroduces the same human-in-the-loop property the device flow gives the human path, at the moment the strongest privilege change happens.
+Expiration monitoring is kept separate from rotation: a scheduled check surfaces the token's remaining lifetime early enough to rotate ahead of time, rather than rotation being triggered reactively by a failed push.
+
 ## Audit Logging
 
 `git-safe-push` writes a local, append-only log of every invocation (attempted, refused, succeeded, failed), including branch and remote host but never the token.
