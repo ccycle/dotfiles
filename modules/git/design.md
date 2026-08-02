@@ -18,6 +18,12 @@ The security boundary for agents is the token's scope plus server-side branch ru
 The wrapper constrains what can be expressed (current branch to origin only, no force/delete/refspec, github.com host pinned) for accident prevention on top of that boundary.
 Dangerous irreversible operations (history rewrite, branch deletion on the default branch) are blocked by GitHub rulesets regardless of which credential is used.
 
+## Audit Logging
+
+`git-safe-push` writes a local, append-only log of every invocation (attempted, refused, succeeded, failed), including branch and remote host but never the token.
+This is deliberately not a security control — per the Credential Management Strategy above, the actual boundary is token scope plus server-side rulesets, not anything client-side.
+The log exists so anomalous local usage (e.g. repeated refused attempts against a protected branch) is visible on its own, independent of whatever GitHub's server-side records show.
+
 ## Non-Goals
 
 - SSH transport for Git remotes.
