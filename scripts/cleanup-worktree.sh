@@ -111,6 +111,14 @@ if [ "$force" = "false" ]; then
     [ "$confirm" != "y" ] && [ "$confirm" != "Y" ] && { printf 'Cancelled.\n' >&2; exit 1; }
 fi
 
+# Tear down the worktree's vm-verify VM (skills/project/vm-verify), if any,
+# so reused-but-abandoned VMs don't linger on disk after the worktree is gone.
+vm_name="dotfiles-verify-$(basename "$worktree_repo_root")"
+if command -v tart >/dev/null 2>&1; then
+    tart stop "$vm_name" >/dev/null 2>&1 || true
+    tart delete "$vm_name" >/dev/null 2>&1 || true
+fi
+
 herdr worktree remove --workspace "$ws_id" --json 2>/dev/null && \
     printf 'Removed worktree for %s\n' "$ws_branch" || \
     { printf 'Failed to remove worktree for %s\n' "$ws_branch" >&2; exit 1; }

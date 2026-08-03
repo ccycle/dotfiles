@@ -7,9 +7,21 @@ BASE_IMAGE="ghcr.io/cirruslabs/macos-sequoia-base:latest" # bump to a newer Cirr
 VM_NAME="dotfiles-verify-$(basename "$repo_root")"
 VM_USER="admin"
 VM_PASS="admin" # default credentials on Cirrus Labs' base image
-SSH_OPTS=(-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=5)
+SSH_OPTS=(-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=5 -o PreferredAuthentications=password -o PubkeyAuthentication=no)
 REMOTE_DIR="dotfiles"
 FAILED=0
+FRESH=0
+
+for arg in "$@"; do
+  case "$arg" in
+    --fresh) FRESH=1 ;;
+    *)
+      echo "Unknown option: $arg" >&2
+      echo "Usage: $0 [--fresh]" >&2
+      exit 1
+      ;;
+  esac
+done
 
 pass() { echo "✅ $1"; }
 fail() { echo "❌ $1"; FAILED=1; }
@@ -41,16 +53,24 @@ fi
 pass "tart, sshpass, and arm64 host confirmed"
 
 # --- VM lifecycle ---
+# The VM is kept (stopped, not deleted) between runs so it can be reused: its
+# $HOME is VM-local and unrelated worktree-to-worktree, so there's no
+# correctness reason to throw it away every time, and reuse skips the Nix
+# install + full package closure fetch on every run after the first. Pass
+# --fresh to force a clean reclone (base image bump, suspected corruption).
 cleanup() {
-  echo "=== 🧹 Tearing down ${VM_NAME} ==="
+  echo "=== 🧹 Stopping ${VM_NAME} (kept for reuse; pass --fresh to reclone) ==="
   tart stop "$VM_NAME" >/dev/null 2>&1 || true
-  tart delete "$VM_NAME" >/dev/null 2>&1 || true
 }
 trap cleanup EXIT
 
-echo "=== 🖥️  Cloning ${BASE_IMAGE} as ${VM_NAME} ==="
-tart delete "$VM_NAME" >/dev/null 2>&1 || true # in case a stale clone from a previous failed run exists
-tart clone "$BASE_IMAGE" "$VM_NAME"
+if [ "$FRESH" -eq 1 ] || ! tart get "$VM_NAME" >/dev/null 2>&1; then
+  echo "=== 🖥️  Cloning ${BASE_IMAGE} as ${VM_NAME} ==="
+  tart delete "$VM_NAME" >/dev/null 2>&1 || true # in case a stale/corrupt clone exists
+  tart clone "$BASE_IMAGE" "$VM_NAME"
+else
+  echo "=== ♻️  Reusing existing VM ${VM_NAME} ==="
+fi
 
 echo "=== ▶️  Booting ${VM_NAME} ==="
 tart run "$VM_NAME" --no-graphics &
@@ -85,15 +105,17 @@ pass "SSH reachable"
 
 # --- Transfer worktree into the VM ---
 echo "=== 📦 Transferring worktree into VM ==="
-sshpass -p "$VM_PASS" rsync -az --exclude=.git -e "ssh ${SSH_OPTS[*]}" "${repo_root}/" "${VM_USER}@${vm_ip}:${REMOTE_DIR}/"
+sshpass -p "$VM_PASS" rsync -az --delete --exclude=.git -e "ssh ${SSH_OPTS[*]}" "${repo_root}/" "${VM_USER}@${vm_ip}:${REMOTE_DIR}/"
 pass "Worktree transferred to ~/${REMOTE_DIR} in VM"
 
 # --- Install Nix and run darwin-rebuild switch inside the VM ---
 echo "=== 🔧 Installing Nix and running darwin-rebuild switch (private) in VM ==="
 if ssh_vm bash -s <<REMOTE
 set -euo pipefail
-curl -fsSL https://install.determinate.systems/nix | sh -s -- install --no-confirm
+command -v nix >/dev/null 2>&1 || curl -fsSL https://install.determinate.systems/nix | sh -s -- install --no-confirm
+set +u # /etc/profile (via /etc/bashrc) references \$PS1, unset in a non-interactive shell
 . /etc/profile
+set -u
 cd ~/${REMOTE_DIR}
 scripts/darwin-rebuild.sh private
 REMOTE
