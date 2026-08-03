@@ -43,13 +43,21 @@ function build_dry_run() {
 
   echo "=== 🏗️ Build Dry-Run: ${profile} (${flake_path}) ==="
 
-  local storage_override=()
+  local override_args=()
   if [ "${flake_path}" != "./bootstrap" ]; then
     local repo_root
     repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../.." && pwd)"
     local storage_local="${repo_root}/.local/storage"
     if [ -d "${storage_local}" ]; then
-      storage_override=(--override-input storage-config "path:${storage_local}")
+      override_args+=(--override-input storage-config "path:${storage_local}")
+    fi
+    local dotfiles_local="${repo_root}/.local/dotfiles"
+    if [ -d "${dotfiles_local}" ]; then
+      override_args+=(--override-input dotfiles-config "path:${dotfiles_local}")
+    fi
+    local obsidian_local="${repo_root}/.local/obsidian-vault"
+    if [ -d "${obsidian_local}" ]; then
+      override_args+=(--override-input obsidian-vault-config "path:${obsidian_local}")
     fi
   fi
 
@@ -57,7 +65,7 @@ function build_dry_run() {
     # Nested: profile.system.system
     local target="${flake_path}#darwinConfigurations.${profile}.${SYSTEM}.system"
     echo "Target: $target"
-    nix build "$target" --impure -L --dry-run "${storage_override[@]}"
+    nix build "$target" --impure -L --dry-run "${override_args[@]}"
   else
     # Direct: profile.system
     local target="${flake_path}#darwinConfigurations.${profile}.system"
@@ -71,7 +79,7 @@ function build_dry_run() {
     fi
 
     echo "Target: $target"
-    nix build "$target" --impure -L --dry-run "${storage_override[@]}"
+    nix build "$target" --impure -L --dry-run "${override_args[@]}"
   fi
   echo "✅ $profile dry-run passed."
 }

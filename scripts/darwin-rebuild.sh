@@ -104,3 +104,16 @@ else
 fi
 
 eval sudo -H ${NIX} run "${flake_root}#${app}" -- switch --flake "${flake_root}#${config}" --impure -L ${overrides}
+
+# Best-effort push of the new system and home-manager closures to the attic
+# cache (push-on-event model). Failures must not fail the rebuild.
+if [ "${app}" != "default" ] && command -v attic >/dev/null 2>&1; then
+  system_path="$(readlink -f /run/current-system 2>/dev/null || true)"
+  hm_path="$(readlink -f "${HOME}/.local/state/nix/profiles/home-manager" 2>/dev/null || true)"
+  for p in ${system_path} ${hm_path}; do
+    [ -n "${p}" ] || continue
+    echo "Pushing ${p} to attic cache 'dotfiles'..."
+    attic push dotfiles "${p}" >/dev/null 2>&1 \
+      || echo "Warning: attic push failed for ${p}; cache not updated." >&2
+  done
+fi

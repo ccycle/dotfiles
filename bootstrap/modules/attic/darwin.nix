@@ -1,5 +1,9 @@
-{ config, lib, ... }:
+{ config, lib, pkgs, ... }:
 
+let
+  atticHost = "mac-mini-m4-pro";
+  isAtticHost = config.networking.hostName == atticHost;
+in
 {
   # Attic substituter configuration for all machines.
   #
@@ -9,7 +13,46 @@
   #   ssh mac-mini-m4-pro -- attic cache info dotfiles
   #
   nix.settings = {
-    extra-substituters = [ "https://cache.mac-mini-m4-pro.internal" ];
-    trusted-public-keys = [ "dotfiles:<PUBLIC_KEY>" ];
+    extra-substituters = [ "https://cache.${atticHost}.internal/dotfiles" ];
+    trusted-public-keys = [ "dotfiles:eSuMT01k8I8jf04ngslFkwCE9KnbKlOTlNosysL/WBA=" ];
+    ssl-cert-file = lib.mkForce "/etc/nix/ca-bundle.crt";
   };
+
+  # The cache above is served over Caddy's self-signed "tls internal" CA,
+  # which is generated independently per host. On mac-mini-m4-pro itself
+  # that CA is already on disk; every other machine has to fetch it from
+  # the portal Caddy exposes for exactly this purpose. Either way nix (which
+  # uses its own OpenSSL bundle, not the system trust store) needs it merged
+  # into a bundle it trusts, layered on top of the keychain-derived
+  # /etc/nix/ca_cert.pem from bootstrap/modules/system/darwin.nix.
+  system.activationScripts.postActivation.text = lib.mkAfter ''
+    set -eu
+    mkdir -p /etc/nix
+    ATTIC_CA="/etc/nix/attic-ca.crt"
+    rebuild_bundle() {
+      rm -f /etc/nix/ca-bundle.crt
+      if [ -f /etc/nix/ca_cert.pem ]; then
+        cat /etc/nix/ca_cert.pem > /etc/nix/ca-bundle.crt
+      else
+        cat ${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt > /etc/nix/ca-bundle.crt
+      fi
+      [ -f "$ATTIC_CA" ] && cat "$ATTIC_CA" >> /etc/nix/ca-bundle.crt
+    }
+    ${if isAtticHost then ''
+      LOCAL_CA="/var/lib/caddy/caddy/pki/authorities/local/root.crt"
+      [ -f "$LOCAL_CA" ] && cp "$LOCAL_CA" "$ATTIC_CA"
+      rebuild_bundle
+      ( for _ in $(seq 1 24); do
+          [ -f "$LOCAL_CA" ] && { cp "$LOCAL_CA" "$ATTIC_CA"; rebuild_bundle; break; }
+          sleep 5
+        done ) &
+    '' else ''
+      rebuild_bundle
+      ( for _ in $(seq 1 24); do
+          curl -fsSL --max-time 5 "http://ca.${atticHost}.internal/ca.crt" -o "$ATTIC_CA" 2>/dev/null \
+            && { rebuild_bundle; break; }
+          sleep 5
+        done ) &
+    ''}
+  '';
 }

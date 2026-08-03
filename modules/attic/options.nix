@@ -4,7 +4,6 @@ with lib;
 
 let
   cfg = config.services.atticd;
-  watchStoreCfg = config.services.attic-watch-store;
   atticPkg = inputs.attic.packages.${pkgs.stdenv.hostPlatform.system}.default;
   format = pkgs.formats.toml { };
 in
@@ -19,15 +18,6 @@ in
     };
   };
 
-  options.services.attic-watch-store = {
-    enable = mkEnableOption "Attic watch-store auto-push";
-
-    cacheName = mkOption {
-      type = types.str;
-      description = "Cache name on the attic server to push to.";
-    };
-  };
-
   config = mkMerge [
     (mkIf cfg.enable {
       services.atticd.settings = mkDefault {
@@ -36,6 +26,19 @@ in
         storage = {
           type = "local";
           path = "/var/lib/atticd/storage";
+        };
+        chunking = {
+          nar-size-threshold = 64 * 1024;
+          min-size = 16 * 1024;
+          avg-size = 64 * 1024;
+          max-size = 256 * 1024;
+        };
+        # Age out cache objects not accessed within the retention period.
+        # last_accessed_at is bumped only on nar downloads (not on pushes),
+        # so the cache stays bounded to recently-pulled content.
+        "garbage-collection" = {
+          interval = "6 hours";
+          "default-retention-period" = "30 days";
         };
       };
 
@@ -54,31 +57,13 @@ in
           StandardErrorPath = "/var/log/atticd.log";
         };
         script = ''
+          mkdir -p /var/lib/atticd/storage
           export ATTIC_SERVER_TOKEN_RS256_SECRET_BASE64="$(
             cat ${config.sops.secrets.atticd-jwt-secret.path}
           )"
           exec ${atticPkg}/bin/atticd \
             -f /etc/atticd/server.toml \
             --mode monolithic
-        '';
-      };
-    })
-
-    (mkIf watchStoreCfg.enable {
-      sops.secrets.attic-watch-token = {
-        sopsFile = ./secrets.yaml;
-      };
-
-      launchd.user.agents.attic-watch-store = {
-        serviceConfig = {
-          KeepAlive = true;
-          RunAtLoad = true;
-          StandardOutPath = "/var/tmp/attic-watch-store.log";
-          StandardErrorPath = "/var/tmp/attic-watch-store.log";
-        };
-        script = ''
-          export ATTIC_TOKEN="$(cat ${config.sops.secrets.attic-watch-token.path})"
-          exec ${atticPkg}/bin/attic watch-store ${watchStoreCfg.cacheName}
         '';
       };
     })
