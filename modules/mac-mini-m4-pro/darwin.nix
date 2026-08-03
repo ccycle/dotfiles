@@ -9,7 +9,7 @@
   custom.dnsmasq.enable = true;
   services.immich.enable = true;
   services.monitoring.enable = true;
-  services.gitlab.enable = true;
+  services.gitlab.enable = false;
   services.pocket-id.enable = true;
   services.forgejo.enable = true;
   services.forgejo.pushMirrors = [{
