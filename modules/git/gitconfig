@@ -1,7 +1,8 @@
 # Base git config, writable in place inside the dotfiles repo.
-# Included from ~/.config/git/config via home-manager `programs.git.includes`.
+# Symlinked as ~/.config/git/config, so `git config --global` writes land here.
 # Feature-specific config lives in sibling files included below; git resolves
-# relative include paths against this file's directory.
+# relative include paths against the symlink's directory (~/.config/git/), so
+# those siblings are also symlinked there (see modules/git/home.nix).
 
 [alias]
     aliases-list = "!git config --get-regexp ^alias;"
