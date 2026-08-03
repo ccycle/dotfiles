@@ -18,9 +18,12 @@ set -eu
 DB="${ATTIC_DB:-/var/lib/atticd/server.db}"
 STORAGE="${ATTIC_STORAGE:-/var/lib/atticd/storage}"
 DRY_RUN=0
-if [ "${1:-}" = "--dry-run" ]; then
-  DRY_RUN=1
+if [ "$#" -gt 1 ] || { [ "$#" -eq 1 ] && [ "$1" != "--dry-run" ]; }; then
+  echo "Unknown argument: ${1:-}" >&2
+  echo "Usage: $0 [--dry-run]" >&2
+  exit 1
 fi
+[ "${1:-}" = "--dry-run" ] && DRY_RUN=1
 
 if [ "$(id -u)" -ne 0 ]; then
   echo "Must be run as root (files under ${STORAGE} are root-owned)." >&2
