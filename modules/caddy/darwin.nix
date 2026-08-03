@@ -183,5 +183,9 @@ in
           --adapter caddyfile
       '';
     };
+
+    # nix's trust of Caddy's internal CA (so binary caches on *.internal are
+    # usable) is handled centrally in bootstrap/modules/attic/darwin.nix,
+    # covering both this host and every other profile.
   };
 }
