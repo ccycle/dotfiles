@@ -1,7 +1,4 @@
-{ pkgs, config, ... }: {
-  programs.git.settings = {
-    ghq.root = "${config.home.homeDirectory}/repositories";
-  };
+{ pkgs, ... }: {
   home.packages = with pkgs; [
     ghq
   ];

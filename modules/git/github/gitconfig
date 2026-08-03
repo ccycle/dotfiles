@@ -1,0 +1,7 @@
+# GitHub URL rewrites (insteadOf).
+
+[url "https://ccycle@github.com/ccycle/"]
+    insteadOf = https://github.com/ccycle/
+
+[url "https://ccycle@github.com/primal-search/"]
+    insteadOf = https://github.com/primal-search/

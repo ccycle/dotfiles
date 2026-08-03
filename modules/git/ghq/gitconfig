@@ -1,0 +1,5 @@
+# Static path for this single-user repo; the canonical dotfiles clone lives at
+# ${ghq.root}/github.com/ccycle/dotfiles.
+
+[ghq]
+    root = /Users/mfuruki/repositories

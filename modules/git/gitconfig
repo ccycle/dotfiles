@@ -1,0 +1,57 @@
+# Base git config, writable in place inside the dotfiles repo.
+# Included from ~/.config/git/config via home-manager `programs.git.includes`.
+# Feature-specific config lives in sibling files included below; git resolves
+# relative include paths against this file's directory.
+
+[alias]
+    aliases-list = "!git config --get-regexp ^alias;"
+    ca = "commit --amend"
+    discard-unstaged-changes = "restore ."
+    fetch-branch = "!f() { git fetch origin \"$1:$1\"; }; f"
+    merged-branch-delete = "!git branch --merged | egrep -v \"(^\\*|master|main|dev)\" | xargs git branch -d"
+    merged-branch-list = "!git branch --merged | egrep -v \"(^\\*|master|main|dev)\""
+    poh = "push origin HEAD"
+    poh-f = "push origin HEAD --force-with-lease"
+    pull-origin-head = "pull origin HEAD"
+    # --force-if-includes rejects push if remote has commits not yet fetched.
+    # https://zenn.dev/mary_pp/articles/eaac544eaf600a
+    push-force-with-lease = "!git push --force-with-lease --force-if-includes"
+    push-origin-head = "push origin HEAD"
+    push-origin-head-force-with-lease = "push origin HEAD --force-with-lease"
+    rh = "reset HEAD^"
+    stash-abort = "reset --merge"
+
+[core]
+    ignorecase = false
+
+[credential]
+    helper = osxkeychain
+    helper = oauth -device
+
+[fetch]
+    prune = true
+
+[gpg]
+    format = ssh
+
+[init]
+    defaultbranch = main
+
+[rebase]
+    updateRefs = true
+
+[user]
+    name = ccycle
+    email = ccycle713@gmail.com
+    # Stable path; git expands ~ via interpolate_path when ssh-signing.
+    signingKey = ~/.ssh/id_ed25519_signing.pub
+
+[commit]
+    gpgsign = true
+
+[tag]
+    gpgsign = true
+
+[include]
+    path = github/gitconfig
+    path = ghq/gitconfig

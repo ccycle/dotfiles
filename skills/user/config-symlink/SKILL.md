@@ -18,12 +18,12 @@ When adding or managing a configuration file for a tool, place the source file i
 2. **Register the Symlink in home.nix**
    - Open (or create) the `home.nix` for the feature module.
    - Add a `home.file` entry using `config.lib.file.mkOutOfStoreSymlink` to link the source to the target path.
-   - Use the dynamic repo root: `${config.programs.git.settings.ghq.root}/github.com/ccycle/dotfiles/...`.
+   - Use the dynamic repo root: `${config.custom.dotfiles.dir}/...`.
    - Example:
      ```nix
      home.file."${config.home.homeDirectory}/.config/tool/config.toml".source =
        config.lib.file.mkOutOfStoreSymlink
-         "${config.programs.git.settings.ghq.root}/github.com/ccycle/dotfiles/modules/<feature>/config.toml";
+         "${config.custom.dotfiles.dir}/modules/<feature>/config.toml";
      ```
 
 3. **Verify**
