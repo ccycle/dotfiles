@@ -18,7 +18,14 @@ in
 
   home.activation.orbstack-start-at-login = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     if [ -x "${orbstack}/bin/orb" ]; then
-      "${orbstack}/bin/orb" config set app.start_at_login true 2>/dev/null || echo "Warning: OrbStack is not running. Run 'orb config set app.start_at_login true' after starting OrbStack."
+      "${orbstack}/bin/orb" config set app.start_at_login true 2>/dev/null &
+      _orb_pid=$!
+      sleep 5
+      if kill -0 "$_orb_pid" 2>/dev/null; then
+        kill "$_orb_pid" 2>/dev/null || true
+        echo "Warning: orb config set hung (OrbStack daemon not responding); start_at_login not set this run."
+      fi
+      wait "$_orb_pid" 2>/dev/null || true
     fi
   '';
 
