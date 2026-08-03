@@ -16,11 +16,10 @@
       core.ignorecase = false;
       init.defaultbranch = "main";
       fetch.prune = true;
-      # GCM is required for OAuth device-flow auth.
-      # https://qiita.com/skkzsh/items/11dd107a0734fec682b8
-      credential = {
-        helper = "manager";
-      };
+      credential.helper = [
+        "osxkeychain"
+        "oauth -device"
+      ];
       alias = {
         rh = "reset HEAD^";
         stash-abort = "reset --merge";
@@ -53,6 +52,6 @@
   ];
   home.packages = [
     pkgs.git-lfs
-    pkgs.git-credential-manager
+    pkgs.git-credential-oauth
   ];
 }
