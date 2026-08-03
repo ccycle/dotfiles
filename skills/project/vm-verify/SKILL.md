@@ -54,7 +54,9 @@ is suspected to be corrupted).
    `--delete` so files removed from the worktree don't linger in a reused VM;
    `.local/` is gitignored so it's never transferred — no host-local secrets or
    paths leak into the VM).
-3. Installs Nix inside the VM (Determinate Systems installer, non-interactive) —
+3. Installs Nix inside the VM (upstream multi-user installer, non-interactive —
+   not the Determinate Nix installer, whose daemon nix-darwin refuses to
+   activate alongside since this repo's nix-darwin manages Nix itself) —
    skipped if a reused VM already has it from a previous run.
 4. Runs `scripts/darwin-rebuild.sh private` inside the VM. This lets the existing
    `.local/dotfiles/flake.nix` auto-creation logic

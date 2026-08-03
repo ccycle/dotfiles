@@ -112,7 +112,11 @@ pass "Worktree transferred to ~/${REMOTE_DIR} in VM"
 echo "=== 🔧 Installing Nix and running darwin-rebuild switch (private) in VM ==="
 if ssh_vm bash -s <<REMOTE
 set -euo pipefail
-command -v nix >/dev/null 2>&1 || curl -fsSL https://install.determinate.systems/nix | sh -s -- install --no-confirm
+# Plain nix-darwin (nix.package = pkgs.nix, nix.enable defaults to true) expects to
+# manage the Nix install itself; the Determinate Nix installer's daemon conflicts
+# with that and nix-darwin refuses to activate ("Determinate detected, aborting
+# activation"), so use the upstream multi-user installer instead.
+command -v nix >/dev/null 2>&1 || sh <(curl -fsSL https://nixos.org/nix/install) --daemon --yes
 set +u # /etc/profile (via /etc/bashrc) references \$PS1, unset in a non-interactive shell
 . /etc/profile
 set -u
