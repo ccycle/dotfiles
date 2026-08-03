@@ -80,3 +80,18 @@ groups:
           severity: critical
         annotations:
           summary: "Immich Redis is unreachable from redis_exporter"
+
+  - name: forgejo
+    rules:
+      # Forgejo exposes no HTTP traffic/error metrics (verified live on 11.x:
+      # only gitea_* instance stats plus Go/process runtime), so availability
+      # and restart signals are covered by the generic ScrapeTargetDown and
+      # ContainerRestarting rules. The one distinct alertable signal is
+      # process file-descriptor pressure.
+      - alert: ForgejoFileDescriptorPressure
+        expr: process_open_fds{job="forgejo"} / process_max_fds{job="forgejo"} > 0.8
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Forgejo is using {{ $value | printf \"%.0f\" }}% of its file descriptor limit"

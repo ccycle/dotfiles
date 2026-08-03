@@ -12,6 +12,12 @@ services:
       - FORGEJO__server__SSH_LISTEN_PORT=22
       - FORGEJO__server__LFS_START_SERVER=true
       - FORGEJO__actions__ENABLED=true
+      # Prometheus /metrics endpoint (scraped by the monitoring stack via
+      # host-gateway:3000). Aggregate counters only, no bearer token — the
+      # internal network is trusted and the port is loopback-bound.
+      - FORGEJO__metrics__ENABLED=true
+      - FORGEJO__metrics__ENABLED_ISSUE_BY_LABEL=true
+      - FORGEJO__metrics__ENABLED_ISSUE_BY_REPOSITORY=true
       # OIDC (Pocket ID)
       - FORGEJO__oauth2__ENABLED=true
       - FORGEJO__oauth2__PROVIDER=openidConnect

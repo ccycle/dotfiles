@@ -62,6 +62,20 @@ for agent-driven investigation.
   (unlike GitLab/Immich's HTTP metrics), so the error panel uses the
   dedicated `opencloud_proxy_errors_total` counter instead of a status-code
   breakdown.
+- **Forgejo is scraped from its own web port** (`host-gateway:3000/metrics`),
+  enabled with `FORGEJO__metrics__ENABLED`. Forgejo (Gitea fork) exposes only
+  `gitea_*` instance statistics (repositories, users, issues open/closed,
+  labels, ...) plus Go/process runtime — verified live on 11.x it has **no
+  HTTP traffic/latency/error metrics**, so `forgejo-health.json` has no
+  request panels and no HTTP-error alert; availability/restart are the
+  generic `ScrapeTargetDown`/`ContainerRestarting` rules and the one distinct
+  alert is file-descriptor pressure. `gitea_issues_by_label` /
+  `gitea_issues_by_repository` only emit once issues exist (the collector
+  skips empty maps), so their dashboard panels are empty on a fresh instance.
+  Forgejo uses its embedded SQLite, so — unlike GitLab/Immich — there is no
+  separate datastore exporter. Logs flow to Loki through the generic docker
+  discovery with `compose_project=forgejo` (stdout, not file logs, so no
+  Alloy change was needed unlike GitLab).
 
 ## Rejected Alternatives
 

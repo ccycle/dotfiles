@@ -28,7 +28,7 @@ Work down this list; stop when the failing layer is found.
    ```
 
 3. **Container state** for the affected stack (compose projects: `gitlab`,
-   `immich`, `opencloud`, `monitoring`):
+   `immich`, `opencloud`, `forgejo`, `monitoring`):
 
    ```bash
    docker compose -p <project> ps
@@ -57,7 +57,7 @@ Work down this list; stop when the failing layer is found.
 
 | Label | Values / meaning |
 |---|---|
-| `compose_project` | `gitlab`, `immich`, `opencloud`, `monitoring` — covers container stdout AND GitLab file logs |
+| `compose_project` | `gitlab`, `immich`, `opencloud`, `forgejo`, `monitoring` — covers container stdout AND GitLab file logs |
 | `compose_service` | compose service name (e.g. `immich-server`, `gitlab-ce`) |
 | `container_name` | docker container name |
 | `level` | normalized lowercase level extracted from JSON logs (`error`, `warn`, ...); absent on non-JSON lines |
@@ -77,6 +77,7 @@ file logs, not container stdout — filter with
 | `gitlab-exporter-sidekiq` | queue backlog: `sidekiq_queue_size`, `sidekiq_queue_latency_seconds` |
 | `gitlab-postgres` / `gitlab-redis` | datastore health: `pg_up`, `redis_up`, connections, memory |
 | `immich-api` / `immich-microservices` | Immich internals |
+| `forgejo` | Forgejo instance stats + Go/process runtime (no HTTP metrics; `gitea_issues_by_label`/`by_repository` emit only once issues exist) |
 | `cadvisor` | per-container CPU/memory/restarts (labels `container_label_com_docker_compose_project`, `name`) |
 
 ## Reporting
