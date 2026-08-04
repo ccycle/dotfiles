@@ -5,6 +5,12 @@ set -e
 SYSTEM=$(nix eval --raw --impure --expr 'builtins.currentSystem')
 echo "Detected system: $SYSTEM"
 
+# Current host identity, used to tell host profiles from foreign ones. On
+# macOS the declared networking.hostName matches `scutil --get LocalHostName`.
+LOCAL_HOST="$(scutil --get LocalHostName 2>/dev/null || hostname -s)"
+LOCAL_HOST="$(echo "$LOCAL_HOST" | tr '[:upper:]' '[:lower:]' | sed 's/\.local$//')"
+echo "Detected host: $LOCAL_HOST"
+
 function check_syntax() {
   echo "=== 🔍 Checking Nix Syntax ==="
   find . -name "*.nix" -not -path "*/node_modules/*" -not -path "*/.git/*" -print0 | xargs -0 -n 1 nix-instantiate --parse > /dev/null
@@ -25,62 +31,99 @@ function check_structure() {
   echo "✅ Structure check passed."
 }
 
-function get_profiles() {
-  local flake_path=$1
-  nix eval "${flake_path}#darwinConfigurations" --json --apply 'builtins.attrNames' --impure
+# Flatten darwinConfigurations into fully-qualified config paths. Entries are
+# either direct darwinSystem results (mac-mini-m4) or per-architecture attrsets
+# (private.<arch>); resolving both here lets every downstream step use the
+# uniform path <flake>#darwinConfigurations.<config>.<attr>.
+function list_configs() {
+  nix eval "${1}#darwinConfigurations" --apply '
+    configs:
+    let isConfig = v: v ? system;
+        resolve = name:
+          let v = configs.${name};
+          in if isConfig v then [ name ]
+             else map (sub: "${name}.${sub}")
+               (builtins.filter (sub: isConfig v.${sub}) (builtins.attrNames v));
+    in builtins.concatStringsSep " " (builtins.concatMap resolve (builtins.attrNames configs))
+  ' --raw --impure
 }
 
-function is_system_nested() {
-  local flake_path=$1
-  local profile=$2
-  # Check if the profile has the current system as a sub-attribute
-  nix eval "${flake_path}#darwinConfigurations.${profile}" --json --apply "attrs: builtins.hasAttr \"${SYSTEM}\" attrs" --impure
+# Declared hostName of a config; "null" means the profile is host-agnostic
+# (no host module pins it, so it is meant to build on any machine).
+function get_config_host() {
+  nix eval "${1}#darwinConfigurations.${2}.config.networking.hostName" --json --impure 2>/dev/null | jq -r .
+}
+
+# Machine-local state (.local/storage) is only valid for the current host.
+# Foreign profiles would fail eval-time assertions because their services'
+# storage volumes are not configured on this machine, so dry-run them against
+# a placeholder that satisfies every known volume assertion. Keep the service
+# list in sync with the `assertions` in modules/<service>/darwin.nix.
+function get_placeholder_storage() {
+  local dir="${REPO_ROOT}/.local/.verify-placeholder-storage"
+  mkdir -p "${dir}/vol"
+  cat > "${dir}/flake.nix" <<EOF
+{
+  outputs = { ... }: {
+    darwinModules.default = { ... }: {
+      custom.storage.volumes = {
+        forgejo = "${dir}/vol";
+        gitlab = "${dir}/vol";
+        immich = "${dir}/vol";
+        llm-server = "${dir}/vol";
+        monitoring = "${dir}/vol";
+        opencloud = "${dir}/vol";
+      };
+    };
+  };
+}
+EOF
+  echo "${dir}"
 }
 
 function build_dry_run() {
   local flake_path=$1
-  local profile=$2
+  local config=$2
+  local profile="${config%%.*}"
 
   echo "=== 🏗️ Build Dry-Run: ${profile} (${flake_path}) ==="
 
+  # Skip configs built for another architecture.
+  local config_system
+  config_system="$(nix eval "${flake_path}#darwinConfigurations.${config}.pkgs.system" --raw --impure 2>/dev/null || echo "$SYSTEM")"
+  if [ "$config_system" != "$SYSTEM" ]; then
+    echo "Skipping ${profile} (incompatible system: $config_system)"
+    return 0
+  fi
+
   local override_args=()
   if [ "${flake_path}" != "./bootstrap" ]; then
-    local repo_root
-    repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../.." && pwd)"
-    local storage_local="${repo_root}/.local/storage"
-    if [ -d "${storage_local}" ]; then
-      override_args+=(--override-input storage-config "path:${storage_local}")
+    # Host-agnostic configs and the current host's config use the real
+    # machine-local storage; foreign hosts use a placeholder so their volume
+    # assertions cannot fail from missing machine state.
+    local storage_override=""
+    local host
+    host="$(get_config_host "$flake_path" "$config")"
+    if [ -n "${host}" ] && [ "${host}" != "null" ] && [ "${host}" != "${LOCAL_HOST}" ]; then
+      echo "  (host '${host}' != current '${LOCAL_HOST}': using placeholder storage config)"
+      storage_override="$(get_placeholder_storage)"
+    elif [ -d "${REPO_ROOT}/.local/storage" ]; then
+      storage_override="${REPO_ROOT}/.local/storage"
     fi
-    local dotfiles_local="${repo_root}/.local/dotfiles"
-    if [ -d "${dotfiles_local}" ]; then
-      override_args+=(--override-input dotfiles-config "path:${dotfiles_local}")
+    if [ -n "${storage_override}" ]; then
+      override_args+=(--override-input storage-config "path:${storage_override}")
     fi
-    local obsidian_local="${repo_root}/.local/obsidian-vault"
-    if [ -d "${obsidian_local}" ]; then
-      override_args+=(--override-input obsidian-vault-config "path:${obsidian_local}")
+    if [ -d "${REPO_ROOT}/.local/dotfiles" ]; then
+      override_args+=(--override-input dotfiles-config "path:${REPO_ROOT}/.local/dotfiles")
+    fi
+    if [ -d "${REPO_ROOT}/.local/obsidian-vault" ]; then
+      override_args+=(--override-input obsidian-vault-config "path:${REPO_ROOT}/.local/obsidian-vault")
     fi
   fi
 
-  if [ "$(is_system_nested "$flake_path" "$profile")" == "true" ]; then
-    # Nested: profile.system.system
-    local target="${flake_path}#darwinConfigurations.${profile}.${SYSTEM}.system"
-    echo "Target: $target"
-    nix build "$target" --impure -L --dry-run "${override_args[@]}"
-  else
-    # Direct: profile.system
-    local target="${flake_path}#darwinConfigurations.${profile}.system"
-
-    # Verify if it's compatible with current system if possible
-    local profile_system
-    profile_system=$(nix eval "${flake_path}#darwinConfigurations.${profile}.pkgs.system" --raw --impure 2>/dev/null || echo "$SYSTEM")
-    if [ "$profile_system" != "$SYSTEM" ]; then
-      echo "Skipping $profile (incompatible system: $profile_system)"
-      return 0
-    fi
-
-    echo "Target: $target"
-    nix build "$target" --impure -L --dry-run "${override_args[@]}"
-  fi
+  local target="${flake_path}#darwinConfigurations.${config}.system"
+  echo "Target: $target"
+  nix build "$target" --impure -L --dry-run "${override_args[@]}"
   echo "✅ $profile dry-run passed."
 }
 
@@ -120,24 +163,21 @@ echo ""
 check_structure
 echo ""
 
-# 3. Extract and check profiles from root flake
+# 3. Build dry-run every compatible profile from the root and bootstrap flakes
 echo "=== 📋 Discovering profiles in root flake ==="
-ROOT_PROFILES=$(get_profiles ".")
-echo "Found: $ROOT_PROFILES"
-
-for profile in $(echo "$ROOT_PROFILES" | jq -r '.[]'); do
-  build_dry_run "." "$profile"
+ROOT_CONFIGS=$(list_configs ".")
+echo "Found: $ROOT_CONFIGS"
+for config in $ROOT_CONFIGS; do
+  build_dry_run "." "$config"
   echo ""
 done
 
-# 4. Extract and check profiles from bootstrap flake
 if [ -d "./bootstrap" ]; then
   echo "=== 📋 Discovering profiles in bootstrap flake ==="
-  BOOTSTRAP_PROFILES=$(get_profiles "./bootstrap")
-  echo "Found: $BOOTSTRAP_PROFILES"
-
-  for profile in $(echo "$BOOTSTRAP_PROFILES" | jq -r '.[]'); do
-    build_dry_run "./bootstrap" "$profile"
+  BOOTSTRAP_CONFIGS=$(list_configs "./bootstrap")
+  echo "Found: $BOOTSTRAP_CONFIGS"
+  for config in $BOOTSTRAP_CONFIGS; do
+    build_dry_run "./bootstrap" "$config"
     echo ""
   done
 fi

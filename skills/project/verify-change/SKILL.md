@@ -15,7 +15,7 @@ Run the verification script from the repository root:
 skills/project/verify-change/scripts/check.sh [profile]
 ```
 
-Available profiles: `bootstrap`, `private`, `mac-mini-m4`. If no profile is specified, all compatible profiles will be checked.
+Profiles are discovered from the flake: `bootstrap`, `private`, `mac-mini-m4`, `mac-mini-m4-pro`. If no profile is specified, all profiles compatible with the current system (architecture) are checked.
 
 ## Checks Performed
 
@@ -24,7 +24,8 @@ Available profiles: `bootstrap`, `private`, `mac-mini-m4`. If no profile is spec
 3.  **Build Dry-Run:** Attempts to build the darwin configuration for the specified (or all) profiles without switching, ensuring that all dependencies and modules can be resolved.
     - **bootstrap**: Builds `./bootstrap#darwinConfigurations.bootstrap.<system>.system`
     - **private**: Builds `.#darwinConfigurations.private.<system>.system`
-    - **mac-mini-m4**: Builds `.#darwinConfigurations.mac-mini-m4.system` (if on aarch64-darwin)
+    - **mac-mini-m4** / **mac-mini-m4-pro**: Builds `.#darwinConfigurations.<profile>.system` (if on aarch64-darwin)
+    - **Host awareness:** Machine-local storage (`.local/storage`) is only valid for the current host. Profiles whose declared `networking.hostName` differs from the current host are dry-run against a generated placeholder storage config, so their eval correctness is still validated without failing on missing volume assertions. Host-agnostic profiles (no pinned hostName, e.g. `private`) use the real machine config.
 
 ## When to Use
 
