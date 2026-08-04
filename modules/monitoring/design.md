@@ -14,8 +14,8 @@ for agent-driven investigation.
   Alertmanager and no notification channel. Adding one is a deliberate future
   decision, not an oversight.
 - No host-level (macOS) metrics: no node_exporter on the host.
-- No Caddy metrics or access logs, and no blackbox/synthetic probing —
-  reachability is covered by the smoke-test skills.
+- No blackbox/synthetic probing — reachability is covered by the
+  smoke-test skills.
 - No vendored community dashboards. Only compact hand-written dashboard JSONs
   are checked in; large community dashboards (e.g. grafana.com ID 193 for
   Docker) can be imported manually through the UI into the persistent Grafana
@@ -76,6 +76,32 @@ for agent-driven investigation.
   separate datastore exporter. Logs flow to Loki through the generic docker
   discovery with `compose_project=forgejo` (stdout, not file logs, so no
   Alloy change was needed unlike GitLab).
+- **Caddy access logs and metrics are configured globally, not per service
+  module.** Following the same rationale as Tailscale's `default_bind` (see
+  `modules/tailscale/design.md`), one global directive applies uniformly to
+  every proxied vhost without coupling each service module to logging or
+  metrics config.
+- **Caddy access logs never record the query string**, not even with
+  selective masking. Every SSO-capable service in this stack sends OIDC
+  authorization codes and state values through query parameters on
+  Caddy-fronted URLs, so any query-string capture is a token-leak risk into
+  the audit log itself; recording only path, status, duration, and vhost
+  removes the risk categorically instead of relying on a parameter denylist.
+- **Caddy access logs are written to the same host log-file convention
+  already scraped by the log collector for other host-native output**, so no
+  collector-side config change is required to pick them up — mirroring how
+  Forgejo's logs needed no collector change (already covered by the generic
+  per-container discovery) while GitLab's did (its real logs bypass that
+  path entirely).
+- **`vhost` is the only Caddy access-log field promoted to a Loki label.** It
+  is bounded by the small, fixed set of proxied services. Client IP and path
+  stay in the unindexed log body, following the same cardinality discipline
+  already applied to the `level` label.
+- **Caddy metrics are scraped the same way every other service in this stack
+  already is** — a metrics endpoint on a host loopback port, added as one
+  more Prometheus scrape job. Caddy already runs natively on the host rather
+  than inside a compose stack, so this is the direct host-native equivalent
+  of the container-published-port pattern used everywhere else.
 
 ## Rejected Alternatives
 
@@ -90,6 +116,12 @@ for agent-driven investigation.
 - **Loki ruler for log-based alerts** — rejected while there is no
   notification channel; Prometheus alert rules cover the triage-entry-point
   need.
+- **Selective masking of known-sensitive query parameters** (e.g. redacting
+  only `code`/`state`) instead of dropping the Caddy access-log query string
+  outright — rejected because it requires a denylist kept in sync with every
+  OIDC-fronted service added in the future; a missed parameter would leak a
+  token into the audit log. Dropping the query string entirely removes the
+  maintenance burden and the failure mode at the same time.
 
 ## Constraints
 
@@ -102,3 +134,13 @@ for agent-driven investigation.
 - Compose files are static; anything host-dependent (hostname-derived URLs,
   storage paths) must flow in as environment variables exported by the
   launchd script.
+- Whether the Caddy build in use includes a metrics module, and which
+  log-format mechanism can drop the query string, is unverified as of this
+  writing. Confirm both against the actual Caddy package and version before
+  implementing, rather than assuming upstream Caddy's default feature set
+  applies unmodified.
+- Caddy's metrics port is subject to the same cross-stack port-uniqueness
+  constraint as every other scraped target.
+- No alert rule is added for Caddy metrics as part of this design. Whether
+  one should exist later is an open question, not a decision made or ruled
+  out here.

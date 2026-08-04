@@ -69,10 +69,12 @@ is explicitly excluded.
 - Non-interactive API clients (opencode → LM Studio) use API keys
   distributed via sops-nix, not OIDC.
 
-### Phase 3 — audit (future)
+### Phase 3 — audit (in progress)
 
-- Caddy access logs → Loki (requires lifting the "no Caddy logs"
-  non-goal in `modules/monitoring/design.md`).
+- Caddy access logs and metrics — design captured in
+  `modules/monitoring/design.md`, which lifts its prior "no Caddy
+  metrics or access logs" non-goal for this work (blackbox/synthetic
+  probing remains out of scope there).
 - Device posture checks (Tailscale paid feature, evaluate when needed).
 
 ## Why `.internal` TLD
