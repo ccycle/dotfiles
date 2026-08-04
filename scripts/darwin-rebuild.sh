@@ -67,40 +67,19 @@ fi
 
 overrides=""
 
-storage_local="${repo_root}/.local/storage"
-if [ -d "${storage_local}" ]; then
-  overrides="${overrides} --override-input storage-config \"path:${storage_local}\""
-else
-  echo "Note: .local/storage/ not found. Services requiring external storage will fail." >&2
-  echo "  Run: scripts/setup-local-storage.sh <service>=/Volumes/<YOUR_DRIVE>" >&2
-  echo "" >&2
-fi
+# Ensure machine-local .local state for this checkout (restores
+# storage/obsidian-vault from the main checkout and syncs dotfiles.dir to this
+# checkout), then wire the overrides for whatever now exists.
+"${repo_root}/scripts/ensure-local.sh"
 
-obsidian_local="${repo_root}/.local/obsidian-vault"
-if [ -d "${obsidian_local}" ]; then
-  overrides="${overrides} --override-input obsidian-vault-config \"path:${obsidian_local}\""
-else
-  echo "Note: .local/obsidian-vault/ not found. Obsidian vault config will use defaults." >&2
-  echo "  Run: scripts/setup-obsidian-vault.sh /path/to/your/vault" >&2
-  echo "" >&2
-fi
+for m in storage obsidian-vault; do
+  if [ -d "${repo_root}/.local/${m}" ]; then
+    overrides="${overrides} --override-input ${m}-config \"path:${repo_root}/.local/${m}\""
+  fi
+done
 
-dotfiles_local="${repo_root}/.local/dotfiles"
-if [ -d "${dotfiles_local}" ]; then
-  overrides="${overrides} --override-input dotfiles-config \"path:${dotfiles_local}\""
-else
-  # Auto-create with the current repo root path so DOTFILES_DIR env var is never needed.
-  mkdir -p "${dotfiles_local}"
-  cat > "${dotfiles_local}/flake.nix" <<- LOCALEOF
-		{
-		  outputs = { ... }: {
-		    darwinModules.default = { ... }: {
-		      custom.dotfiles.dir = "${repo_root}";
-		    };
-		  };
-		}
-	LOCALEOF
-  overrides="${overrides} --override-input dotfiles-config \"path:${dotfiles_local}\""
+if [ -d "${repo_root}/.local/dotfiles" ]; then
+  overrides="${overrides} --override-input dotfiles-config \"path:${repo_root}/.local/dotfiles\""
 fi
 
 eval sudo -H ${NIX} run "${flake_root}#${app}" -- switch --flake "${flake_root}#${config}" --impure -L ${overrides}

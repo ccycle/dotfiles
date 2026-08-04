@@ -103,6 +103,15 @@ if [ -f /etc/nix/nix.conf ] && grep -q 'ssl-cert-file' /etc/nix/nix.conf; then
   fi
 fi
 
+# 0.5. Ensure machine-local .local state for this checkout. Worktrees never
+# carry the gitignored .local/ directory; restore storage/obsidian-vault from
+# the main checkout and regenerate dotfiles.dir so the dry-run validates THIS
+# checkout's files instead of main's.
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../.." && pwd)"
+echo "=== 📂 Ensuring machine-local .local state ==="
+"${REPO_ROOT}/scripts/ensure-local.sh"
+echo ""
+
 # 1. Syntax check
 check_syntax
 echo ""
