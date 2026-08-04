@@ -89,15 +89,16 @@ the built-in `idp` service (excluded via `OC_EXCLUDE_RUN_SERVICES=idp`).
 
 | Client | Client ID | Callback URLs |
 |--------|-----------|---------------|
-| Web | `web` | `https://opencloud.<host>/*` |
+| Web | `77e88611-a8b6-4eec-bfd7-7bd2bd4fe642` | `https://opencloud.<host>/*` |
 | Desktop | `OpenCloudDesktop` | `http://127.0.0.1:*` |
 | iOS | `OpenCloudIOS` | `oc://ios.opencloud.com` |
 | Android | `OpenCloudAndroid` | `oc://android.opencloud.com` |
 
-Clients are created manually in Pocket ID admin (`Settings > OIDC Clients`).
-The `web` client ID is set to match OpenCloud's WebFinger default so no
-sops secret is needed. Desktop and mobile client IDs are hardcoded in the
-OpenCloud apps.
+Clients are created manually in Pocket ID admin. The web client uses the
+UUID Pocket ID generates when the client is created — it is a public
+PKCE client, so the client ID is not a secret and needs no sops entry
+(per https://pocket-id.org/docs/client-examples/opencloud). Desktop and
+mobile client IDs are hardcoded in the OpenCloud apps.
 
 **User groups (created manually in Pocket ID):**
 

@@ -78,8 +78,8 @@ in
         export OPENCLOUD_OIDC_ISSUER="https://auth.${config.networking.hostName}.internal"
         export OPENCLOUD_OIDC_DOMAIN="auth.${config.networking.hostName}.internal"
         export OPENCLOUD_OIDC_ROLE_CLAIM="opencloud_role"
-        export OPENCLOUD_OIDC_CLIENT_ID="web"
-        export OPENCLOUD_OIDC_PROXY_CLIENT_ID="web"
+        export OPENCLOUD_OIDC_CLIENT_ID="77e88611-a8b6-4eec-bfd7-7bd2bd4fe642"
+        export OPENCLOUD_OIDC_PROXY_CLIENT_ID="77e88611-a8b6-4eec-bfd7-7bd2bd4fe642"
 
         mkdir -p "$OPENCLOUD_DATA_DIR" "$OPENCLOUD_CONFIG_DIR" "$OPENCLOUD_USER_FILES_DIR"
 
