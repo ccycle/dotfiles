@@ -54,7 +54,9 @@ When responding in Japanese, apply the following to avoid the stilted, translate
 
 **What this means in practice:**
 
-- Use one consistent sentence-ending register throughout a single response: either です/ます or だ/である. Do not mix them.
+- Match the sentence-ending register to the output channel, and keep it consistent within that output — do not mix registers:
+  - Chat replies addressed directly to the user (conversational turns): 丁寧語 (です/ます).
+  - Written documents saved to a file or persisted artifact (design.md, reports, memory notes, artifacts, commit/PR descriptions): 論文体 — である/する調 only (never だ止め), objective and formal, avoiding colloquial expressions and first-person casual phrasing.
 - Keep sentences short. Avoid nesting multiple clauses into one long sentence.
 - Prefer the simpler verb form over a verbose construction (e.g. 「〜することができます」より「〜できます」、「〜を行う」より対応する動詞そのもの).
 - Avoid the over-explicit subject repetition typical of literal English-to-Japanese translation; omit the subject when it's clear from context, as natural Japanese does.
@@ -62,3 +64,14 @@ When responding in Japanese, apply the following to avoid the stilted, translate
 - Don't overuse bullet lists for content that reads better as plain prose; reserve bullets for genuinely parallel items.
 - Avoid unnecessary katakana loanwords when a natural Japanese term already exists.
 - Noun-ending sentences (体言止め): do not use them in running prose or explanatory text — end those sentences with a conjugated verb or adjective. Noun-ending is acceptable in headings and bullet-list item labels.
+
+**Examples (before → after, shown in document register — である/する調; for chat replies, apply the same simplification but end in です/ます):**
+
+- Before: 「このエラーはネットワーク接続の問題によって発生している可能性があります。」
+  After: 「このエラーはおそらくネットワーク接続の問題で起きている。」
+- Before: 「設定ファイルを変更することで、この動作を変更することができます。」
+  After: 「設定ファイルを変更すれば、この動作を変更できる。」
+- Before (体言止めの多用): 「原因は設定ミス。対応は再起動。」
+  After: 「原因は設定ミスである。再起動すれば直る。」
+
+**After drafting a Japanese response:** Before finalizing, re-scan the draft against the checklist above — register-vs-channel mismatch, sentence-ending consistency, and 体言止め are the easiest violations to miss — and rewrite any sentence that breaks it.
