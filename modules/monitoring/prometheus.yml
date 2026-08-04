@@ -13,6 +13,12 @@ scrape_configs:
     static_configs:
       - targets: ["localhost:9090"]
 
+  # Caddy exposes /metrics on a dedicated loopback-only port (9091) rather
+  # than the admin API, which is disabled.
+  - job_name: "caddy"
+    static_configs:
+      - targets: ["host-gateway:9091"]
+
   - job_name: "cadvisor"
     static_configs:
       - targets: ["cadvisor:8080"]

@@ -79,6 +79,7 @@ loki.process "extract_level" {
     expressions = {
       level    = "level",
       severity = "severity",
+      vhost    = "request.host",
     }
   }
 
@@ -92,9 +93,18 @@ loki.process "extract_level" {
     template = "{{ ToLower .Value }}"
   }
 
+  // Caddy's access-log `request.host` includes the port (e.g.
+  // "opencloud.host.internal:443"); strip it since every vhost shares the
+  // same port, so the suffix adds no distinguishing information.
+  stage.template {
+    source   = "vhost"
+    template = "{{ regexReplaceAll `:[0-9]+$` .Value `` }}"
+  }
+
   stage.labels {
     values = {
       level = "",
+      vhost = "",
     }
   }
 }

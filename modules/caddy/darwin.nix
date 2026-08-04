@@ -39,7 +39,7 @@ in
   ];
 
   config = lib.mkIf config.services.caddy.enable {
-     services.caddy.portalEntries = [
+    services.caddy.portalEntries = [
       {
         name = "CA Certificate";
         url = "https://ca.${domain}";
@@ -69,6 +69,36 @@ in
         # Common snippets
         (internal_tls) {
           tls internal
+
+          # Access log, shared by every vhost that imports this snippet so
+          # logging config lives in one place rather than each service
+          # module's own site block. The query string is dropped entirely
+          # (not selectively masked) because Pocket ID's OIDC flow puts
+          # authorization codes and state values in query parameters on
+          # these same Caddy-fronted URLs; a denylist of "sensitive"
+          # parameter names would need to be kept in sync with every
+          # OIDC-fronted service added in the future, and a missed one
+          # would leak a token into the log. Written under /var/log so the
+          # existing host-log convention already scraped by the log
+          # collector picks it up with no collector-side change.
+          log {
+            output file /var/log/caddy-access.log
+            format filter {
+              wrap json
+              fields {
+                request>uri regexp \?.* ""
+              }
+            }
+          }
+        }
+
+        # Prometheus metrics, loopback-only like every other scraped
+        # service's metrics port (see modules/monitoring/prometheus.yml).
+        # A dedicated port rather than the admin API, since the admin API
+        # is disabled above.
+        :9091 {
+          bind 127.0.0.1
+          metrics
         }
 
         import /etc/caddy/sites/*.caddy
@@ -111,7 +141,7 @@ in
           import internal_tls
           reverse_proxy 127.0.0.1:8081
         }
-        '';
+      '';
 
       "caddy/sites/ca.caddy".text = ''
         http://ca.${domain}, https://ca.${domain} {
