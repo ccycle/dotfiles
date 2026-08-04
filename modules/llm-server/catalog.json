@@ -7,10 +7,10 @@
   "models": {
     "google/gemma-4-26b-a4b": {
       "name": "Gemma 4 26B A4B",
-      "contextLength": 131072,
+      "contextLength": 262144,
       "files": [
         {
-          "url": "https://huggingface.co/ggml-org/gemma-4-26B-A4B-it-GGUF/resolve/main/gemma-4-26B-A4B-it-Q4_K_M.gguf",
+          "url": "https://huggingface.co/google/gemma-4-26B-A4B-it-qat-q4_0-gguf/resolve/main/gemma-4-26B_q4_0-it.gguf",
           "sha256": ""
         }
       ],
@@ -27,12 +27,23 @@
       ],
       "extraFlags": []
     },
+    "google/gemma-4-31b": {
+      "name": "Gemma 4 31B",
+      "contextLength": 262144,
+      "files": [
+        {
+          "url": "https://huggingface.co/google/gemma-4-31B-it-qat-q4_0-gguf/resolve/main/gemma-4-31B_q4_0-it.gguf",
+          "sha256": ""
+        }
+      ],
+      "extraFlags": []
+    },
     "google/gemma-4-e4b": {
       "name": "Gemma 4 E4B",
       "contextLength": 131072,
       "files": [
         {
-          "url": "https://huggingface.co/ggml-org/gemma-4-E4B-it-GGUF/resolve/main/gemma-4-E4B-it-Q4_K_M.gguf",
+          "url": "https://huggingface.co/google/gemma-4-E4B-it-qat-q4_0-gguf/resolve/main/gemma-4-E4B_q4_0-it.gguf",
           "sha256": ""
         }
       ],
