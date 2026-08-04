@@ -89,28 +89,34 @@ the built-in `idp` service (excluded via `OC_EXCLUDE_RUN_SERVICES=idp`).
 
 | Client | Client ID | Callback URLs |
 |--------|-----------|---------------|
-| Web | `77e88611-a8b6-4eec-bfd7-7bd2bd4fe642` | `https://opencloud.<host>/*` |
-| Desktop | `OpenCloudDesktop` | `http://127.0.0.1:*` |
-| iOS | `OpenCloudIOS` | `oc://ios.opencloud.com` |
-| Android | `OpenCloudAndroid` | `oc://android.opencloud.com` |
+| Web | `77e88611-a8b6-4eec-bfd7-7bd2bd4fe642` | `https://opencloud.<host>/`, `/oidc-callback.html`, `/oidc-silent-redirect.html` |
+| Desktop | `OpenCloudDesktop` | `http://127.0.0.1`, `http://localhost` |
+| iOS | `OpenCloudIOS` | `oc://ios.opencloud.eu` |
+| Android | `OpenCloudAndroid` | `oc://android.opencloud.eu` |
 
 Clients are created manually in Pocket ID admin. The web client uses the
-UUID Pocket ID generates when the client is created — it is a public
-PKCE client, so the client ID is not a secret and needs no sops entry
-(per https://pocket-id.org/docs/client-examples/opencloud). Desktop and
-mobile client IDs are hardcoded in the OpenCloud apps.
+UUID Pocket ID generates when the client is created as-is, with no
+override — it is a public PKCE client, so the client ID is not a secret
+and needs no sops entry (per
+https://pocket-id.org/docs/client-examples/opencloud). Desktop and mobile
+client IDs are hardcoded in the OpenCloud apps, so those three clients'
+IDs must be overridden via Show Advanced Options to match; only the web
+client keeps Pocket ID's generated UUID.
 
 **User groups (created manually in Pocket ID):**
 
 | Group | Custom Claim | Maps to OpenCloud role |
 |-------|-------------|----------------------|
-| OpenCloud Admin | `roles: opencloudAdmin` | admin |
-| OpenCloud Space Admin | `roles: opencloudSpaceAdmin` | spaceadmin |
-| OpenCloud User | `roles: opencloudUser` | user |
-| OpenCloud Guest | `roles: opencloudGuest` | user-light |
+| `opencloud_admins` | `opencloud_role: opencloudAdmin` | admin |
+| `opencloud_spaceadmins` | `opencloud_role: opencloudSpaceAdmin` | spaceadmin |
+| `opencloud_users` | `opencloud_role: opencloudUser` | user |
+| `opencloud_guests` | `opencloud_role: opencloudGuest` | user-light |
 
-Role mapping uses the oidc driver with default role_claim `roles` and the
-four claim values above. Add the admin user to the "OpenCloud Admin" group
+Role mapping uses the oidc driver with `PROXY_ROLE_ASSIGNMENT_OIDC_CLAIM`
+set to `opencloud_role` (see `modules/opencloud/options.nix`). Every user
+must belong to at least one of these groups, and each OIDC client must
+have them under Allowed Groups, or login is denied (`access_denied`) or
+fails with 500 (no role claim). Add the admin user to `opencloud_admins`
 in Pocket ID.
 
 ### Content Security Policy for the external IdP
