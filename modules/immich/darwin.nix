@@ -3,7 +3,8 @@
 with lib;
 
 let
-  vol = config.custom.storage.volumes.immich or "";
+  warnIfVolumeMissing = import ../../utils/warnIfVolumeMissing.nix;
+  vol = warnIfVolumeMissing lib "immich" (config.custom.storage.volumes.immich or "");
   cfg = config.services.immich;
 in
 {

@@ -3,7 +3,8 @@
 with lib;
 
 let
-  vol = config.custom.storage.volumes.forgejo or "";
+  warnIfVolumeMissing = import ../../utils/warnIfVolumeMissing.nix;
+  vol = warnIfVolumeMissing lib "forgejo" (config.custom.storage.volumes.forgejo or "");
   cfg = config.services.forgejo;
 in
 {

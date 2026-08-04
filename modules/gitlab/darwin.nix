@@ -3,7 +3,8 @@
 with lib;
 
 let
-  vol = config.custom.storage.volumes.gitlab or "";
+  warnIfVolumeMissing = import ../../utils/warnIfVolumeMissing.nix;
+  vol = warnIfVolumeMissing lib "gitlab" (config.custom.storage.volumes.gitlab or "");
   cfg = config.services.gitlab;
 in
 {

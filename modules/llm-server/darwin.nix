@@ -3,7 +3,8 @@
 with lib;
 
 let
-  vol = config.custom.storage.volumes.llm-server or "";
+  warnIfVolumeMissing = import ../../utils/warnIfVolumeMissing.nix;
+  vol = warnIfVolumeMissing lib "llm-server" (config.custom.storage.volumes.llm-server or "");
   cfg = config.services.llm-server;
 in
 {

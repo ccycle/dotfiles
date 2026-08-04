@@ -3,7 +3,8 @@
 with lib;
 
 let
-  vol = config.custom.storage.volumes.monitoring or "";
+  warnIfVolumeMissing = import ../../utils/warnIfVolumeMissing.nix;
+  vol = warnIfVolumeMissing lib "monitoring" (config.custom.storage.volumes.monitoring or "");
   cfg = config.services.monitoring;
 in
 {

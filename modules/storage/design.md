@@ -43,3 +43,19 @@ is not under `/Volumes/`, the expression contributes no override at all,
 and `mountPoint` keeps its own option default (`""`, meaning "don't
 wait"). Nothing is set to a fallback value — the option simply has no
 definition from this module when there's no volume to wait for.
+
+## Why the Missing-Volume Check Is a Warning, Not an Assertion
+
+`utils/warnIfVolumeMissing.nix` wraps each service's `vol` and prints an
+eval-time warning (via `lib.warn`, visible directly in `darwin-rebuild
+switch` output) if the path doesn't exist — without failing the build.
+
+A hard assertion was considered and rejected. `builtins.pathExists`
+cannot distinguish a typo (a path that will never exist) from a
+removable volume that is simply not attached at rebuild time (which
+`waitForMount`, above, already treats as a normal, self-resolving
+state). An assertion aborts the entire system evaluation on failure —
+turning "the SSD happens to be unplugged right now" into "the whole
+`darwin-rebuild switch` fails, including unrelated changes to other
+modules." A warning surfaces the same signal (visible immediately,
+without needing to check launchd logs) without that collateral damage.

@@ -3,7 +3,8 @@
 with lib;
 
 let
-  vol = config.custom.storage.volumes.opencloud or "";
+  warnIfVolumeMissing = import ../../utils/warnIfVolumeMissing.nix;
+  vol = warnIfVolumeMissing lib "opencloud" (config.custom.storage.volumes.opencloud or "");
   cfg = config.services.opencloud;
 in
 {
