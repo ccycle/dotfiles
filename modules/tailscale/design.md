@@ -40,9 +40,9 @@ is explicitly excluded.
 - Each SSO-capable service is wired to Pocket ID as an OIDC client
   through its own Nix configuration (compose.yaml env vars or
   `GITLAB_OMNIBUS_CONFIG`):
-  - **OpenCloud** — public client (PKCE), client ID `web` matches
-    WebFinger default. Desktop/mobile use hardcoded IDs
-    (`OpenCloudDesktop`, `OpenCloudIOS`, `OpenCloudAndroid`).
+  - **OpenCloud** — public client (PKCE); the web client keeps Pocket
+    ID's auto-generated client ID as-is. Desktop/mobile use hardcoded
+    IDs (`OpenCloudDesktop`, `OpenCloudIOS`, `OpenCloudAndroid`).
     Role assignment via `PROXY_ROLE_ASSIGNMENT_DRIVER=oidc` with
     default mapping (opencloudAdmin → admin, etc.).
     Pocket ID groups with custom claims must be created manually.
