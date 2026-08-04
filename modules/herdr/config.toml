@@ -12,6 +12,9 @@ mouse_capture = true
 [session]
 resume_agents_on_restore = true
 
+[keys]
+remove_worktree = "prefix+d"
+
 [[keys.command]]
 key = "prefix+ctrl+r"
 type = "plugin_action"
@@ -33,15 +36,4 @@ type = "shell"
 command = '''
 path=$(herdr worktree list | jq -r '.result.worktrees[] | select(.is_linked_worktree) | "\(.branch // \"detached\")\t\(.path)"' | fzf --height 40% --layout=reverse --border --with-nth=1 | awk -F'\t' '{print $2}')
 [ -n "$path" ] && herdr worktree open --path "$path" --focus
-'''
-
-[[keys.command]]
-key = "prefix+d"
-type = "shell"
-command = '''
-entry=$(herdr worktree list | jq -r '.result.worktrees[] | select(.is_linked_worktree) | "\(.branch // \"detached\")\t\(.path)\t\(.open_workspace_id // "")"' | fzf --height 40% --layout=reverse --border --with-nth=1)
-[ -n "$entry" ] && {
-  wid=$(echo "$entry" | awk -F'\t' '{print $3}')
-  [ -n "$wid" ] && herdr worktree remove --workspace "$wid" --force
-}
 '''
