@@ -1,23 +1,47 @@
 # dotfiles
 
-## Setup
+Declarative macOS system and home configuration using Nix flakes, nix-darwin, and home-manager. See [AGENTS.md](./AGENTS.md) for development policies and [CLAUDE.md](./CLAUDE.md) for the Claude Code quick reference.
 
-### Install Nix
+## Setup (fresh machine)
 
-### Install home-manager
+1. Install Nix:
 
-### Initialize configuration
+   ```sh
+   sh bootstrap/install-nix.sh
+   ```
 
-`nix run home-manager/release-23.11 -- init`
+2. If the first build fails around CA certificates, symlink the bundled cert as a one-time workaround:
 
-https://nix-community.github.io/home-manager/
+   ```sh
+   sudo ln -s /nix/var/nix/profiles/default/etc/ssl/certs/ca-bundle.crt /etc/nix/ca_cert.pem
+   ```
 
-### Write system information to configuration files
+3. Log in to Bitwarden and place the sops-nix age key:
 
-```
-cd $HOME/.config/home-manager
-```
+   ```sh
+   ./scripts/login-rbw-shell.sh
+   mkdir -p ~/.config/sops/age
+   rbw get "<age key item name>" > ~/.config/sops/age/keys.txt
+   ```
 
-### Run switcher on home-manager
+4. Run the bootstrap flake to provision credentials for private flake inputs (see the comment block at the top of [`bootstrap/flake.nix`](./bootstrap/flake.nix) for why this step exists):
 
-`nix run home-manager/release-23.11 -- switch`
+   ```sh
+   nix run ./bootstrap -- switch --flake ./bootstrap
+   ```
+
+5. Switch to the main flake:
+
+   ```sh
+   just darwin-rebuild
+   ```
+
+### Outside Nix
+
+A small number of GUI apps are installed manually rather than managed declaratively:
+
+- Google Chrome
+
+## Common tasks
+
+Run `just --list` for the full list of recipes (rebuild, worktree cleanup, git hooks install, etc.).
