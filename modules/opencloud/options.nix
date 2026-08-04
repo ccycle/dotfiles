@@ -6,6 +6,10 @@ let
   cfg = config.services.opencloud;
   composeFile = ./compose.yaml;
   waitForMount = import ../../utils/waitForMount.nix;
+  oidcDomain = "auth.${config.networking.hostName}.internal";
+  cspFile = pkgs.writeText "opencloud-csp.yaml"
+    (builtins.replaceStrings [ "__OIDC_DOMAIN__" ] [ oidcDomain ]
+      (builtins.readFile ./csp.yaml));
 in
 {
   options.services.opencloud = {
@@ -76,7 +80,8 @@ in
         export OPENCLOUD_URL="https://opencloud.${config.networking.hostName}.internal"
         export OPENCLOUD_HOST_DOMAIN="opencloud.${config.networking.hostName}.internal"
         export OPENCLOUD_OIDC_ISSUER="https://auth.${config.networking.hostName}.internal"
-        export OPENCLOUD_OIDC_DOMAIN="auth.${config.networking.hostName}.internal"
+        export OPENCLOUD_OIDC_DOMAIN="${oidcDomain}"
+        export OPENCLOUD_CSP_FILE="${cspFile}"
         export OPENCLOUD_OIDC_ROLE_CLAIM="opencloud_role"
         export OPENCLOUD_OIDC_CLIENT_ID="77e88611-a8b6-4eec-bfd7-7bd2bd4fe642"
         export OPENCLOUD_OIDC_PROXY_CLIENT_ID="77e88611-a8b6-4eec-bfd7-7bd2bd4fe642"

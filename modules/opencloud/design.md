@@ -113,6 +113,16 @@ Role mapping uses the oidc driver with default role_claim `roles` and the
 four claim values above. Add the admin user to the "OpenCloud Admin" group
 in Pocket ID.
 
+### Content Security Policy for the external IdP
+
+The web client fetches the OIDC discovery document from the IdP via XHR
+before redirecting to the authorize endpoint. The default OpenCloud CSP
+only allows connections to `'self'`, so an external IdP on another domain
+is silently unreachable — the client stalls on the loading screen. The
+module therefore ships `csp.yaml` (generated with the host's OIDC domain
+substituted) and points `PROXY_CSP_CONFIG_FILE_LOCATION` at it. Keep the
+IdP domain listed in `connect-src`, `frame-src`, and `script-src`;
+
 ## Constraints
 
 - Switching a deployment's user-storage driver requires the host data
