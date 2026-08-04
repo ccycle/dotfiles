@@ -11,10 +11,12 @@
       "Bash(chmod*)",
       "Bash(comm*)",
       "Bash(cut*)",
+      "Bash(curl*)",
       "Bash(darwin-rebuild*)",
       "Bash(defaults read*)",
       "Bash(df*)",
       "Bash(dig*)",
+      "Bash(docker*)",
       "Bash(du*)",
       "Bash(echo*)",
       "Bash(env*)",
@@ -77,6 +79,7 @@
       "Bash(jq*)",
       "Bash(head*)",
       "Bash(ln*)",
+      "Bash(logcli*)",
       "Bash(ls*)",
       "Bash(mdfind*)",
       "Bash(mktemp)",
@@ -107,6 +110,7 @@
       "Bash(sw_vers*)",
       "Bash(sysctl*)",
       "Bash(tar*)",
+      "Bash(tail*)",
       "Bash(tee*)",
       "Bash(test*)",
       "Bash(tr*)",
@@ -201,6 +205,16 @@
           {
             "type": "command",
             "command": "/Users/mfuruki/.claude/hooks/post-nix-edit-reminder.sh"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/measure-review-gate.sh"
           }
         ]
       }

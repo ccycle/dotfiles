@@ -22,6 +22,19 @@ Do not mix speculation into your claims or assertions. Every factual statement a
 - Review your response and verify every factual claim was backed by tool use.
 - If any claim remains unverified, verify it now or explicitly mark it as unverified.
 
+## Measure-First for Investigation Tasks
+
+Investigation tasks (debugging, root-cause analysis, verifying system state)
+must start from measurement, not memory. Decompose the question into checkable
+claims, assign each claim a measurement command, and run it — creating the
+measurement if none exists. Report claims in claim / evidence / confidence
+schema.
+
+Before finalizing an investigation answer, invoke the `measure-reviewer`
+subagent (see the `measure-first` skill) and end with the exact line
+`MEASURE-REVIEW: approved`. A Stop hook enforces the marker. Never present an
+unmeasured assertion as fact.
+
 ## English-Only for LLM-Facing Instructions
 
 All instructions intended for AI consumption MUST be written in English. This includes:

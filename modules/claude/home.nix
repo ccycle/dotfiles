@@ -11,6 +11,9 @@
   home.file."${config.home.homeDirectory}/.claude/hooks".source =
     config.lib.file.mkOutOfStoreSymlink "${config.custom.dotfiles.dir}/modules/claude/hooks";
 
+  home.file."${config.home.homeDirectory}/.claude/agents".source =
+    config.lib.file.mkOutOfStoreSymlink "${config.custom.dotfiles.dir}/modules/claude/agents";
+
   programs.git.ignores = [
     ".claude/worktrees/"
   ];

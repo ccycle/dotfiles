@@ -14,6 +14,7 @@ Minimum criteria by task type:
 - Nix changes: `nix flake check` passes (or `/verify-change` skill)
 - Service changes: the relevant smoke-test skill passes
 - All changes: name the specific files created or modified
+- Investigation tasks: every assertion must be backed by a measurement command that was run; the answer must carry the `measure-reviewer` marker (`MEASURE-REVIEW: approved`)
 
 Before declaring done, run every verification command from the criteria and report each result with the actual output.
 If any criterion fails, iterate or escalate — never declare done with failing criteria.

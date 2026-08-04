@@ -74,6 +74,19 @@ We use [Agent Skills](https://agentskills.io) for task automation and guideline 
 - **[verify-change](./skills/project/verify-change/SKILL.md):** Use this skill to verify changes before committing. It runs syntax checks, lints, and build dry-runs.
 - **[obsidian-manager](./skills/project/obsidian-manager/SKILL.md):** Use this skill to draft zettelkasten notes on the user's behalf. Note conventions live in `references/note-conventions.md`; it never edits existing notes.
 
+## Measure-First for Investigation Tasks
+
+When asked to investigate, debug, root-cause, or verify the current state of a
+system, service, file, or behavior, follow the `measure-first` skill: start
+from measurement, never from memory or speculation.
+
+- Decompose the question into checkable claims, assign each claim a measurement
+  command, and run it. If no measurement exists, create one.
+- Report claims in claim / evidence / confidence schema.
+- Before finalizing, invoke the `measure-reviewer` subagent via the task tool,
+  and end your answer with the exact line `MEASURE-REVIEW: approved`. A Stop
+  hook verifies this line.
+
 ## Legacy Guidelines
 
 - Bootstrap configuration: rationale and maintenance guidelines are documented as comments in `bootstrap/flake.nix`.
