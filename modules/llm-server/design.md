@@ -53,6 +53,26 @@ at Nix build time. This avoids bloating the Nix store and means adding
 a model is an edit to catalog.json + rebuild + wait for download. Failed
 downloads cause the script to exit; KeepAlive retries.
 
+## Why modelsDir Defaults to llama.cpp's Own Cache Path
+
+`custom.storage.volumes.llm-server` typically points at
+`~/Library/Caches/llama.cpp` (llama.cpp's own default cache directory on
+macOS) rather than the shared external storage volume used by the other
+services. Two reasons:
+
+1. **Permissions.** The other services run as root daemons, so
+   `/var/lib/<service>` is writable by them. llm-server runs as a user
+   agent (see above), and `/var/lib` is root-owned — pointing modelsDir
+   there would require a one-time manual `chown`. `~/Library/Caches` is
+   already user-owned.
+2. **Convention.** Matching llama.cpp's own default means `modelsDir`
+   holds exactly the files llama.cpp itself would put there, with no
+   extra subdirectory invented by this module.
+
+Because each service in `custom.storage.volumes` is independent, this
+does not affect where forgejo/immich/gitlab/monitoring/opencloud store
+their data — they keep using the shared external volume.
+
 ## Why Both HTTP and HTTPS (ca.caddy Pattern)
 
 The vhost listens on both `http://` and `https://` with `import
@@ -71,14 +91,16 @@ WireGuard encryption makes HTTP safe on the tailnet.
   loading) is rejected — the Mac mini has limited unified memory and
   llama-swap already handles model swapping.
 - **No Nix-store model storage.** GGUF files are too large for the
-  store; they live in the data volume.
+  store; they live outside it, in `modelsDir`.
 
 ## Constraints
 
 - First chat request per model takes up to a minute (model load).
 - Port 8880 on 127.0.0.1 must not collide with other services.
-- The user agent must have write access to `modelsDir` on the external
-  volume. The setup-local-storage script pre-creates the directory.
+- The user agent must have write access to `modelsDir`. If
+  `custom.storage.volumes.llm-server` is pointed at an external volume
+  instead of the default `~/Library/Caches/llama.cpp`, that volume must
+  be mounted and writable before launchd starts the agent.
 
 ## Rejected Alternatives
 

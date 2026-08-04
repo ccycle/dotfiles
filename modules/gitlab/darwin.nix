@@ -3,7 +3,7 @@
 with lib;
 
 let
-  vol = config.custom.storage.volumeRoot;
+  vol = config.custom.storage.volumes.gitlab or "";
   cfg = config.services.gitlab;
 in
 {
@@ -14,12 +14,12 @@ in
   config = mkIf cfg.enable {
     assertions = [{
       assertion = vol != "";
-      message = "custom.storage.volumeRoot must be set for gitlab. Run: scripts/setup-local-storage.sh /Volumes/<YOUR_DRIVE>";
+      message = "custom.storage.volumes.gitlab must be set. Run: scripts/setup-local-storage.sh gitlab=/Volumes/<YOUR_DRIVE>";
     }];
 
     services.gitlab.dataDir = mkDefault "${vol}/gitlab/data";
     services.gitlab.configDir = mkDefault "${vol}/gitlab/config";
     services.gitlab.logsDir = mkDefault "${vol}/gitlab/logs";
-    services.gitlab.mountPoint = mkDefault vol;
+    services.gitlab.mountPoint = mkIf (hasPrefix "/Volumes/" vol) (mkDefault vol);
   };
 }

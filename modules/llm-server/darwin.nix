@@ -3,7 +3,7 @@
 with lib;
 
 let
-  vol = config.custom.storage.volumeRoot;
+  vol = config.custom.storage.volumes.llm-server or "";
   cfg = config.services.llm-server;
 in
 {
@@ -14,10 +14,13 @@ in
   config = mkIf cfg.enable {
     assertions = [{
       assertion = vol != "";
-      message = "custom.storage.volumeRoot must be set for llm-server. Run: scripts/setup-local-storage.sh /Volumes/<YOUR_DRIVE>";
+      message = "custom.storage.volumes.llm-server must be set. Run: scripts/setup-local-storage.sh llm-server=~/Library/Caches/llama.cpp";
     }];
 
-    services.llm-server.modelsDir = mkDefault "${vol}/llm-server/models";
-    services.llm-server.mountPoint = mkDefault vol;
+    # No subpath appended: vol points directly at llama.cpp's own default
+    # model cache location, matching upstream convention instead of
+    # inventing a new directory layout.
+    services.llm-server.modelsDir = mkDefault vol;
+    services.llm-server.mountPoint = mkIf (hasPrefix "/Volumes/" vol) (mkDefault vol);
   };
 }

@@ -72,7 +72,7 @@ if [ -d "${storage_local}" ]; then
   overrides="${overrides} --override-input storage-config \"path:${storage_local}\""
 else
   echo "Note: .local/storage/ not found. Services requiring external storage will fail." >&2
-  echo "  Run: scripts/setup-local-storage.sh /Volumes/<YOUR_DRIVE>" >&2
+  echo "  Run: scripts/setup-local-storage.sh <service>=/Volumes/<YOUR_DRIVE>" >&2
   echo "" >&2
 fi
 

@@ -3,7 +3,7 @@
 with lib;
 
 let
-  vol = config.custom.storage.volumeRoot;
+  vol = config.custom.storage.volumes.monitoring or "";
   cfg = config.services.monitoring;
 in
 {
@@ -14,11 +14,11 @@ in
   config = mkIf cfg.enable {
     assertions = [{
       assertion = vol != "";
-      message = "custom.storage.volumeRoot must be set for monitoring. Run: scripts/setup-local-storage.sh /Volumes/<YOUR_DRIVE>";
+      message = "custom.storage.volumes.monitoring must be set. Run: scripts/setup-local-storage.sh monitoring=/Volumes/<YOUR_DRIVE>";
     }];
 
     services.monitoring.dataDir = mkDefault "${vol}/monitoring";
-    services.monitoring.mountPoint = mkDefault vol;
+    services.monitoring.mountPoint = mkIf (hasPrefix "/Volumes/" vol) (mkDefault vol);
 
     services.monitoring.gitlabLogsDir = mkIf config.services.gitlab.enable (
       mkDefault config.services.gitlab.logsDir

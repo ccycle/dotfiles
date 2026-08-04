@@ -3,7 +3,7 @@
 with lib;
 
 let
-  vol = config.custom.storage.volumeRoot;
+  vol = config.custom.storage.volumes.immich or "";
   cfg = config.services.immich;
 in
 {
@@ -14,11 +14,11 @@ in
   config = mkIf cfg.enable {
     assertions = [{
       assertion = vol != "";
-      message = "custom.storage.volumeRoot must be set for immich. Run: scripts/setup-local-storage.sh /Volumes/<YOUR_DRIVE>";
+      message = "custom.storage.volumes.immich must be set. Run: scripts/setup-local-storage.sh immich=/Volumes/<YOUR_DRIVE>";
     }];
 
     services.immich.uploadDir = mkDefault "${vol}/immich/upload";
     services.immich.dbDir = mkDefault "${vol}/immich/db";
-    services.immich.mountPoint = mkDefault vol;
+    services.immich.mountPoint = mkIf (hasPrefix "/Volumes/" vol) (mkDefault vol);
   };
 }
