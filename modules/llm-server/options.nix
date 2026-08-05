@@ -78,7 +78,7 @@ in
 
     ttl = mkOption {
       type = types.int;
-      default = 0;
+      default = 3600;
     };
   };
 
