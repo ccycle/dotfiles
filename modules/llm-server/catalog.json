@@ -7,7 +7,7 @@
   "models": {
     "google/gemma-4-26b-a4b": {
       "name": "Gemma 4 26B A4B",
-      "contextLength": 262144,
+      "contextLength": 131072,
       "files": [
         {
           "url": "https://huggingface.co/google/gemma-4-26B-A4B-it-qat-q4_0-gguf/resolve/main/gemma-4-26B_q4_0-it.gguf",
@@ -29,7 +29,7 @@
     },
     "google/gemma-4-31b": {
       "name": "Gemma 4 31B",
-      "contextLength": 262144,
+      "contextLength": 131072,
       "files": [
         {
           "url": "https://huggingface.co/google/gemma-4-31B-it-qat-q4_0-gguf/resolve/main/gemma-4-31B_q4_0-it.gguf",
