@@ -129,6 +129,25 @@ module therefore ships `csp.yaml` (generated with the host's OIDC domain
 substituted) and points `PROXY_CSP_CONFIG_FILE_LOCATION` at it. Keep the
 IdP domain listed in `connect-src`, `frame-src`, and `script-src`;
 
+## Web Apps (unzip extension)
+
+OpenCloud ships built-in web apps at build time; additional apps are picked
+up from a directory that defaults to `$OC_BASE_DATA_PATH/web/assets/apps`.
+This module bundles the `unzip` web extension declaratively instead of
+downloading a zip in the App Store GUI (which only downloads the archive on
+the client and cannot place it on the server).
+
+Each extension is a directory containing a `manifest.json` (entrypoint +
+version) and the built assets. The bundles are pinned via Nix
+(`webApps = pkgs.callPackage ./drv.nix`), so apps land in the Nix store,
+which then gets mounted read-only into the container's apps directory via
+`${OPENCLOUD_APPS_DIR}:/var/lib/opencloud/web/assets/apps:ro`. Because the
+mount target defaults to OpenCloud's apps path, no `WEB_ASSET_APPS_PATH`
+override is needed.
+
+The compose service needs a restart to (re)load apps — `darwin-rebuild
+switch` recreates the container, which picks up new/updated apps.
+
 ## Constraints
 
 - Switching a deployment's user-storage driver requires the host data
