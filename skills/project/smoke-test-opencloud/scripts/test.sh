@@ -86,8 +86,7 @@ if docker inspect "$container" > /dev/null 2>&1; then
   fi
 
   # Verify STORAGE_USERS_POSIX_ROOT inside the container
-  posix_root=$(docker exec "$container" stat /host/user-files 2>/dev/null && echo "exists" || echo "missing")
-  if [ "$posix_root" = "exists" ]; then
+  if docker exec "$container" stat /host/user-files > /dev/null 2>&1; then
     pass "STORAGE_USERS_POSIX_ROOT (/host/user-files) is accessible inside container"
   else
     fail "STORAGE_USERS_POSIX_ROOT (/host/user-files) not accessible inside container"
