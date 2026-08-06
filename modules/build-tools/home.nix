@@ -6,6 +6,7 @@
     gcc
     gcc.cc
     pkg-config
+    protobuf
     zlib
     zlib.dev
   ];
