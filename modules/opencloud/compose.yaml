@@ -54,6 +54,7 @@ services:
       - ${OPENCLOUD_DATA_DIR:-/var/lib/opencloud/data}:/var/lib/opencloud
       - ${OPENCLOUD_USER_FILES_DIR}:/host/user-files
       - ${OPENCLOUD_CSP_FILE}:/etc/opencloud/csp.yaml:ro
+      - ${OPENCLOUD_APPS_DIR}:/var/lib/opencloud/web/assets/apps:ro
     extra_hosts:
       - "${OPENCLOUD_HOST_DOMAIN}:host-gateway"
     healthcheck:

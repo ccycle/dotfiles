@@ -10,6 +10,7 @@ let
   cspFile = pkgs.writeText "opencloud-csp.yaml"
     (builtins.replaceStrings [ "__OIDC_DOMAIN__" ] [ oidcDomain ]
       (builtins.readFile ./csp.yaml));
+  webApps = pkgs.callPackage ./drv.nix { };
 in
 {
   options.services.opencloud = {
@@ -37,6 +38,12 @@ in
       type = types.str;
       default = "";
       description = "If set, wait for this volume to be mounted before starting (e.g. /Volumes/<YOUR_DRIVE>).";
+    };
+
+    appsDir = mkOption {
+      type = types.path;
+      default = webApps;
+      description = "Path to a directory of OpenCloud web apps, served via WEB_ASSET_APPS_PATH and mounted as /var/lib/opencloud/web/assets/apps. Built from Nix (see drv.nix) so updates are reproducible.";
     };
   };
 
@@ -82,6 +89,7 @@ in
         export OPENCLOUD_OIDC_ISSUER="https://auth.${config.networking.hostName}.internal"
         export OPENCLOUD_OIDC_DOMAIN="${oidcDomain}"
         export OPENCLOUD_CSP_FILE="${cspFile}"
+        export OPENCLOUD_APPS_DIR="${cfg.appsDir}"
         export OPENCLOUD_OIDC_ROLE_CLAIM="opencloud_role"
         export OPENCLOUD_OIDC_CLIENT_ID="77e88611-a8b6-4eec-bfd7-7bd2bd4fe642"
         export OPENCLOUD_OIDC_PROXY_CLIENT_ID="77e88611-a8b6-4eec-bfd7-7bd2bd4fe642"
