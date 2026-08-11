@@ -1,6 +1,7 @@
 { ... }:
 {
   imports = [
+    ./altserver/darwin.nix
     ./attic/darwin.nix
     ./dotfiles/darwin.nix
     ./brew-nix/darwin.nix

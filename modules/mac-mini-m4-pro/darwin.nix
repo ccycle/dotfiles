@@ -3,6 +3,7 @@
 {
   networking.hostName = "mac-mini-m4-pro";
 
+  services.altserver.enable = true;
   services.tailscale.splitDns.enable = true;
   services.opencloud.enable = true;
   # Self-built image with services/unzip (server-side extraction) and related
