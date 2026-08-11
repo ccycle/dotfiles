@@ -21,6 +21,7 @@
   services.llm-server.enable = true;
 
   services.atticd.enable = true;
+  services.staticReports.enable = true;
 
   # Enable macOS Remote Login (SSH on port 22)
   system.activationScripts.postActivation.text = ''
