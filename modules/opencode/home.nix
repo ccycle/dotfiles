@@ -5,6 +5,9 @@ let
 
   opencodeConfig = {
     "$schema" = "https://opencode.ai/config.json";
+    permission = {
+      "*" = "allow";
+    };
     provider = {
       ${catalog.provider.id} = {
         npm = "@ai-sdk/openai-compatible";
