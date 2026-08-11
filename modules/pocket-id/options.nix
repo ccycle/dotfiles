@@ -63,7 +63,12 @@ in
         mkdir -p "$POCKET_ID_DATA_DIR"
 
         # Copy encryption key to /tmp/ so OrbStack's Docker VM can reach it
-        # (/run/ is not shared with the Linux VM, but /tmp/ is).
+        # (/run/ is not shared with the Linux VM, but /tmp/ is). Remove any
+        # stale path first: if a prior run raced with docker-compose and lost,
+        # Docker auto-vivifies the bind-mount source as a directory, and cp
+        # into an existing directory copies *into* it instead of replacing it,
+        # which would wedge the container in a permanent restart loop.
+        rm -rf "$POCKET_ID_ENCRYPTION_KEY_FILE"
         cp "${config.sops.secrets.pocket_id_encryption_key.path}" \
           "$POCKET_ID_ENCRYPTION_KEY_FILE" && \
           chmod 444 "$POCKET_ID_ENCRYPTION_KEY_FILE"
