@@ -55,7 +55,7 @@ in
     '';
 
     sops.secrets.opencloud_admin_password = {
-      sopsFile = ./secrets.yaml;
+      sopsFile = ./secrets-${config.networking.hostName}.yaml;
     };
 
     launchd.daemons.opencloud-compose = {

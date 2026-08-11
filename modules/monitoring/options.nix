@@ -88,13 +88,13 @@ in
     '';
 
     sops.secrets.grafana_admin_password = {
-      sopsFile = ./secrets.yaml;
+      sopsFile = ./secrets-${config.networking.hostName}.yaml;
     };
     sops.secrets.grafana_oidc_client_id = {
-      sopsFile = ./secrets.yaml;
+      sopsFile = ./secrets-${config.networking.hostName}.yaml;
     };
     sops.secrets.grafana_oidc_client_secret = {
-      sopsFile = ./secrets.yaml;
+      sopsFile = ./secrets-${config.networking.hostName}.yaml;
     };
 
     # CLI query tools for log/metrics investigation (see the

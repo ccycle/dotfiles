@@ -45,13 +45,13 @@ in
     '';
 
     sops.secrets.immich_db_password = {
-      sopsFile = ./secrets.yaml;
+      sopsFile = ./secrets-${config.networking.hostName}.yaml;
     };
     sops.secrets.immich_oidc_client_id = {
-      sopsFile = ./secrets.yaml;
+      sopsFile = ./secrets-${config.networking.hostName}.yaml;
     };
     sops.secrets.immich_oidc_client_secret = {
-      sopsFile = ./secrets.yaml;
+      sopsFile = ./secrets-${config.networking.hostName}.yaml;
     };
 
     launchd.daemons.immich-compose = {

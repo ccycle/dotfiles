@@ -40,7 +40,7 @@ in
     '';
 
     sops.secrets.pocket_id_encryption_key = {
-      sopsFile = ./secrets.yaml;
+      sopsFile = ./secrets-${config.networking.hostName}.yaml;
     };
 
     launchd.daemons.pocket-id-compose = {
