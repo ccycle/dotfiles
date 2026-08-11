@@ -1,0 +1,16 @@
+# Layered on top of modules/opencloud/compose.yaml only for the isolated
+# e2e stack (never for production). See tests/e2e/design.md.
+#
+# Both OPENCLOUD_HOST_DOMAIN (OpenCloud's own vhost) and
+# OPENCLOUD_OIDC_DOMAIN (pocket-id's vhost) are served by the per-worktree
+# test Caddy (tests/e2e/scripts/stack.sh), bound to the Tailscale IP. A
+# container's own DNS resolution isn't guaranteed to route those names
+# back to the host the same way the host's own dnsmasq-based resolution
+# does, so this pins both explicitly via Docker's host-gateway alias
+# (verified empirically to reach host-bound ports that a container's own
+# "localhost" cannot).
+services:
+  opencloud:
+    extra_hosts:
+      - "${OPENCLOUD_HOST_DOMAIN}:host-gateway"
+      - "${OPENCLOUD_OIDC_DOMAIN}:host-gateway"

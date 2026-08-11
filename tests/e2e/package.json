@@ -1,0 +1,13 @@
+{
+  "name": "dotfiles-e2e",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Passkey-gated E2E tests for pocket-id-fronted services, run against an isolated per-worktree stack",
+  "type": "module",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.59.1"
+  }
+}

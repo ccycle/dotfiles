@@ -3,3 +3,6 @@ generated/*
 .local/
 settings.local.json
 result
+tests/e2e/.env
+tests/e2e/.state/
+tests/e2e/test-results/

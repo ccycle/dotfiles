@@ -7,10 +7,10 @@ services:
     entrypoint: ["/bin/sh", "-c"]
     command: ["-c", "opencloud init --insecure true || true; opencloud server"]
     ports:
-      - "127.0.0.1:9200:9200"
+      - "127.0.0.1:${OPENCLOUD_HOST_PORT:-9200}:9200"
       # Prometheus metrics live on the debug port, not 9200
       # (https://doc.owncloud.com/ocis/next/admin/monitoring/prometheus.html).
-      - "127.0.0.1:9205:9205"
+      - "127.0.0.1:${OPENCLOUD_DEBUG_HOST_PORT:-9205}:9205"
     environment:
       OC_URL: ${OPENCLOUD_URL}
       PROXY_TLS: "false"

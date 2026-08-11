@@ -2256,6 +2256,22 @@
         "type": "github"
       }
     },
+    "nixpkgs-playwright": {
+      "locked": {
+        "lastModified": 1780145889,
+        "narHash": "sha256-md0zn0RnwNvPyASas1yG5YUuwQ4ALA6ucL50l0DvqCo=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "8c50a710ddca43d7a530fb805ad55bde8d0141c5",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "ref": "26.05",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
     "nixpkgs-stable": {
       "locked": {
         "lastModified": 1782116945,
@@ -2738,6 +2754,7 @@
         "nixpkgs-2505": "nixpkgs-2505_3",
         "nixpkgs-2511": "nixpkgs-2511_3",
         "nixpkgs-2605": "nixpkgs-2605",
+        "nixpkgs-playwright": "nixpkgs-playwright",
         "nixpkgs-unstable": "nixpkgs-unstable_3",
         "obsidian-vault-config": "obsidian-vault-config",
         "pip2nix": "pip2nix",

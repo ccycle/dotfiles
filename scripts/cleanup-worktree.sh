@@ -119,6 +119,15 @@ if command -v tart >/dev/null 2>&1; then
     tart delete "$vm_name" >/dev/null 2>&1 || true
 fi
 
+# Tear down the worktree's isolated e2e test stack (skills/project/
+# e2e-test-opencloud), if any, so its containers/network don't linger
+# after the worktree directory disappears. The stack's own data lives
+# inside the worktree checkout (tests/e2e/.state/) and is removed along
+# with it; only the running containers/process need explicit teardown.
+if [ -x "$worktree_repo_root/tests/e2e/scripts/stack.sh" ]; then
+    "$worktree_repo_root/tests/e2e/scripts/stack.sh" teardown >/dev/null 2>&1 || true
+fi
+
 herdr worktree remove --workspace "$ws_id" --json 2>/dev/null && \
     printf 'Removed worktree for %s\n' "$ws_branch" || \
     { printf 'Failed to remove worktree for %s\n' "$ws_branch" >&2; exit 1; }

@@ -1,0 +1,36 @@
+directives:
+  child-src:
+    - "'self'"
+  connect-src:
+    - "'self'"
+    - 'blob:'
+    - '__POCKET_ID_HTTP_ORIGIN__/'
+    - '__POCKET_ID_WS_ORIGIN__/'
+  default-src:
+    - "'none'"
+  font-src:
+    - "'self'"
+  frame-ancestors:
+    - "'self'"
+  frame-src:
+    - "'self'"
+    - 'blob:'
+    - '__POCKET_ID_HTTP_ORIGIN__/'
+  img-src:
+    - "'self'"
+    - 'data:'
+    - 'blob:'
+  manifest-src:
+    - "'self'"
+  media-src:
+    - "'self'"
+  object-src:
+    - "'self'"
+    - 'blob:'
+  script-src:
+    - "'self'"
+    - "'unsafe-inline'"
+    - '__POCKET_ID_HTTP_ORIGIN__/'
+  style-src:
+    - "'self'"
+    - "'unsafe-inline'"

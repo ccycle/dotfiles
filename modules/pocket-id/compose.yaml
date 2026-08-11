@@ -7,7 +7,7 @@ services:
     # see design.md). Do not switch to a floating tag for this service.
     image: ghcr.io/pocket-id/pocket-id:v2.11.0
     ports:
-      - "127.0.0.1:1411:1411"
+      - "127.0.0.1:${POCKET_ID_HOST_PORT:-1411}:1411"
     environment:
       APP_URL: ${POCKET_ID_APP_URL}
       TRUST_PROXY: "true"
