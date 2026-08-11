@@ -31,6 +31,12 @@ function check_structure() {
   echo "✅ Structure check passed."
 }
 
+function check_recipients() {
+  echo "=== 🔐 Checking sops recipient drift against age key ledger ==="
+  "${REPO_ROOT}/scripts/sops/check-recipients.sh"
+  echo ""
+}
+
 # Flatten darwinConfigurations into fully-qualified config paths. Entries are
 # either direct darwinSystem results (mac-mini-m4) or per-architecture attrsets
 # (private.<arch>); resolving both here lets every downstream step use the
@@ -162,6 +168,9 @@ echo ""
 # 2. Package by Feature structure check
 check_structure
 echo ""
+
+# 2.5. Sops recipient check against the age key ledger
+check_recipients
 
 # 3. Build dry-run every compatible profile from the root and bootstrap flakes
 echo "=== 📋 Discovering profiles in root flake ==="
