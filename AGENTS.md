@@ -56,7 +56,7 @@ Modules must access external flake inputs through the `inputs` attribute, not as
 
 ## Agent Skills
 
-We use [Agent Skills](https://agentskills.io) for task automation and guideline enforcement.
+We use [Agent Skills](https://agentskills.io) for task automation and guideline enforcement. Skills live in `skills/project/` (repo-scoped) or `skills/user/` (repo-agnostic); placement criteria are documented in `skills/README.md`.
 
 - **[nix-module](./skills/project/nix-module/SKILL.md):** Use this skill when creating new features or modules. It handles the directory structure and boilerplate generation.
 - **[credentials-manager](./skills/project/credentials-manager/SKILL.md):** Use this skill for managing secrets and Nix access tokens.
