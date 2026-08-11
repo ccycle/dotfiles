@@ -13,6 +13,13 @@ scrape_configs:
     static_configs:
       - targets: ["localhost:9090"]
 
+  # Host-level (macOS) metrics from the native node_exporter launchd
+  # daemon, loopback-bound on 9100 (see options.nix). Same
+  # host-gateway pattern as Caddy's loopback metrics port below.
+  - job_name: "node-exporter"
+    static_configs:
+      - targets: ["host-gateway:9100"]
+
   # Caddy exposes /metrics on a dedicated loopback-only port (9091) rather
   # than the admin API, which is disabled.
   - job_name: "caddy"

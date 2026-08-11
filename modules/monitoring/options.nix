@@ -4,6 +4,9 @@ with lib;
 
 let
   cfg = config.services.monitoring;
+  # Directory where periodic textfile collectors (e.g. the static-reports
+  # du job below) drop .prom files for node_exporter to expose on :9100.
+  nodeExporterTextfileDir = "/var/lib/node-exporter-textfile";
   composeFile = ./compose.yaml;
   waitForMount = import ../../utils/waitForMount.nix;
   prometheusConfig = ./prometheus.yml;
@@ -101,6 +104,54 @@ in
       pkgs.grafana-loki
       pkgs.prometheus
     ];
+
+    # Host-level (macOS) metrics: node_exporter runs as a native launchd
+    # daemon (loopback-only on 9100), NOT inside the Docker stack — a Linux
+    # container via OrbStack would only observe the container/VM's own
+    # filesystem, not the true host APFS volumes. Same pattern as atticd.
+    launchd.daemons.node-exporter = {
+      serviceConfig = {
+        KeepAlive = true;
+        RunAtLoad = true;
+        StandardOutPath = "/var/log/node-exporter.log";
+        StandardErrorPath = "/var/log/node-exporter.log";
+      };
+      script = ''
+        mkdir -p ${nodeExporterTextfileDir}
+        exec ${pkgs.prometheus-node-exporter}/bin/node_exporter \
+          --web.listen-address=127.0.0.1:9100 \
+          --collector.textfile.directory=${nodeExporterTextfileDir}
+      '';
+    };
+
+    # Directory-specific size metric for /var/lib/static-reports (the
+    # question is "is reports/ accumulating over time?"), which the
+    # whole-volume node_filesystem_* metrics cannot answer directly. Runs
+    # regularly, writing a .prom file into node_exporter's textfile dir for
+    # the next scrape to pick up. Opt-in per-directory via staticReports
+    # enabling; consumers of static-reports could add siblings here.
+    launchd.daemons.static-reports-size = lib.mkIf config.services.staticReports.enable {
+      serviceConfig = {
+        RunAtLoad = true;
+        StartInterval = 300;
+        StandardOutPath = "/var/log/static-reports-size.log";
+        StandardErrorPath = "/var/log/static-reports-size.log";
+      };
+      script = ''
+        DIR="${config.services.staticReports.dataDir}"
+        OUT="${nodeExporterTextfileDir}"
+        if [ ! -d "$DIR" ]; then
+          exit 0
+        fi
+        SIZE=$(${pkgs.coreutils}/bin/du -sb "$DIR" | ${pkgs.coreutils}/bin/awk '{print $1}')
+        cat > "$OUT/static_reports_size_bytes.prom".tmp <<EOF
+        # HELP static_reports_size_bytes Size of the static-reports dataDir in bytes.
+        # TYPE static_reports_size_bytes gauge
+        static_reports_size_bytes $SIZE
+        EOF
+        ${pkgs.coreutils}/bin/mv "$OUT/static_reports_size_bytes.prom".tmp "$OUT/static_reports_size_bytes.prom"
+      '';
+    };
 
     launchd.daemons.monitoring-compose = {
       serviceConfig = {

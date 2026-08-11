@@ -13,7 +13,6 @@ for agent-driven investigation.
   is queryable via the Prometheus API and visible in Grafana, but there is no
   Alertmanager and no notification channel. Adding one is a deliberate future
   decision, not an oversight.
-- No host-level (macOS) metrics: no node_exporter on the host.
 - No blackbox/synthetic probing — reachability is covered by the
   smoke-test skills.
 - No vendored community dashboards. Only compact hand-written dashboard JSONs
@@ -102,6 +101,15 @@ for agent-driven investigation.
   more Prometheus scrape job. Caddy already runs natively on the host rather
   than inside a compose stack, so this is the direct host-native equivalent
   of the container-published-port pattern used everywhere else.
+- **Host-level (macOS) metrics come from node_exporter run as a native
+  launchd daemon, not a container.** A Linux container via OrbStack would
+  only observe the container/VM's own filesystem, not the true host APFS
+  volumes, so `node_filesystem_*` would be wrong. The daemon binds
+  loopback-only (`127.0.0.1:9100`, same as every other scraped metrics port)
+  and is picked up by the same `host-gateway` scrape pattern as Caddy below.
+  This is how the *filesystem* of the host itself (e.g. whether
+  `/var/lib/static-reports` is accumulating) becomes answerable, which
+  container-level cAdvisor metrics cannot show.
 
 ## Rejected Alternatives
 
