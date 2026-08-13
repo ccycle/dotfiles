@@ -5,32 +5,26 @@ creation_rules:
           - age16fu8k22snemzhljtrg7puedvypww5pv9uauutv4ckuns783fd9ds5perdr
           - age15z4jwrurefasz3qulmhuygnrjvqmpenf9l9dv4ese8vx6hq3rg6qw8s950
           - age1fwsg098n3t7n7vh0sf6fey6r7r2nkewl0eksk3t3d3g8sh75rv4s8xe42k
-          - age14as87tuwkvrdw86nrw85xmd2wpsdgqx07uynl4d4wv5gydxc6y4q0h3fqk
   - path_regex: modules/git/github/safe-push/secrets.yaml$
     key_groups:
       - age:
           - age16fu8k22snemzhljtrg7puedvypww5pv9uauutv4ckuns783fd9ds5perdr
           - age15z4jwrurefasz3qulmhuygnrjvqmpenf9l9dv4ese8vx6hq3rg6qw8s950
           - age1fwsg098n3t7n7vh0sf6fey6r7r2nkewl0eksk3t3d3g8sh75rv4s8xe42k
-          - age14as87tuwkvrdw86nrw85xmd2wpsdgqx07uynl4d4wv5gydxc6y4q0h3fqk
   - path_regex: modules/tailscale/secrets.yaml$
     key_groups:
       - age:
           - age15z4jwrurefasz3qulmhuygnrjvqmpenf9l9dv4ese8vx6hq3rg6qw8s950
           - age1fwsg098n3t7n7vh0sf6fey6r7r2nkewl0eksk3t3d3g8sh75rv4s8xe42k
-          - age14as87tuwkvrdw86nrw85xmd2wpsdgqx07uynl4d4wv5gydxc6y4q0h3fqk
   - path_regex: modules/(immich|monitoring|opencloud|pocket-id)/secrets-mac-mini-m4.yaml$
     key_groups:
       - age:
           - age15z4jwrurefasz3qulmhuygnrjvqmpenf9l9dv4ese8vx6hq3rg6qw8s950
-          - age14as87tuwkvrdw86nrw85xmd2wpsdgqx07uynl4d4wv5gydxc6y4q0h3fqk
   - path_regex: modules/(immich|monitoring|opencloud|pocket-id)/secrets-mac-mini-m4-pro.yaml$
     key_groups:
       - age:
           - age1fwsg098n3t7n7vh0sf6fey6r7r2nkewl0eksk3t3d3g8sh75rv4s8xe42k
-          - age14as87tuwkvrdw86nrw85xmd2wpsdgqx07uynl4d4wv5gydxc6y4q0h3fqk
   - path_regex: modules/(attic|forgejo|gitlab)/secrets.yaml$
     key_groups:
       - age:
           - age1fwsg098n3t7n7vh0sf6fey6r7r2nkewl0eksk3t3d3g8sh75rv4s8xe42k
-          - age14as87tuwkvrdw86nrw85xmd2wpsdgqx07uynl4d4wv5gydxc6y4q0h3fqk

@@ -25,7 +25,7 @@
   # keys; once every machine's keys.txt has been swapped, empty this list,
   # regenerate .sops.yaml, and run updatekeys to drop the old key.
   # The recipient check fails until no file carries a key outside its rule.
-  transitionKeys = [ "age14as87tuwkvrdw86nrw85xmd2wpsdgqx07uynl4d4wv5gydxc6y4q0h3fqk" ];
+  transitionKeys = [ ];
 
   # path_regex -> host names whose keys must be able to decrypt matching files.
   # Rules are evaluated in order; the first match wins (sops semantics).
