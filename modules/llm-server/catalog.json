@@ -48,6 +48,17 @@
         }
       ],
       "extraFlags": []
+    },
+    "qwen/qwen3.6-35b-a3b": {
+      "name": "Qwen 3.6 35B A3B",
+      "contextLength": 131072,
+      "files": [
+        {
+          "url": "https://huggingface.co/unsloth/Qwen3.6-35B-A3B-GGUF/resolve/main/Qwen3.6-35B-A3B-UD-Q4_K_XL.gguf",
+          "sha256": "707a55a8a4397ecde44de0c499d3e68c1ad1d240d1da65826b4949d1043f4450"
+        }
+      ],
+      "extraFlags": [ "--flash-attn", "on", "-ctk", "q8_0", "-ctv", "q8_0" ]
     }
   }
 }
