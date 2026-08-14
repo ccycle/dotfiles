@@ -1,9 +1,8 @@
-{
-  herdrPackage,
-  config,
-  lib,
-  pkgs,
-  ...
+{ herdrPackage
+, config
+, lib
+, pkgs
+, ...
 }:
 
 {
@@ -63,5 +62,23 @@
         fi
       fi
     )
+  '';
+
+  # herdr ships a built-in agent-state integration for pi (writes
+  # ~/.pi/agent/extensions/herdr-agent-state.ts), analogous to the Claude
+  # integration installed separately by herdr itself. Install/update it here
+  # so pi panes get agent-panel labels, state tracking, and `herdr agent
+  # start --kind pi` detection like claude already has.
+  home.activation.herdr-pi-integration-install = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
+    if "${herdrPackage}/bin/herdr" integration status 2>/dev/null | grep -q "^pi: current"; then
+      echo "[herdr-pi-integration-install] already up to date, skipping"
+    else
+      echo "[herdr-pi-integration-install] installing pi integration"
+      if "${herdrPackage}/bin/herdr" integration install pi; then
+        echo "[herdr-pi-integration-install] install succeeded"
+      else
+        echo "[herdr-pi-integration-install] Warning: install failed. Run 'herdr integration install pi' manually."
+      fi
+    fi
   '';
 }
