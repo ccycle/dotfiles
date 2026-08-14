@@ -82,6 +82,17 @@ in
             chmod 444 "$POCKET_ID_ENCRYPTION_KEY_FILE"
         fi
 
+        # OrbStack aggressively caches mounted files, and a fresh container
+        # can see stale metadata instead of current host state until
+        # something actually reads the file through that exact mount once
+        # (see orbstack/orbstack#1026). Force that read via a throwaway
+        # container using this same compose service definition before the
+        # real one starts, so the encryption key mount is already warm.
+        ${pkgs.docker-compose}/bin/docker-compose \
+          -f ${composeFile} \
+          run --rm --no-deps --entrypoint sh pocket-id \
+          -c 'cat /app/data/encryption_key >/dev/null' || true
+
         exec ${pkgs.docker-compose}/bin/docker-compose \
           -f ${composeFile} \
           up --no-build --force-recreate
