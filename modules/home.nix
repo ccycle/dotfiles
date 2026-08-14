@@ -48,6 +48,7 @@
     ./sops/home.nix
     ./ssh/home.nix
     ./sync-home-files/home.nix
+    ./task-check/home.nix
     ./tmux/home.nix
     ./vscode/home.nix
     ./workmux/home.nix
