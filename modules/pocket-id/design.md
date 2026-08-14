@@ -76,3 +76,13 @@ compose example recommends.** See Constraints below.
   tokens outliving revocation/disablement — confirm a disabled user's
   refresh token actually stops working before trusting this as the
   zero-trust auth layer.
+- **The encryption key must live inside the `dataDir` bind mount, not
+  as its own separate bind mount.** OrbStack's Docker VM was found to
+  reliably auto-vivify a brand-new, standalone bind-mount source as an
+  empty directory instead of the real file underneath it — reproduced
+  across multiple filenames and paths, and surviving both a full
+  container recreate and a full OrbStack restart. A file appearing
+  inside a directory that is already an active bind mount (`dataDir`)
+  was reliably visible throughout. Any future secret this service
+  needs as a file should go through the same `dataDir`-relative
+  pattern rather than its own top-level bind mount entry.

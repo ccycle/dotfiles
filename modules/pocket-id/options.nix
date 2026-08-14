@@ -58,39 +58,24 @@ in
 
         export POCKET_ID_APP_URL="https://auth.${domain}"
         export POCKET_ID_DATA_DIR="${cfg.dataDir}"
-        export POCKET_ID_ENCRYPTION_KEY_FILE="${builtins.dirOf cfg.dataDir}/pocket_id_encryption_key"
+        export POCKET_ID_ENCRYPTION_KEY_FILE="${cfg.dataDir}/encryption_key"
 
         mkdir -p "$POCKET_ID_DATA_DIR"
 
-        # Copy the encryption key next to $POCKET_ID_DATA_DIR (under /var/lib/,
-        # already proven reachable from OrbStack's Docker VM by that same data
-        # dir) rather than /tmp/: the compose service has `restart: always`, so
-        # Docker can bring the container back up on its own whenever the Docker
-        # daemon restarts, independently of and before this launchd script gets
-        # a chance to re-run. /tmp/ does not survive a host reboot, so that
-        # independent restart could race ahead of this cp and mount an empty
-        # bind-mount source. A path under /var/lib/ persists across reboots, so
-        # once written once, it's always there for that race to land on.
+        # Written inside $POCKET_ID_DATA_DIR itself (see compose.yaml's
+        # ENCRYPTION_KEY_FILE), not as its own separate bind mount: OrbStack's
+        # Docker VM reliably auto-vivified a brand-new, standalone bind-mount
+        # source as an empty directory instead of the real file underneath
+        # it, regardless of path or filename - but a file appearing inside a
+        # directory that's already an active bind mount (this one) has been
+        # reliably visible all along. See design.md for the fuller story.
         #
-        # Only actually rewrite the file when its content changed. OrbStack's
-        # Docker VM has a real, currently-unresolved virtiofs bind-mount
-        # staleness bug (orbstack/orbstack#1026, #1287, #1240): a file that
-        # was *just* written on the host can lose the race with the VM's view
-        # syncing up, and get permanently auto-vivified as an empty directory
-        # for that container's lifetime - retrying or waiting did not recover
-        # it in testing, only a full `docker compose down` + recreate did. A
-        # file that has sat here unchanged since a prior successful boot is
-        # already correctly synced, so skipping the rewrite when nothing
-        # changed keeps `--force-recreate` (below) from re-running this race
-        # on every ordinary reboot - it's only still live for the first-ever
-        # bootstrap and actual sops key rotations.
+        # Only actually rewrite the file when its content changed: this keeps
+        # `--force-recreate` (below) from touching it on every ordinary
+        # reboot, limiting churn here to first-ever bootstrap and actual sops
+        # key rotations.
         if ! cmp -s "${config.sops.secrets.pocket_id_encryption_key.path}" \
           "$POCKET_ID_ENCRYPTION_KEY_FILE" 2>/dev/null; then
-          # Remove any stale path first: if a prior run raced with
-          # docker-compose and lost, Docker auto-vivifies the bind-mount
-          # source as a directory, and cp into an existing directory copies
-          # *into* it instead of replacing it, which would wedge the
-          # container in a permanent restart loop.
           rm -rf "$POCKET_ID_ENCRYPTION_KEY_FILE"
           cp "${config.sops.secrets.pocket_id_encryption_key.path}" \
             "$POCKET_ID_ENCRYPTION_KEY_FILE" && \

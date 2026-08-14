@@ -11,7 +11,13 @@ services:
     environment:
       APP_URL: ${POCKET_ID_APP_URL}
       TRUST_PROXY: "true"
-      ENCRYPTION_KEY_FILE: /run/secrets/encryption_key
+      # Lives inside the /app/data bind mount rather than its own separate
+      # bind mount: OrbStack's Docker VM reliably auto-vivified a brand-new,
+      # standalone bind-mount source as an empty directory instead of the
+      # real file underneath it, no matter the path or filename tried, but a
+      # file appearing inside a directory that's already an active bind mount
+      # (this one) has been reliably visible all along - see design.md.
+      ENCRYPTION_KEY_FILE: /app/data/encryption_key
       # Passkey-only posture: no email-based bypass of WebAuthn, for the
       # unauthenticated self-service path or the admin-assisted path.
       EMAIL_ONE_TIME_ACCESS_AS_UNAUTHENTICATED_ENABLED: "false"
@@ -20,7 +26,6 @@ services:
       ALLOW_USER_SIGNUPS: disabled
     volumes:
       - ${POCKET_ID_DATA_DIR:-/var/lib/pocket-id/data}:/app/data
-      - ${POCKET_ID_ENCRYPTION_KEY_FILE}:/run/secrets/encryption_key:ro
     healthcheck:
       test: ["CMD", "/app/pocket-id", "healthcheck"]
       interval: 90s
