@@ -58,7 +58,7 @@ in
 
         export POCKET_ID_APP_URL="https://auth.${domain}"
         export POCKET_ID_DATA_DIR="${cfg.dataDir}"
-        export POCKET_ID_ENCRYPTION_KEY_FILE="${cfg.dataDir}/../encryption_key"
+        export POCKET_ID_ENCRYPTION_KEY_FILE="${builtins.dirOf cfg.dataDir}/encryption_key"
 
         mkdir -p "$POCKET_ID_DATA_DIR"
 
