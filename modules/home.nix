@@ -40,6 +40,7 @@
     ./opencloud/home.nix
     ./opencode/home.nix
     ./php/home.nix
+    ./pi/home.nix
     ./pinentry/home.nix
     ./pocket-id/home.nix
     ./python/home.nix

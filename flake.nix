@@ -51,6 +51,7 @@
     nixpkgs.url = "github:nixos/nixpkgs/26.05";
     ghostty.url = "github:ghostty-org/ghostty";
     # opencode.url = "github:anomalyco/opencode/dev";
+    pi.url = "github:lukasl-dev/pi.nix";
     stylix.url = "github:nix-community/stylix/release-26.05";
     tailscale.url = "github:tailscale/tailscale/v1.92.5";
     pip2nix.url = "github:nix-community/pip2nix";
@@ -95,6 +96,7 @@
             { src = inputs.gitui; };
           herdrPackage = inputs.herdr.packages.${system}.default;
           hunkPackage = inputs.hunk.packages.${system}.default;
+          piPackage = inputs.pi.packages.${system}.coding-agent;
           pkgs-2211 = mkPkgs inputs.nixpkgs-2211;
           pkgs-2305 = mkPkgs inputs.nixpkgs-2305;
           pkgs-2311 = mkPkgs inputs.nixpkgs-2311;
