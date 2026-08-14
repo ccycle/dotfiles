@@ -58,7 +58,7 @@ in
 
         export POCKET_ID_APP_URL="https://auth.${domain}"
         export POCKET_ID_DATA_DIR="${cfg.dataDir}"
-        export POCKET_ID_ENCRYPTION_KEY_FILE="${builtins.dirOf cfg.dataDir}/encryption_key"
+        export POCKET_ID_ENCRYPTION_KEY_FILE="${builtins.dirOf cfg.dataDir}/pocket_id_encryption_key"
 
         mkdir -p "$POCKET_ID_DATA_DIR"
 
@@ -75,7 +75,13 @@ in
         # and lost, Docker auto-vivifies the bind-mount source as a directory,
         # and cp into an existing directory copies *into* it instead of
         # replacing it, which would wedge the container in a permanent restart
-        # loop.
+        # loop. Once OrbStack's Docker VM has cached a path as a directory this
+        # way, replacing the host-side file in place is not enough to fix it -
+        # observed empirically, the VM kept reporting the same stale directory
+        # (same inode) even after the host file was correctly replaced. Hence
+        # this is named pocket_id_encryption_key, not encryption_key: reusing a
+        # path OrbStack has already mis-cached does not self-heal, so recovery
+        # from that state requires moving to a path it has never seen.
         rm -rf "$POCKET_ID_ENCRYPTION_KEY_FILE"
         cp "${config.sops.secrets.pocket_id_encryption_key.path}" \
           "$POCKET_ID_ENCRYPTION_KEY_FILE" && \
