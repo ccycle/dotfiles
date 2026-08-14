@@ -1,6 +1,4 @@
-{ piPackage, pkgs, ... }:
-
-{
+{ config, piPackage, pkgs, ... }: {
   # See ./design.md for why pi is packaged via the pi.nix flake rather than
   # buildNpmPackage/importNpmLock in modules/nodejs/node-tools. Config files
   # are symlinked directly (see modules/ai-rules/home.nix) rather than going
@@ -18,4 +16,8 @@
       ln -s ${piPackage}/bin/pi $out/bin/pi
     '')
   ];
+
+  # Pi skills directory: symlink to shared user skills
+  home.file."${config.home.homeDirectory}/.agents/skills".source =
+    config.lib.file.mkOutOfStoreSymlink "${config.custom.dotfiles.dir}/skills/user";
 }
