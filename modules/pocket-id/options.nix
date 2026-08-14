@@ -58,16 +58,24 @@ in
 
         export POCKET_ID_APP_URL="https://auth.${domain}"
         export POCKET_ID_DATA_DIR="${cfg.dataDir}"
-        export POCKET_ID_ENCRYPTION_KEY_FILE="/tmp/pocket_id_encryption_key"
+        export POCKET_ID_ENCRYPTION_KEY_FILE="${cfg.dataDir}/../encryption_key"
 
         mkdir -p "$POCKET_ID_DATA_DIR"
 
-        # Copy encryption key to /tmp/ so OrbStack's Docker VM can reach it
-        # (/run/ is not shared with the Linux VM, but /tmp/ is). Remove any
-        # stale path first: if a prior run raced with docker-compose and lost,
-        # Docker auto-vivifies the bind-mount source as a directory, and cp
-        # into an existing directory copies *into* it instead of replacing it,
-        # which would wedge the container in a permanent restart loop.
+        # Copy the encryption key next to $POCKET_ID_DATA_DIR (under /var/lib/,
+        # already proven reachable from OrbStack's Docker VM by that same data
+        # dir) rather than /tmp/: the compose service has `restart: always`, so
+        # Docker can bring the container back up on its own whenever the Docker
+        # daemon restarts, independently of and before this launchd script gets
+        # a chance to re-run. /tmp/ does not survive a host reboot, so that
+        # independent restart could race ahead of this cp and mount an empty
+        # bind-mount source. A path under /var/lib/ persists across reboots, so
+        # once written once, it's always there for that race to land on.
+        # Remove any stale path first: if a prior run raced with docker-compose
+        # and lost, Docker auto-vivifies the bind-mount source as a directory,
+        # and cp into an existing directory copies *into* it instead of
+        # replacing it, which would wedge the container in a permanent restart
+        # loop.
         rm -rf "$POCKET_ID_ENCRYPTION_KEY_FILE"
         cp "${config.sops.secrets.pocket_id_encryption_key.path}" \
           "$POCKET_ID_ENCRYPTION_KEY_FILE" && \
