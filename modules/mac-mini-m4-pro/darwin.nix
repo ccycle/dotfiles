@@ -5,6 +5,9 @@
 
   services.tailscale.splitDns.enable = true;
   services.opencloud.enable = true;
+  # Self-built image with services/unzip (server-side extraction) and related
+  # fixes not yet upstream - see modules/opencloud/build-backend-image.sh.
+  services.opencloud.image = "opencloud-unzip-server:latest";
   services.caddy.enable = true;
   custom.dnsmasq.enable = true;
   services.immich.enable = true;

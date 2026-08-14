@@ -45,6 +45,12 @@ in
       default = webApps;
       description = "Path to a directory of OpenCloud web apps, served via WEB_ASSET_APPS_PATH and mounted as /var/lib/opencloud/web/assets/apps. Built from Nix (see drv.nix) so updates are reproducible.";
     };
+
+    image = mkOption {
+      type = types.str;
+      default = "opencloudeu/opencloud-rolling:latest";
+      description = "Docker image to run for the opencloud service. Defaults to the upstream image; override per-profile to run a self-built image (see modules/opencloud/build-backend-image.sh) containing out-of-tree backend services not present upstream.";
+    };
   };
 
   config = mkIf cfg.enable {
@@ -90,6 +96,7 @@ in
         export OPENCLOUD_OIDC_DOMAIN="${oidcDomain}"
         export OPENCLOUD_CSP_FILE="${cspFile}"
         export OPENCLOUD_APPS_DIR="${cfg.appsDir}"
+        export OPENCLOUD_IMAGE="${cfg.image}"
         export OPENCLOUD_OIDC_ROLE_CLAIM="opencloud_role"
         export OPENCLOUD_OIDC_CLIENT_ID="77e88611-a8b6-4eec-bfd7-7bd2bd4fe642"
         export OPENCLOUD_OIDC_PROXY_CLIENT_ID="77e88611-a8b6-4eec-bfd7-7bd2bd4fe642"

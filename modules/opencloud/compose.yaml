@@ -2,7 +2,7 @@ name: opencloud
 
 services:
   opencloud:
-    image: opencloudeu/opencloud-rolling:latest
+    image: ${OPENCLOUD_IMAGE:-opencloudeu/opencloud-rolling:latest}
     user: root
     entrypoint: ["/bin/sh", "-c"]
     command: ["-c", "opencloud init --insecure true || true; opencloud server"]
