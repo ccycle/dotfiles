@@ -12,11 +12,11 @@ services:
       APP_URL: ${POCKET_ID_APP_URL}
       TRUST_PROXY: "true"
       # Lives inside the /app/data bind mount rather than its own separate
-      # bind mount: OrbStack's Docker VM reliably auto-vivified a brand-new,
-      # standalone bind-mount source as an empty directory instead of the
-      # real file underneath it, no matter the path or filename tried, but a
-      # file appearing inside a directory that's already an active bind mount
-      # (this one) has been reliably visible all along - see design.md.
+      # bind mount source: OrbStack auto-vivifies a standalone bind-mount
+      # source as an empty VM-internal directory unless it is written in
+      # resolved realpath form (/private/var/...), while a file inside a
+      # directory that is already a host bind mount (this one) is always
+      # visible - see design.md.
       ENCRYPTION_KEY_FILE: /app/data/encryption_key
       # Passkey-only posture: no email-based bypass of WebAuthn, for the
       # unauthenticated self-service path or the admin-assisted path.
@@ -25,7 +25,13 @@ services:
       # Single-owner homelab: no open or token-gated signups.
       ALLOW_USER_SIGNUPS: disabled
     volumes:
-      - ${POCKET_ID_DATA_DIR:-/var/lib/pocket-id/data}:/app/data
+      # Source must be the realpath form (/private/var/..., not /var/...):
+      # OrbStack only treats a resolved-realpath bind source as a host share
+      # via virtiofs; the /var -> /private/var symlink form mounts instead as
+      # a VM-internal overlay dir. POCKET_ID_DATA_DIR is exported as
+      # cfg.dataDir (already realpath) by the launchd script, so this default
+      # only matters when the compose file is used standalone.
+      - ${POCKET_ID_DATA_DIR:-/private/var/lib/pocket-id/data}:/app/data
     healthcheck:
       test: ["CMD", "/app/pocket-id", "healthcheck"]
       interval: 90s

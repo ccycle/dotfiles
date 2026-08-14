@@ -20,6 +20,19 @@ credential records — not bulk user content — so it stays on the
 internal disk under `/var/lib/pocket-id`, following the same pattern
 as `modules/attic` rather than the external-volume services.
 
+**`dataDir` must be written in resolved-realpath form.**
+`cfg.dataDir` defaults to `/private/var/lib/pocket-id/data`, not the
+`/var/lib/pocket-id/data` symlink form. macOS's `/var` is a symlink to
+`/private/var`, and OrbStack only treats a bind-mount source written
+as a resolved realpath as a host share (mounted via virtiofs); the
+symlink form silently mounts as a VM-internal overlay directory that
+auto-vivifies empty and never reflects host content. This is the root
+cause that several earlier fixes missed: they wrote the encryption key
+on the host under `/var/lib/...` but never fixed that the bind mount
+was not delivering that directory to the container at all. The
+host-side directory is `/private/var/lib/pocket-id/data` — same
+files, correct mount source.
+
 **Passkey-only enforcement via explicit env vars.** Both
 `EMAIL_ONE_TIME_ACCESS_AS_UNAUTHENTICATED_ENABLED` and
 `EMAIL_ONE_TIME_ACCESS_AS_ADMIN_ENABLED` are set to `false`. Pocket ID
@@ -77,12 +90,18 @@ compose example recommends.** See Constraints below.
   refresh token actually stops working before trusting this as the
   zero-trust auth layer.
 - **The encryption key must live inside the `dataDir` bind mount, not
-  as its own separate bind mount.** OrbStack's Docker VM was found to
-  reliably auto-vivify a brand-new, standalone bind-mount source as an
-  empty directory instead of the real file underneath it — reproduced
-  across multiple filenames and paths, and surviving both a full
-  container recreate and a full OrbStack restart. A file appearing
-  inside a directory that is already an active bind mount (`dataDir`)
-  was reliably visible throughout. Any future secret this service
-  needs as a file should go through the same `dataDir`-relative
-  pattern rather than its own top-level bind mount entry.
+  as its own separate bind mount.** OrbStack auto-vivifies a standalone
+  bind-mount source as an empty VM-internal directory unless the source
+  path is written in resolved-realpath form, which is the same class of
+  bug this module hit with `/var` — a key file at `/var/lib/pocket-id/
+  encryption_key` would never reach the container. A file appearing
+  inside a directory that is already a host bind mount (`dataDir`) is
+  always visible. Any future secret this service needs as a file should
+  go through the same `dataDir`-relative pattern rather than its own
+  top-level bind mount entry.
+- **The host `dataDir` must be writable by the primary user, not
+  root.** The container runs as uid 1000, which OrbStack maps to the
+  host user; the launchd script therefore `chown`s `dataDir` to
+  `config.system.primaryUser` (same pattern as `modules/static-reports`)
+  after creating it. Without this, once the mount path is correct the
+  container still fails with `unable to open database file (14)`.

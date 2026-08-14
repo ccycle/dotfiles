@@ -13,7 +13,12 @@ in
 
     dataDir = mkOption {
       type = types.str;
-      default = "/var/lib/pocket-id/data";
+      # Realpath form (/private/var/...), not the /var symlink form: OrbStack
+      # only treats a bind-mount source written as a resolved realpath as a
+      # host share (virtiofs). The /var -> /private/var symlink form silently
+      # mounts as a VM-internal overlay dir instead, so the container never
+      # sees the host folder. See modules/pocket-id/design.md.
+      default = "/private/var/lib/pocket-id/data";
       description = "Directory for Pocket ID's SQLite database and WebAuthn credential store.";
     };
   };
@@ -60,15 +65,24 @@ in
         export POCKET_ID_DATA_DIR="${cfg.dataDir}"
         export POCKET_ID_ENCRYPTION_KEY_FILE="${cfg.dataDir}/encryption_key"
 
+        # cfg.dataDir is a realpath form (/private/var/...), which is what
+        # OrbStack needs to treat it as a host share (virtiofs) instead of a
+        # VM-internal overlay dir. See design.md.
         mkdir -p "$POCKET_ID_DATA_DIR"
 
-        # Written inside $POCKET_ID_DATA_DIR itself (see compose.yaml's
-        # ENCRYPTION_KEY_FILE), not as its own separate bind mount: OrbStack's
-        # Docker VM reliably auto-vivified a brand-new, standalone bind-mount
-        # source as an empty directory instead of the real file underneath
-        # it, regardless of path or filename - but a file appearing inside a
-        # directory that's already an active bind mount (this one) has been
-        # reliably visible all along. See design.md for the fuller story.
+        # The container runs as uid 1000, which OrbStack maps to the host
+        # user, so it must be able to write the SQLite DB into dataDir.
+        # Without this the container logs "unable to open database file (14)"
+        # as soon as the bind-mount path is corrected. Follows the same
+        # pattern as modules/static-reports.
+        chown ${config.system.primaryUser} "$POCKET_ID_DATA_DIR"
+
+        # The encryption key (and later the SQLite DB) lives inside the one
+        # directory that is an actual host bind mount, rather than as its own
+        # separate bind mount source: OrbStack auto-vivifies a standalone
+        # bind-mount source as an empty VM-internal directory unless it is
+        # written in resolved realpath form, and a file inside an already
+        # mounted directory is always visible. See design.md.
         #
         # Only actually rewrite the file when its content changed: this keeps
         # `--force-recreate` (below) from touching it on every ordinary
@@ -81,17 +95,6 @@ in
             "$POCKET_ID_ENCRYPTION_KEY_FILE" && \
             chmod 444 "$POCKET_ID_ENCRYPTION_KEY_FILE"
         fi
-
-        # OrbStack aggressively caches mounted files, and a fresh container
-        # can see stale metadata instead of current host state until
-        # something actually reads the file through that exact mount once
-        # (see orbstack/orbstack#1026). Force that read via a throwaway
-        # container using this same compose service definition before the
-        # real one starts, so the encryption key mount is already warm.
-        ${pkgs.docker-compose}/bin/docker-compose \
-          -f ${composeFile} \
-          run --rm --no-deps --entrypoint sh pocket-id \
-          -c 'cat /app/data/encryption_key >/dev/null' || true
 
         exec ${pkgs.docker-compose}/bin/docker-compose \
           -f ${composeFile} \
