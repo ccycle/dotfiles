@@ -36,7 +36,9 @@ in
       else
         cat ${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt > /etc/nix/ca-bundle.crt
       fi
-      [ -f "$ATTIC_CA" ] && cat "$ATTIC_CA" >> /etc/nix/ca-bundle.crt
+      if [ -f "$ATTIC_CA" ]; then
+        cat "$ATTIC_CA" >> /etc/nix/ca-bundle.crt
+      fi
     }
     ${if isAtticHost then ''
       LOCAL_CA="/var/lib/caddy/caddy/pki/authorities/local/root.crt"
