@@ -25,7 +25,14 @@ services:
       - FORGEJO__oauth2__CLIENT_SECRET=${FORGEJO_OIDC_CLIENT_SECRET}
       - FORGEJO__oauth2__OPENID_CONNECT_DISCOVERY_URL=${FORGEJO_OIDC_DISCOVERY_URL}
     volumes:
+      # Bulk git data (repositories, LFS, SSH host keys) on the external
+      # drive, bind-mounted host-native. Left as-is: this data is large and
+      # not SQLite, so virtiofs is fine for it.
       - ${FORGEJO_DATA_DIR}:/data
+      # SQLite DB + small app state (conf, attachments, sessions, ...)
+      # override that same tree at /data/gitea with a Docker named volume
+      # (VM-internal storage). See design.md.
+      - forgejo-gitea-data:/data/gitea
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     healthcheck:
@@ -35,3 +42,7 @@ services:
       retries: 3
       start_period: 60s
     restart: always
+
+volumes:
+  forgejo-gitea-data:
+    name: forgejo-gitea-data

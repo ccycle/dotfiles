@@ -16,6 +16,12 @@ in
       default = "/var/lib/forgejo/data";
     };
 
+    dataVolume = mkOption {
+      type = types.str;
+      default = "forgejo-gitea-data";
+      description = "Docker named volume holding Forgejo's SQLite database and small app state (mounted over dataDir/gitea). A named volume lives on VM-internal storage (not virtiofs), which is what SQLite requires; see modules/forgejo/design.md.";
+    };
+
     mountPoint = mkOption {
       type = types.str;
       default = "";
