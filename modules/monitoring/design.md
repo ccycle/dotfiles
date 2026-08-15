@@ -61,6 +61,22 @@ for agent-driven investigation.
   (unlike GitLab/Immich's HTTP metrics), so the error panel uses the
   dedicated `opencloud_proxy_errors_total` counter instead of a status-code
   breakdown.
+- **Grafana's SQLite database lives on a Docker named volume, not the host
+  bind mount Prometheus and Loki use.** Same underlying issue as
+  `modules/pocket-id/design.md` and `modules/forgejo/design.md`: SQLite
+  crashes with `SQLITE_BUSY`/`SQLITE_IOERR_SHMLOCK` on OrbStack's virtiofs
+  host bind mounts as soon as a second process opens the live DB, and a
+  named volume avoids this by living on VM-internal storage. Unlike
+  Forgejo's split mount, this is a full swap of the whole Grafana data
+  directory — it's small (SQLite DB, plugins, a few cache dirs) and none of
+  it needs to stay host-visible, unlike Forgejo's git repositories.
+  Prometheus's TSDB and Loki's tsdb index are not SQLite and are
+  unaffected, so they keep their host binds. Grafana's image always runs as
+  a fixed non-root user and never chowns its own data directory (unlike
+  Forgejo/Pocket ID, which run as root initially and self-chown); this
+  works anyway because Docker seeds a freshly created named volume from the
+  image's own baked-in directory ownership — verified empirically before
+  relying on it.
 - **Forgejo is scraped from its own web port** (`host-gateway:3000/metrics`),
   enabled with `FORGEJO__metrics__ENABLED`. Forgejo (Gitea fork) exposes only
   `gitea_*` instance statistics (repositories, users, issues open/closed,

@@ -28,7 +28,12 @@ services:
     ports:
       - "127.0.0.1:3200:3000"
     volumes:
-      - ${MONITORING_DATA_DIR:-/var/lib/monitoring}/grafana:/var/lib/grafana
+      # Named volume, not a host bind: grafana.db is SQLite, and this stack
+      # measured SQLite on virtiofs bind mounts crashing with SQLITE_BUSY /
+      # SQLITE_IOERR_SHMLOCK under concurrent access (see design.md and
+      # modules/pocket-id/design.md). Prometheus and Loki keep their host
+      # binds below since neither uses SQLite.
+      - grafana-data:/var/lib/grafana
       - ${GRAFANA_PROVISIONING_DIR}:/etc/grafana/provisioning:ro
       - ${GRAFANA_DASHBOARDS_DIR}:/var/lib/grafana/dashboards:ro
     environment:
@@ -91,3 +96,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     restart: always
+
+volumes:
+  grafana-data:
+    name: grafana-data

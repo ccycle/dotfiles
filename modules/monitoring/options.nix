@@ -33,7 +33,13 @@ in
     dataDir = mkOption {
       type = types.str;
       default = "/var/lib/monitoring";
-      description = "Base directory for monitoring data storage on the host.";
+      description = "Base directory for Prometheus and Loki data storage on the host.";
+    };
+
+    grafanaDataVolume = mkOption {
+      type = types.str;
+      default = "grafana-data";
+      description = "Docker named volume holding Grafana's SQLite database and plugins. A named volume lives on VM-internal storage (not virtiofs), which is what SQLite requires; see design.md.";
     };
 
     gitlabLogsDir = mkOption {
@@ -183,7 +189,6 @@ in
         export GITLAB_LOGS_DIR="${cfg.gitlabLogsDir}"
 
         mkdir -p "$MONITORING_DATA_DIR/prometheus" \
-                 "$MONITORING_DATA_DIR/grafana" \
                  "$MONITORING_DATA_DIR/loki"
         chmod -R 777 "$MONITORING_DATA_DIR"
 
