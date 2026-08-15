@@ -30,6 +30,16 @@ Models flagged `"thinking": true` in the catalog get `reasoning: true` plus `com
 
 Verified end-to-end against the live server (via `PI_CODING_AGENT_DIR` against a scratch dir): `pi --list-models` shows all catalog models with thinking correctly flagged, and `pi -p` print-mode requests reach llama-swap and return Qwen 3.6 output with `--thinking high`.
 
+## DeepSeek via the Native `opencode` Provider
+
+To use opencode zen's free DeepSeek models (e.g. `opencode/deepseek-v4-flash-free`) as pi's default model **with working tool calls**, the baseline points `defaultProvider` at pi's **built-in `opencode` provider** rather than at the `opencode-cli` bridge.
+
+Why not the `opencode-cli` bridge (`opencode-pi` extension): that extension registers an `opencode-cli` provider that shells out to `opencode run`, denies opencode's native tools (bash/read/edit/...), and asks the model to emit `<pi_tool_call>{...}</pi_tool_call>` text markers which it reparses into pi tool calls. DeepSeek free models do not emit those markers — they emit opencode's native `tool_use` events (verified: `opencode run -m opencode/deepseek-v4-flash-free` produces `{"type":"tool_use","part":{"tool":"bash",...}}`). The bridge treats that as a hard error (`OpenCode attempted to use its disabled native tool (bash)`, `opencode-pi/src/index.ts`), so every real tool call fails. The bridge is inherently model-fragile: it only works for models that cooperate with the text-marker convention.
+
+pi's built-in `opencode` provider instead talks the zen wire protocol directly at `https://opencode.ai/zen/v1` (`@earendil-works/pi-ai/dist/providers/data/opencode.json`, which lists `deepseek-v4-flash-free` with `api: "openai-completions"`, `reasoning: true`, zero cost) and runs through pi's native OpenAI-compatible tool-call pipeline — real `tool_calls`, no text markers. `pi-free` already wires this provider up via its built-in toggle (free mode), so no extra package is needed.
+
+Constraint: unlike the `opencode run` CLI (which serves the free models with no account), the native `opencode` provider requires a **valid zen API key** — pi refuses a missing key (`No API key found for opencode`) and the gateway rejects a dummy one (`401: Invalid API key.`). The key must be provisioned via `/login opencode` (stored in `~/.pi/agent/auth.json`, a secret not managed by this repo) or the `OPENCODE_API_KEY` env var.
+
 ## settings.json — Live-Editable Baseline
 
 `~/.pi/agent/settings.json` mixes declarative user preference (`theme`, `defaultThinkingLevel`, `enableSkillCommands`) with interactive state pi persists at runtime (`defaultProvider`/`defaultModel`, the `packages` list that `pi install` mutates). Because pi rewrites this file itself, it is **not** owned as Nix-generated `.text` content — that would clobber pi's runtime writes on every rebuild. Instead it is an out-of-store symlink to `modules/pi/settings.json` (tracked in the checkout), the same live-editable pattern as `~/.claude/settings.json` in `modules/claude/home.nix`.
@@ -38,7 +48,7 @@ Consequences:
 
 - When pi writes `settings.json` (via `/model`, `pi config`, `pi install`), the change lands directly in the tracked `modules/pi/settings.json`. To persist it, commit that diff — the baseline then represents "intended state" rather than Nix-forced state.
 - Rebuilds recreate the symlink to the tracked file but never overwrite its contents, so pi's runtime state is preserved across rebuilds (it is not rolled back).
-- The saved `defaultProvider`/`defaultModel` only resolve to a working model once `models.json` actually provides a matching provider/model; the committed baseline pins `llamaswap`/`google/gemma-4-26b-a4b` to avoid the OpenRouter free-tier daily rate limit that previously tripped at session level.
+- The saved `defaultProvider`/`defaultModel` only resolve to a working model once the matching provider is wired up; the committed baseline pins `opencode`/`opencode/deepseek-v4-flash-free` (a free opencode zen model), which requires a valid opencode zen API key — see "DeepSeek via the Native `opencode` Provider".
 
 The `packages` list is committed in the same file. `pi install`-added packages should be committed deliberately; the baseline pins the currently intended set (including `npm:pi-free`). Note `pi list` may not enumerate every installed extension, so treat the committed `packages` list — not `pi list` output — as the source of truth, and drop an entry only when it is genuinely unwanted.
 
@@ -49,6 +59,7 @@ The `packages` list is committed in the same file. `pi install`-added packages s
 - **`node2nix`**: forbidden repository-wide — removed from nixpkgs and unmaintained.
 - **`programs.pi.coding-agent.rules`**: works (verified: builds and injects the intended content via `--append-system-prompt`), but was rejected in favor of the plain `home.packages` + symlink approach above, to keep `pi` consistent with how every other agent's rules file is managed in this repo.
 - **Built-in `llama.cpp` provider** (via `LLAMA_BASE_URL`/`/login llama.cpp`): targets a llama.cpp router server whose `/llama` model-loading control flow llama-swap cannot serve; see above.
+- **`opencode-cli` bridge** (`opencode-pi` extension): shells out to `opencode run` and bridges pi tool calls via `<pi_tool_call>` text markers. Reachable its without any account (reusing the local opencode CLI's anonymous access to free models), but the text-marker convention is model-fragile — DeepSeek free models emit native opencode `tool_use` events instead, which the bridge hard-errors on, so tool calls failed. Superseded by the native `opencode` provider once a zen API key is available; see "DeepSeek via the Native `opencode` Provider".
 
 ## Constraints
 
@@ -56,4 +67,4 @@ The `packages` list is committed in the same file. `pi install`-added packages s
 - Freshness tracks `pi.nix`'s own sync cadence (daily cron in that repo) plus whenever this repo runs `nix flake update` on the `pi` input — not continuous per-build "latest" like an imperative installer would give.
 - `~/.pi/agent/AGENTS.md` only gets `rules.md`, not the topic-specific `rules/nix.md`/`rules/loop-engineering.md` — a real file can only symlink to one source, and `pi` has no directory-of-files convention like Claude's `~/.claude/rules/` to point at instead. This matches how Cursor is already handled in the same file.
 - models.json's `baseUrl` is the tailnet hostname `http://llm.mac-mini-m4-pro.internal/v1`, so pi only talks to the local server when the tailnet DNS is reachable and `services.llm-server` is up (mac-mini-m4-pro). The file is generated on every host regardless of that enablement, same as the opencode config.
-- The saved default in `settings.json` is now owned by this module as a live baseline (see "settings.json — Live-Editable Baseline"); it is initialized (via the symlink target) to `llamaswap`/`google/gemma-4-26b-a4b` rather than a cloud provider, avoiding the free-tier daily rate limit. pi may still overwrite it at runtime, but rebuilds no longer roll it back and the diff is commit-able.
+- The saved default in `settings.json` is now owned by this module as a live baseline (see "settings.json — Live-Editable Baseline"); it is initialized (via the symlink target) to `opencode`/`opencode/deepseek-v4-flash-free` (a free opencode zen model). pi may still overwrite it at runtime, but rebuilds no longer roll it back and the diff is commit-able.

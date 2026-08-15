@@ -1,15 +1,15 @@
 {
-  "lastChangelogVersion": "0.84.1",
-  "defaultProvider": "llamaswap",
-  "defaultModel": "google/gemma-4-26b-a4b",
-  "defaultThinkingLevel": "high",
+  "lastChangelogVersion": "0.84.2",
+  "defaultProvider": "opencode-cli",
+  "defaultModel": "opencode/deepseek-v4-flash-free",
+  "defaultThinkingLevel": "off",
   "enableSkillCommands": true,
   "packages": [
-    "npm:opencode-pi",
     "npm:pi-free",
     "npm:pi-rewind",
     "npm:pi-undo-redo",
-    "npm:pi-workspace-history"
+    "npm:pi-workspace-history",
+    "npm:opencode-pi"
   ],
   "terminal": {
     "showTerminalProgress": true
