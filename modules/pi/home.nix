@@ -71,4 +71,13 @@ in
   # models.json is the one declarative pi config file that's safe to own.
   home.file."${config.home.homeDirectory}/.pi/agent/models.json".text =
     builtins.toJSON modelsJson;
+
+  # Live-edit settings.json from the dotfiles checkout. pi rewrites this file
+  # at runtime (/model, pi config, pi install), so an out-of-store symlink lets
+  # the changes land in the tracked file instead of a Nix-owned copy — same
+  # pattern as ~/.claude/settings.json (see modules/claude/home.nix). Commit
+  # the resulting diff in modules/pi/settings.json to update the baseline.
+  home.file."${config.home.homeDirectory}/.pi/agent/settings.json".source =
+    config.lib.file.mkOutOfStoreSymlink
+      "${config.custom.dotfiles.dir}/modules/pi/settings.json";
 }

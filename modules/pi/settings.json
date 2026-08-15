@@ -1,0 +1,18 @@
+{
+  "lastChangelogVersion": "0.84.1",
+  "defaultProvider": "llamaswap",
+  "defaultModel": "google/gemma-4-26b-a4b",
+  "defaultThinkingLevel": "high",
+  "enableSkillCommands": true,
+  "packages": [
+    "npm:opencode-pi",
+    "npm:pi-free",
+    "npm:pi-rewind",
+    "npm:pi-undo-redo",
+    "npm:pi-workspace-history"
+  ],
+  "terminal": {
+    "showTerminalProgress": true
+  },
+  "theme": "dark"
+}
