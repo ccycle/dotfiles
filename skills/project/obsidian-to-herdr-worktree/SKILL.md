@@ -1,20 +1,14 @@
 ---
 name: obsidian-to-herdr-worktree
-description: Dispatch up to 4 Obsidian TODO/idea notes (named via $ARGUMENTS, or picked autonomously by the AI if omitted) to parallel herdr worktrees for implementation-plan discussion only (no code changes). Self-throttles against already-running workers from prior invocations and skips notes still in flight, so repeated invocations drain the backlog gradually instead of piling load on the machine. Each worker is spawned via a priority/fallback chain (Claude Sonnet 5, then free-tier opencode models) and keeps its conclusion in the chat for live 壁打ち with the human via `herdr agent attach` — nothing is written back to the vault. Use when the user wants to turn vault TODO notes into parallel design discussions without touching code or Obsidian.
+description: Dispatch Obsidian TODO/idea notes (named via $ARGUMENTS, or picked autonomously by the AI if omitted) to parallel herdr worktrees for implementation-plan discussion only (no code changes). Self-throttles against already-running workers from prior invocations and skips notes still in flight, so repeated invocations drain the backlog gradually instead of piling load on the machine. Each worker is spawned via a priority/fallback chain (Claude Sonnet 5, then free-tier opencode models) and keeps its conclusion in the chat for live 壁打ち with the human via `herdr agent attach` — nothing is written back to the vault. Use when the user wants to turn vault TODO notes into parallel design discussions without touching code or Obsidian.
 disable-model-invocation: true
 allowed-tools: Bash, Read
 ---
 
 # Obsidian to Herdr Worktree
 
-Turn Obsidian TODO notes into parallel, isolated design discussions. Up to 4
-notes are selected — named directly via `$ARGUMENTS`, or picked autonomously
-by the AI if none are given — and each gets its own git worktree and its own
-worker agent whose job is to research and propose an implementation
-approach — never to write code. The worker is spawned via a priority/fallback
-chain (Step 4): Claude Sonnet 5 first, falling back to a free-tier
-opencode-hosted model if Sonnet 5 is unavailable. The agent's conclusion
-stays in the chat, for the human to 壁打ち with directly by attaching to the
+Turn Obsidian TODO notes into parallel, isolated design discussions.
+The worker is spawned via a priority/fallback chain (Step 4): Claude Sonnet 5 first, falling back to a free-tier opencode-hosted model if Sonnet 5 is unavailable. The agent's conclusion stays in the chat, for the human to 壁打ち with directly by attaching to the
 pane — it is not written back into the Obsidian vault.
 
 This is a narrower, opinionated sibling of the generic `/worktree` skill:
@@ -53,22 +47,7 @@ mkdir -p "$(dirname "$state_file")"
 test -f "$state_file" || echo '{}' > "$state_file"
 ```
 
-1. **Count currently busy workers** from prior batches — a worker still
-   `working`/`blocked` is one more parallel design discussion competing for
-   the same 4-slot batch ceiling described in Step 4, regardless of which
-   invocation started it:
-
-   ```bash
-   busy_count=$(herdr agent list | jq \
-     '[.result.agents[] | select(.cwd | startswith("'"$HOME"'/.herdr/worktrees/dotfiles/")) | select(.agent_status != "idle")] | length')
-   available_slots=$((4 - busy_count))
-   ```
-
-   If `available_slots` is 0, tell the user the machine is already fully
-   loaded with in-flight workers from a prior batch and stop — do not
-   dispatch anything this run.
-
-2. **Prune state entries whose worktree is gone** — once the human removes a
+1. **Prune state entries whose worktree is gone** — once the human removes a
    worktree (`herdr worktree remove`) the note is considered resolved or
    abandoned, and becomes eligible for re-selection again:
 
@@ -81,7 +60,7 @@ test -f "$state_file" || echo '{}' > "$state_file"
      "$state_file" > "$tmp" && mv "$tmp" "$state_file"
    ```
 
-3. **Collect remaining titles as "in flight"** — these are notes already
+2. **Collect remaining titles as "in flight"** — these are notes already
    dispatched by a prior batch whose worktree still exists (worker may be
    idle, blocked, or mid-discussion with the human):
 
@@ -89,7 +68,7 @@ test -f "$state_file" || echo '{}' > "$state_file"
    in_flight_titles=$(jq -r '[.[].title] | join("\n")' "$state_file")
    ```
 
-4. **Collect existing branch names** — for the Step 3 slug similarity check,
+3. **Collect existing branch names** — for the Step 3 slug similarity check,
    gather all worktree branch names (excluding `main`) so they can be
    consulted during slug generation:
 
@@ -98,21 +77,18 @@ test -f "$state_file" || echo '{}' > "$state_file"
      '[.result.worktrees[].branch | select(. != "main")]')
    ```
 
-## Step 2 — Select up to `available_slots` target notes
+## Step 2 — Select target notes
 
-- If `$ARGUMENTS` names one or more note titles, use those directly (max 4,
-  capped further by `available_slots`). An explicit user request always wins
+- If `$ARGUMENTS` names one or more note titles, use those directly. An explicit user request always wins
   over the in-flight exclusion below.
 - Otherwise, read `$HOME/Obsidian/zettelkasten/dotfiles 整備 TODO リスト.md`,
-  list its `[[...]]` links, and select up to `available_slots` yourself using
+  list its `[[...]]` links, and select target notes yourself using
   your own judgment. Skip any title present in `in_flight_titles` (Step 1) —
   it is already being discussed in another pane. Favor items whose target
   note has enough content to reason about and that would benefit from a quick
   implementation-policy discussion; skip items that are pure duplicates of a
   note you already selected. Selection is autonomous — do not ask the user
   which ones to pick.
-- If `available_slots` is less than the number of notes you would otherwise
-  pick, just pick fewer — do not ask the user to choose between them.
 
 For each selected title, read the corresponding note at
 `$HOME/Obsidian/zettelkasten/<title>.md` to get its current content (most of
@@ -149,7 +125,7 @@ until one starts successfully:
 2. **opencode zen deepseek** — `--kind opencode -- --auto --model
    opencode/deepseek-v4-flash-free`, a free-tier model hosted through
    opencode zen.
-3. **opencode gemma (llamaswap)** — `--kind opencode -- --auto --model
+3. **opencode gemma (llamaswap)** — `--kind opencode -- `-- `--auto --model
    llamaswap/google/gemma-4-26b-a4b`. Note this one is *not* an opencode-zen
    hosted model like tier 2 — `llamaswap/` means it is routed to a
    locally/self-hosted model server, not zen's hosted API. Confirm with
@@ -158,15 +134,6 @@ until one starts successfully:
 
 In all cases pass `--auto` (opencode) or `--permission-mode auto` (claude)
 explicitly — do not rely on whatever the session's default happens to be.
-
-The 4-note ceiling from Step 1 (`available_slots`) exists as general
-concurrency/review-load discipline (how many parallel design discussions a
-human can reasonably keep track of), not a GPU/RAM budget. Tier 1 is a paid,
-quota-limited flagship model — burning up to 4 concurrent Sonnet 5 sessions
-on what are often thin 1-3 line TODO notes is a real cost tradeoff, not just
-a rate-limit concern. Tiers 2-3 are free-tier/self-hosted and can carry their
-own rate limits or availability gaps; keeping the batch small is the
-conservative choice until this is exercised at scale.
 
 ## Step 5 — Create all worktrees and start all agents first
 
@@ -234,7 +201,7 @@ jq --arg slug "<slug>" --arg title "<title>" --arg branch "<slug>" \
 
 Then tell the user which slugs/branches/worktrees were created, which backend
 tier each one actually started on (Sonnet 5 vs. one of the fallback models —
-per Step 5 this can differ note to note), which notes were dropped because
+per Step 5 this can differ note to date), which notes were dropped because
 all three tiers failed to start, how many slots were skipped due to prior
 in-flight workers (if any), and that the plan discussion is visible by
 attaching to each pane or watching the herdr TUI. Do not read the workers'
@@ -245,24 +212,22 @@ re-selection next run, per Step 1's pruning).
 
 ## Rules
 
-1. Never exceed 4 concurrent workers **across all invocations**, not just
-   within one. Step 1's `available_slots` check enforces this automatically —
-   if it comes back 0, stop without dispatching.
-2. Never let a worker touch code — the prompt must say plan-only every time.
-3. Never let a worker write to the Obsidian vault or any other file — the
+1. Never let a worker touch code — the prompt must say plan-only every time.
+2. Never let a worker write to the Obsidian vault or any other file — the
    conclusion lives only in its own chat. The dispatch-state file (Step 1) is
    the only file this skill itself writes, and it lives outside the vault at
    `$HOME/.local/state/obsidian-todo-dispatch/`, never inside it.
-4. Never add a monitoring/polling agent — herdr TUI plus attaching to a pane
+3. Never add a monitoring/polling agent — herdr TUI plus attaching to a pane
    is the whole surface for both status-checking and 壁打ち. The Step 1 load
    check is a one-shot query at the start of a run, not a polling loop.
-5. Note selection is autonomous (your own judgment, Step 2) — do not ask the
+4. Note selection is autonomous (your own judgment, Step 2) — do not ask the
    user which notes to pick, and do not ask which in-flight notes to skip.
-6. Every worker is spawned through the same fixed priority chain (Step 4:
+5. Every worker is spawned through the same fixed priority chain (Step 4:
    Claude Sonnet 5 → opencode deepseek → opencode/llamaswap gemma) — the
    *chain* is uniform across notes, but which tier actually ends up running
    is not, since it depends on tier availability at spawn time. Never skip a
    tier or reorder the chain per note.
-7. Never edit `dispatched.json` by hand or skip Step 1's prune — the human's
-   only supported way to make a note re-eligible is `herdr worktree remove`,
-   which the prune step then detects automatically.
+6. Never edit `dispatched.json` by hand or skip Step 1's prune — the human's
+   only supported way to make a note re-eligible is `herdr worktree
+   remove`, which the prune step then detects automatically.
+```
