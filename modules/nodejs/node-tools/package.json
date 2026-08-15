@@ -7,7 +7,7 @@
     "@helpfeel/cosense-cli": "^1.5.1",
     "@jr2804/livesync-cli": "latest",
     "jest": "*",
-    "opencode-ai": "1.18.7",
+    "opencode-ai": "^1.18.18",
     "prettier": "^3.8.1",
     "stylus": "*",
     "typeorm": "*"
