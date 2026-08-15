@@ -1,6 +1,6 @@
 ---
 name: obsidian-to-herdr-worktree
-description: Dispatch Obsidian TODO/idea notes (named via $ARGUMENTS, or picked autonomously by the AI if omitted) to parallel herdr worktrees for implementation-plan discussion only (no code changes). Self-throttles against already-running workers from prior invocations and skips notes still in flight, so repeated invocations drain the backlog gradually instead of piling load on the machine. Each worker is spawned via a priority/fallback chain (Claude Sonnet 5, then free-tier opencode models) and keeps its conclusion in the chat for live 壁打ち with the human via `herdr agent attach` — nothing is written back to the vault. Use when the user wants to turn vault TODO notes into parallel design discussions without touching code or Obsidian.
+description: Dispatch Obsidian TODO/idea notes (named via $ARGUMENTS, or picked autonomously by the AI if omitted) to parallel herdr worktrees for implementation-plan discussion only (no code changes). Self-throttles against already-running workers from prior invocations and skips notes still in flight, so repeated invocations drain the backlog gradually instead of piling load on the machine. Each worker is spawned via a priority/fallback chain (opencode deepseek by default, then the pi coding agent on llamaswap's gemma-4-26b-a4b if deepseek hits a rate limit) and keeps its conclusion in the chat for live 壁打ち with the human via `herdr agent attach` — nothing is written back to the vault. Use when the user wants to turn vault TODO notes into parallel design discussions without touching code or Obsidian.
 disable-model-invocation: true
 allowed-tools: Bash, Read
 ---
@@ -8,8 +8,11 @@ allowed-tools: Bash, Read
 # Obsidian to Herdr Worktree
 
 Turn Obsidian TODO notes into parallel, isolated design discussions.
-The worker is spawned via a priority/fallback chain (Step 4): Claude Sonnet 5 first, falling back to a free-tier opencode-hosted model if Sonnet 5 is unavailable. The agent's conclusion stays in the chat, for the human to 壁打ち with directly by attaching to the
-pane — it is not written back into the Obsidian vault.
+The worker is spawned via a priority/fallback chain (Step 4): opencode deepseek by
+default, falling back to the pi coding agent on llamaswap's gemma-4-26b-a4b if
+deepseek hits a rate limit. The agent's conclusion stays in the chat, for the
+human to 壁打ち with directly by attaching to the pane — it is not written back
+into the Obsidian vault.
 
 This is a narrower, opinionated sibling of the generic `/worktree` skill:
 `/worktree` dispatches implementation work; this skill dispatches plan-only
@@ -116,24 +119,24 @@ counts as "the same topic."
 Each worker is spawned from a fixed priority/fallback chain, tried in order
 until one starts successfully:
 
-1. **Claude Sonnet 5** — `--kind claude -- --model claude-sonnet-5
-   --permission-mode auto`. `--permission-mode auto` is the `--kind claude`
-   equivalent of opencode's `--auto` below — required because these workers
-   run unattended (no human present to answer a permission prompt). Use this
-   over `--dangerously-skip-permissions`, which bypasses permission checks
-   entirely rather than applying the auto-mode classifier.
-2. **opencode zen deepseek** — `--kind opencode -- --auto --model
-   opencode/deepseek-v4-flash-free`, a free-tier model hosted through
-   opencode zen.
-3. **opencode gemma (llamaswap)** — `--kind opencode -- `-- `--auto --model
-   llamaswap/google/gemma-4-26b-a4b`. Note this one is *not* an opencode-zen
-   hosted model like tier 2 — `llamaswap/` means it is routed to a
-   locally/self-hosted model server, not zen's hosted API. Confirm with
-   `opencode models` that this identifier is still current before relying on
-   it; opencode's free-tier catalog changes.
+1. **opencode deepseek (default)** — `--kind opencode -- --auto --model
+   opencode/deepseek-v4-flash-free`, a free-tier model hosted through opencode
+   zen. `--auto` is required because these workers run unattended (no human
+   present to answer a permission prompt). Use `--auto` over
+   `--dangerously-skip-permissions`, which bypasses permission checks entirely
+   rather than applying the auto-mode classifier. This is the default
+   destination for every note.
+2. **pi coding agent on llamaswap gemma (rate-limit fallback)** — `--kind pi
+   -- --model google/gemma-4-26b-a4b --print`, the pi coding agent using
+   llamaswap's locally-hosted `google/gemma-4-26b-a4b`. Use the fully-qualified
+   `google/gemma-4-26b-a4b` ID — a bare `gemma-4-26b-a4b` resolves to a
+   different provider (e.g. cloudflare-ai-gateway) and fails for lack of an API
+   key. Use this only when tier 1 fails specifically because of a rate limit
+   (e.g. deepseek is over its free-tier quota) — it is a fallback, not a
+   preference, and is not used on ordinary start failures of other kinds.
 
-In all cases pass `--auto` (opencode) or `--permission-mode auto` (claude)
-explicitly — do not rely on whatever the session's default happens to be.
+In all cases pass `--auto` (opencode) or `--print` (pi) explicitly — do not
+rely on whatever the session's default happens to be.
 
 ## Step 5 — Create all worktrees and start all agents first
 
@@ -146,18 +149,29 @@ succeeds:
 result=$(herdr worktree create --cwd "$PWD" --branch <slug> --base main --label "<title>" --no-focus --json)
 pane_id=$(echo "$result" | jq -r '.result.root_pane.pane_id')
 
-if herdr agent start <slug> --kind claude --pane "$pane_id" -- --model claude-sonnet-5 --permission-mode auto; then
-  backend="claude-sonnet-5"
-elif herdr agent start <slug> --kind opencode --pane "$pane_id" -- --auto --model opencode/deepseek-v4-flash-free; then
+out=$(herdr agent start <slug> --kind opencode --pane "$pane_id" -- --auto --model opencode/deepseek-v4-flash-free 2>&1)
+if [ $? -eq 0 ]; then
   backend="opencode/deepseek-v4-flash-free"
-elif herdr agent start <slug> --kind opencode --pane "$pane_id" -- --auto --model llamaswap/google/gemma-4-26b-a4b; then
-  backend="llamaswap/google/gemma-4-26b-a4b"
+elif printf '%s' "$out" | grep -qi -E "rate.?limit|quota|429|too many requests"; then
+  # deepseek failed specifically due to a rate limit — fall back to pi on llamaswap gemma
+  if herdr agent start <slug> --kind pi --pane "$pane_id" -- --model google/gemma-4-26b-a4b --print; then
+    backend="pi/google/gemma-4-26b-a4b"
+  else
+    backend=""
+  fi
 else
   backend=""
 fi
 ```
 
-If all three attempts fail, drop this note from the batch (do not consume a
+The pi-on-llamaswap-gemma fallback (tier 2) is used only when the deepseek
+attempt (tier 1) fails because of a rate limit — inspect the failure output
+for rate-limit signals (e.g. `rate limit`, `quota`, `429`, `too many
+requests`) before falling back. Do not fall back to pi on ordinary start
+failures of other kinds; in those cases treat the note as skipped like any
+other failure.
+
+If both attempts fail, drop this note from the batch (do not consume a
 prompt step for it) and report it to the user as skipped in Step 7 rather
 than silently losing track of it. Record the resolved `backend` per slug —
 Step 7's report and the dispatch state should reflect which tier actually
@@ -200,9 +214,10 @@ jq --arg slug "<slug>" --arg title "<title>" --arg branch "<slug>" \
 ```
 
 Then tell the user which slugs/branches/worktrees were created, which backend
-tier each one actually started on (Sonnet 5 vs. one of the fallback models —
-per Step 5 this can differ note to date), which notes were dropped because
-all three tiers failed to start, how many slots were skipped due to prior
+tier each one actually started on (opencode deepseek vs. the pi-on-llamaswap
+gemma fallback —
+per Step 5 this can differ note to note), which notes were dropped because
+both tiers failed to start, how many slots were skipped due to prior
 in-flight workers (if any), and that the plan discussion is visible by
 attaching to each pane or watching the herdr TUI. Do not read the workers'
 output, merge anything, or clean up worktrees yourself — that is a separate,
@@ -223,10 +238,10 @@ re-selection next run, per Step 1's pruning).
 4. Note selection is autonomous (your own judgment, Step 2) — do not ask the
    user which notes to pick, and do not ask which in-flight notes to skip.
 5. Every worker is spawned through the same fixed priority chain (Step 4:
-   Claude Sonnet 5 → opencode deepseek → opencode/llamaswap gemma) — the
-   *chain* is uniform across notes, but which tier actually ends up running
-   is not, since it depends on tier availability at spawn time. Never skip a
-   tier or reorder the chain per note.
+   opencode deepseek → pi on llamaswap gemma) — the *chain* is uniform across
+   notes, but which tier actually ends up running is not, since it depends on
+   tier availability at spawn time. Never skip a tier or reorder the chain per
+   note.
 6. Never edit `dispatched.json` by hand or skip Step 1's prune — the human's
    only supported way to make a note re-eligible is `herdr worktree
    remove`, which the prune step then detects automatically.
