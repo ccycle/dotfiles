@@ -14,24 +14,33 @@ service's own local-account login with a single passkey-gated sign-in.
 
 ## Why This Structure
 
-**No `volumeRoot`/`mountPoint` indirection.** Unlike Forgejo or
-OpenCloud, Pocket ID's data is a small SQLite database plus WebAuthn
-credential records — not bulk user content — so it stays on the
-internal disk under `/var/lib/pocket-id`, following the same pattern
-as `modules/attic` rather than the external-volume services.
+**SQLite lives on a Docker named volume, not a host bind.** The
+database and WebAuthn credential store are a small SQLite DB plus
+upload files, not bulk user content, but unlike the attic-style
+internal-disk pattern they must NOT sit on a host bind mount:
+OrbStack's host bind mounts are served over virtiofs, and this module
+measured that SQLite on virtiofs crashes with `SQLITE_BUSY` /
+`SQLITE_IOERR_SHMLOCK` as soon as a second process (host-side `sqlite3`,
+a backup tool) opens the live DB. A Docker named volume
+(`pocket-id-data`, `cfg.dataVolume`) lives on VM-internal storage where
+SQLite works normally. Backups must therefore go through the container
+(`docker exec` `.backup`, or a temporary container mounting the volume)
+rather than host-side file copies.
 
-**`dataDir` must be written in resolved-realpath form.**
-`cfg.dataDir` defaults to `/private/var/lib/pocket-id/data`, not the
-`/var/lib/pocket-id/data` symlink form. macOS's `/var` is a symlink to
-`/private/var`, and OrbStack only treats a bind-mount source written
-as a resolved realpath as a host share (mounted via virtiofs); the
-symlink form silently mounts as a VM-internal overlay directory that
-auto-vivifies empty and never reflects host content. This is the root
-cause that several earlier fixes missed: they wrote the encryption key
-on the host under `/var/lib/...` but never fixed that the bind mount
-was not delivering that directory to the container at all. The
-host-side directory is `/private/var/lib/pocket-id/data` — same
-files, correct mount source.
+**The encryption key is a tiny read-only host bind in realpath form.**
+`cfg.keyDir` defaults to `/private/var/lib/pocket-id`, and the single
+`encryption_key` file is bind-mounted read-only into the container as
+`/app/encryption_key`. macOS's `/var` is a symlink to `/private/var`,
+and OrbStack only treats a bind-mount source written as a resolved
+realpath as a host share (mounted via virtiofs); the symlink form
+silently mounts as a VM-internal overlay directory that auto-vivifies
+empty and never reflects host content. This is the root cause that
+several earlier fixes missed: they wrote the encryption key on the host
+under `/var/lib/...` but never fixed that the bind mount was not
+delivering that directory to the container at all. A single small
+read-only file over virtiofs is reliable (measured); the fragility is
+specifically SQLite's shared-memory locking, which is why only the DB
+lives on the named volume and the key stays as a bind.
 
 **Passkey-only enforcement via explicit env vars.** Both
 `EMAIL_ONE_TIME_ACCESS_AS_UNAUTHENTICATED_ENABLED` and
@@ -89,19 +98,19 @@ compose example recommends.** See Constraints below.
   tokens outliving revocation/disablement — confirm a disabled user's
   refresh token actually stops working before trusting this as the
   zero-trust auth layer.
-- **The encryption key must live inside the `dataDir` bind mount, not
-  as its own separate bind mount.** OrbStack auto-vivifies a standalone
-  bind-mount source as an empty VM-internal directory unless the source
-  path is written in resolved-realpath form, which is the same class of
-  bug this module hit with `/var` — a key file at `/var/lib/pocket-id/
-  encryption_key` would never reach the container. A file appearing
-  inside a directory that is already a host bind mount (`dataDir`) is
-  always visible. Any future secret this service needs as a file should
-  go through the same `dataDir`-relative pattern rather than its own
-  top-level bind mount entry.
-- **The host `dataDir` must be writable by the primary user, not
-  root.** The container runs as uid 1000, which OrbStack maps to the
-  host user; the launchd script therefore `chown`s `dataDir` to
-  `config.system.primaryUser` (same pattern as `modules/static-reports`)
-  after creating it. Without this, once the mount path is correct the
-  container still fails with `unable to open database file (14)`.
+- **The encryption key must be a separate small read-only host bind in
+  realpath form, never stored on a volume and never with the DB.** A
+  key file written under `/app/data` would be inside the SQLite volume,
+  which is out of reach of sops/host secrets management; a standalone
+  bind written in the `/var` symlink form silently auto-vivifies as an
+  empty VM-internal directory and never reaches the container (that is
+  the exact trap this module spent several commits in). The resolved
+  realpath form (`/private/var/...`) reliably delivers a host file over
+  virtiofs. Any future secret this service needs as a file should use
+  the same single-file realpath bind pattern.
+- **Never open the live database from the host or a second process.**
+  SQLite on virtiofs breaks with `SQLITE_BUSY`/`SQLITE_IOERR_SHMLOCK`
+  under concurrent access — measured with a host-side `sqlite3` read,
+  and in crash-loop recovery afterwards. The named volume removes the
+  second-process surface, but backup/audit tooling must still route
+  through the container rather than host-side file copies.
