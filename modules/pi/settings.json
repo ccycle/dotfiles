@@ -1,7 +1,7 @@
 {
   "lastChangelogVersion": "0.84.2",
-  "defaultProvider": "opencode-cli",
-  "defaultModel": "opencode/deepseek-v4-flash-free",
+  "defaultProvider": "llamaswap",
+  "defaultModel": "google/gemma-4-26b-a4b",
   "defaultThinkingLevel": "off",
   "enableSkillCommands": true,
   "packages": [
