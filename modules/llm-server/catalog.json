@@ -38,6 +38,18 @@
       ],
       "extraFlags": []
     },
+    "qwen/qwen3.8-27b": {
+      "name": "Qwen 3.8 27B",
+      "contextLength": 262144,
+      "thinking": true,
+      "files": [
+        {
+          "url": "https://huggingface.co/unsloth/Qwen3.8-27B-GGUF/resolve/main/Qwen3.8-27B-Q4_K_M.gguf",
+          "sha256": ""
+        }
+      ],
+      "extraFlags": [ "--flash-attn", "on", "-ctk", "q8_0", "-ctv", "q8_0" ]
+    },
     "google/gemma-4-e4b": {
       "name": "Gemma 4 E4B",
       "contextLength": 131072,
