@@ -1,0 +1,13 @@
+{
+  "name": "dotfiles-e2e-forgejo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "API-driven E2E tests for the Forgejo CI-runner/branch-protection/backup automation, run against an isolated per-worktree stack",
+  "type": "module",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.59.1"
+  }
+}

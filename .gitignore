@@ -6,3 +6,6 @@ result
 tests/e2e/.env
 tests/e2e/.state/
 tests/e2e/test-results/
+tests/e2e-forgejo/.env
+tests/e2e-forgejo/.state/
+tests/e2e-forgejo/test-results/

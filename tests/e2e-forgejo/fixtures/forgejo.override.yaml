@@ -1,0 +1,34 @@
+# Layered on top of modules/forgejo/compose.yaml only for the isolated
+# e2e stack (never for production). See tests/e2e-forgejo/design.md.
+#
+# modules/forgejo/compose.yaml hardcodes both host ports (127.0.0.1:3000,
+# 127.0.0.1:2223) and the SQLite named volume's Docker-level name
+# (forgejo-gitea-data). A plain `docker compose -p <other-project>` still
+# binds those same host ports and reuses that same named volume regardless
+# of project name - it would collide with (and could corrupt) the real
+# production container and its data. This override replaces both with
+# per-worktree, per-run values so the two stacks can never collide.
+# `!override` is required on `ports:` - compose merges sequences from
+# multiple -f files by concatenation by default, so without it this list
+# would be appended to the base file's ports (still binding production's
+# 127.0.0.1:3000/2223) rather than replacing them.
+# Production's app.ini has INSTALL_LOCK=true only because someone once
+# went through the interactive setup wizard by hand (see
+# modules/forgejo/design.md / the OIDC setup docs) - that state then
+# persisted in the named volume. A fresh test volume starts unlocked, and
+# without this, `forgejo admin ...` / `forgejo dump` / `forgejo-cli ...`
+# all fail with "Unable to load config file for a installed Forgejo
+# instance" even though the health endpoint already responds. This is
+# additive (a key the base file doesn't set), so it's safe to append
+# rather than needing `!override`.
+services:
+  forgejo:
+    environment:
+      - FORGEJO__security__INSTALL_LOCK=true
+    ports: !override
+      - "127.0.0.1:${FORGEJO_TEST_WEB_PORT}:3000"
+      - "127.0.0.1:${FORGEJO_TEST_SSH_PORT}:22"
+
+volumes:
+  forgejo-gitea-data:
+    name: "${FORGEJO_TEST_VOLUME_NAME}"
