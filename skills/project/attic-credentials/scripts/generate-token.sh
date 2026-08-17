@@ -2,8 +2,8 @@
 set -euo pipefail
 
 if [ $# -lt 1 ]; then
-  echo "Usage: $0 <role>"
-  echo "Roles: watch-store, ci"
+  echo "Usage: $0 ci"
+  echo "       $0 client <machine>"
   exit 1
 fi
 
@@ -11,23 +11,48 @@ ROLE="$1"
 ATTIC_HOST="${ATTIC_HOST:-mac-mini-m4-pro}"
 SECRETS_FILE="modules/attic/secrets.yaml"
 CACHE_NAME="dotfiles"
+JWT_SECRET_PATH="/run/secrets/atticd-jwt-secret"
+
+case "$ROLE" in
+  ci)
+    SUB="ci"
+    SOP_KEY="attic-ci-token"
+    ;;
+  client)
+    MACHINE="${2:-}"
+    if [ -z "$MACHINE" ]; then
+      echo "Error: 'client' role requires a machine name: $0 client <machine>"
+      exit 1
+    fi
+    SUB="$MACHINE"
+    SOP_KEY="attic-client-${MACHINE}-token"
+    ;;
+  *)
+    echo "Unknown role: $ROLE (expected: ci, client)"
+    exit 1
+    ;;
+esac
 
 cd "$(git rev-parse --show-toplevel)"
 
-echo "Generating token for role '$ROLE' (validity: 10 years)..."
-TOKEN=$(ssh "$ATTIC_HOST" -- attic token create -c "$CACHE_NAME" "$ROLE" --validity "10y" | head -1)
+echo "Generating token for role '$ROLE' (sub: $SUB, push: $CACHE_NAME, validity: 10 years)..."
+# atticadm runs on the server itself and needs the JWT signing secret in its
+# environment (see modules/attic/options.nix's launchd script). Reading it
+# requires root, hence the remote sudo.
+TOKEN=$(ssh "$ATTIC_HOST" -- \
+  "export ATTIC_SERVER_TOKEN_RS256_SECRET_BASE64=\"\$(sudo cat $JWT_SECRET_PATH)\" && atticadm -f /etc/atticd/server.toml make-token --sub '$SUB' --push '$CACHE_NAME' --validity 10y")
 
-SOP_KEY="attic-${ROLE}-token"
 sops --set '["'"$SOP_KEY"'"] "'"$TOKEN"'"' "$SECRETS_FILE"
 echo "Token encrypted to $SECRETS_FILE (key: $SOP_KEY)"
 
 if [ "$ROLE" = "ci" ]; then
   echo ""
-  echo "=== New CI Token — paste into Forgejo Secrets (ATTIC_CI_TOKEN) ==="
+  echo "=== CI Token — paste into Forgejo Settings -> Actions -> Secrets (ATTIC_CI_TOKEN) ==="
   echo "$TOKEN"
-  echo "================================================================"
+  echo "======================================================================================"
+else
+  echo ""
+  echo "=== Client Token — on $MACHINE, run once: ==="
+  echo "attic login $ATTIC_HOST https://cache.${ATTIC_HOST}.internal $TOKEN --set-default"
+  echo "==============================================="
 fi
-
-echo ""
-echo "Done."
-exit 0

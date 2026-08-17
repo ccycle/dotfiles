@@ -41,50 +41,27 @@ echo ""
 echo "=== Step 4: Public key (paste into bootstrap/modules/attic/darwin.nix) ==="
 ssh "$ATTIC_HOST" -- attic cache info "$CACHE_NAME"
 
-# --- Step 5: Watch-store token ---
+# --- Step 5: CI token ---
 echo ""
-echo "=== Step 5: Generate watch-store token ==="
-SKIP_WATCH=false
-if sops --decrypt "$SECRETS_FILE" 2>/dev/null | grep -q "^attic-watch-token:"; then
-  echo "attic-watch-token already exists. Overwrite? [y/N]"
-  read -r response
-  if [ "$response" != "y" ]; then
-    echo "Skipping watch-store token."
-    SKIP_WATCH=true
-  fi
-fi
-
-if [ "$SKIP_WATCH" = false ]; then
-  WATCH_TOKEN=$(ssh "$ATTIC_HOST" -- attic token create -c "$CACHE_NAME" watch-store --validity "10y" | head -1)
-  sops --set '["attic-watch-token"] "'"$WATCH_TOKEN"'"' "$SECRETS_FILE"
-  echo "watch-store token encrypted to $SECRETS_FILE"
-fi
-
-# --- Step 6: CI token ---
-echo ""
-echo "=== Step 6: Generate CI token ==="
-SKIP_CI=false
+echo "=== Step 5: Generate CI token ==="
 if sops --decrypt "$SECRETS_FILE" 2>/dev/null | grep -q "^attic-ci-token:"; then
   echo "attic-ci-token already exists. Overwrite? [y/N]"
   read -r response
   if [ "$response" != "y" ]; then
     echo "Skipping CI token."
-    SKIP_CI=true
+    response=""
   fi
+else
+  response="y"
 fi
 
-if [ "$SKIP_CI" = false ]; then
-  CI_TOKEN=$(ssh "$ATTIC_HOST" -- attic token create -c "$CACHE_NAME" ci --validity "10y" | head -1)
-  sops --set '["attic-ci-token"] "'"$CI_TOKEN"'"' "$SECRETS_FILE"
-  echo ""
-  echo "=== CI Token (plaintext) — paste into Forgejo Secrets as ATTIC_CI_TOKEN ==="
-  echo "$CI_TOKEN"
-  echo "====================================================================="
+if [ "${response:-}" = "y" ]; then
+  "$(dirname "$0")/generate-token.sh" ci
 fi
 
 echo ""
 echo "=== Done ==="
-echo "Next steps:"
-echo "  1. Paste the public key from Step 4 into bootstrap/modules/attic/darwin.nix"
-echo "  2. Paste the CI token into Forgejo Settings → Actions → Secrets"
-exit 0
+echo "Next: for each client machine that should push, run"
+echo "  ${0%/*}/generate-token.sh client <machine>"
+echo "and follow the printed 'attic login' instructions on that machine."
+

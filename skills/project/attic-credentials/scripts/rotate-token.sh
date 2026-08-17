@@ -2,8 +2,8 @@
 set -euo pipefail
 
 if [ $# -lt 1 ]; then
-  echo "Usage: $0 <role>"
-  echo "Roles: watch-store, ci"
+  echo "Usage: $0 ci"
+  echo "       $0 client <machine>"
   exit 1
 fi
 
@@ -11,45 +11,59 @@ ROLE="$1"
 ATTIC_HOST="${ATTIC_HOST:-mac-mini-m4-pro}"
 SECRETS_FILE="modules/attic/secrets.yaml"
 CACHE_NAME="dotfiles"
+JWT_SECRET_PATH="/run/secrets/atticd-jwt-secret"
+
+case "$ROLE" in
+  ci)
+    SUB="ci"
+    SOP_KEY="attic-ci-token"
+    ;;
+  client)
+    MACHINE="${2:-}"
+    if [ -z "$MACHINE" ]; then
+      echo "Error: 'client' role requires a machine name: $0 client <machine>"
+      exit 1
+    fi
+    SUB="$MACHINE"
+    SOP_KEY="attic-client-${MACHINE}-token"
+    ;;
+  *)
+    echo "Unknown role: $ROLE (expected: ci, client)"
+    exit 1
+    ;;
+esac
 
 cd "$(git rev-parse --show-toplevel)"
 
-SOP_KEY="attic-${ROLE}-token"
+echo "Generating replacement token for role '$ROLE' (sub: $SUB, validity: 10 years)..."
+NEW_TOKEN=$(ssh "$ATTIC_HOST" -- \
+  "export ATTIC_SERVER_TOKEN_RS256_SECRET_BASE64=\"\$(sudo cat $JWT_SECRET_PATH)\" && atticadm -f /etc/atticd/server.toml make-token --sub '$SUB' --push '$CACHE_NAME' --validity 10y")
 
-# --- Step 1: Show current tokens for reference ---
-echo "Current tokens on $ATTIC_HOST for cache '$CACHE_NAME':"
-ssh "$ATTIC_HOST" -- attic token list --cache "$CACHE_NAME" 2>/dev/null || \
-  ssh "$ATTIC_HOST" -- attic token list 2>/dev/null || \
-  echo "(Unable to list tokens. Continuing anyway.)"
-
-echo ""
-
-# --- Step 2: Generate new token ---
-echo "Generating new token for role '$ROLE' (validity: 10 years)..."
-NEW_TOKEN=$(ssh "$ATTIC_HOST" -- attic token create -c "$CACHE_NAME" "$ROLE" --validity "10y" | head -1)
-
-# --- Step 3: Update sops ---
 sops --set '["'"$SOP_KEY"'"] "'"$NEW_TOKEN"'"' "$SECRETS_FILE"
 echo "New token encrypted to $SECRETS_FILE (key: $SOP_KEY)"
 
 if [ "$ROLE" = "ci" ]; then
   echo ""
-  echo "=== New CI Token — update Forgejo Secrets (ATTIC_CI_TOKEN) ==="
+  echo "=== New CI Token — update Forgejo Settings -> Actions -> Secrets (ATTIC_CI_TOKEN) ==="
   echo "$NEW_TOKEN"
-  echo "=============================================================="
+  echo "======================================================================================"
+else
+  echo ""
+  echo "=== New Client Token — on $MACHINE, run once: ==="
+  echo "attic login $ATTIC_HOST https://cache.${ATTIC_HOST}.internal $NEW_TOKEN --set-default"
+  echo "===================================================="
 fi
 
-# --- Step 4: Manual revoke instructions ---
-echo ""
-echo "=== Manual revocation required ==="
-echo "The old token has not been revoked automatically."
-echo "To revoke old tokens, run on $ATTIC_HOST:"
-echo "  attic token revoke <hash>"
-echo ""
-echo "Find the old token hashes from the list above."
-echo "Tokens that match role '$ROLE' are the ones to revoke."
-echo "The new token is already in use (sops-encrypted), so old ones can"
-echo "be safely revoked after verifying the new token works."
-echo "================================"
+cat <<'EOF'
 
-exit 0
+=== About revocation ===
+Tokens are stateless JWTs signed by atticd-jwt-secret: there is no per-token
+revoke. The old token above stays technically valid until its 10y expiry.
+- To retire ONE token: just stop using it and update the consumer (Forgejo
+  secret / client `attic login`) to the new token above. This script has
+  already replaced the sops-stored copy.
+- To invalidate ALL outstanding tokens at once (e.g. a token leaked): rotate
+  atticd-jwt-secret itself with init.sh's Step 1 equivalent, redeploy atticd,
+  then reissue every token (ci + every client) with this script.
+========================
+EOF
