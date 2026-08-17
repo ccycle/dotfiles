@@ -107,7 +107,8 @@ derive_env() {
   mkdir -p "$STATE_DIR/pocket-id/data" \
     "$STATE_DIR/opencloud/data" \
     "$STATE_DIR/opencloud/config" \
-    "$STATE_DIR/opencloud/user-files"
+    "$STATE_DIR/opencloud/user-files" \
+    "$STATE_DIR/opencloud/apps"
 
   ENCRYPTION_KEY_FILE="$STATE_DIR/pocket-id/encryption_key"
   if [ ! -f "$ENCRYPTION_KEY_FILE" ]; then
@@ -129,6 +130,7 @@ derive_env() {
   export OPENCLOUD_DATA_DIR="$STATE_DIR/opencloud/data"
   export OPENCLOUD_CONFIG_DIR="$STATE_DIR/opencloud/config"
   export OPENCLOUD_USER_FILES_DIR="$STATE_DIR/opencloud/user-files"
+  export OPENCLOUD_APPS_DIR="$STATE_DIR/opencloud/apps"
   export OPENCLOUD_URL="https://${OPENCLOUD_VHOST}:${CADDY_OPENCLOUD_PORT}"
   export OPENCLOUD_HOST_DOMAIN="$OPENCLOUD_VHOST"
   export OPENCLOUD_OIDC_ISSUER="$POCKET_ID_APP_URL"
