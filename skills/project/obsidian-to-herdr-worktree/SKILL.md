@@ -1,6 +1,6 @@
 ---
 name: obsidian-to-herdr-worktree
-description: Dispatch Obsidian TODO/idea notes (named via $ARGUMENTS, or picked autonomously by the AI if omitted) to parallel herdr worktrees for implementation-plan discussion only (no code changes). Self-throttles against already-running workers from prior invocations and skips notes still in flight, so repeated invocations drain the backlog gradually instead of piling load on the machine. Each worker is spawned via a priority/fallback chain (opencode deepseek by default, then the pi coding agent on llamaswap's gemma-4-26b-a4b if deepseek hits a rate limit) and keeps its conclusion in the chat for live 壁打ち with the human via `herdr agent attach` — nothing is written back to the vault. Use when the user wants to turn vault TODO notes into parallel design discussions without touching code or Obsidian.
+description: Dispatch Obsidian TODO/idea notes (named via $ARGUMENTS, or picked autonomously by the AI if omitted) to parallel herdr worktrees for implementation-plan discussion only (no code changes). Self-throttles against already-running workers from prior invocations and skips notes still in flight, so repeated invocations drain the backlog gradually instead of piling load on the machine. Each worker is spawned via a priority/fallback chain (opencode deepseek by default, then the pi coding agent on llamaswap's gemma-4-26b-a4b if deepseek hits a rate limit) and keeps its conclusion in the chat for live 壁打ち with the human via `herdr agent attach` — the worker's conclusion is never written back to the vault, and the only vault writes are the confirmed Kanban moves described below. On each run it also reconciles the `Kanban (dotfiles)` board with the worktree state (Todo → In progress for live worktrees, Todo → Done/Canceled for removed ones), applying each move only after explicit per-card user confirmation. Use when the user wants to turn the Todo-status cards on the `Kanban (dotfiles)` board into parallel design discussions without touching code or Obsidian.
 disable-model-invocation: true
 allowed-tools: Bash, Read
 ---
@@ -12,7 +12,17 @@ The worker is spawned via a priority/fallback chain (Step 4): opencode deepseek 
 default, falling back to the pi coding agent on llamaswap's gemma-4-26b-a4b if
 deepseek hits a rate limit. The agent's conclusion stays in the chat, for the
 human to 壁打ち with directly by attaching to the pane — it is not written back
-into the Obsidian vault.
+into the Obsidian vault. Grilling starts immediately at dispatch: right after
+producing its plan, the worker loads the `grilling` skill and drives the
+discussion as a design tree (rounds of frontier questions through the
+interactive question tool) until the shared understanding is reached. The
+questions wait in the pane for the human to attach and answer.
+
+The only vault writes this skill ever makes are the Kanban column moves
+proposed by Step 1's reconcile (and Step 7's matching offer for newly
+dispatched notes): `Todo → In progress` for live worktrees, `Todo → Done` or
+`Todo → Canceled` for removed ones. Each move is applied only after explicit
+per-card confirmation from you — nothing else is ever written to the vault.
 
 This is a narrower, opinionated sibling of the generic `/worktree` skill:
 `/worktree` dispatches implementation work; this skill dispatches plan-only
@@ -35,35 +45,64 @@ Do not investigate the codebase yourself, do not write or edit source files,
 and do not decide the implementation approach. Your only job is to pick target
 notes, generate slugs, spawn worker agents, and hand each one its source
 note's content. The worker does all the research and keeps its conclusion in
-its own chat — do not write anything into the Obsidian vault yourself.
+its own chat. The only vault writes you may make are the confirmed Kanban
+column moves from Step 1's reconcile and Step 7's offer — nothing else goes
+into the Obsidian vault.
 
-## Step 1 — Check current load and prune finished dispatches
+## Step 1 — Prune state, reconcile the Kanban, check load
 
 This step exists so repeated invocations of this skill drain the TODO backlog
 gradually instead of stacking load on top of whatever prior batches are still
-running. State lives outside the vault (this skill never writes to the vault)
-in a machine-local file:
+running. State lives outside the vault (the only vault writes this skill makes
+are the confirmed Kanban moves in step 2 below) in a machine-local file:
 
 ```bash
 state_file="$HOME/.local/state/obsidian-todo-dispatch/dispatched.json"
 mkdir -p "$(dirname "$state_file")"
 test -f "$state_file" || echo '{}' > "$state_file"
+board="$HOME/Obsidian/zettelkasten/Kanban (dotfiles).md"
 ```
 
 1. **Prune state entries whose worktree is gone** — once the human removes a
    worktree (`herdr worktree remove`) the note is considered resolved or
-   abandoned, and becomes eligible for re-selection again:
+   abandoned. Capture the removed titles before pruning so step 2 can propose
+   their Kanban moves:
 
    ```bash
    current_branches=$(herdr worktree list | jq -r '.result.worktrees[].branch')
    keep=$(printf '%s\n' "$current_branches" | jq -R -s -c 'split("\n") | map(select(length > 0))')
+   removed_titles=$(jq -r --argjson keep "$keep" \
+     '[to_entries[] | select(.value.branch as $b | ($keep | index($b)) | not) | .value.title] | join("\n")' \
+     "$state_file")
    tmp=$(mktemp)
    jq --argjson keep "$keep" \
      'with_entries(select(.value.branch as $b | $keep | index($b)))' \
      "$state_file" > "$tmp" && mv "$tmp" "$state_file"
    ```
 
-2. **Collect remaining titles as "in flight"** — these are notes already
+2. **Reconcile the Kanban board against the worktree state** — the only vault
+   writes this skill makes, and always after per-card confirmation from the
+   user. Read the board, and for each title that is currently sitting in the
+   `## Todo` section, look up its worktree state and propose a move. Ask about
+   each card individually — never apply a move without an explicit `y`:
+
+   - **Worktree removed** (`removed_titles` above): ask whether to move the
+     card to `Done`, to `Canceled`, or to leave it in `Todo`.
+   - **Worktree still running** (remaining state entries): ask whether to move
+     the card to `In progress` or leave it in `Todo`.
+
+   Apply each confirmed move with:
+
+   ```bash
+   skills/project/obsidian-to-herdr-worktree/scripts/move-card.sh \
+     "$board" "Todo" "<target-column>" "<title>"
+   ```
+
+   Only cards currently in `Todo` are candidates — if the human already moved a
+   card by hand (e.g. to `In progress` or `Done`), leave it alone. Cards that
+   were never dispatched (absent from the state file) are never moved here.
+
+3. **Collect remaining titles as "in flight"** — these are notes already
    dispatched by a prior batch whose worktree still exists (worker may be
    idle, blocked, or mid-discussion with the human):
 
@@ -71,7 +110,7 @@ test -f "$state_file" || echo '{}' > "$state_file"
    in_flight_titles=$(jq -r '[.[].title] | join("\n")' "$state_file")
    ```
 
-3. **Collect existing branch names** — for the Step 3 slug similarity check,
+4. **Collect existing branch names** — for the Step 3 slug similarity check,
    gather all worktree branch names (excluding `main`) so they can be
    consulted during slug generation:
 
@@ -82,21 +121,37 @@ test -f "$state_file" || echo '{}' > "$state_file"
 
 ## Step 2 — Select target notes
 
-- If `$ARGUMENTS` names one or more note titles, use those directly. An explicit user request always wins
-  over the in-flight exclusion below.
-- Otherwise, read `$HOME/Obsidian/zettelkasten/dotfiles 整備 TODO リスト.md`,
-  list its `[[...]]` links, and select target notes yourself using
-  your own judgment. Skip any title present in `in_flight_titles` (Step 1) —
-  it is already being discussed in another pane. Favor items whose target
-  note has enough content to reason about and that would benefit from a quick
-  implementation-policy discussion; skip items that are pure duplicates of a
-  note you already selected. Selection is autonomous — do not ask the user
-  which ones to pick.
+- If `$ARGUMENTS` names one or more note titles, use those directly. An explicit
+  user request always wins over the in-flight exclusion below.
+- Otherwise, read the Todo column of the Kanban board at
+  `$HOME/Obsidian/zettelkasten/Kanban (dotfiles).md` and select target notes
+  only from the cards that carry the Todo status — the `- [ ]` items under the
+  `## Todo` heading. Cards in Backlog, In progress, Done, Canceled, Duplicate,
+  or Archive are never selected. Extract the Todo cards and strip their
+  `[[...]]` delimiters to get the titles:
 
-For each selected title, read the corresponding note at
-`$HOME/Obsidian/zettelkasten/<title>.md` to get its current content (most of
-these notes are 1-3 lines; that thinness is expected and is exactly what the
-worker is for).
+  ```bash
+  kanban="$HOME/Obsidian/zettelkasten/Kanban (dotfiles).md"
+  todo_titles=$(awk '
+    /^## Todo/ { f = 1; next }
+    /^## / && f { f = 0 }
+    f && /^- \[ \] / { line = $0; sub(/^- \[ \] /, "", line); gsub(/^\[\[|\]\]$/, "", line); print line }
+  ' "$kanban")
+  ```
+
+  A Todo card is either a `[[wiki-link]]` whose target note holds the task
+  details, or plain text where the card line itself is the whole task. Skip any
+  title present in `in_flight_titles` (Step 1) — it is already being discussed
+  in another pane. Favor items whose target note has enough content to reason
+  about and that would benefit from a quick implementation-policy discussion;
+  skip items that are pure duplicates of a note you already selected. Selection
+  is autonomous — do not ask the user which ones to pick.
+
+For each selected title, get its content: if the card was a `[[wiki-link]]`,
+read the corresponding note at `$HOME/Obsidian/zettelkasten/<title>.md` (most
+of these notes are 1-3 lines; that thinness is expected and is exactly what the
+worker is for). If the card was plain text, the title itself is the content —
+use it as-is.
 
 ## Step 3 — Generate a slug per note
 
@@ -183,8 +238,14 @@ started, since it is no longer uniform across notes.
 herdr agent prompt <slug> "$(cat <<'EOF'
 実装方針だけを検討すること。コードは変更しない。
 結論はこのチャットにそのまま書くこと。Obsidian vault やその他のファイルには
-一切書き込まないこと。人間が後でこのペインにアタッチして壁打ちする前提なので、
-結論は簡潔に、かつ根拠(読んだファイルやコマンド結果)が追えるようにまとめること。
+一切書き込まないこと。結論は簡潔に、かつ根拠(読んだファイルやコマンド結果)が
+追えるようにまとめること。
+結論をまとめたら、人間のアタッチを待たずに `grilling` skill をロードして
+即座に壁打ちを開始すること。決定ツリーをラウンド単位で掘り下げ、質問は必ず
+対話の質問ツールで出すこと。人間がまだアタッチしていなくても、最初のラウンドの
+質問を先に提示しておくこと。質問ツールで待機できない環境なら、質問をチャットに
+番号付きで書き出して人間の回答を待つこと。フロンティアが空になり共有理解に
+達するまで止まらないこと。
 
 対象ノート(<title>)の中身:
 <note content>
@@ -194,10 +255,13 @@ EOF
 
 Do not pass `--wait`. This skill's job ends once all prompts are sent — do not
 block waiting for workers to finish, and do not spawn a separate monitor
-agent. The user watches progress directly in the herdr TUI (idle/working/
-blocked/done per tab) and attaches to a pane (`herdr agent attach <slug>`)
-whenever they want to read the conclusion or continue the discussion live;
-that is sufficient and costs no extra tokens.
+agent. Each worker starts grilling immediately after dispatch (per the Step 6
+prompt): it produces its plan, then drives the grilling session, so the first
+round of frontier questions is already waiting in the pane. The user watches
+progress in the herdr TUI (idle/working/blocked/done per tab) and attaches to
+a pane (`herdr agent attach <slug>`) to answer the waiting questions and
+continue the discussion. That is the whole surface — sufficient and costs no
+extra tokens.
 
 ## Step 7 — Record dispatch state, report, and stop
 
@@ -222,21 +286,32 @@ in-flight workers (if any), and that the plan discussion is visible by
 attaching to each pane or watching the herdr TUI. Do not read the workers'
 output, merge anything, or clean up worktrees yourself — that is a separate,
 later human step (converse with the worker directly, then `herdr worktree
-remove` when done with a branch — this also frees the note up for
-re-selection next run, per Step 1's pruning).
+remove` when done with a branch). Next run's Step 1 reconcile will then propose
+moving that card out of `Todo`; it stays re-eligible for re-selection only if
+you decline that move.
+
+For each note dispatched this run, its worktree now exists but its card is
+still in `Todo` — the board would be out of sync with the worktrees until the
+next invocation. Offer to move each of these to `In progress` too, with the
+same per-card confirmation as Step 1, using the same `move-card.sh` call.
 
 ## Rules
 
 1. Never let a worker touch code — the prompt must say plan-only every time.
 2. Never let a worker write to the Obsidian vault or any other file — the
-   conclusion lives only in its own chat. The dispatch-state file (Step 1) is
-   the only file this skill itself writes, and it lives outside the vault at
+   conclusion lives only in its own chat. The only vault writes this skill
+   itself makes are the confirmed Kanban column moves from Step 1's reconcile
+   and Step 7's In-progress offer, applied via `scripts/move-card.sh`. The
+   dispatch-state file lives outside the vault at
    `$HOME/.local/state/obsidian-todo-dispatch/`, never inside it.
 3. Never add a monitoring/polling agent — herdr TUI plus attaching to a pane
    is the whole surface for both status-checking and 壁打ち. The Step 1 load
    check is a one-shot query at the start of a run, not a polling loop.
 4. Note selection is autonomous (your own judgment, Step 2) — do not ask the
    user which notes to pick, and do not ask which in-flight notes to skip.
+   This does not cover Step 1's reconcile or Step 7's In-progress offer:
+   Kanban column moves are the one place you DO ask the user, per-card, before
+   applying.
 5. Every worker is spawned through the same fixed priority chain (Step 4:
    opencode deepseek → pi on llamaswap gemma) — the *chain* is uniform across
    notes, but which tier actually ends up running is not, since it depends on
