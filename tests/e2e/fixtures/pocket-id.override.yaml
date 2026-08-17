@@ -1,0 +1,15 @@
+# Layered on top of modules/pocket-id/compose.yaml only for the isolated
+# e2e stack (never for production). See tests/e2e/design.md.
+#
+# modules/pocket-id/compose.yaml pins its data volume to the literal name
+# "pocket-id-data" (so production's launchd-managed stack always finds the
+# same volume across `docker compose` invocations that don't share a
+# project name). That literal name bypasses `docker compose -p`'s usual
+# per-project volume namespacing, so without this override the e2e stack
+# would mount the exact same Docker volume as a host's real, running
+# production Pocket ID — its own single-instance guard then refuses to
+# start against a database already open elsewhere. This override gives the
+# e2e stack a volume name scoped to its own project instead.
+volumes:
+  pocket-id-data:
+    name: ${POCKET_ID_VOLUME_NAME}

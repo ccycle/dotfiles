@@ -24,6 +24,7 @@ ENV_FILE="$E2E_DIR/.env"
 PLAYWRIGHT_ENV_FILE="$STATE_DIR/env-for-playwright.sh"
 
 POCKET_ID_COMPOSE="$REPO_ROOT/modules/pocket-id/compose.yaml"
+POCKET_ID_OVERRIDE_COMPOSE="$E2E_DIR/fixtures/pocket-id.override.yaml"
 OPENCLOUD_COMPOSE="$REPO_ROOT/modules/opencloud/compose.yaml"
 OPENCLOUD_OVERRIDE_COMPOSE="$E2E_DIR/fixtures/opencloud.override.yaml"
 CSP_TEMPLATE="$E2E_DIR/fixtures/csp.yaml.template"
@@ -58,6 +59,7 @@ except OSError:
 compose() {
   docker compose -p "$PROJECT_NAME" \
     -f "$POCKET_ID_COMPOSE" \
+    -f "$POCKET_ID_OVERRIDE_COMPOSE" \
     -f "$OPENCLOUD_COMPOSE" \
     -f "$OPENCLOUD_OVERRIDE_COMPOSE" \
     --env-file "$ENV_FILE" \
@@ -126,6 +128,7 @@ derive_env() {
   export POCKET_ID_APP_URL="https://${POCKET_ID_VHOST}:${CADDY_POCKET_ID_PORT}"
   export POCKET_ID_DATA_DIR="$STATE_DIR/pocket-id/data"
   export POCKET_ID_ENCRYPTION_KEY_FILE="$ENCRYPTION_KEY_FILE"
+  export POCKET_ID_VOLUME_NAME="${PROJECT_NAME}-pocket-id-data"
 
   export OPENCLOUD_DATA_DIR="$STATE_DIR/opencloud/data"
   export OPENCLOUD_CONFIG_DIR="$STATE_DIR/opencloud/config"
