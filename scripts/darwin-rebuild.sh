@@ -92,7 +92,9 @@ if [ "${app}" != "default" ] && command -v attic >/dev/null 2>&1; then
   for p in ${system_path} ${hm_path}; do
     [ -n "${p}" ] || continue
     echo "Pushing ${p} to attic cache 'dotfiles'..."
-    attic push dotfiles "${p}" >/dev/null 2>&1 \
-      || echo "Warning: attic push failed for ${p}; cache not updated." >&2
+    if ! attic push dotfiles "${p}" >/dev/null 2>&1; then
+      echo "Warning: attic push failed for ${p}; cache not updated." >&2
+      echo "Hint: If this is a new machine, ensure you have run 'attic login' and installed the Caddy CA." >&2
+    fi
   done
 fi
