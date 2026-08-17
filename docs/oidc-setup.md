@@ -43,7 +43,7 @@ Pocket ID admin → Settings → API Keys で API キーを作成し、その ho
 sops secrets に投入する。
 
 ```sh
-sops set modules/pocket-id/secrets-<host>.yaml '["pocket_id_admin_api_key"]' '<KEY>'
+sops set modules/pocket-id/secrets-<host>.yaml '["pocket_id_admin_api_key"]' '"<KEY>"'
 ```
 
 ## 3. 登録スクリプトの実行

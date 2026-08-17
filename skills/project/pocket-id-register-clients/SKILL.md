@@ -33,7 +33,7 @@ declaration (and leaves stale `*_oidc_client_id` sops keys behind).
 - A Pocket ID admin API key exists in
   `modules/pocket-id/secrets-<host>.yaml` under `pocket_id_admin_api_key`.
   One-time creation: Pocket ID UI → Settings → API Keys, then
-  `sops set modules/pocket-id/secrets-<host>.yaml '["pocket_id_admin_api_key"]' '<key>'`.
+  `sops set modules/pocket-id/secrets-<host>.yaml '["pocket_id_admin_api_key"]' '"<key>"'`.
 - Pocket ID is running and healthy on the host.
 
 ## Workflow

@@ -15,7 +15,7 @@
 # One-time manual prerequisite: create a Pocket ID admin API key (UI:
 # Settings -> API Keys) and store it as `pocket_id_admin_api_key` in
 # modules/pocket-id/secrets-<host>.yaml:
-#   sops set modules/pocket-id/secrets-<host>.yaml '["pocket_id_admin_api_key"]' '<key>'
+#   sops set modules/pocket-id/secrets-<host>.yaml '["pocket_id_admin_api_key"]' '"<key>"'
 #
 # Behaviour (the declared config is the single source of truth):
 #   - missing clients are created, existing ones updated to match, and a
@@ -114,7 +114,7 @@ HAS_KEY=false
 if [ "${DRY_RUN}" = false ] && [ "${HAS_KEY}" = false ]; then
   die "no admin API key in ${secrets_file} (key 'pocket_id_admin_api_key')." \
     "Create one in Pocket ID Settings -> API Keys, then:" \
-    "  sops set ${secrets_file} '[\"pocket_id_admin_api_key\"]' '<key>'"
+    "  sops set ${secrets_file} '[\"pocket_id_admin_api_key\"]' '\"<key>\"'"
 fi
 
 API_BASE="${POCKET_ID_API_URL:-http://127.0.0.1:1411}"
