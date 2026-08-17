@@ -1,6 +1,6 @@
 # Development Guidelines for Coding Agents
 
-> For Claude Code quick reference (skills, profiles, settings), see [CLAUDE.md](./CLAUDE.md).
+Declarative system and home configuration using nix-darwin, home-manager, and flake inputs.
 
 This document outlines the development policies and conventions for this dotfiles repository. Coding agents must adhere to these rules when implementing changes or adding new features.
 
@@ -77,6 +77,19 @@ We use [Agent Skills](https://agentskills.io) for task automation and guideline 
 ## Legacy Guidelines
 
 - Bootstrap configuration: rationale and maintenance guidelines are documented as comments in `bootstrap/flake.nix`.
+
+## Profile Build Attribute Paths
+
+Each profile has a different `nix build` attribute path due to how they are defined in `flake.nix`:
+
+| Profile | Attribute Path |
+|---|---|
+| bootstrap | `./bootstrap#darwinConfigurations.bootstrap.aarch64-darwin.system` |
+| private | `.#darwinConfigurations.private.aarch64-darwin.system` |
+| mac-mini-m4 | `.#darwinConfigurations.mac-mini-m4.system` (no architecture suffix) |
+| mac-mini-m4-pro | `.#darwinConfigurations.mac-mini-m4-pro.system` (no architecture suffix) |
+
+**Why the difference:** `private` is wrapped with `forDarwinSystems`, so the key includes the architecture name. `mac-mini-m4` and `mac-mini-m4-pro` call `darwinSystem` directly, so there is no architecture suffix. See `flake.nix` for details.
 
 ## Summary Checklist
 

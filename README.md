@@ -1,6 +1,6 @@
 # dotfiles
 
-Declarative macOS system and home configuration using Nix flakes, nix-darwin, and home-manager. See [AGENTS.md](./AGENTS.md) for development policies and [CLAUDE.md](./CLAUDE.md) for the Claude Code quick reference.
+Declarative macOS system and home configuration using Nix flakes, nix-darwin, and home-manager. See [AGENTS.md](./AGENTS.md) for development policies ([CLAUDE.md](./CLAUDE.md) is a symlink to it).
 
 ## Setup (fresh machine)
 
