@@ -214,6 +214,12 @@ in
         script = ''
           set -euo pipefail
 
+          # docker-compose parses the whole compose file (including the
+          # volumes section) even for `exec`, so these must be set even
+          # though exec doesn't start a new container.
+          export FORGEJO_DATA_DIR="${cfg.dataDir}"
+          export FORGEJO_EXTERNAL_URL="https://forgejo.${config.networking.hostName}.internal"
+
           FORGEJO_OIDC_CLIENT_ID="forgejo"
           FORGEJO_OIDC_CLIENT_SECRET=$(cat ${config.sops.secrets.forgejo_oidc_client_secret.path})
           FORGEJO_OIDC_DISCOVERY_URL="https://auth.${config.networking.hostName}.internal/.well-known/openid-configuration"
@@ -229,11 +235,14 @@ in
             sleep 10
           done
 
-          existing=$(${pkgs.docker-compose}/bin/docker-compose -f ${composeFile} exec -T forgejo forgejo admin auth list 2>/dev/null || true)
+          # -u git: the container's entrypoint drops root -> git before
+          # exec'ing the server, but `docker compose exec` attaches as root
+          # by default, and forgejo refuses to run its CLI as root.
+          existing=$(${pkgs.docker-compose}/bin/docker-compose -f ${composeFile} exec -T -u git forgejo forgejo admin auth list 2>/dev/null || true)
           if echo "$existing" | grep -q "PocketID"; then
             echo "OIDC authentication source 'PocketID' already exists, skipping."
           else
-            ${pkgs.docker-compose}/bin/docker-compose -f ${composeFile} exec -T forgejo \
+            ${pkgs.docker-compose}/bin/docker-compose -f ${composeFile} exec -T -u git forgejo \
               forgejo admin auth add-oauth \
                 --name PocketID \
                 --provider openidConnect \
