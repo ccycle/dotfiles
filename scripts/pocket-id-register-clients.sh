@@ -140,7 +140,7 @@ api_code() { # method path [json-body] -> HTTP status code only
 }
 
 if [ "${HAS_KEY}" = true ]; then
-  [ "$(api_code GET /healthz)" = "200" ] \
+  [ "$(api_code GET /healthz)" = "204" ] \
     || die "Pocket ID not reachable at ${API_BASE} (healthz failed). Is pocket-id running?"
 elif [ "${DRY_RUN}" = true ]; then
   echo "  (dry-run without admin API key: live client/group state is not checked)"
