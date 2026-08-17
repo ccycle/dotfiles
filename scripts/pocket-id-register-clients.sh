@@ -284,7 +284,7 @@ while IFS= read -r c; do
   # --value-stdin so the secret never appears in the process list).
   if [ -n "${secret_file}" ] && [ -n "${secret_key}" ] && \
      { [ "${action}" = "create" ] || [ "${action}" = "recreate" ]; }; then
-    api POST "/api/oidc/clients/${client_id}/secret" | jq -r '.secret' \
+    api POST "/api/oidc/clients/${client_id}/secret" | jq '.secret' \
       | sops set --idempotent --value-stdin "${REPO_ROOT}/${secret_file}" "[\"${secret_key}\"]"
     echo "  generated secret for ${client_id} -> ${secret_file}::${secret_key}"
   fi
