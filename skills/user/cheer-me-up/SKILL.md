@@ -1,6 +1,6 @@
 ---
 name: cheer-me-up
-description: Diagnose why motivation for an in-progress task has stalled and produce a concrete unblock. Invoke explicitly (`/cheer-me-up`) when the user says a task feels too hard, they don't know how to proceed, they know how but it feels tedious, or they've otherwise lost motivation mid-task.
+description: Present the concrete next step for an in-progress task and encourage taking it. Invoke explicitly (`/cheer-me-up`) when the user wants to know what to do next and a push to keep going.
 disable-model-invocation: true
 ---
 
