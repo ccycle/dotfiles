@@ -35,8 +35,24 @@ esac
 
 cd "$(git rev-parse --show-toplevel)"
 
+# When run on the atticd host itself, skip ssh: self-ssh isn't guaranteed to
+# work (no authorized_keys entry for one's own key), and it's unnecessary.
+on_attic_host() {
+  local h
+  h="$(hostname -s 2>/dev/null || hostname)"
+  [ "$ATTIC_HOST" = "$h" ] || [ "$ATTIC_HOST" = "$(hostname)" ]
+}
+
+run_on_attic_host() {
+  if on_attic_host; then
+    bash -c "$1"
+  else
+    ssh "$ATTIC_HOST" -- "$1"
+  fi
+}
+
 echo "Generating replacement token for role '$ROLE' (sub: $SUB, validity: 10 years)..."
-NEW_TOKEN=$(ssh "$ATTIC_HOST" -- \
+NEW_TOKEN=$(run_on_attic_host \
   "export ATTIC_SERVER_TOKEN_RS256_SECRET_BASE64=\"\$(sudo cat $JWT_SECRET_PATH)\" && atticadm -f /etc/atticd/server.toml make-token --sub '$SUB' --push '$CACHE_NAME' --validity 10y")
 
 sops --set '["'"$SOP_KEY"'"] "'"$NEW_TOKEN"'"' "$SECRETS_FILE"

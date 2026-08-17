@@ -7,6 +7,22 @@ CACHE_NAME="dotfiles"
 
 cd "$(git rev-parse --show-toplevel)"
 
+# When run on the atticd host itself, skip ssh: self-ssh isn't guaranteed to
+# work (no authorized_keys entry for one's own key), and it's unnecessary.
+on_attic_host() {
+  local h
+  h="$(hostname -s 2>/dev/null || hostname)"
+  [ "$ATTIC_HOST" = "$h" ] || [ "$ATTIC_HOST" = "$(hostname)" ]
+}
+
+run_on_attic_host() {
+  if on_attic_host; then
+    bash -c "$1"
+  else
+    ssh "$ATTIC_HOST" -- "$1"
+  fi
+}
+
 # --- Step 1: JWT secret ---
 echo "=== Step 1: JWT secret ==="
 if sops --decrypt "$SECRETS_FILE" 2>/dev/null | grep -q "^atticd-jwt-secret:"; then
@@ -21,16 +37,16 @@ fi
 # --- Step 2: Deploy atticd ---
 echo ""
 echo "=== Step 2: Deploy atticd on $ATTIC_HOST ==="
-ssh "$ATTIC_HOST" -- darwin-rebuild switch --flake . 2>&1 || {
+run_on_attic_host "darwin-rebuild switch --flake ." 2>&1 || {
   echo "Warning: darwin-rebuild failed. Ensure atticd is running manually."
 }
 
 # --- Step 3: Create cache ---
 echo ""
 echo "=== Step 3: Create cache '$CACHE_NAME' on $ATTIC_HOST ==="
-CACHE_EXISTS=$(ssh "$ATTIC_HOST" -- attic cache list 2>/dev/null | grep -c "$CACHE_NAME" || true)
+CACHE_EXISTS=$(run_on_attic_host "attic cache list" 2>/dev/null | grep -c "$CACHE_NAME" || true)
 if [ "$CACHE_EXISTS" -eq 0 ]; then
-  ssh "$ATTIC_HOST" -- attic cache create "$CACHE_NAME"
+  run_on_attic_host "attic cache create $CACHE_NAME"
   echo "Cache '$CACHE_NAME' created."
 else
   echo "Cache '$CACHE_NAME' already exists, skipping."
@@ -39,7 +55,7 @@ fi
 # --- Step 4: Show public key ---
 echo ""
 echo "=== Step 4: Public key (paste into bootstrap/modules/attic/darwin.nix) ==="
-ssh "$ATTIC_HOST" -- attic cache info "$CACHE_NAME"
+run_on_attic_host "attic cache info $CACHE_NAME"
 
 # --- Step 5: CI token ---
 echo ""
