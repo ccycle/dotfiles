@@ -34,3 +34,68 @@ needs its own bind mount).
   keeping it on the external drive's host bind mount preserves
   host-visible backups and avoids consuming VM-internal disk space for
   content that doesn't need VM-internal storage.
+
+## CI Runner: Host Execution, Config-File Registration
+
+**The Actions runner (`runnerEnable`) runs jobs directly on the host
+("host" label, no container isolation) rather than in a docker
+container.** The whole point of running a runner on this always-on
+Apple Silicon machine is to get a real `aarch64-darwin` `nix build` in
+CI - a Linux container on this host can't produce that. Host execution
+means job steps have full access to the machine; this is accepted here
+because it's a single-user home server, not a multi-tenant CI farm, and
+is why `runnerLabels` carries a doc warning against adding untrusted
+workflows.
+
+**Registration goes through `config.yaml`'s `server.connections` map
+via `forgejo forgejo-cli actions register`, not the deprecated
+`forgejo-runner register` subcommand.** The runner binary's own
+`register` command is flagged deprecated upstream in favor of declaring
+connections directly in the config file. The bootstrap script generates
+a 40-hex-char secret once (`forgejo-cli actions generate-secret`,
+guaranteed to match the format the server expects), persists it under
+`runnerDataDir`, and re-runs `forgejo-cli actions register` on every
+boot - that subcommand is documented as idempotent, so repeating it
+with the same secret is safe and picks up label/name changes from a
+rebuild without a manual re-registration step.
+
+**Both `forgejo-cli` calls run as `-u git`, not the exec default.**
+`docker compose exec` without `-u` attaches as root, and any
+state-mutating `forgejo`/`forgejo-cli` subcommand (as opposed to
+`--help`) fatally refuses to run as root at startup
+(`MustInstalled()`'s root check) - confirmed by `tests/e2e-forgejo`
+hitting exactly this before `-u git` was added. The existing
+`forgejo dump` call in the backup job already had this right; the two
+`forgejo-cli` calls here didn't, and would have crashed the exec (not
+the server itself) on every real deployment.
+
+**Branch protection has no "block force push" field to set.** The
+Forgejo/Gitea branch-protection API (verified against the
+`forgejo-sdk` Go struct, and confirmed empirically by `tests/e2e-forgejo`
+- a force-push to a branch with only `enable_push`/`enable_status_check`
+set is in fact rejected) has no `enable_force_push`/`block_force_push`
+option; force-pushing a protected branch is simply disallowed as an
+inherent property of branch protection. `enable_push: true` +
+`enable_status_check: true` is what encodes "direct push allowed, CI
+required" here.
+
+**`statusCheckContexts` has no default.** Per this repo's "no default
+fallbacks for critical configuration" convention: the config value is
+per-repo and per-workflow, so there's no single correct default to fall
+back to, and `tests/e2e-forgejo` empirically confirmed the format is
+`"<workflow name> / <job id> (<event>)"` (observed `"E2E / verify
+(push)"` for a workflow named "E2E" with job id "verify"). Each new
+`branchProtections` entry still needs its own value filled in by hand
+from that pattern (or confirmed against the repo's Checks UI) - an
+incorrect value here would silently block every merge on a check that
+never reports.
+
+## Backup: `forgejo dump` via the Existing Bind Mount
+
+**The daily backup job writes into `dataDir/dumps` instead of a
+separate volume.** `forgejo dump` runs inside the container with
+`--file /data/dumps/...`, and `/data` is already the bind-mounted
+external drive (see above), so the dump lands directly on host-visible,
+already-backed-up storage with no extra `docker cp` step or volume
+declaration. Retention pruning (`backupRetentionCount` generations) runs
+on the host side against that same path for the same reason.

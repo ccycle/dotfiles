@@ -51,6 +51,83 @@ in
         at least once) before its mirror is created.
       '';
     };
+
+    runnerEnable = mkOption {
+      type = types.bool;
+      default = false;
+      description = ''
+        Register and run a Forgejo Actions runner directly on this host via
+        launchd, with native ("host") job execution rather than a container,
+        so CI jobs can perform real aarch64-darwin `nix build` runs. See
+        modules/forgejo/design.md.
+      '';
+    };
+
+    runnerDataDir = mkOption {
+      type = types.str;
+      default = "/var/lib/forgejo-runner";
+      description = "Working directory for the forgejo-runner process: holds its config.yaml and its self-generated registration secret.";
+    };
+
+    runnerLabels = mkOption {
+      type = types.listOf types.str;
+      default = [ "macos-latest:host" "native:host" ];
+      description = ''
+        Labels this runner advertises to `runs-on`. "host" execution means
+        job steps run directly on this machine with no isolation - do not
+        add labels here for untrusted-contributor workflows.
+      '';
+    };
+
+    branchProtections = mkOption {
+      type = types.listOf (types.submodule {
+        options = {
+          owner = mkOption {
+            type = types.str;
+            description = "Owner of the repository on this Forgejo instance.";
+          };
+          repo = mkOption {
+            type = types.str;
+            description = "Name of the repository on this Forgejo instance.";
+          };
+          branch = mkOption {
+            type = types.str;
+            default = "main";
+            description = "Branch (or glob rule) to protect.";
+          };
+          statusCheckContexts = mkOption {
+            type = types.listOf types.str;
+            description = ''
+              Required commit-status contexts - the Forgejo Actions job
+              context string shown in the repository's Checks UI. No
+              default on purpose: confirm the exact context string against
+              a live workflow run before deploying, since a mismatched
+              context permanently blocks merges on a check that never
+              reports.
+            '';
+          };
+        };
+      });
+      default = [ ];
+      description = ''
+        Branches to keep protected via the Forgejo API: force-push disabled
+        (the API has no separate toggle for this - it's implicit whenever a
+        branch is protected), direct push allowed, and the given status
+        checks required.
+      '';
+    };
+
+    backupEnable = mkOption {
+      type = types.bool;
+      default = false;
+      description = "Run a daily `forgejo dump` (git + config/DB) into dataDir/dumps on the external drive.";
+    };
+
+    backupRetentionCount = mkOption {
+      type = types.int;
+      default = 7;
+      description = "Number of dump generations to keep.";
+    };
   };
 
   config = mkIf cfg.enable (mkMerge [
@@ -122,10 +199,15 @@ in
         '';
       };
     }
-    (mkIf (cfg.pushMirrors != [ ]) {
+    (mkIf (cfg.pushMirrors != [ ] || cfg.branchProtections != [ ]) {
+      # Shared by both push-mirror and branch-protection bootstrap jobs, so
+      # it's declared once here rather than in either feature's own mkIf
+      # block - declaring it in both would be a duplicate definition.
       sops.secrets.forgejo_api_token = {
         sopsFile = ./secrets.yaml;
       };
+    })
+    (mkIf (cfg.pushMirrors != [ ]) {
       sops.secrets.github_push_mirror_token = {
         sopsFile = ./secrets.yaml;
       };
@@ -189,6 +271,200 @@ in
               fi
             fi
           '') cfg.pushMirrors}
+        '';
+      };
+    })
+    (mkIf (cfg.branchProtections != [ ]) {
+      launchd.daemons.forgejo-branch-protection-bootstrap = {
+        serviceConfig = {
+          RunAtLoad = true;
+          StandardOutPath = "/var/log/forgejo-branch-protection-bootstrap.log";
+          StandardErrorPath = "/var/log/forgejo-branch-protection-bootstrap.log";
+        };
+        script = ''
+          set -euo pipefail
+
+          FORGEJO_API="http://127.0.0.1:3000/api/v1"
+          FORGEJO_TOKEN=$(cat ${config.sops.secrets.forgejo_api_token.path})
+
+          attempts=0
+          until ${pkgs.curl}/bin/curl -sf "http://127.0.0.1:3000/api/healthz" >/dev/null 2>&1; do
+            attempts=$((attempts + 1))
+            if [ "$attempts" -ge 30 ]; then
+              echo "Forgejo did not become healthy in time, giving up for this run."
+              exit 0
+            fi
+            echo "Waiting for Forgejo to be ready..."
+            sleep 10
+          done
+
+          ${concatMapStringsSep "\n" (p: ''
+            echo "Applying branch protection for ${p.owner}/${p.repo}@${p.branch}"
+
+            # No dedicated "block force push" field exists in the Forgejo API:
+            # force-push is implicitly disallowed on any protected branch.
+            # See https://codeberg.org/forgejo/forgejo/src/branch/forgejo/cmd/../models/actions
+            # (BranchProtection struct) - enable_push + enable_status_check
+            # is the "direct push allowed, CI required" combination.
+            BODY=$(${pkgs.jq}/bin/jq -n \
+              --arg branch_name "${p.branch}" \
+              --argjson status_check_contexts ${builtins.toJSON p.statusCheckContexts} \
+              '{
+                branch_name: $branch_name,
+                enable_push: true,
+                enable_push_whitelist: false,
+                enable_status_check: true,
+                status_check_contexts: $status_check_contexts,
+                require_signed_commits: false
+              }')
+
+            existing_status=$(${pkgs.curl}/bin/curl -s -o /dev/null -w '%{http_code}' \
+              -H "Authorization: token $FORGEJO_TOKEN" \
+              "$FORGEJO_API/repos/${p.owner}/${p.repo}/branch_protections/${p.branch}")
+
+            if [ "$existing_status" = "200" ]; then
+              ${pkgs.curl}/bin/curl -sf -X PATCH \
+                -H "Authorization: token $FORGEJO_TOKEN" \
+                -H "Content-Type: application/json" \
+                -d "$BODY" \
+                "$FORGEJO_API/repos/${p.owner}/${p.repo}/branch_protections/${p.branch}" \
+                && echo "Updated branch protection for ${p.owner}/${p.repo}@${p.branch}." \
+                || echo "Failed to update branch protection for ${p.owner}/${p.repo}@${p.branch}."
+            else
+              ${pkgs.curl}/bin/curl -sf -X POST \
+                -H "Authorization: token $FORGEJO_TOKEN" \
+                -H "Content-Type: application/json" \
+                -d "$BODY" \
+                "$FORGEJO_API/repos/${p.owner}/${p.repo}/branch_protections" \
+                && echo "Created branch protection for ${p.owner}/${p.repo}@${p.branch}." \
+                || echo "Failed to create branch protection for ${p.owner}/${p.repo}@${p.branch}."
+            fi
+          '') cfg.branchProtections}
+        '';
+      };
+    })
+    (mkIf cfg.runnerEnable {
+      environment.etc."newsyslog.d/forgejo-runner.conf".text = ''
+        # logfilename                              [owner:group]  mode  count  size  when  flags
+        /var/log/forgejo-runner.log                                644   7      10240 *     GZ
+        /var/log/forgejo-runner-bootstrap.log                      644   7      10240 *     GZ
+      '';
+
+      # Registers (idempotently - see `forgejo-cli actions register`'s own
+      # docs) a runner identity on every boot rather than gating on a marker
+      # file, since the shared secret and config.yaml already make repeat
+      # registration a no-op. This also means labels/name changes here take
+      # effect on the next rebuild without manual intervention.
+      launchd.daemons.forgejo-runner-bootstrap = {
+        serviceConfig = {
+          RunAtLoad = true;
+          StandardOutPath = "/var/log/forgejo-runner-bootstrap.log";
+          StandardErrorPath = "/var/log/forgejo-runner-bootstrap.log";
+        };
+        script = ''
+          set -euo pipefail
+
+          RUNNER_DIR="${cfg.runnerDataDir}"
+          mkdir -p "$RUNNER_DIR"
+          SECRET_FILE="$RUNNER_DIR/secret"
+          CONFIG_FILE="$RUNNER_DIR/config.yaml"
+
+          attempts=0
+          until ${pkgs.curl}/bin/curl -sf "http://127.0.0.1:3000/api/healthz" >/dev/null 2>&1; do
+            attempts=$((attempts + 1))
+            if [ "$attempts" -ge 30 ]; then
+              echo "Forgejo did not become healthy in time, giving up for this run."
+              exit 0
+            fi
+            echo "Waiting for Forgejo to be ready..."
+            sleep 10
+          done
+
+          if [ ! -f "$SECRET_FILE" ]; then
+            ${pkgs.docker-compose}/bin/docker-compose -f ${composeFile} exec -T -u git forgejo \
+              forgejo forgejo-cli actions generate-secret > "$SECRET_FILE"
+            chmod 600 "$SECRET_FILE"
+          fi
+          SECRET=$(cat "$SECRET_FILE")
+
+          UUID=$(${pkgs.docker-compose}/bin/docker-compose -f ${composeFile} exec -T -u git forgejo \
+            forgejo forgejo-cli actions register \
+            --secret "$SECRET" \
+            --name "${config.networking.hostName}" \
+            --labels "${concatStringsSep "," cfg.runnerLabels}")
+
+          if [ ! -f "$CONFIG_FILE" ]; then
+            ${pkgs.forgejo-runner}/bin/forgejo-runner generate-config > "$CONFIG_FILE"
+          fi
+
+          export RUNNER_URL="https://forgejo.${config.networking.hostName}.internal/"
+          export RUNNER_UUID="$UUID"
+          export RUNNER_TOKEN_URL="file:$SECRET_FILE"
+
+          ${pkgs.yq-go}/bin/yq -i '
+            .server.connections.forgejo.url = strenv(RUNNER_URL) |
+            .server.connections.forgejo.uuid = strenv(RUNNER_UUID) |
+            .server.connections.forgejo.token_url = strenv(RUNNER_TOKEN_URL) |
+            .runner.labels = ${builtins.toJSON cfg.runnerLabels}
+          ' "$CONFIG_FILE"
+        '';
+      };
+
+      launchd.daemons.forgejo-runner = {
+        serviceConfig = {
+          KeepAlive = true;
+          RunAtLoad = true;
+          StandardOutPath = "/var/log/forgejo-runner.log";
+          StandardErrorPath = "/var/log/forgejo-runner.log";
+        };
+        script = ''
+          CONFIG_FILE="${cfg.runnerDataDir}/config.yaml"
+
+          until [ -f "$CONFIG_FILE" ]; do
+            echo "Waiting for forgejo-runner-bootstrap to write $CONFIG_FILE..."
+            sleep 5
+          done
+
+          exec ${pkgs.forgejo-runner}/bin/forgejo-runner daemon --config "$CONFIG_FILE"
+        '';
+      };
+    })
+    (mkIf cfg.backupEnable {
+      environment.etc."newsyslog.d/forgejo-backup.conf".text = ''
+        # logfilename                    [owner:group]  mode  count  size  when  flags
+        /var/log/forgejo-backup.log                      644   7      10240 *     GZ
+      '';
+
+      launchd.daemons.forgejo-backup = {
+        serviceConfig = {
+          RunAtLoad = true;
+          StandardOutPath = "/var/log/forgejo-backup.log";
+          StandardErrorPath = "/var/log/forgejo-backup.log";
+          StartCalendarInterval = [{ Hour = 3; Minute = 0; }];
+        };
+        script = ''
+          set -euo pipefail
+
+          # dataDir is the host-visible side of the bind mount at container
+          # path /data (see compose.yaml), so dump files land here directly
+          # without a docker cp step.
+          DUMP_DIR="${cfg.dataDir}/dumps"
+          mkdir -p "$DUMP_DIR"
+
+          if ! ${pkgs.curl}/bin/curl -sf "http://127.0.0.1:3000/api/healthz" >/dev/null 2>&1; then
+            echo "Forgejo is not healthy, skipping today's backup."
+            exit 0
+          fi
+
+          DUMP_FILE="/data/dumps/forgejo-dump-$(date +%Y%m%d-%H%M%S).zip"
+          ${pkgs.docker-compose}/bin/docker-compose -f ${composeFile} exec -T -u git forgejo \
+            forgejo dump --file "$DUMP_FILE" --type zip
+
+          ls -1t "$DUMP_DIR"/forgejo-dump-*.zip 2>/dev/null \
+            | tail -n +$((${toString cfg.backupRetentionCount} + 1)) \
+            | ${pkgs.findutils}/bin/xargs -r rm -f
+
+          echo "Backup complete: $DUMP_FILE ($(ls -1 "$DUMP_DIR"/forgejo-dump-*.zip | wc -l) generations retained)"
         '';
       };
     })
