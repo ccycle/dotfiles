@@ -37,11 +37,17 @@ jobs:
       - name: Run verify-change
         run: skills/project/verify-change/scripts/check.sh
 
+      # Assumes this runner's keychain already trusts the Caddy internal CA
+      # for https://cache.mac-mini-m4-pro.internal (see skills/project/attic-credentials
+      # for the manual CA-trust step). Unverified for the actual Forgejo runner.
       - name: Build and push to Attic
         env:
           ATTIC_TOKEN: ${{ secrets.ATTIC_CI_TOKEN }}
         run: |
-          nix run github:zhaofengli/attic -- watch-exec dotfiles -- \
-            nix build .#darwinConfigurations.mac-mini-m4-pro.system \
-                     .#darwinConfigurations.mac-mini-m4.system \
-              --impure --no-update-lock-file
+          OUT_PATHS=$(nix build \
+            .#darwinConfigurations.mac-mini-m4-pro.system \
+            .#darwinConfigurations.mac-mini-m4.system \
+            --impure --no-update-lock-file --print-out-paths)
+          nix run github:zhaofengli/attic -- login dotfiles-ci \
+            https://cache.mac-mini-m4-pro.internal "$ATTIC_TOKEN" --set-default
+          nix run github:zhaofengli/attic -- push dotfiles $OUT_PATHS
