@@ -58,6 +58,13 @@ Modules must access external flake inputs through the `inputs` attribute, not as
 **Rule:**
 - **No Default Fallbacks:** Do not use default values for critical configurations. Explicitly require the user or the environment to provide necessary values (e.g., using `mkOption` without a default, or `lib.mkIf` checks). Avoid "magic" defaults that might be incorrect in a different context.
 
+## Nix Development Rules
+
+- **Formatting:** Run `nix fmt` after editing Nix files.
+- **Syntax Validation:** Run `nix-instantiate --parse <file>` before committing. For flake-based files, `nix flake check` or `nix build --dry-run` catches evaluation errors.
+- **Secrets Management:** Secrets are managed with sops-nix — never hardcode them in Nix files. Edit the per-module `secrets.yaml` files with the `sops` CLI, never the encrypted file directly. Reference secrets via `config.sops.secrets.<name>.path`.
+- **Flake Lock:** Never edit `flake.lock` directly — use `nix flake update` or `nix flake lock --update-input <input>`.
+
 ## Agent Skills
 
 We use [Agent Skills](https://agentskills.io) for task automation and guideline enforcement. Skills live in `skills/project/` (repo-scoped) or `skills/user/` (repo-agnostic); placement criteria are documented in `skills/README.md`.
