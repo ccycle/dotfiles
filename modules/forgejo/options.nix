@@ -198,6 +198,53 @@ in
             up --no-build --force-recreate
         '';
       };
+
+      # Forgejo has no app.ini/env-var way to declare an external OIDC login
+      # source (only account auto-registration behavior, set in
+      # compose.yaml's [oauth2_client] vars, is configurable that way). The
+      # source itself must go through `forgejo admin auth add-oauth` (CLI) or
+      # the web UI, so bootstrap it idempotently here, the same pattern as
+      # forgejo-mirror-bootstrap below.
+      launchd.daemons.forgejo-oidc-bootstrap = {
+        serviceConfig = {
+          RunAtLoad = true;
+          StandardOutPath = "/var/log/forgejo-oidc-bootstrap.log";
+          StandardErrorPath = "/var/log/forgejo-oidc-bootstrap.log";
+        };
+        script = ''
+          set -euo pipefail
+
+          FORGEJO_OIDC_CLIENT_ID="forgejo"
+          FORGEJO_OIDC_CLIENT_SECRET=$(cat ${config.sops.secrets.forgejo_oidc_client_secret.path})
+          FORGEJO_OIDC_DISCOVERY_URL="https://auth.${config.networking.hostName}.internal/.well-known/openid-configuration"
+
+          attempts=0
+          until ${pkgs.curl}/bin/curl -sf "http://127.0.0.1:3000/api/healthz" >/dev/null 2>&1; do
+            attempts=$((attempts + 1))
+            if [ "$attempts" -ge 30 ]; then
+              echo "Forgejo did not become healthy in time, giving up for this run."
+              exit 0
+            fi
+            echo "Waiting for Forgejo to be ready..."
+            sleep 10
+          done
+
+          existing=$(${pkgs.docker-compose}/bin/docker-compose -f ${composeFile} exec -T forgejo forgejo admin auth list 2>/dev/null || true)
+          if echo "$existing" | grep -q "PocketID"; then
+            echo "OIDC authentication source 'PocketID' already exists, skipping."
+          else
+            ${pkgs.docker-compose}/bin/docker-compose -f ${composeFile} exec -T forgejo \
+              forgejo admin auth add-oauth \
+                --name PocketID \
+                --provider openidConnect \
+                --key "$FORGEJO_OIDC_CLIENT_ID" \
+                --secret "$FORGEJO_OIDC_CLIENT_SECRET" \
+                --auto-discover-url "$FORGEJO_OIDC_DISCOVERY_URL" \
+              && echo "Created OIDC authentication source 'PocketID'." \
+              || echo "Failed to create OIDC authentication source 'PocketID'."
+          fi
+        '';
+      };
     }
     (mkIf (cfg.pushMirrors != [ ] || cfg.branchProtections != [ ]) {
       # Shared by both push-mirror and branch-protection bootstrap jobs, so

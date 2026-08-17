@@ -18,12 +18,13 @@ services:
       - FORGEJO__metrics__ENABLED=true
       - FORGEJO__metrics__ENABLED_ISSUE_BY_LABEL=true
       - FORGEJO__metrics__ENABLED_ISSUE_BY_REPOSITORY=true
-      # OIDC (Pocket ID)
-      - FORGEJO__oauth2__ENABLED=true
-      - FORGEJO__oauth2__PROVIDER=openidConnect
-      - FORGEJO__oauth2__CLIENT_ID=${FORGEJO_OIDC_CLIENT_ID}
-      - FORGEJO__oauth2__CLIENT_SECRET=${FORGEJO_OIDC_CLIENT_SECRET}
-      - FORGEJO__oauth2__OPENID_CONNECT_DISCOVERY_URL=${FORGEJO_OIDC_DISCOVERY_URL}
+      # Account auto-creation/linking for logins via the Pocket ID OIDC
+      # source. The source itself (Pocket ID as an external login provider)
+      # isn't configurable via app.ini/env vars in Forgejo -- it's bootstrapped
+      # idempotently by the forgejo-oidc-bootstrap launchd daemon, which runs
+      # `forgejo admin auth add-oauth` inside this container.
+      - FORGEJO__oauth2_client__ENABLE_AUTO_REGISTRATION=true
+      - FORGEJO__oauth2_client__USERNAME=preferred_username
     volumes:
       # Bulk git data (repositories, LFS, SSH host keys) on the external
       # drive, bind-mounted host-native. Left as-is: this data is large and
