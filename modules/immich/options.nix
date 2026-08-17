@@ -44,10 +44,28 @@ in
       /var/log/immich.log                  644   7      10240 *     GZ
     '';
 
+    # Confidential OIDC client registered on Pocket ID. The client secret is
+    # captured by scripts/pocket-id-register-clients.sh; the client ID is
+    # fixed (plaintext) and matches IMMICH_OIDC_CLIENT_ID below.
+    services.pocket-id.oidcClients = [{
+      name = "Immich";
+      clientId = "immich";
+      isPublic = false;
+      pkceEnabled = false;
+      callbackURLs = [
+        "https://immich.${config.networking.hostName}.internal/auth/login"
+        "https://immich.${config.networking.hostName}.internal/user-settings"
+        "app.immich:///oauth-callback"
+      ];
+      logoutCallbackURLs = [
+        "https://immich.${config.networking.hostName}.internal/auth/login"
+        "https://immich.${config.networking.hostName}.internal/user-settings"
+      ];
+      secretFile = "modules/immich/secrets-${config.networking.hostName}.yaml";
+      secretKey = "immich_oidc_client_secret";
+    }];
+
     sops.secrets.immich_db_password = {
-      sopsFile = ./secrets-${config.networking.hostName}.yaml;
-    };
-    sops.secrets.immich_oidc_client_id = {
       sopsFile = ./secrets-${config.networking.hostName}.yaml;
     };
     sops.secrets.immich_oidc_client_secret = {
@@ -75,7 +93,7 @@ in
         export IMMICH_SERVER_URL="https://immich.${config.networking.hostName}.internal"
         export IMMICH_HOST_DOMAIN="immich.${config.networking.hostName}.internal"
         export IMMICH_OIDC_ISSUER="https://auth.${config.networking.hostName}.internal"
-        export IMMICH_OIDC_CLIENT_ID=$(cat ${config.sops.secrets.immich_oidc_client_id.path})
+        export IMMICH_OIDC_CLIENT_ID="immich"
         export IMMICH_OIDC_CLIENT_SECRET=$(cat ${config.sops.secrets.immich_oidc_client_secret.path})
 
         mkdir -p "$IMMICH_UPLOAD_DIR" "$IMMICH_DB_DIR"

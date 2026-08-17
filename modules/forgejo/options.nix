@@ -55,9 +55,20 @@ in
 
   config = mkIf cfg.enable (mkMerge [
     {
-      sops.secrets.forgejo_oidc_client_id = {
-        sopsFile = ./secrets.yaml;
-      };
+      # Confidential OIDC client registered on Pocket ID. The client secret
+      # is captured by scripts/pocket-id-register-clients.sh; the client ID
+      # is fixed (plaintext) and matches FORGEJO_OIDC_CLIENT_ID below.
+      services.pocket-id.oidcClients = [{
+        name = "Forgejo";
+        clientId = "forgejo";
+        isPublic = false;
+        pkceEnabled = false;
+        callbackURLs = [ "https://forgejo.${config.networking.hostName}.internal/user/oauth2/callback" ];
+        logoutCallbackURLs = [ "https://forgejo.${config.networking.hostName}.internal/user/oauth2/callback" ];
+        secretFile = "modules/forgejo/secrets.yaml";
+        secretKey = "forgejo_oidc_client_secret";
+      }];
+
       sops.secrets.forgejo_oidc_client_secret = {
         sopsFile = ./secrets.yaml;
       };
@@ -99,7 +110,7 @@ in
 
           export FORGEJO_DATA_DIR="${cfg.dataDir}"
           export FORGEJO_EXTERNAL_URL="https://forgejo.${config.networking.hostName}.internal"
-          export FORGEJO_OIDC_CLIENT_ID=$(cat ${config.sops.secrets.forgejo_oidc_client_id.path})
+          export FORGEJO_OIDC_CLIENT_ID="forgejo"
           export FORGEJO_OIDC_CLIENT_SECRET=$(cat ${config.sops.secrets.forgejo_oidc_client_secret.path})
           export FORGEJO_OIDC_DISCOVERY_URL="https://auth.${config.networking.hostName}.internal/.well-known/openid-configuration"
 

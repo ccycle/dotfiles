@@ -54,6 +54,109 @@ in
   };
 
   config = mkIf cfg.enable {
+    # Role-mapping groups and OIDC clients on Pocket ID. Reconcile via
+    # scripts/pocket-id-register-clients.sh; see modules/pocket-id/options.nix.
+    services.pocket-id.oidcGroups = [
+      {
+        name = "opencloud_admins";
+        friendlyName = "OpenCloud Admins";
+        adminGroup = true;
+        customClaims = [{
+          key = "opencloud_role";
+          value = "opencloudAdmin";
+        }];
+      }
+      {
+        name = "opencloud_spaceadmins";
+        friendlyName = "OpenCloud Space Admins";
+        customClaims = [{
+          key = "opencloud_role";
+          value = "opencloudSpaceAdmin";
+        }];
+      }
+      {
+        name = "opencloud_users";
+        friendlyName = "OpenCloud Users";
+        customClaims = [{
+          key = "opencloud_role";
+          value = "opencloudUser";
+        }];
+      }
+      {
+        name = "opencloud_guests";
+        friendlyName = "OpenCloud Guests";
+        customClaims = [{
+          key = "opencloud_role";
+          value = "opencloudGuest";
+        }];
+      }
+    ];
+
+    # All OpenCloud clients are public + PKCE (no confidential client
+    # exists; see docs/oidc-setup.md). Desktop/mobile IDs are hardcoded in
+    # the apps and must match exactly, including case.
+    services.pocket-id.oidcClients = [
+      {
+        name = "OpenCloud Web";
+        clientId = "opencloud-web";
+        isPublic = true;
+        pkceEnabled = true;
+        callbackURLs = [
+          "https://opencloud.${config.networking.hostName}.internal/"
+          "https://opencloud.${config.networking.hostName}.internal/oidc-callback.html"
+          "https://opencloud.${config.networking.hostName}.internal/oidc-silent-redirect.html"
+        ];
+        logoutCallbackURLs = [ "https://opencloud.${config.networking.hostName}.internal" ];
+        allowedGroups = [
+          "opencloud_admins"
+          "opencloud_spaceadmins"
+          "opencloud_users"
+          "opencloud_guests"
+        ];
+      }
+      {
+        name = "OpenCloud Desktop";
+        clientId = "OpenCloudDesktop";
+        isPublic = true;
+        pkceEnabled = true;
+        callbackURLs = [ "http://127.0.0.1" "http://localhost" ];
+        allowedGroups = [
+          "opencloud_admins"
+          "opencloud_spaceadmins"
+          "opencloud_users"
+          "opencloud_guests"
+        ];
+      }
+      {
+        name = "OpenCloud Android";
+        clientId = "OpenCloudAndroid";
+        isPublic = true;
+        pkceEnabled = true;
+        callbackURLs = [ "oc://android.opencloud.eu" ];
+        logoutCallbackURLs = [ "oc://android.opencloud.eu" ];
+        allowedGroups = [
+          "opencloud_admins"
+          "opencloud_spaceadmins"
+          "opencloud_users"
+          "opencloud_guests"
+        ];
+      }
+      {
+        name = "OpenCloud iOS";
+        clientId = "OpenCloudIOS";
+        isPublic = true;
+        pkceEnabled = true;
+        callbackURLs = [ "oc://ios.opencloud.eu" ];
+        logoutCallbackURLs = [ "oc://ios.opencloud.eu" ];
+        allowedGroups = [
+          "opencloud_admins"
+          "opencloud_spaceadmins"
+          "opencloud_users"
+          "opencloud_guests"
+        ];
+      }
+    ];
+
     services.caddy.portalEntries = [{
       name = "OpenCloud";
       url = "https://opencloud.${config.networking.hostName}.internal";
@@ -98,8 +201,8 @@ in
         export OPENCLOUD_APPS_DIR="${cfg.appsDir}"
         export OPENCLOUD_IMAGE="${cfg.image}"
         export OPENCLOUD_OIDC_ROLE_CLAIM="opencloud_role"
-        export OPENCLOUD_OIDC_CLIENT_ID="77e88611-a8b6-4eec-bfd7-7bd2bd4fe642"
-        export OPENCLOUD_OIDC_PROXY_CLIENT_ID="77e88611-a8b6-4eec-bfd7-7bd2bd4fe642"
+        export OPENCLOUD_OIDC_CLIENT_ID="opencloud-web"
+        export OPENCLOUD_OIDC_PROXY_CLIENT_ID="opencloud-web"
 
         mkdir -p "$OPENCLOUD_DATA_DIR" "$OPENCLOUD_CONFIG_DIR" "$OPENCLOUD_USER_FILES_DIR"
 

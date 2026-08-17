@@ -93,10 +93,21 @@ in
       }
     '';
 
+    # Confidential OIDC client registered on Pocket ID. The client secret is
+    # captured by scripts/pocket-id-register-clients.sh; the client ID is
+    # fixed (plaintext) and matches GRAFANA_OIDC_CLIENT_ID below.
+    services.pocket-id.oidcClients = [{
+      name = "Grafana";
+      clientId = "grafana";
+      isPublic = false;
+      pkceEnabled = false;
+      callbackURLs = [ "https://grafana.${config.networking.hostName}.internal/login/generic_oauth" ];
+      logoutCallbackURLs = [ "https://grafana.${config.networking.hostName}.internal/login/generic_oauth" ];
+      secretFile = "modules/monitoring/secrets-${config.networking.hostName}.yaml";
+      secretKey = "grafana_oidc_client_secret";
+    }];
+
     sops.secrets.grafana_admin_password = {
-      sopsFile = ./secrets-${config.networking.hostName}.yaml;
-    };
-    sops.secrets.grafana_oidc_client_id = {
       sopsFile = ./secrets-${config.networking.hostName}.yaml;
     };
     sops.secrets.grafana_oidc_client_secret = {
@@ -175,7 +186,7 @@ in
         done
 
         export GRAFANA_ADMIN_PASSWORD=$(cat ${config.sops.secrets.grafana_admin_password.path})
-        export GRAFANA_OIDC_CLIENT_ID=$(cat ${config.sops.secrets.grafana_oidc_client_id.path})
+        export GRAFANA_OIDC_CLIENT_ID="grafana"
         export GRAFANA_OIDC_CLIENT_SECRET=$(cat ${config.sops.secrets.grafana_oidc_client_secret.path})
         export GRAFANA_OIDC_ISSUER="https://auth.${config.networking.hostName}.internal"
         export MONITORING_DATA_DIR="${cfg.dataDir}"

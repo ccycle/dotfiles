@@ -302,6 +302,7 @@ bootstrap_if_needed() {
       '[$base + "/", $base + "/oidc-callback.html", $base + "/oidc-silent-redirect.html"]')
     OPENCLOUD_OIDC_CLIENT_ID=$(pocket_id_api POST /api/oidc/clients \
       "$(jq -n --argjson cb "$callback_urls" --arg base "$OPENCLOUD_URL" '{
+        id: "opencloud-web",
         name: "OpenCloud (e2e)",
         isPublic: true,
         pkceEnabled: true,

@@ -1,22 +1,35 @@
 # Pocket ID OIDC セットアップ手順
 
 Pocket ID を IdP として各 self-hosted サービスへ SSO を組み込む手順。
-一度だけ行う手動ブートストラップが中心で、それ以外は Nix 設定に集約されている。
+OIDC クライアントとグループの登録は `scripts/pocket-id-register-clients.sh`
+で自動化されており、手動操作は Pocket ID の初期セットアップと管理 API
+キーの作成のみ。クライアント定義は Nix 設定が唯一の情報源である。
 
-前提: `darwin-rebuild.sh <profile>` が成功し、Pocket ID コンテナが healthy であること。
+前提: `darwin-rebuild.sh <profile>` が成功し、Pocket ID コンテナが healthy
+であること。
 
 ## 0. サービス構成の前提
 
-| サービス | クライアント種別 | 認証方式 |
-|----------|-----------------|----------|
-| OpenCloud | public / PKCE | Web/Desktop/Mobile のネイティブ OIDC |
-| Forgejo | confidential | OIDC |
-| GitLab | confidential | OmniAuth (OIDC) |
-| Immich | confidential | OIDC |
-| Grafana | confidential | generic OAuth (OIDC) |
-| Prometheus | - | Caddy basicauth (OIDC非対応のため) |
+| サービス | クライアント種別 | 認証方式 | 登録される Client ID |
+|----------|-----------------|----------|----------------------|
+| OpenCloud Web | public / PKCE | OIDC | `opencloud-web` |
+| OpenCloud Desktop | public / PKCE | ネイティブ OIDC | `OpenCloudDesktop` |
+| OpenCloud Android | public / PKCE | ネイティブ OIDC | `OpenCloudAndroid` |
+| OpenCloud iOS | public / PKCE | ネイティブ OIDC | `OpenCloudIOS` |
+| Forgejo | confidential | OIDC | `forgejo` |
+| Immich | confidential | OIDC | `immich` |
+| Grafana | confidential | generic OAuth (OIDC) | `grafana` |
+| GitLab | - | - | (両 host で無効のため未登録) |
+| Prometheus | - | Caddy basicauth (OIDC非対応) | - |
 
-host は `mac-mini-m4-pro` を例にする（他 host では内部ドメインが異なる）。
+Client ID は固定文字列である。OAuth のモデル上 client ID は秘密ではなく
+識別子に過ぎず、セキュリティは confidential クライアントの自動生成
+secret・public クライアントの PKCE・グループ制限で担保される。OpenCloud の
+Desktop / Android / iOS は client ID がアプリにハードコードされているため、
+この値が必須である（大文字小文字を含めて一致させること）。
+
+host は `mac-mini-m4-pro` を例にする（他 host では内部ドメインと
+`secrets-<host>.yaml` の名前が異なる）。
 
 ## 1. Pocket ID 初期セットアップ
 
@@ -24,84 +37,63 @@ host は `mac-mini-m4-pro` を例にする（他 host では内部ドメイン�
 作成とパスキー登録を行う。この操作はブラウザ + WebAuthn が必須で、
 自動化できない（passkey 登録は対話的操作）。
 
-## 2. OpenCloud 用グループ作成
+## 2. 管理 API キーの作成（手動・一度きり）
 
-OpenCloud のロールマッピングには Pocket ID のグループ + custom claim を使う。
-
-Pocket ID admin → Groups → Create group で以下 4 グループを作成:
-
-| Group name | Custom Claim key | Custom Claim value |
-|------------|------------------|--------------------|
-| `opencloud_admins` | `opencloud_role` | `opencloudAdmin` |
-| `opencloud_spaceadmins` | `opencloud_role` | `opencloudSpaceAdmin` |
-| `opencloud_users` | `opencloud_role` | `opencloudUser` |
-| `opencloud_guests` | `opencloud_role` | `opencloudGuest` |
-
-各グループの Custom Claims タブで claim を追加する。その後、管理者ユーザーを
-`opencloud_admins` グループに追加する（Groups → グループ → Users タブ）。
-ユーザーがいずれかのグループに属さないと OpenCloud は 500 を返す。
-
-## 3. OIDC クライアント作成
-
-Pocket ID admin → OIDC Clients → Create client。
-
-### OpenCloud (4 クライアント, すべて public / PKCE)
-
-Web クライアントは Pocket ID が自動生成する Client ID (UUID) をそのまま使う。
-Desktop / Android / iOS の3クライアントは OpenCloud アプリ側で client ID が
-ハードコードされているため、**Show Advanced Options から Client ID を
-固定値に上書き**する。上書きしなければ「クライアントが見つからない」
-エラーになる。
-
-| Name | Client ID | Callback URLs | Logout Callback URL |
-|------|-----------|---------------|---------------------|
-| OpenCloud Web | (自動生成UUIDのまま) | `https://opencloud.<host>/`<br>`https://opencloud.<host>/oidc-callback.html`<br>`https://opencloud.<host>/oidc-silent-redirect.html` | `https://opencloud.<host>` |
-| OpenCloud Desktop | `OpenCloudDesktop` (上書き) | `http://127.0.0.1`<br>`http://localhost` | (任意) |
-| OpenCloud Android | `OpenCloudAndroid` (上書き) | `oc://android.opencloud.eu` | (任意) |
-| OpenCloud iOS | `OpenCloudIOS` (上書き) | `oc://ios.opencloud.eu` | (任意) |
-
-Public Client と PKCE を有効にする。Web クライアントは自動生成された UUID を
-そのまま `modules/opencloud/options.nix` の `OPENCLOUD_OIDC_CLIENT_ID` /
-`OPENCLOUD_OIDC_PROXY_CLIENT_ID` に転記する。public クライアントの ID は
-秘密情報ではないため sops secret は不要。
-
-### その他サービス (confidential)
-
-| サービス | Client ID | Callback URL | Logout Callback URL |
-|----------|-----------|--------------|---------------------|
-| Forgejo | 任意 (e.g. `forgejo`) | `https://forgejo.<host>/user/oauth2/callback` | 同じ |
-| GitLab | 任意 (e.g. `gitlab`) | `https://gitlab.<host>/users/auth/openid_connect/callback` | 同じ |
-| Immich | 任意 (e.g. `immich`) | `https://immich.<host>/auth/login`<br>`https://immich.<host>/user-settings`<br>`app.immich:///oauth-callback` | `https://immich.<host>/auth/login`<br>`https://immich.<host>/user-settings` |
-| Grafana | 任意 (e.g. `grafana`) | `https://grafana.<host>/login/generic_oauth` | 同じ |
-
-Public Client を有効にしないこと（confidential のまま）。保存後に発行される
-**Client Secret をコピー**して次のステップで sops に投入する。
-
-## 4. グループ制限の設定
-
-各 OIDC クライアントの設定画面で Allowed Groups に `opencloud_admins` 等を
-追加する。この設定をすると**クライアントを利用できるユーザーがグループ所属者に
-制限される**。未設定のまま Allowed Groups を ON にすると誰もログインできず
-`access_denied` になる。
-
-## 5. sops への本番値投入
-
-confidential クライアントの Client ID / Secret を各モジュールの
-`secrets.yaml` に入れる:
-
-| モジュール | sops キー |
-|-----------|-----------|
-| `modules/forgejo/secrets.yaml` | `forgejo_oidc_client_id`, `forgejo_oidc_client_secret` |
-| `modules/gitlab/secrets.yaml` | `gitlab_oidc_client_id`, `gitlab_oidc_client_secret` |
-| `modules/immich/secrets.yaml` | `immich_oidc_client_id`, `immich_oidc_client_secret` |
-| `modules/monitoring/secrets.yaml` | `grafana_oidc_client_id`, `grafana_oidc_client_secret` |
+Pocket ID admin → Settings → API Keys で API キーを作成し、その host の
+sops secrets に投入する。
 
 ```sh
-sops set modules/forgejo/secrets.yaml '["forgejo_oidc_client_id"]' '"<CLIENT_ID>"'
-sops set modules/forgejo/secrets.yaml '["forgejo_oidc_client_secret"]' '"<CLIENT_SECRET>"'
+sops set modules/pocket-id/secrets-<host>.yaml '["pocket_id_admin_api_key"]' '<KEY>'
 ```
 
-## 6. Prometheus basicauth の設定
+## 3. 登録スクリプトの実行
+
+```sh
+scripts/pocket-id-register-clients.sh --admin-user <管理者ユーザー名> [--dry-run]
+```
+
+このスクリプトは宣言型設定
+（`services.pocket-id.oidcClients` / `oidcGroups`、各サービスのモジュールが
+`modules/pocket-id/options.nix` のオプションに宣言）を Pocket ID 管理 API
+と同期する。処理内容は以下の通り。
+
+- **グループ**: 4 つの OpenCloud グループを作成し、`opencloud_role` claim
+  （`opencloudAdmin` / `opencloudSpaceAdmin` / `opencloudUser` /
+  `opencloudGuest`）を設定する。
+- **クライアント**: 存在しなければ作成、既存なら宣言に合わせて更新する。
+  各クライアントに宣言どおりの Callback / Logout Callback URL、PKCE、
+  group restriction（Allowed Groups）を設定する。
+- **confidential クライアントの secret**: 作成時に
+  `POST /api/oidc/clients/{id}/secret` で secret を生成し、対応する
+  sops secrets ファイルに自動で書き込む。sops 側の値が
+  `CHANGE_ME_fake_client_secret` 等のプレースホルダのままの場合は、
+  クライアントを作り直して新しい secret を発行する。
+- **管理者ユーザー**: `--admin-user` で指定したユーザーを
+  `opencloud_admins` グループに追加する（未存在なら作成する）。
+  ユーザーがいずれかのグループに属さないと OpenCloud は 500 を返すため、
+  この手順は省略しないこと。
+- **後片付け**: 手動登録時代に残っていた `*_oidc_client_id` の sops キーを
+  削除する（各 host の自分の secrets ファイルのみ）。
+
+`--dry-run` は API キーなしでも動作し、実行計画のみを表示する。
+
+### クライアント定義の変更・追加
+
+新しいサービスを追加する場合、そのサービスモジュールで
+`services.pocket-id.oidcClients` にクライアントを、必要なら
+`oidcGroups` にグループを宣言してから、再度スクリプトを実行する。
+スクリプトは冪等なので何度実行してもよい。
+
+## 4. 適用
+
+sops に書き込まれた変更をコミットしてから適用する。
+
+```sh
+git add -A && git commit -m "Register OIDC clients on Pocket ID"
+scripts/darwin-rebuild.sh <profile>
+```
+
+## 5. Prometheus basicauth の設定
 
 Prometheus は OIDC 非対応のため、Caddy の basicauth を使う。
 
@@ -113,13 +105,7 @@ nix run nixpkgs#caddy -- hash-password --plaintext <PASSWORD>
 ハッシュを host profile (`modules/mac-mini-m4-pro/darwin.nix` など) の
 `services.monitoring.prometheusAuthHash` に設定する。
 
-## 7. 適用
-
-```sh
-scripts/darwin-rebuild.sh <profile>
-```
-
-## 8. 動作確認
+## 6. 動作確認
 
 各サービスのログイン画面で「Pocket ID でログイン」を選択し、パスキーで
 サインインできることを確認する。エラー時の調査は:
@@ -139,3 +125,6 @@ scripts/darwin-rebuild.sh <profile>
   読めない。
 - **client secret を変更したら**各サービスの launchd を再起動する
   (`sudo launchctl kickstart -k system/org.nixos.<service>-compose`)。
+- **手動登録時代の sops キー**: スクリプトが `*_oidc_client_id` キーを
+  削除する。GitLab は両 host で無効のため、`gitlab_oidc_client_secret` の
+  プレースホルダは残ったままで問題ない。
