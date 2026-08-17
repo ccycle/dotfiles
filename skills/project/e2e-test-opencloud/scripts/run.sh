@@ -34,4 +34,15 @@ trap cleanup EXIT
 source "$e2e_dir/.state/env-for-playwright.sh"
 
 cd "$e2e_dir"
+
+# First run in a new worktree: node_modules isn't checked in, and without
+# it `npx playwright test` silently fetches a standalone `playwright`
+# package into npx's own cache instead of using this project's pinned
+# `@playwright/test` — playwright.config.ts then fails to resolve that
+# import. Installing once from the committed lockfile fixes it for good.
+if [ ! -d node_modules ]; then
+  echo "[e2e] installing Playwright test dependencies (first run in this worktree)..." >&2
+  nix develop "$repo_root#e2e" -c npm ci
+fi
+
 nix develop "$repo_root#e2e" -c npx playwright test
