@@ -29,6 +29,7 @@
     ${username} ALL=(ALL) NOPASSWD: /run/current-system/sw/bin/nix *
     ${username} ALL=(ALL) NOPASSWD: /nix/var/nix/profiles/default/bin/nix *
     ${username} ALL=(ALL) NOPASSWD: /bin/launchctl *
+    ${username} ALL=(ALL) NOPASSWD: /run/current-system/sw/bin/darwin-rebuild *
   '';
 
   # Require full disk access
