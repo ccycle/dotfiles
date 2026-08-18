@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 # Move a card between sections of the `Kanban (dotfiles)` board. Matches a card
-# by title whether it is a `[[wiki-link]]` or a plain-text card. Only the
-# skill's Step 1 reconcile should call this, and only after the user confirmed
-# the move; it touches only the source and target sections.
+# by title whether it is a `[[wiki-link]]` or a plain-text card. Called by
+# obsidian-to-herdr-worktree's Step 1/7 and by kanban-sync's reconcile.sh —
+# directly for deterministic moves, or after explicit per-card user
+# confirmation for ambiguous ones; it touches only the source and target
+# sections.
 #
 # The exact line is captured and re-inserted verbatim, so trailing kanban
 # metadata (dates, tags) survives the move. The script aborts rather than
