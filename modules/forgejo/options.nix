@@ -150,6 +150,15 @@ in
         secretKey = "forgejo_oidc_client_secret";
       }];
 
+      # Pocket ID's "groups" claim carries each group's `name` field verbatim
+      # (not friendlyName) -- forgejo-oidc-bootstrap's --admin-group value
+      # below must match this `name` exactly.
+      services.pocket-id.oidcGroups = [{
+        name = "forgejo_admins";
+        friendlyName = "Forgejo Admins";
+        adminGroup = true;
+      }];
+
       sops.secrets.forgejo_oidc_client_secret = {
         sopsFile = ./secrets.yaml;
       };
@@ -240,9 +249,9 @@ in
           # exec'ing the server, but `docker compose exec` attaches as root
           # by default, and forgejo refuses to run its CLI as root.
           existing=$(${pkgs.docker-compose}/bin/docker-compose -f ${composeFile} exec -T -u git forgejo forgejo admin auth list 2>/dev/null || true)
-          if echo "$existing" | grep -q "PocketID"; then
-            echo "OIDC authentication source 'PocketID' already exists, skipping."
-          else
+          source_id=$(echo "$existing" | grep "PocketID" | awk '{print $1}')
+
+          if [ -z "$source_id" ]; then
             ${pkgs.docker-compose}/bin/docker-compose -f ${composeFile} exec -T -u git forgejo \
               forgejo admin auth add-oauth \
                 --name PocketID \
@@ -250,8 +259,20 @@ in
                 --key "$FORGEJO_OIDC_CLIENT_ID" \
                 --secret "$FORGEJO_OIDC_CLIENT_SECRET" \
                 --auto-discover-url "$FORGEJO_OIDC_DISCOVERY_URL" \
+                --group-claim-name groups \
+                --admin-group forgejo_admins \
               && echo "Created OIDC authentication source 'PocketID'." \
               || echo "Failed to create OIDC authentication source 'PocketID'."
+          else
+            # Re-run every boot so group-claim/admin-group changes made here
+            # take effect on an already-created source without a manual step.
+            ${pkgs.docker-compose}/bin/docker-compose -f ${composeFile} exec -T -u git forgejo \
+              forgejo admin auth update-oauth \
+                --id "$source_id" \
+                --group-claim-name groups \
+                --admin-group forgejo_admins \
+              && echo "OIDC authentication source 'PocketID' (id $source_id) reconciled." \
+              || echo "Failed to reconcile OIDC authentication source 'PocketID' (id $source_id)."
           fi
         '';
       };

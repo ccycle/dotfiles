@@ -25,6 +25,11 @@ services:
       # `forgejo admin auth add-oauth` inside this container.
       - FORGEJO__oauth2_client__ENABLE_AUTO_REGISTRATION=true
       - FORGEJO__oauth2_client__USERNAME=preferred_username
+      # openid is implicit. profile/email get preferred_username/email
+      # actually populated (Pocket ID gates claims by requested scope, so
+      # without these Forgejo only ever sees `sub`); groups feeds the
+      # --group-claim-name/--admin-group mapping in forgejo-oidc-bootstrap.
+      - FORGEJO__oauth2_client__OPENID_CONNECT_SCOPES=profile email groups
     volumes:
       # Bulk git data (repositories, LFS, SSH host keys) on the external
       # drive, bind-mounted host-native. Left as-is: this data is large and
