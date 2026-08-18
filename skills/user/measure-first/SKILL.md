@@ -70,5 +70,4 @@ End the final answer with the exact line:
 MEASURE-REVIEW: approved
 ```
 
-A Stop hook verifies this line mechanically. Keep it exactly as written, on
-its own line.
+Keep it exactly as written, on its own line.

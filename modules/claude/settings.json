@@ -11,12 +11,10 @@
       "Bash(chmod*)",
       "Bash(comm*)",
       "Bash(cut*)",
-      "Bash(curl*)",
       "Bash(darwin-rebuild*)",
       "Bash(defaults read*)",
       "Bash(df*)",
       "Bash(dig*)",
-      "Bash(docker*)",
       "Bash(du*)",
       "Bash(echo*)",
       "Bash(env*)",
@@ -205,16 +203,6 @@
           {
             "type": "command",
             "command": "/Users/mfuruki/.claude/hooks/post-nix-edit-reminder.sh"
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ~/.claude/hooks/measure-review-gate.sh"
           }
         ]
       }

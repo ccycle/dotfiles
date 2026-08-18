@@ -32,8 +32,7 @@ schema.
 
 Before finalizing an investigation answer, invoke the `measure-reviewer`
 subagent (see the `measure-first` skill) and end with the exact line
-`MEASURE-REVIEW: approved`. A Stop hook enforces the marker. Never present an
-unmeasured assertion as fact.
+`MEASURE-REVIEW: approved`. Never present an unmeasured assertion as fact.
 
 ## English-Only for LLM-Facing Instructions
 

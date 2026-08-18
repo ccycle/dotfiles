@@ -84,8 +84,7 @@ from measurement, never from memory or speculation.
   command, and run it. If no measurement exists, create one.
 - Report claims in claim / evidence / confidence schema.
 - Before finalizing, invoke the `measure-reviewer` subagent via the task tool,
-  and end your answer with the exact line `MEASURE-REVIEW: approved`. A Stop
-  hook verifies this line.
+  and end your answer with the exact line `MEASURE-REVIEW: approved`.
 
 ## Legacy Guidelines
 
