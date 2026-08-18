@@ -187,9 +187,6 @@ in
 
           export FORGEJO_DATA_DIR="${cfg.dataDir}"
           export FORGEJO_EXTERNAL_URL="https://forgejo.${config.networking.hostName}.internal"
-          export FORGEJO_OIDC_CLIENT_ID="forgejo"
-          export FORGEJO_OIDC_CLIENT_SECRET=$(cat ${config.sops.secrets.forgejo_oidc_client_secret.path})
-          export FORGEJO_OIDC_DISCOVERY_URL="https://auth.${config.networking.hostName}.internal/.well-known/openid-configuration"
 
           mkdir -p "$FORGEJO_DATA_DIR"
 
