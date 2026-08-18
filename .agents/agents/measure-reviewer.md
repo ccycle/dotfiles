@@ -1,7 +1,12 @@
 ---
+# Union frontmatter for both platforms. Claude Code reads name/description/disallowedTools;
+# opencode reads name/description/mode/permission. The `tools` field must stay out:
+# Claude's comma-string form fails opencode's schema (Record<string, boolean>), and
+# `model: inherit` breaks opencode. Model is inherited from the parent on both sides.
+name: measure-reviewer
 description: Read-only verifier that re-runs the measurements behind an investigation answer and returns APPROVED or a list of issues. Use as the mandatory final check before an investigation answer is finalized.
 mode: subagent
-model: llamaswap/google/gemma-4-26b-a4b
+disallowedTools: Edit, Write, NotebookEdit
 permission:
   edit: deny
   bash: allow
