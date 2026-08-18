@@ -140,8 +140,12 @@ in
         clientId = "forgejo";
         isPublic = false;
         pkceEnabled = false;
-        callbackURLs = [ "https://forgejo.${config.networking.hostName}.internal/user/oauth2/callback" ];
-        logoutCallbackURLs = [ "https://forgejo.${config.networking.hostName}.internal/user/oauth2/callback" ];
+        # Path includes the auth source name ("PocketID", set via
+        # `forgejo admin auth add-oauth --name` in forgejo-oidc-bootstrap
+        # above) -- Forgejo's OAuth2 callback route is
+        # /user/oauth2/<source-name>/callback, not /user/oauth2/callback.
+        callbackURLs = [ "https://forgejo.${config.networking.hostName}.internal/user/oauth2/PocketID/callback" ];
+        logoutCallbackURLs = [ "https://forgejo.${config.networking.hostName}.internal/user/oauth2/PocketID/callback" ];
         secretFile = "modules/forgejo/secrets.yaml";
         secretKey = "forgejo_oidc_client_secret";
       }];
