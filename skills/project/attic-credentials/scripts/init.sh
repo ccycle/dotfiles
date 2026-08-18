@@ -44,12 +44,13 @@ run_on_attic_host "darwin-rebuild switch --flake ." 2>&1 || {
 # --- Step 3: Create cache ---
 echo ""
 echo "=== Step 3: Create cache '$CACHE_NAME' on $ATTIC_HOST ==="
-CACHE_EXISTS=$(run_on_attic_host "attic cache list" 2>/dev/null | grep -c "$CACHE_NAME" || true)
-if [ "$CACHE_EXISTS" -eq 0 ]; then
+# `attic cache list` doesn't exist on this client (login/use/push/cache/
+# watch-store only) — use `cache info`'s exit status instead.
+if run_on_attic_host "attic cache info $CACHE_NAME" >/dev/null 2>&1; then
+  echo "Cache '$CACHE_NAME' already exists, skipping."
+else
   run_on_attic_host "attic cache create $CACHE_NAME"
   echo "Cache '$CACHE_NAME' created."
-else
-  echo "Cache '$CACHE_NAME' already exists, skipping."
 fi
 
 # --- Step 4: Show public key ---
@@ -77,7 +78,9 @@ fi
 
 echo ""
 echo "=== Done ==="
-echo "Next: for each client machine that should push, run"
-echo "  ${0%/*}/generate-token.sh client <machine>"
-echo "and follow the printed 'attic login' instructions on that machine."
+echo "Next:"
+echo "  - Run '${0%/*}/generate-token.sh smoke' once, so smoke-test-attic can verify the cache."
+echo "  - For each client machine that should push, run"
+echo "    ${0%/*}/generate-token.sh client <machine>"
+echo "    and follow the printed 'attic login' instructions on that machine."
 

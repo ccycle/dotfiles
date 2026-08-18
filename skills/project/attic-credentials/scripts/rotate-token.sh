@@ -3,6 +3,7 @@ set -euo pipefail
 
 if [ $# -lt 1 ]; then
   echo "Usage: $0 ci"
+  echo "       $0 smoke"
   echo "       $0 client <machine>"
   exit 1
 fi
@@ -18,6 +19,10 @@ case "$ROLE" in
     SUB="ci"
     SOP_KEY="attic-ci-token"
     ;;
+  smoke)
+    SUB="smoke"
+    SOP_KEY="attic-smoke-token"
+    ;;
   client)
     MACHINE="${2:-}"
     if [ -z "$MACHINE" ]; then
@@ -28,7 +33,7 @@ case "$ROLE" in
     SOP_KEY="attic-client-${MACHINE}-token"
     ;;
   *)
-    echo "Unknown role: $ROLE (expected: ci, client)"
+    echo "Unknown role: $ROLE (expected: ci, smoke, client)"
     exit 1
     ;;
 esac
@@ -58,17 +63,25 @@ NEW_TOKEN=$(run_on_attic_host \
 sops --set '["'"$SOP_KEY"'"] "'"$NEW_TOKEN"'"' "$SECRETS_FILE"
 echo "New token encrypted to $SECRETS_FILE (key: $SOP_KEY)"
 
-if [ "$ROLE" = "ci" ]; then
-  echo ""
-  echo "=== New CI Token — update Forgejo Settings -> Actions -> Secrets (ATTIC_CI_TOKEN) ==="
-  echo "$NEW_TOKEN"
-  echo "======================================================================================"
-else
-  echo ""
-  echo "=== New Client Token — on $MACHINE, run once: ==="
-  echo "attic login $ATTIC_HOST https://cache.${ATTIC_HOST}.internal $NEW_TOKEN --set-default"
-  echo "===================================================="
-fi
+case "$ROLE" in
+  ci)
+    echo ""
+    echo "=== New CI Token — update Forgejo Settings -> Actions -> Secrets (ATTIC_CI_TOKEN) ==="
+    echo "$NEW_TOKEN"
+    echo "======================================================================================"
+    ;;
+  smoke)
+    echo ""
+    echo "smoke-test-attic picks this up automatically via the sops secret"
+    echo "(~/.config/sops-nix/secrets/attic-smoke-token) once home-manager redeploys it."
+    ;;
+  client)
+    echo ""
+    echo "=== New Client Token — on $MACHINE, run once: ==="
+    echo "attic login $ATTIC_HOST https://cache.${ATTIC_HOST}.internal $NEW_TOKEN --set-default"
+    echo "===================================================="
+    ;;
+esac
 
 cat <<'EOF'
 
@@ -76,10 +89,10 @@ cat <<'EOF'
 Tokens are stateless JWTs signed by atticd-jwt-secret: there is no per-token
 revoke. The old token above stays technically valid until its 10y expiry.
 - To retire ONE token: just stop using it and update the consumer (Forgejo
-  secret / client `attic login`) to the new token above. This script has
-  already replaced the sops-stored copy.
+  secret / client `attic login` / smoke-test-attic's deployed secret) to the
+  new token above. This script has already replaced the sops-stored copy.
 - To invalidate ALL outstanding tokens at once (e.g. a token leaked): rotate
   atticd-jwt-secret itself with init.sh's Step 1 equivalent, redeploy atticd,
-  then reissue every token (ci + every client) with this script.
+  then reissue every token (ci + smoke + every client) with this script.
 ========================
 EOF

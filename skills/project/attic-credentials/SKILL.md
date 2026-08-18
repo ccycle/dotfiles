@@ -1,6 +1,6 @@
 ---
 name: attic-credentials
-description: Manage Attic JWT secret, CI token, and per-client push tokens. Initializes the atticd JWT signing key, generates operator tokens via atticadm, and handles rotation with sops encryption.
+description: Manage Attic JWT secret, CI token, smoke-test token, and per-client push tokens. Initializes the atticd JWT signing key, generates operator tokens via atticadm, and handles rotation with sops encryption.
 ---
 
 # Attic Credentials
@@ -14,7 +14,7 @@ atticd の JWT secret 初期化、操作用トークンの生成・ローテー�
 ## 前提
 
 - atticd が mac-mini-m4-pro で稼働している (init.sh でこれから起動することも可)
-- SSH で mac-mini-m4-pro に接続可能。`atticadm-jwt-secret` (`/run/secrets/atticd-jwt-secret`)
+- SSH で mac-mini-m4-pro に接続可能。`atticd-jwt-secret` (`/run/secrets/atticd-jwt-secret`)
   を読むため、接続先で `sudo cat` がパスワード無しで通ること
 - ローカルに `sops` と `openssl` がインストール済み
 - 環境変数 `SOPS_AGE_KEY_FILE` または `SOPS_AGE_KEY` が設定済み (sops の復号化のため)
@@ -31,24 +31,33 @@ skills/project/attic-credentials/scripts/init.sh
 
 1. `atticd-jwt-secret` が未作成なら生成し、sops 暗号化して `modules/attic/secrets.yaml` に書き込む
 2. SSH 越しに `darwin-rebuild switch` を実行し atticd を起動
-3. SSH 越しに `attic cache create dotfiles` を実行 (idempotent)
-4. SSH 越しに `attic cache info dotfiles` を実行し公開鍵を表示
+3. `attic cache info dotfiles` の終了コードでキャッシュ有無を判定し、無ければ `attic cache create` (idempotent)
+4. `attic cache info dotfiles` を実行し公開鍵を表示
 5. `generate-token.sh ci` を呼び出し `ci` トークンを生成・sops 暗号化。plain text も表示 (Forgejo Secrets 登録用)
 
-クライアント毎のトークンは初回セットアップに含まれない。クライアントを追加するたびに
-`generate-token.sh client <machine>` を個別に実行する。
+`smoke` トークンとクライアント毎のトークンは初回セットアップに含まれない。それぞれ
+`generate-token.sh smoke` / `generate-token.sh client <machine>` を個別に実行する。
+
+atticd ホスト自身でこれらのスクリプトを実行した場合は SSH を経由せずローカルで直接コマンドを実行する
+(`on_attic_host`/`run_on_attic_host` ヘルパー。自分自身への SSH は自分の鍵の authorized_keys 登録が
+無いため失敗しうる)。
 
 ### `generate-token.sh` — トークン生成
 
 ```bash
 skills/project/attic-credentials/scripts/generate-token.sh ci
+skills/project/attic-credentials/scripts/generate-token.sh smoke
 skills/project/attic-credentials/scripts/generate-token.sh client <machine>
 ```
 
 `atticadm make-token --sub <sub> --push dotfiles --validity 10y` をサーバ上で実行し、
-sops 暗号化して `modules/attic/secrets.yaml` に書き込む。
+sops 暗号化して `modules/attic/secrets.yaml` に書き込む。発行されるトークンは常に `dotfiles`
+への push 権限のみで、pull/create-cache/destroy-cache 等は付与しない
+(cache は Public のため読み出しにトークンは不要)。
 
 - `ci`: sub は `ci`。plain text を stdout に出力 (Forgejo UI 貼り付け用)
+- `smoke`: sub は `smoke`。`smoke-test-attic` スキルの push→read 往復検証専用。
+  `modules/attic/home.nix` の sops secret 経由で全ホストに配布されるため、手動コピー不要
 - `client <machine>`: sub は `<machine>`。生成後、そのマシンで実行する
   `attic login` コマンドを stdout に出力する
 
@@ -56,6 +65,7 @@ sops 暗号化して `modules/attic/secrets.yaml` に書き込む。
 
 ```bash
 skills/project/attic-credentials/scripts/rotate-token.sh ci
+skills/project/attic-credentials/scripts/rotate-token.sh smoke
 skills/project/attic-credentials/scripts/rotate-token.sh client <machine>
 ```
 
@@ -71,6 +81,7 @@ skills/project/attic-credentials/scripts/rotate-token.sh client <machine>
 1. `init.sh` を実行
 2. 表示された公開鍵を `bootstrap/modules/attic/darwin.nix` の `trusted-public-keys` に追記
 3. 表示された CI トークンを Forgejo の "Settings → Actions → Secrets" に `ATTIC_CI_TOKEN` として登録
+4. `generate-token.sh smoke` を実行し、`smoke-test-attic` スキルが使えるようにする
 
 ### クライアントの push を有効化する (マシン毎に手動 1 回)
 
@@ -84,4 +95,4 @@ skills/project/attic-credentials/scripts/rotate-token.sh client <machine>
 
 ### トークンローテーション
 
-`rotate-token.sh ci` / `rotate-token.sh client <machine>`
+`rotate-token.sh ci` / `rotate-token.sh smoke` / `rotate-token.sh client <machine>`
