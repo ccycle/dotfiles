@@ -72,16 +72,16 @@ handles that.
 
 ## Flags
 
-**`--merge`**: When passed, add instruction to use `/merge` skill at the end to
-commit, rebase, and merge the branch.
+**`--merge`**: When passed, add instruction to use `/merge-to-main` skill at
+the end to rebase and merge the branch into main.
 
 ```
 ...
-Then use the /merge skill to commit, rebase, and merge the branch.
+Then use the /merge-to-main skill to rebase and merge the branch into main.
 ```
 
-Only instruct worktree agent to `/merge` if explicitly requested by user in
-task.
+Only instruct worktree agent to `/merge-to-main` if explicitly requested by
+user in task.
 
 **`--fork`** (workmux only): When passed, add `--fork` to the `workmux add`
 command. This copies the current conversation into the new worktree so the agent

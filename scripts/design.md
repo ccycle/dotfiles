@@ -35,8 +35,8 @@ Two layers work together:
    - `/cleanup-worktrees` skill — wraps the script in an interactive flow:
      classify → report → confirm → remove. It is the only way a worktree
      is removed.
-   - Merge skills (`/merge`, `/merge-to-main`) never remove worktrees;
-     they finish by pointing the user at `/cleanup-worktrees`.
+   - The `/merge-to-main` skill never removes worktrees; it finishes by
+     pointing the user at `/cleanup-worktrees`.
 
 The all-branch scanning scripts (`cleanup-merged-worktrees.sh`,
 `detect-stale-worktrees.sh`) from the earlier hook-driven design are kept as
@@ -89,9 +89,9 @@ standalone-script convention.
 - **Cleanup script run from cron/systemd timer.** Rejected for the same
   reason: no interactive confirmation, and it cannot know which worktree
   the user is working in.
-- **Merge skills removing the worktree after merge.** Rejected in favor of
+- **Merge skill removing the worktree after merge.** Rejected in favor of
   separation of concerns: merging and deleting are different decisions.
-  The merge skills now only suggest `/cleanup-worktrees`.
+  `/merge-to-main` now only suggests `/cleanup-worktrees`.
 - **Detecting merged branch via ORIG_HEAD in post-merge.** Rejected in
   favor of checking the current branch against `git merge-base
   --is-ancestor` main. The ORIG_HEAD approach is fragile for squash merges;

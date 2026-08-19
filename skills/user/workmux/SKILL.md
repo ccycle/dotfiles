@@ -78,8 +78,8 @@ workmux merge --notification  # show system notification on success
 ```
 
 Merges the branch, deletes the tmux window, removes the worktree, and
-deletes the local branch. Use the `/merge` skill for the full workflow
-(commit, rebase, then merge).
+deletes the local branch. Use the `/merge-to-main` skill for the full
+workflow (rebase, then fast-forward merge into main).
 
 ### Remove worktrees
 
@@ -124,7 +124,7 @@ workmux capture agent-a -n 50           # last 50 lines
 
 # Send instructions to an agent
 workmux send agent-a "fix the tests"    # short message
-workmux send agent-a "/merge"           # send a skill command
+workmux send agent-a "/merge-to-main"   # send a skill command
 workmux send agent-a -f followup.md     # from file
 workmux send myproject:docs "update the API section"  # cross-project
 
@@ -189,7 +189,7 @@ automatically. The `<agent>` placeholder resolves to the configured agent.
 
 ### Finishing work: direct merge
 
-Use `/merge` to commit, rebase onto the base branch, and merge in one
+Use `/merge-to-main` to rebase and fast-forward merge into main in one
 step. This cleans up the worktree, tmux window, and branch.
 
 ### Finishing work: PR-based
@@ -242,7 +242,7 @@ other projects by path and let the agent explore on its own.
 
 ## Related Skills
 
-- **`/merge`**: commit, rebase, and merge the current branch
+- **`/merge-to-main`**: rebase and fast-forward merge the current branch into main
 - **`/rebase`**: rebase with smart conflict resolution
 - **`/worktree`**: delegate tasks to parallel worktree agents
 - **`/coordinator`**: orchestrate multiple agents (spawn, monitor, merge)

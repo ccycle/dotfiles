@@ -110,7 +110,7 @@ herdr agent prompt auth-module "fix the failing tests" --wait --timeout 600000
 
 ```bash
 # Tell agent to merge its own branch
-herdr agent prompt auth-module "/merge" --wait --timeout 120000
+herdr agent prompt auth-module "/merge-to-main" --wait --timeout 120000
 ```
 
 ### workmux backend
@@ -161,7 +161,7 @@ workmux send agent-a -f followup.md
 **Merge & cleanup:**
 
 ```bash
-workmux send agent-a "/merge"
+workmux send agent-a "/merge-to-main"
 workmux remove agent-a
 ```
 
@@ -190,8 +190,8 @@ Spawn multiple agents, wait for all, review, merge:
 #    herdr: herdr agent read <name> --source recent-unwrapped --lines 50
 #    workmux: workmux capture <name> -n 50
 # 6. Merge successful agents (one at a time, wait between each)
-#    herdr: herdr agent prompt <name> "/merge" --wait --timeout 120000
-#    workmux: workmux send <name> "/merge" && workmux wait <name> --timeout 120
+#    herdr: herdr agent prompt <name> "/merge-to-main" --wait --timeout 120000
+#    workmux: workmux send <name> "/merge-to-main" && workmux wait <name> --timeout 120
 # 7. Send follow-up if needed
 ```
 
@@ -202,7 +202,7 @@ Spawn multiple agents, wait for all, review, merge:
 2. **Spawn agents in background** so you stay in your own session.
 3. **Always confirm agents started** before waiting for completion.
 4. **Capture and review output** before merging. Do not blindly merge.
-5. **Merge one at a time** by sending `/merge` to each agent sequentially. Wait
+5. **Merge one at a time** by sending `/merge-to-main` to each agent sequentially. Wait
    for each merge to complete before starting the next to avoid conflicts.
 6. **Use timeouts** to avoid waiting forever. Handle timeout exits gracefully.
 7. **Prompt files should use relative paths** (each worktree has its own root).

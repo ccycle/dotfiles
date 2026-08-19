@@ -15,9 +15,9 @@ merged to main.
 Call this after the branch has been merged to main, while sitting inside
 that worktree's session. It deletes the worktree you are in — nothing else.
 
-This replaces automatic deletion: no git hook removes worktrees, and the
-merge skills do not remove them on your behalf. Cleanup is always explicit
-and interactive.
+This replaces automatic deletion: no git hook removes worktrees, and
+`/merge-to-main` does not remove them on your behalf. Cleanup is always
+explicit and interactive.
 
 ## Backend detection
 
