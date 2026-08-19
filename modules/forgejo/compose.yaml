@@ -2,7 +2,7 @@ name: forgejo
 
 services:
   forgejo:
-    image: codeberg.org/forgejo/forgejo:11
+    image: codeberg.org/forgejo/forgejo:16
     ports:
       - "127.0.0.1:3000:3000"
       - "127.0.0.1:2223:22"
@@ -11,6 +11,16 @@ services:
       - FORGEJO__server__SSH_PORT=2223
       - FORGEJO__server__SSH_LISTEN_PORT=22
       - FORGEJO__server__LFS_START_SERVER=true
+      # v16's docker image dropped the old baked-in
+      # REVERSE_PROXY_TRUSTED_PROXIES=* default; unset, it falls back to
+      # 127.0.0.0/8,::1/128 only. Caddy runs on the host and reaches this
+      # container through the published port above, but the connection
+      # arrives NAT'd through the container runtime's bridge gateway (an
+      # OrbStack instance showed 192.168.164.1, not 127.0.0.1) - a value
+      # that varies by host/runtime and isn't safe to pin here. Trusting
+      # all private ranges instead is still far narrower than the old `*`
+      # (which trusted X-Forwarded-For from the public internet too).
+      - FORGEJO__server__REVERSE_PROXY_TRUSTED_PROXIES=172.16.0.0/12,192.168.0.0/16,10.0.0.0/8,127.0.0.0/8,::1/128
       - FORGEJO__actions__ENABLED=true
       # Prometheus /metrics endpoint (scraped by the monitoring stack via
       # host-gateway:3000). Aggregate counters only, no bearer token — the
