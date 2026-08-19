@@ -38,7 +38,9 @@ let
           compat.chatTemplateKwargs = {
             enable_thinking = { "$var" = "thinking.enabled"; };
             preserve_thinking = true;
-          };
+          } // (lib.optionalAttrs (m ? reasoningEffort) {
+            reasoning_effort = m.reasoningEffort;
+          });
         }))
         catalog.models;
     };

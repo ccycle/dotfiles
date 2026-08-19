@@ -13,13 +13,17 @@ let
         npm = "@ai-sdk/openai-compatible";
         name = catalog.provider.name;
         options.baseURL = catalog.provider.baseURL;
-        models = lib.mapAttrs (_: m: {
-          name = m.name;
-          limit = {
-            context = m.contextLength;
-            output = m.contextLength;
-          };
-        }) catalog.models;
+        models = lib.mapAttrs
+          (_: m: {
+            name = m.name;
+            limit = {
+              context = m.contextLength;
+              output = m.contextLength;
+            };
+          } // (lib.optionalAttrs (m ? reasoningEffort) {
+            options.reasoningEffort = m.reasoningEffort;
+          }))
+          catalog.models;
       };
       kimi = {
         npm = "@ai-sdk/openai-compatible";
