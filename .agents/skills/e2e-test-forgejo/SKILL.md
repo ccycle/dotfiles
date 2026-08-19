@@ -67,12 +67,13 @@ Run from anywhere inside the repository (any worktree):
    runs - see `tests/e2e-forgejo/design.md`).
 9. Publishes Playwright's own HTML report (step tree, timing, and the
    trace.zip for every step - open it directly from the report to reach
-   trace viewer) to `modules/static-reports`'s `dataDir` under a
-   subdirectory named for the current worktree - after
+   trace viewer) to `modules/static-reports`'s `dataDir` under
+   `<branch-slug>/forgejo/` (pruned after 14 days of inactivity) - after
    `services.staticReports` has been applied via `darwin-rebuild switch`,
-   it's browsable at `https://reports.<hostname>.internal/<worktree-name>/`
-   from any device on the tailnet. Best-effort: a worktree on a host
-   without that module enabled doesn't fail the test run over it.
+   it's browsable at
+   `https://reports.<hostname>.internal/<branch-slug>/forgejo/` from any
+   device on the tailnet. Best-effort: a worktree on a host without that
+   module enabled doesn't fail the test run over it.
 
 ## When to Use
 

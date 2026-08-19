@@ -66,7 +66,7 @@ config surface beyond a directory).
 
 Reachability is already gated by the Tailscale ACL (`group:users` only,
 the same trust boundary every other internal service in this homelab
-uses). Report contents are test artifacts, not user data, and worktree
+uses). Report contents are test artifacts, not user data, and branch
 names in URLs aren't secret. Matches the existing posture rather than
 inventing a stricter one for this specific service.
 
@@ -74,10 +74,9 @@ inventing a stricter one for this specific service.
 
 - **Consumers are responsible for populating and pruning their own
   subdirectory** under `dataDir` — this module only serves whatever is
-  there. `.agents/skills/e2e-test-opencloud/scripts/run.sh` copies its
-  HTML report to `<dataDir>/<worktree-id>/` after each run; nothing
-  deletes old ones automatically (deliberate — see the e2e skill's own
-  docs for why).
+  there. It doesn't schedule anything itself; each consumer's own
+  run script prunes on its own schedule (currently: on every run, not
+  a separate timer).
 - **`browse` lists directory contents** — anyone who can reach
   `https://reports.<hostname>.internal` at all (i.e. anyone already on
   this tailnet) can enumerate every subdirectory, not just ones they

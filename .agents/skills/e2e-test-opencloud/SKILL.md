@@ -67,13 +67,14 @@ root cert+key so the test Caddy's certificates are already trusted (see
    file via the UI, and asserts it appears under the host's
    `user-files/e2e-test-runner/`.
 4. Publishes the Playwright HTML report to `modules/static-reports`'s
-   `dataDir` under a subdirectory named for the current worktree — after
-   this repo's `services.staticReports` module has been applied via
-   `darwin-rebuild switch`, it's browsable at
-   `https://reports.<hostname>.internal/<worktree-name>/` from any
-   device on the tailnet (see `modules/static-reports/design.md` for why
-   this is the only way to get an ad-hoc report reachable from another
-   device without an ACL change — `tailscale serve` and arbitrary ports
+   `dataDir` under `<branch-slug>/opencloud/` (pruned after 14 days of
+   inactivity) — after this repo's `services.staticReports` module has
+   been applied via `darwin-rebuild switch`, it's browsable at
+   `https://reports.<hostname>.internal/<branch-slug>/opencloud/` from
+   any device on the tailnet (see `modules/static-reports/design.md` for
+   why this is the only way to get an ad-hoc report reachable from
+   another device without an ACL change — `tailscale serve` and
+   arbitrary ports
    don't work on this host).
 5. Stops the containers and the test Caddy (data persists).
 

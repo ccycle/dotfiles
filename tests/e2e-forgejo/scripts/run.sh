@@ -10,11 +10,18 @@ E2E_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 REPO_ROOT="$(cd "$E2E_DIR/../.." && pwd)"
 STACK="$SCRIPT_DIR/stack.sh"
 ENV_FILE="$E2E_DIR/.env"
-WORKTREE_ID="$(basename "$REPO_ROOT")"
+BRANCH_SLUG="$(git -C "$REPO_ROOT" rev-parse --abbrev-ref HEAD | tr '/' '-')"
+SERVICE_NAME="forgejo"
 # modules/static-reports/options.nix's default dataDir. Publishing here is
 # best-effort — a worktree run on a host without that module enabled
 # (or before its first darwin-rebuild switch) shouldn't fail the test run.
-REPORTS_DIR="/var/lib/static-reports/${WORKTREE_ID}"
+# <branch>/<service> keeps this suite's report from clobbering another
+# suite's (e.g. opencloud's) report for the same branch.
+REPORTS_BASE_DIR="/var/lib/static-reports"
+REPORTS_DIR="$REPORTS_BASE_DIR/${BRANCH_SLUG}/${SERVICE_NAME}"
+# Reports are keyed by branch, not worktree, so a stale report survives
+# after its worktree is cleaned up - prune anything untouched this long.
+REPORTS_RETENTION_DAYS=14
 
 if [ $# -gt 0 ]; then
   echo "Unknown option: $1" >&2
@@ -29,7 +36,16 @@ cleanup() {
   if [ -d "$E2E_DIR/test-results/html" ] && mkdir -p "$REPORTS_DIR" 2>/dev/null; then
     rm -rf "${REPORTS_DIR:?}"/*
     cp -r "$E2E_DIR/test-results/html/." "$REPORTS_DIR/"
-    echo "[e2e-forgejo] report published: https://reports.$(scutil --get LocalHostName 2>/dev/null || hostname -s).internal/${WORKTREE_ID}/" >&2
+    echo "[e2e-forgejo] report published: https://reports.$(scutil --get LocalHostName 2>/dev/null || hostname -s).internal/${BRANCH_SLUG}/${SERVICE_NAME}/" >&2
+  fi
+  # Prune service report dirs untouched past the retention window, then
+  # any branch dir left empty by that - best-effort, same rationale as
+  # the publish step above. mtime is checked at the service level
+  # (depth 2) since that's the directory each run actually touches;
+  # the branch dir (depth 1) itself is never rewritten after creation.
+  if [ -d "$REPORTS_BASE_DIR" ]; then
+    find "$REPORTS_BASE_DIR" -mindepth 2 -maxdepth 2 -type d -mtime "+${REPORTS_RETENTION_DAYS}" -exec rm -rf {} + 2>/dev/null || true
+    find "$REPORTS_BASE_DIR" -mindepth 1 -maxdepth 1 -type d -empty -exec rmdir {} + 2>/dev/null || true
   fi
   # teardown, not down: nothing here needs an expensive one-time manual
   # bootstrap worth preserving between runs (unlike tests/e2e's OpenCloud

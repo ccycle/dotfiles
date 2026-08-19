@@ -124,11 +124,16 @@ sufficient.
      fake generations (no server involved).
 3. `scripts/run.sh` publishes `test-results/html/` (Playwright's own HTML
    reporter, trace.zip included) to `modules/static-reports`'s
-   `dataDir/<worktree-name>/` - browsable at
-   `https://reports.<hostname>.internal/<worktree-name>/` once that
+   `dataDir/<branch-slug>/forgejo/` - browsable at
+   `https://reports.<hostname>.internal/<branch-slug>/forgejo/` once that
    module is applied, same mechanism
-   `.agents/skills/e2e-test-opencloud` uses. Best-effort: a worktree on a
-   host without that module enabled doesn't fail the run over it.
+   `.agents/skills/e2e-test-opencloud` uses. Keyed by branch rather than
+   worktree so the report survives worktree cleanup; the `<service>`
+   subdirectory keeps this suite from clobbering another suite's report
+   for the same branch. Each run also prunes any service dir untouched
+   for 14+ days (and the branch dir once it's empty). Best-effort: a
+   worktree on a host without that module enabled doesn't fail the run
+   over it.
 4. Tears the container and its volume down (`scripts/stack.sh teardown`),
    so every run starts from a clean instance. Unlike `tests/e2e`'s
    OpenCloud suite, nothing here needs an expensive one-time manual
