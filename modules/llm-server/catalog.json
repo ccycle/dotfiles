@@ -23,28 +23,6 @@
         "on"
       ]
     },
-    "qwen/qwen3.5-27b": {
-      "name": "Qwen 3.5 27B",
-      "contextLength": 131072,
-      "files": [
-        {
-          "url": "https://huggingface.co/unsloth/Qwen3.5-27B-GGUF/resolve/main/Qwen3.5-27B-Q4_K_M.gguf",
-          "sha256": ""
-        }
-      ],
-      "extraFlags": []
-    },
-    "google/gemma-4-31b": {
-      "name": "Gemma 4 31B",
-      "contextLength": 131072,
-      "files": [
-        {
-          "url": "https://huggingface.co/google/gemma-4-31B-it-qat-q4_0-gguf/resolve/main/gemma-4-31B_q4_0-it.gguf",
-          "sha256": ""
-        }
-      ],
-      "extraFlags": []
-    },
     "qwen/qwen3.8-27b": {
       "name": "Qwen 3.8 27B",
       "contextLength": 262144,
@@ -56,17 +34,6 @@
         }
       ],
       "extraFlags": [ "--flash-attn", "on", "-ctk", "q8_0", "-ctv", "q8_0" ]
-    },
-    "google/gemma-4-e4b": {
-      "name": "Gemma 4 E4B",
-      "contextLength": 131072,
-      "files": [
-        {
-          "url": "https://huggingface.co/google/gemma-4-E4B-it-qat-q4_0-gguf/resolve/main/gemma-4-E4B_q4_0-it.gguf",
-          "sha256": ""
-        }
-      ],
-      "extraFlags": []
     },
     "qwen/qwen3.6-35b-a3b": {
       "name": "Qwen 3.6 35B A3B",
