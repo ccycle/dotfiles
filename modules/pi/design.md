@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Install the `pi` coding-agent CLI as a hermetic, Cachix-cacheable Nix package, symlink the shared AI-behavioral rules from `modules/ai-rules` into its config directory — the same live-editable symlink pattern used for Claude and Cursor — and declaratively point pi at the self-hosted local inference server (`modules/llm-server`) via `~/.pi/agent/models.json`.
+Install the `pi` coding-agent CLI as a hermetic, Cachix-cacheable Nix package, symlink the shared AI-behavioral rules from `modules/agents/rules` into its config directory — the same live-editable symlink pattern used for Claude and Cursor — and declaratively point pi at the self-hosted local inference server (`modules/llm-server`) via `~/.pi/agent/models.json`.
 
 ## Non-Goals
 
@@ -16,7 +16,7 @@ Install the `pi` coding-agent CLI as a hermetic, Cachix-cacheable Nix package, s
 
 `github:lukasl-dev/pi.nix` avoids this by using plain `buildNpmPackage` with a precomputed `npmDepsHash` instead: the dependency-fetch step runs as a fixed-output derivation, which is allowed network access and is instead verified after the fact by content hash. That sidesteps the specific offline-reconstruction failure entirely. The flake also carries the source patches upstream `pi` needs to build outside its own monorepo tooling (workspace build-order fixes, vendored `models.generated.ts`/provider files, changelog URL rewrites) and stays current: `VERSION.json` is bumped by an automated daily cron job in that repo, tracking upstream `pi` releases within about a day. The exact pinned version lives in that `VERSION.json` (do not hardcode a pi version here); pull it forward in lockstep with upstream by running `nix flake update pi`.
 
-The `~/.pi/agent/AGENTS.md` symlink (in `modules/ai-rules/home.nix`) relies on a real `pi` feature, not something `pi.nix` adds: `pi` reads that path as its global instruction file the same way it reads a project-level `AGENTS.md`/`CLAUDE.md`.
+The `~/.pi/agent/AGENTS.md` symlink (in `modules/agents/rules/home.nix`) relies on a real `pi` feature, not something `pi.nix` adds: `pi` reads that path as its global instruction file the same way it reads a project-level `AGENTS.md`/`CLAUDE.md`.
 
 ## models.json — Pointing pi at the Local Server
 

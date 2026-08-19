@@ -1,7 +1,7 @@
 # Package by Feature structure validator (pure Nix, builtins only).
 #
 # Rules are declared in rules.nix; this file only implements the checks.
-# Canonical prose spec: skills/project/nix-module/references/conventions.md
+# Canonical prose spec: .agents/skills/nix-module/references/conventions.md
 #
 # Usage (from the repo root):
 #   nix eval --json --impure \

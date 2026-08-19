@@ -21,7 +21,7 @@ Dangerous irreversible operations (history rewrite, branch deletion on the defau
 ## Token Lifecycle
 
 Fine-grained PATs must be created through the GitHub web UI — there is no API path for it — so rotation cannot be fully automated.
-The rotation workflow (`skills/project/safe-push-credentials`) treats this as intentional rather than a gap to close: forcing a human into the token-creation step reintroduces the same human-in-the-loop property the device flow gives the human path, at the moment the strongest privilege change happens.
+The rotation workflow (`.agents/skills/safe-push-credentials`) treats this as intentional rather than a gap to close: forcing a human into the token-creation step reintroduces the same human-in-the-loop property the device flow gives the human path, at the moment the strongest privilege change happens.
 Expiration monitoring is kept separate from rotation: a scheduled check surfaces the token's remaining lifetime early enough to rotate ahead of time, rather than rotation being triggered reactively by a failed push.
 
 ## Audit Logging

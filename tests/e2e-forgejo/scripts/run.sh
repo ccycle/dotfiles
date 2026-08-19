@@ -25,7 +25,7 @@ fi
 cleanup() {
   # Publish whatever report exists (pass or fail) before tearing the
   # stack down, so a failure is still inspectable afterward - same
-  # pattern as skills/project/e2e-test-opencloud/scripts/run.sh.
+  # pattern as .agents/skills/e2e-test-opencloud/scripts/run.sh.
   if [ -d "$E2E_DIR/test-results/html" ] && mkdir -p "$REPORTS_DIR" 2>/dev/null; then
     rm -rf "${REPORTS_DIR:?}"/*
     cp -r "$E2E_DIR/test-results/html/." "$REPORTS_DIR/"

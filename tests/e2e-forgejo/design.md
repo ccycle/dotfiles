@@ -127,7 +127,7 @@ sufficient.
    `dataDir/<worktree-name>/` - browsable at
    `https://reports.<hostname>.internal/<worktree-name>/` once that
    module is applied, same mechanism
-   `skills/project/e2e-test-opencloud` uses. Best-effort: a worktree on a
+   `.agents/skills/e2e-test-opencloud` uses. Best-effort: a worktree on a
    host without that module enabled doesn't fail the run over it.
 4. Tears the container and its volume down (`scripts/stack.sh teardown`),
    so every run starts from a clean instance. Unlike `tests/e2e`'s

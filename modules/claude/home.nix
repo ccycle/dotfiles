@@ -3,8 +3,6 @@
     inputs.nix-claude-code.packages.${pkgs.stdenv.hostPlatform.system}.default
   ];
 
-  home.file."${config.home.homeDirectory}/.claude/skills".source = config.lib.file.mkOutOfStoreSymlink "${config.custom.dotfiles.dir}/skills/user";
-
   home.file."${config.home.homeDirectory}/.claude/settings.json".source =
     config.lib.file.mkOutOfStoreSymlink "${config.custom.dotfiles.dir}/modules/claude/settings.json";
 

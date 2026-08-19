@@ -7,6 +7,6 @@
 
   environment.systemPackages = [
     pkgs.tart
-    pkgs.sshpass # non-interactive ssh auth against Tart VM guests, used by skills/project/vm-verify
+    pkgs.sshpass # non-interactive ssh auth against Tart VM guests, used by .agents/skills/vm-verify
   ];
 }

@@ -47,7 +47,7 @@ in
 {
   # See ./design.md for why pi is packaged via the pi.nix flake rather than
   # buildNpmPackage/importNpmLock in modules/nodejs/node-tools. Config files
-  # are symlinked directly (see modules/ai-rules/home.nix) rather than going
+  # are symlinked directly (see modules/agents/rules/home.nix) rather than going
   # through pi.nix's programs.pi.coding-agent home-manager module.
   #
   # Only bin/pi is added to the profile, not piPackage itself: piPackage's
@@ -62,10 +62,6 @@ in
       ln -s ${piPackage}/bin/pi $out/bin/pi
     '')
   ];
-
-  # Pi skills directory: symlink to shared user skills
-  home.file."${config.home.homeDirectory}/.agents/skills".source =
-    config.lib.file.mkOutOfStoreSymlink "${config.custom.dotfiles.dir}/skills/user";
 
   # Point pi at the self-hosted llama-swap server. See design.md for why
   # models.json is the one declarative pi config file that's safe to own.

@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Give anything in this repo (currently: `skills/project/e2e-test-opencloud`'s
+Give anything in this repo (currently: `.agents/skills/e2e-test-opencloud`'s
 Playwright HTML report, but written to be reusable for any future
 tooling — coverage reports, build artifacts, ad-hoc dashboards) a way to
 publish static files that are browsable over the tailnet, without each
@@ -74,7 +74,7 @@ inventing a stricter one for this specific service.
 
 - **Consumers are responsible for populating and pruning their own
   subdirectory** under `dataDir` — this module only serves whatever is
-  there. `skills/project/e2e-test-opencloud/scripts/run.sh` copies its
+  there. `.agents/skills/e2e-test-opencloud/scripts/run.sh` copies its
   HTML report to `<dataDir>/<worktree-id>/` after each run; nothing
   deletes old ones automatically (deliberate — see the e2e skill's own
   docs for why).

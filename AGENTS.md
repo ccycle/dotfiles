@@ -20,7 +20,7 @@ Every task follows: **Plan → Implement → Verify → Report**. State completi
 
 ## Module Structure Policy
 
-To ensure maintainability and clear dependency trees, we follow a strict **Package by Feature** aggregation pattern. For full conventions, see `skills/project/nix-module/references/conventions.md`.
+To ensure maintainability and clear dependency trees, we follow a strict **Package by Feature** aggregation pattern. For full conventions, see `.agents/skills/nix-module/references/conventions.md`.
 
 These rules are enforced mechanically: `scripts/package-by-feature/check.nix` validates the module trees against the declarative rule set in `scripts/package-by-feature/rules.nix` (run automatically by the verify-change skill). Intentional exceptions (disabled modules, generated code) belong in `rules.nix`, not in the checker.
 
@@ -67,12 +67,12 @@ Modules must access external flake inputs through the `inputs` attribute, not as
 
 ## Agent Skills
 
-We use [Agent Skills](https://agentskills.io) for task automation and guideline enforcement. Skills live in `skills/project/` (repo-scoped) or `skills/user/` (repo-agnostic); placement criteria are documented in `skills/README.md`.
+We use [Agent Skills](https://agentskills.io) for task automation and guideline enforcement. Repo-scoped skills live in `.agents/skills/`; repo-agnostic skills live in `modules/agents/skills/` and are deployed globally to `~/.claude/skills` and `~/.agents/skills`. Placement criteria are documented in `.agents/skills/README.md`.
 
-- **[nix-module](./skills/project/nix-module/SKILL.md):** Use this skill when creating new features or modules. It handles the directory structure and boilerplate generation.
-- **[credentials-manager](./skills/project/credentials-manager/SKILL.md):** Use this skill for managing secrets and Nix access tokens.
-- **[verify-change](./skills/project/verify-change/SKILL.md):** Use this skill to verify changes before committing. It runs syntax checks, lints, and build dry-runs.
-- **[obsidian-manager](./skills/project/obsidian-manager/SKILL.md):** Use this skill to draft zettelkasten notes on the user's behalf. Note conventions live in `references/note-conventions.md`; it never edits existing notes.
+- **[nix-module](./.agents/skills/nix-module/SKILL.md):** Use this skill when creating new features or modules. It handles the directory structure and boilerplate generation.
+- **[credentials-manager](./.agents/skills/credentials-manager/SKILL.md):** Use this skill for managing secrets and Nix access tokens.
+- **[verify-change](./.agents/skills/verify-change/SKILL.md):** Use this skill to verify changes before committing. It runs syntax checks, lints, and build dry-runs.
+- **[obsidian-manager](./.agents/skills/obsidian-manager/SKILL.md):** Use this skill to draft zettelkasten notes on the user's behalf. Note conventions live in `references/note-conventions.md`; it never edits existing notes.
 
 ## Measure-First for Investigation Tasks
 
@@ -107,8 +107,8 @@ Each profile has a different `nix build` attribute path due to how they are defi
 
 When asked to implement a feature:
 
-1. **Use `nix-module` Skill:** Start by reading `skills/nix-module/SKILL.md` and running the generation script.
-2. **Use `credentials-manager` Skill:** If handling secrets, refer to `skills/credentials-manager/SKILL.md`.
+1. **Use `nix-module` Skill:** Start by reading `.agents/skills/nix-module/SKILL.md` and running the generation script.
+2. **Use `credentials-manager` Skill:** If handling secrets, refer to `.agents/skills/credentials-manager/SKILL.md`.
 3. **Check Structure:** Does it fit into an existing feature directory? If not, create `modules/<feature>`. Ensure file dependencies are clear from the structure.
 4. **Separate Platforms:** Use `darwin.nix` for system config and `home.nix` for user config inside each feature directory.
-5. **Verify Changes:** Run `skills/project/verify-change/scripts/check.sh` before finishing the task.
+5. **Verify Changes:** Run `.agents/skills/verify-change/scripts/check.sh` before finishing the task.

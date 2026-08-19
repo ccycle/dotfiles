@@ -8,14 +8,16 @@ on:
       - '**.md'
       - 'docs/**'
       - 'issues/**'
-      - 'skills/**'
+      - '.agents/skills/**'
+      - 'modules/agents/skills/*/**'
       - '.claude/**'
   pull_request:
     paths-ignore:
       - '**.md'
       - 'docs/**'
       - 'issues/**'
-      - 'skills/**'
+      - '.agents/skills/**'
+      - 'modules/agents/skills/*/**'
       - '.claude/**'
 
 concurrency:

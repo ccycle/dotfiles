@@ -41,7 +41,7 @@ in
     '';
 
     # User-writable, not root-owned: populated by plain user scripts
-    # (e.g. skills/project/e2e-test-opencloud/scripts/run.sh) with no
+    # (e.g. .agents/skills/e2e-test-opencloud/scripts/run.sh) with no
     # launchd/root daemon of its own — Caddy only reads from it.
     system.activationScripts.postActivation.text = ''
       mkdir -p ${cfg.dataDir}

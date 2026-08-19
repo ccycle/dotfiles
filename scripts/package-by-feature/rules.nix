@@ -1,6 +1,6 @@
 # Declarative rules for the Package by Feature structure validator.
 # Consumed by check.nix. Canonical prose spec:
-# skills/project/nix-module/references/conventions.md
+# .agents/skills/nix-module/references/conventions.md
 {
   # Module trees to validate, relative to the repo root.
   roots = [

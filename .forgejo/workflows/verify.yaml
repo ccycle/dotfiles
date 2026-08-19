@@ -8,14 +8,16 @@ on:
       - '**.md'
       - 'docs/**'
       - 'issues/**'
-      - 'skills/**'
+      - '.agents/skills/**'
+      - 'modules/agents/skills/*/**'
       - '.claude/**'
   pull_request:
     paths-ignore:
       - '**.md'
       - 'docs/**'
       - 'issues/**'
-      - 'skills/**'
+      - '.agents/skills/**'
+      - 'modules/agents/skills/*/**'
       - '.claude/**'
 
 concurrency:
@@ -35,10 +37,10 @@ jobs:
           echo '{ username = "runner"; homeDirectory = "/Users/runner"; }' > generated/env.nix
 
       - name: Run verify-change
-        run: skills/project/verify-change/scripts/check.sh
+        run: .agents/skills/verify-change/scripts/check.sh
 
       # Assumes this runner's keychain already trusts the Caddy internal CA
-      # for https://cache.mac-mini-m4-pro.internal (see skills/project/attic-credentials
+      # for https://cache.mac-mini-m4-pro.internal (see .agents/skills/attic-credentials
       # for the manual CA-trust step). Unverified for the actual Forgejo runner.
       - name: Build and push to Attic
         env:

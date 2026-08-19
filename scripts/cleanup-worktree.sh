@@ -111,7 +111,7 @@ if [ "$force" = "false" ]; then
     [ "$confirm" != "y" ] && [ "$confirm" != "Y" ] && { printf 'Cancelled.\n' >&2; exit 1; }
 fi
 
-# Tear down the worktree's vm-verify VM (skills/project/vm-verify), if any,
+# Tear down the worktree's vm-verify VM (.agents/skills/vm-verify), if any,
 # so reused-but-abandoned VMs don't linger on disk after the worktree is gone.
 vm_name="dotfiles-verify-$(basename "$worktree_repo_root")"
 if command -v tart >/dev/null 2>&1; then
@@ -119,7 +119,7 @@ if command -v tart >/dev/null 2>&1; then
     tart delete "$vm_name" >/dev/null 2>&1 || true
 fi
 
-# Tear down the worktree's isolated e2e test stack (skills/project/
+# Tear down the worktree's isolated e2e test stack (.agents/skills/
 # e2e-test-opencloud), if any, so its containers/network don't linger
 # after the worktree directory disappears. The stack's own data lives
 # inside the worktree checkout (tests/e2e/.state/) and is removed along

@@ -1,7 +1,7 @@
 {
   imports = [
     ./agent-search/home.nix
-    ./ai-rules/home.nix
+    ./agents/home.nix
     ./attic/home.nix
     ./build-tools/home.nix
     ./caddy/home.nix

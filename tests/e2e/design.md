@@ -31,7 +31,7 @@ Three earlier designs were rejected in favor of this one:
 - **Testing against the real production instance** (disposable users
   against the live Pocket ID/OpenCloud) was the original plan, but it
   means every test run touches production auth state.
-- **A VM replicating the full production stack** (`skills/project/
+- **A VM replicating the full production stack** (`.agents/skills/
   vm-verify`'s approach) is impossible for this specific case: Apple
   Silicon's Virtualization.framework does not support nested
   virtualization for macOS guests (confirmed via Tart's own FAQ and
