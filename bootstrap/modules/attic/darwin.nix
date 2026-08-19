@@ -52,6 +52,8 @@ in
       rebuild_bundle
       ( for _ in $(seq 1 24); do
           curl -fsSL --max-time 5 "http://ca.${atticHost}.internal/ca.crt" -o "$ATTIC_CA" 2>/dev/null \
+            && ${pkgs.openssl}/bin/openssl x509 -inform DER -in "$ATTIC_CA" -out "$ATTIC_CA.tmp" 2>/dev/null \
+            && mv "$ATTIC_CA.tmp" "$ATTIC_CA" \
             && { rebuild_bundle; break; }
           sleep 5
         done ) &
