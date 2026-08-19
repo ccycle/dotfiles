@@ -240,6 +240,56 @@ do. The lesson generalizes: pocket-id identity and OpenCloud's own data
 must be reset *together*, never independently — see "Why a Stable,
 Fixed-Name Test User" above for why they're coupled at all.
 
+## Debugging Note: `personal drive never appeared in /me/drives` On A Brand-New Worktree
+
+A second, distinct cause of the same user-facing symptom as the note
+above, found later: `specs/opencloud.spec.ts` used to have a
+`test.beforeEach` that ran `mkdirSync(USER_DIR, { recursive: true })`
+before every test, reasoning that OpenCloud's posix driver doesn't create
+the personal-space directory itself on first login. That reasoning was
+correct, but the fix was wrong in a way that only bites once, on a
+worktree's very first run:
+
+- reva's posix driver (`pkg/storage/fs/posix/lookup/lookup.go`,
+  `GenerateSpaceID`) only takes the healthy "generate a fresh space id"
+  path when the personal-space directory is entirely absent
+  (`IsNotExist`) or has an explicitly-unset attribute (`IsAttrUnset`). A
+  directory that already exists with no space-id xattr at all — exactly
+  what a pre-emptive `mkdirSync` produces — falls through to
+  `len(spaceID) == 0` and returns `InternalError("encountered empty
+  space id on disk")`.
+- `XattrsBackend.IdentifyPath` (`metadata/xattrs_backend.go`) is why
+  `IsAttrUnset` never fires here: it discards `xattr.Get`'s error
+  entirely (`spaceID, _ := xattr.Get(...)`) and always returns `nil`,
+  so a missing attribute looks identical to a successfully-read empty
+  one from the caller's perspective.
+- Confirmed directly: `docker compose ... logs opencloud` showed
+  `"error":"internal error: encountered empty space id on disk"` /
+  `"message":"failed to create storage space"` repeated on every login
+  attempt for the test user, and `getfattr -d` on the resolved node
+  chain under `/var/lib/opencloud/storage/metadata/spaces/...` in the
+  container showed zero attributes on the terminal node.
+- This is a permanent failure once triggered, not a flake: the
+  personal-space id is deterministic (derived from the user's stable
+  `sub`), so every future login for the same never-deleted test user
+  hits the exact same broken lookup — reproduced identically across 4
+  separate `run.sh` invocations, including after deleting only
+  `tests/e2e/.state/opencloud/data` (OpenCloud's own metadata volume is
+  a bind mount, not a Docker volume, so neither `stack.sh down` nor
+  `teardown`'s `compose down -v` ever clears it either way).
+- **Fix, confirmed by direct measurement:** deleting both
+  `tests/e2e/.state/opencloud/data` and `.../user-files` together (so
+  the directory genuinely doesn't exist, hitting `IsNotExist`) and
+  removing the `beforeEach`'s `mkdirSync` entirely made both tests pass
+  in ~14s each, twice in a row (a fresh-worktree first run and a normal
+  subsequent run). OpenCloud's own space creation now creates the
+  directory, exactly as reva's `IsNotExist` branch implies it should.
+
+The general lesson: never pre-create a path this driver is responsible
+for provisioning, even to work around an *apparent* gap in when it gets
+created — an empty pre-existing directory and a missing one are not
+equivalent to the posix driver's own lookup, only to a casual `ls`.
+
 ## Operational Bugs Found Getting `stack.sh` To Be Idempotent
 
 Two more bugs surfaced from actually running `up`/`down`/`teardown`

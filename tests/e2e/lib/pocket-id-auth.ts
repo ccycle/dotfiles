@@ -170,34 +170,45 @@ export async function registerPasskey(
   await page.getByLabel('Name Passkey').getByRole('button', { name: 'Save' }).click();
 }
 
-// Completes whatever pocket-id login screen the browser currently sits on
-// (reached via a service's OIDC redirect, or a direct /login visit). The
-// resident credential registered by registerPasskey() lives in the same
-// virtual authenticator for the lifetime of this browser context, so no
-// username entry or fresh credential injection is needed here.
+// Completes the pocket-id consent screen the browser lands on after a
+// service's OIDC redirect ("<Client> wants to access ...
+// Email/Profile/Groups" — pocket-id's OIDC clients require consent by
+// default, no skipConsent set at creation in stack.sh's
+// bootstrap_if_needed). Only every caller's actual usage: registerPasskey()
+// has already established an authenticated pocket-id session (the
+// one-time-access-token login) by the time this runs, so there is no
+// separate "Authenticate" step to click through — measured directly: a
+// speculative click there timed out (5s) on every call before it was
+// removed. If a caller ever needs this from a genuinely unauthenticated
+// state, that's a different, currently-untested flow this helper doesn't
+// cover.
 export async function loginViaPasskey(page: Page): Promise<void> {
-  await clickIfPresent(page.getByRole('button', { name: 'Authenticate' }));
-
-  // First-time client authorization shows a consent screen ("<Client>
-  // wants to access ... Email/Profile/Groups") — pocket-id's OIDC
-  // clients require consent by default (no skipConsent set at creation
-  // in stack.sh's bootstrap_if_needed). Since registerPasskey() already
-  // establishes an authenticated session (the one-time-access-token
-  // login), this is usually reached directly without an "Authenticate"
-  // step at all.
-  await clickIfPresent(page.getByRole('button', { name: 'Sign in' }));
+  await page.getByRole('button', { name: 'Sign in' }).click({ timeout: 15_000 });
 }
 
-// locator.isVisible() checks the *current* DOM snapshot and does not wait
-// for an element that hasn't rendered yet, even with a `timeout` passed —
-// unlike locator.click()'s built-in actionability wait. Using isVisible()
-// here previously raced pocket-id's client-side interaction routing and
-// silently skipped screens that hadn't finished rendering yet.
-export async function clickIfPresent(locator: ReturnType<Page['getByRole']>, timeout = 5_000): Promise<void> {
-  try {
-    await locator.click({ timeout });
-  } catch {
-    // Not present within the timeout — nothing to do.
+// Revokes the current browser session's own OIDC client authorization
+// (DELETE /api/oidc/users/me/authorized-clients/{clientId} — "me"-scoped,
+// so this must run through page.request to reuse the browser context's
+// pocket-id session cookie, not the admin API key: pocket-id has no
+// admin-scoped equivalent that revokes on another user's behalf). Used to
+// force pocket-id's first-time consent screen deterministically, instead
+// of relying on whichever state a worktree's prior runs happened to leave
+// consent in. A 404 means the client was never authorized in the first
+// place (verified against oidc_service.go's RevokeAuthorizedClient,
+// which returns apperror.NotFound for exactly this case) — already the
+// desired end state, not an error.
+export async function revokeOwnClientAuthorization(
+  page: Page,
+  pocketIdBaseUrl: string,
+  clientId: string,
+): Promise<void> {
+  const res = await page.request.delete(
+    `${pocketIdBaseUrl}/api/oidc/users/me/authorized-clients/${clientId}`,
+  );
+  if (!res.ok() && res.status() !== 404) {
+    throw new Error(
+      `revoke client authorization failed: ${res.status()} ${await res.text()}`,
+    );
   }
 }
 

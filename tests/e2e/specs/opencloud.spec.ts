@@ -1,11 +1,11 @@
 import { test, expect } from '@playwright/test';
-import { existsSync, mkdirSync, rmSync, writeFileSync, mkdtempSync } from 'node:fs';
+import { existsSync, rmSync, writeFileSync, mkdtempSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import {
   provisionTestUser,
   loginViaPasskey,
-  clickIfPresent,
+  revokeOwnClientAuthorization,
   type PocketIdAdmin,
 } from '../lib/pocket-id-auth';
 
@@ -15,6 +15,7 @@ import {
 const POCKET_ID_URL = requireEnv('POCKET_ID_URL');
 const POCKET_ID_API_KEY = requireEnv('POCKET_ID_API_KEY');
 const OPENCLOUD_GROUP_ID = requireEnv('OPENCLOUD_GROUP_ID');
+const OPENCLOUD_OIDC_CLIENT_ID = requireEnv('OPENCLOUD_OIDC_CLIENT_ID');
 // Host-side path OpenCloud's posix storage driver mirrors the UI tree
 // into (STORAGE_USERS_POSIX_ROOT); see modules/opencloud/design.md.
 const USER_FILES_DIR = requireEnv('OPENCLOUD_USER_FILES_DIR');
@@ -32,29 +33,53 @@ function requireEnv(name: string): string {
 
 const admin: PocketIdAdmin = { baseUrl: POCKET_ID_URL, apiKey: POCKET_ID_API_KEY };
 
-test.beforeEach(() => {
-  // Idempotent, never deleted between runs (mkdirSync recursive is a
-  // no-op if it already exists). OpenCloud's posix storage driver in
-  // non-collaborative mode does not itself create a personal space
-  // directory for a newly auto-provisioned OIDC user on first login —
-  // confirmed by inspecting the WebDAV PROPFIND response, whose
-  // oc:permissions lacked Create/CreateDir (and resourcetype wasn't even
-  // reported as a collection) until the directory existed on disk. Any
-  // brand-new user hits this, not just this test suite.
-  //
-  // Deliberately NOT wiped/recreated every run: non-collaborative mode
-  // only learns about filesystem changes via its own assimilation scan,
-  // not by watching the filesystem (modules/opencloud/design.md) — an
-  // earlier version of this test deleted-then-recreated the directory
-  // every run, which left OpenCloud's own id-cache pointing at
-  // now-nonexistent paths and made uploads of a fixed filename fail with
-  // "stat ...: no such file or directory" (confirmed in its logs). Using
-  // a unique filename per run (below) avoids ever needing to reuse a
-  // path OpenCloud has stale metadata for.
-  mkdirSync(USER_DIR, { recursive: true });
+// Deliberately NOT pre-creating USER_DIR here. reva's posix driver
+// (pkg/storage/fs/posix/lookup/lookup.go GenerateSpaceID) only takes the
+// healthy "generate a fresh space id" path when the personal-space
+// directory is entirely absent (IsNotExist) or has an explicitly-unset
+// attribute (IsAttrUnset). A directory that already exists without a
+// space-id xattr — exactly what mkdirSync produced here — falls through
+// to `len(spaceID) == 0` and returns a permanent
+// "encountered empty space id on disk" error on every future login for
+// this user, because XattrsBackend.IdentifyPath
+// (metadata/xattrs_backend.go) silently discards xattr.Get's error
+// instead of surfacing ENODATA as IsAttrUnset. OpenCloud's own space
+// creation is what must create this directory, on first login.
+
+// Ordered deliberately ahead of the other tests: this suite runs with
+// workers: 1 / fullyParallel: false (playwright.config.ts), so tests in
+// one file execute strictly in declaration order. This test explicitly
+// revokes OpenCloud's OIDC client authorization first, so it — and only
+// it — exercises pocket-id's first-time consent screen. Every test after
+// it inherits an already-granted authorization, matching real-world
+// steady state (see "returning user" below).
+test('first-time OIDC authorization shows pocket-id consent screen', async ({ page }) => {
+  test.setTimeout(60_000);
+  const { teardown } = await provisionTestUser(page, admin, {
+    username: TEST_USERNAME,
+    groupId: OPENCLOUD_GROUP_ID,
+  });
+
+  try {
+    await revokeOwnClientAuthorization(page, POCKET_ID_URL, OPENCLOUD_OIDC_CLIENT_ID);
+
+    await page.goto('/');
+    // Unlike loginToOpenCloud()'s steady-state helper below, this is a
+    // hard assertion, not a best-effort click: with authorization freshly
+    // revoked, landing on pocket-id is the whole point of this test.
+    await page.waitForURL(new RegExp(`^${escapeRegExp(POCKET_ID_URL)}`), { timeout: 15_000 });
+    await loginViaPasskey(page);
+    await page.waitForURL(/\/files\//, { timeout: 15_000 });
+
+    await expect(page.getByRole('button', { name: 'My Account' })).toBeVisible({
+      timeout: 20_000,
+    });
+  } finally {
+    await teardown();
+  }
 });
 
-test('passkey login through OpenCloud OIDC succeeds', async ({ page }) => {
+test('returning user gets silent SSO on subsequent logins', async ({ page }) => {
   test.setTimeout(60_000);
   const { teardown } = await provisionTestUser(page, admin, {
     username: TEST_USERNAME,
@@ -91,8 +116,8 @@ test('uploaded file reflects into host filesystem', async ({ page }) => {
     // disabled until it is, so wait for the file list itself.
     await page.getByText(/No files found|e2e-marker-/).first().waitFor({ timeout: 20_000 });
 
-    // Upload a file via the UI. Unique filename per run — see
-    // beforeEach() above on why a fixed name isn't safe here.
+    // Upload a file via the UI. Unique filename per run, so a stale
+    // id-cache entry for a previous run's file can never be hit.
     const marker = `e2e-marker-${Date.now()}.txt`;
     const tmpDir = mkdtempSync(join(tmpdir(), 'e2e-opencloud-upload-'));
     const filePath = join(tmpDir, marker);
@@ -116,36 +141,28 @@ test('uploaded file reflects into host filesystem', async ({ page }) => {
       .poll(() => existsSync(hostFilePath), { timeout: 15_000, intervals: [500] })
       .toBe(true);
 
-    // Best-effort cleanup of just this run's file. Safe to do via raw fs
-    // (unlike beforeEach's directory) since its unique name is never
-    // reused, so a stale id-cache entry for it can never be hit again.
+    // Best-effort cleanup of just this run's file (never the directory
+    // itself — see the module-level comment above on why USER_DIR must
+    // only ever be created by OpenCloud's own space provisioning).
     rmSync(hostFilePath, { force: true });
   } finally {
     await teardown();
   }
 });
 
-// Shared by both tests: OpenCloud's login page redirects to pocket-id as
-// the sole OIDC provider (OC_EXCLUDE_RUN_SERVICES=idp disables the
-// built-in login), and lands back on OpenCloud authenticated.
+// Shared by the two tests that run after "first-time OIDC authorization"
+// above: OpenCloud's OIDC client authorization is guaranteed already
+// granted by this point in the file (workers: 1 / fullyParallel: false
+// in playwright.config.ts makes this file's test order deterministic),
+// so this asserts the silent-SSO path directly. Measurement showed both
+// a speculative click on OpenCloud's own landing-page login button and a
+// wait for a pocket-id redirect consistently hit their full timeouts
+// (5s / 8s, every run) once authorization was already granted — 13s
+// wasted per call on a branch that structurally never fires here. The
+// "first-time" test above is the only place that flow is real, and it
+// asserts it directly instead of guessing.
 async function loginToOpenCloud(page: import('@playwright/test').Page): Promise<void> {
   await page.goto('/');
-  await clickIfPresent(page.getByRole('button', { name: /log ?in/i }));
-
-  // The test user's pocket-id session (from provisionTestUser's /lc/
-  // login) and its OAuth consent grant for this client both persist
-  // across runs now that the user itself is stable (see
-  // tests/e2e/design.md). From the second run on this typically means
-  // silent SSO: OpenCloud redirects through pocket-id and back so fast
-  // there's no observable navigation to pocket-id's origin to wait for.
-  // Only drive the passkey/consent UI if we actually land there.
-  try {
-    await page.waitForURL(new RegExp(`^${escapeRegExp(POCKET_ID_URL)}`), { timeout: 8_000 });
-    await loginViaPasskey(page);
-  } catch {
-    // Silent SSO — already authenticated, nothing to click through.
-  }
-
   await page.waitForURL(/\/files\//, { timeout: 15_000 });
 }
 
