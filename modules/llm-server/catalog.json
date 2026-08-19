@@ -14,7 +14,14 @@
           "sha256": ""
         }
       ],
-      "extraFlags": []
+      "extraFlags": [
+        "--repeat-penalty",
+        "1.15",
+        "--repeat-last-n",
+        "256",
+        "--flash-attn",
+        "on"
+      ]
     },
     "qwen/qwen3.5-27b": {
       "name": "Qwen 3.5 27B",
