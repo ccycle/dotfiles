@@ -24,7 +24,7 @@ name), with its own throwaway ports and data/upload directories.
 Run from anywhere inside the repository (any worktree):
 
 ```bash
-skills/project/e2e-test-immich/scripts/run.sh
+.agents/skills/e2e-test-immich/scripts/run.sh
 ```
 
 ## What It Does

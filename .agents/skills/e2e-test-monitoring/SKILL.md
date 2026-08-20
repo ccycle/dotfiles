@@ -25,7 +25,7 @@ name), with its own throwaway ports and Grafana volume.
 Run from anywhere inside the repository (any worktree):
 
 ```bash
-skills/project/e2e-test-monitoring/scripts/run.sh
+.agents/skills/e2e-test-monitoring/scripts/run.sh
 ```
 
 ## What It Does
