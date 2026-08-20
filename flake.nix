@@ -143,6 +143,8 @@
           e2e = inputs.nixpkgs.legacyPackages.${system}.mkShell {
             packages = [
               inputs.nixpkgs.legacyPackages.${system}.nodejs
+              inputs.nixpkgs.legacyPackages.${system}.oauth2-proxy
+              inputs.nixpkgs.legacyPackages.${system}.caddy
             ];
             shellHook = ''
               export PLAYWRIGHT_BROWSERS_PATH=${inputs.nixpkgs-playwright.legacyPackages.${system}.playwright-driver.browsers}
