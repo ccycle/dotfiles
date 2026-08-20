@@ -12,3 +12,6 @@ tests/e2e-forgejo/test-results/
 tests/e2e-immich/.env
 tests/e2e-immich/.state/
 tests/e2e-immich/test-results/
+tests/e2e-monitoring/.env
+tests/e2e-monitoring/.state/
+tests/e2e-monitoring/test-results/

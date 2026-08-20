@@ -1,0 +1,46 @@
+# Layered on top of modules/monitoring/compose.yaml only for the isolated
+# e2e stack (never for production). See tests/e2e-monitoring/design.md.
+#
+# modules/monitoring/compose.yaml hardcodes host ports for prometheus
+# (9090), grafana (3200), loki (3100), and cadvisor (8090), plus a fixed
+# `grafana-data` volume name (SQLite - see that file's own comment on why
+# it's a named volume, not a bind mount). A plain
+# `docker compose -p <other-project>` still binds those same host ports
+# and reuses that same named volume regardless of project name - it
+# would collide with (and could corrupt) the real production containers
+# and Grafana's database. This override replaces all of them with
+# per-worktree, per-run values so the two stacks can never collide.
+# `!override` is required on `ports:` - compose merges sequences from
+# multiple -f files by concatenation by default, so without it these
+# lists would be appended to the base file's ports (still binding
+# production's host ports) rather than replacing them.
+#
+# `alloy` and `loki` are NOT overridden here: alloy has no published host
+# port at all, and it talks to loki purely over the compose-internal
+# `loki:3100` DNS name, which Docker already scopes per-project.
+services:
+  prometheus:
+    ports: !override
+      - "127.0.0.1:${MONITORING_TEST_PROMETHEUS_PORT}:9090"
+
+  grafana:
+    ports: !override
+      - "127.0.0.1:${MONITORING_TEST_GRAFANA_PORT}:3000"
+    environment:
+      # Local auth only - this suite deliberately doesn't exercise
+      # Grafana's OIDC login (see design.md), so the real Pocket ID
+      # client config isn't needed and disabling it entirely avoids
+      # Grafana trying (and failing) to reach a nonexistent issuer.
+      GF_AUTH_GENERIC_OAUTH_ENABLED: "false"
+
+  loki:
+    ports: !override
+      - "127.0.0.1:${MONITORING_TEST_LOKI_PORT}:3100"
+
+  cadvisor:
+    ports: !override
+      - "127.0.0.1:${MONITORING_TEST_CADVISOR_PORT}:8080"
+
+volumes:
+  grafana-data:
+    name: "${MONITORING_TEST_GRAFANA_VOLUME_NAME}"
