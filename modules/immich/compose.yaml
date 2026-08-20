@@ -17,15 +17,19 @@ services:
       REDIS_HOSTNAME: redis
       IMMICH_SERVER_URL: ${IMMICH_SERVER_URL}
       IMMICH_TELEMETRY_INCLUDE: all
-      # OIDC (Pocket ID)
-      IMMICH_OIDC_ISSUER_URL: ${IMMICH_OIDC_ISSUER}
-      IMMICH_OIDC_CLIENT_ID: ${IMMICH_OIDC_CLIENT_ID}
-      IMMICH_OIDC_CLIENT_SECRET: ${IMMICH_OIDC_CLIENT_SECRET}
-      IMMICH_OIDC_AUTO_REGISTER: "true"
-      IMMICH_OIDC_SIGN_UP_AUTO_COMPLETE: "true"
-      IMMICH_OIDC_STORAGE_LABEL_CLAIM: preferred_username
+      # Immich has no per-field OIDC env vars; OAuth can only be set via the
+      # admin API/UI (system-config, in Postgres) or this file, which is
+      # generated fresh on every start from Pocket ID's registered client
+      # (see modules/immich/options.nix launchd script).
+      IMMICH_CONFIG_FILE: /run/immich/oidc-config.yaml
+      # Trusts Caddy's local CA for the OIDC discovery/token requests to
+      # https://auth.<host>.internal (Pocket ID); the container's system CA
+      # bundle has no reason to trust a locally-issued cert otherwise.
+      NODE_EXTRA_CA_CERTS: /run/immich/ca.crt
     volumes:
       - ${IMMICH_UPLOAD_DIR}:/usr/src/app/upload
+      - ${IMMICH_OIDC_CONFIG_HOST_PATH}:/run/immich/oidc-config.yaml:ro
+      - ${IMMICH_OIDC_CA_HOST_PATH}:/run/immich/ca.crt:ro
     depends_on:
       - redis
       - database

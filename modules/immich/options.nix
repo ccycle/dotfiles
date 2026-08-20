@@ -92,11 +92,50 @@ in
         export IMMICH_DB_DIR="${cfg.dbDir}"
         export IMMICH_SERVER_URL="https://immich.${config.networking.hostName}.internal"
         export IMMICH_HOST_DOMAIN="immich.${config.networking.hostName}.internal"
-        export IMMICH_OIDC_ISSUER="https://auth.${config.networking.hostName}.internal"
-        export IMMICH_OIDC_CLIENT_ID="immich"
-        export IMMICH_OIDC_CLIENT_SECRET=$(cat ${config.sops.secrets.immich_oidc_client_secret.path})
 
         mkdir -p "$IMMICH_UPLOAD_DIR" "$IMMICH_DB_DIR"
+
+        # Immich has no env-var interface for OAuth (only IMMICH_CONFIG_FILE,
+        # which loads a full system-config YAML/JSON). Regenerate that file
+        # on every start, next to the other sops-nix runtime secrets rather
+        # than on the photo storage volume, so it doesn't persist in backups
+        # of the media drive.
+        #
+        # Owned by the primary user (not root): OrbStack's bind-mount helper
+        # runs as that user's own process (there is no root-level container
+        # daemon on macOS), so a root-only file is invisible to it and Docker
+        # silently substitutes an empty directory for the mount instead of
+        # erroring, breaking Immich's config load. This still keeps the file
+        # unreadable to any other local account.
+        #
+        # Must use the real path, not /run: OrbStack's bind-mount source
+        # resolution doesn't follow the /run -> private/var/run symlink and
+        # silently falls back to mounting an empty directory (verified with
+        # `docker run -v /run/...:/test:ro` vs `-v /private/var/run/...`).
+        IMMICH_OIDC_CONFIG_DIR="/private/var/run/immich"
+        export IMMICH_OIDC_CONFIG_HOST_PATH="$IMMICH_OIDC_CONFIG_DIR/oidc-config.yaml"
+        export IMMICH_OIDC_CA_HOST_PATH="$IMMICH_OIDC_CONFIG_DIR/ca.crt"
+        rm -rf "$IMMICH_OIDC_CONFIG_DIR"
+        mkdir -p "$IMMICH_OIDC_CONFIG_DIR"
+        cat > "$IMMICH_OIDC_CONFIG_HOST_PATH" <<EOF
+        oauth:
+          enabled: true
+          issuerUrl: "https://auth.${config.networking.hostName}.internal"
+          clientId: "immich"
+          clientSecret: "$(cat ${config.sops.secrets.immich_oidc_client_secret.path})"
+          autoRegister: true
+          storageLabelClaim: preferred_username
+        EOF
+
+        # Caddy issues *.internal certs from its own local CA, which the
+        # container's system CA bundle doesn't trust. Copy the (public) root
+        # cert alongside the config above; NODE_EXTRA_CA_CERTS below points
+        # Immich's Node runtime at it for the OIDC discovery/token requests.
+        cp /var/lib/caddy/caddy/pki/authorities/${config.networking.hostName}/root.crt "$IMMICH_OIDC_CA_HOST_PATH"
+
+        chown -R ${config.system.primaryUser} "$IMMICH_OIDC_CONFIG_DIR"
+        chmod 700 "$IMMICH_OIDC_CONFIG_DIR"
+        chmod 400 "$IMMICH_OIDC_CONFIG_HOST_PATH" "$IMMICH_OIDC_CA_HOST_PATH"
 
         exec ${pkgs.docker-compose}/bin/docker-compose \
           -f ${composeFile} \
