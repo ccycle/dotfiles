@@ -64,11 +64,38 @@ in
           # script before Caddy starts; if the Tailscale IP ever changes,
           # Caddy must be restarted to rebind.
           default_bind {$TAILSCALE_IP} 127.0.0.1
+
+          # Each host runs its own internal CA under a host-specific CA ID
+          # (the host name, not "local"), so the root CN is distinct per
+          # machine ("Caddy Local Authority - <host> - <year> ECC Root") and
+          # no root is ever shared between hosts. A fresh CA ID also means
+          # the storage namespace (pki/authorities/<host>/ and
+          # certificates/<host>/) is new, so a previous auto-generated root
+          # or cached leaf certs from an older CA are never reused — no
+          # manual storage cleanup is required when the CA changes.
+          #
+          # The intermediate is auto-generated and auto-renewed. A 730d
+          # lifetime with renewal_window_ratio 0.3 (renew at 30% remaining,
+          # i.e. ~219d) guarantees the intermediate always has at least
+          # ~219d of signing lifetime left, so a 180d leaf is never clamped
+          # by the issuer's NotAfter (default 0.2 would leave only ~146d).
+          pki {
+            ca ${hostName} {
+              name "Caddy Local Authority - ${hostName}"
+              intermediate_lifetime 730d
+              renewal_window_ratio 0.3
+            }
+          }
         }
 
         # Common snippets
         (internal_tls) {
-          tls internal
+          tls {
+            issuer internal {
+              ca ${hostName}
+              lifetime 180d
+            }
+          }
 
           # Access log, shared by every vhost that imports this snippet so
           # logging config lives in one place rather than each service
@@ -148,8 +175,8 @@ in
           import internal_tls
           handle /ca.crt {
             root * /var/lib/caddy
-            @caddy_exists file /caddy/pki/authorities/local/root.der
-            rewrite @caddy_exists /caddy/pki/authorities/local/root.der
+            @caddy_exists file /caddy/pki/authorities/${hostName}/root.der
+            rewrite @caddy_exists /caddy/pki/authorities/${hostName}/root.der
 
             header Content-Type "application/x-x509-ca-cert"
             file_server
@@ -169,7 +196,7 @@ in
         StandardOutPath = "/var/log/caddy.log";
         StandardErrorPath = "/var/log/caddy.log";
         # Store Caddy data (including the local CA cert) in a predictable location.
-        # CA cert will be at /var/lib/caddy/caddy/pki/authorities/local/root.crt
+        # CA cert will be at /var/lib/caddy/caddy/pki/authorities/${hostName}/root.crt
         # (macOS: Caddy resolves data dirs relative to HOME via ~/Library/Application Support/Caddy/)
         # HOME must be set so Caddy can resolve OS config/cache directories.
         EnvironmentVariables = {
@@ -194,8 +221,8 @@ in
         chmod 755 /var/lib/caddy
 
         # Convert PEM to DER if the cert already exists (covers restarts)
-        PEM="/var/lib/caddy/caddy/pki/authorities/local/root.crt"
-        DER="/var/lib/caddy/caddy/pki/authorities/local/root.der"
+        PEM="/var/lib/caddy/caddy/pki/authorities/${hostName}/root.crt"
+        DER="/var/lib/caddy/caddy/pki/authorities/${hostName}/root.der"
         [ -f "$PEM" ] && ${pkgs.openssl}/bin/openssl x509 -in "$PEM" -outform DER -out "$DER"
 
         # Background converter for first boot (cert doesn't exist yet)

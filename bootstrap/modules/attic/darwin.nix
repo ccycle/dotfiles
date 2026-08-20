@@ -41,7 +41,10 @@ in
       fi
     }
     ${if isAtticHost then ''
-      LOCAL_CA="/var/lib/caddy/caddy/pki/authorities/local/root.crt"
+      # Caddy stores each host's CA under pki/authorities/<hostName>/, since
+      # each host runs its own internal CA under a host-specific CA ID (see
+      # modules/caddy/darwin.nix).
+      LOCAL_CA="/var/lib/caddy/caddy/pki/authorities/${config.networking.hostName}/root.crt"
       [ -f "$LOCAL_CA" ] && cp "$LOCAL_CA" "$ATTIC_CA"
       rebuild_bundle
       ( for _ in $(seq 1 24); do

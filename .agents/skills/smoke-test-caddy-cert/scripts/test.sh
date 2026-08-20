@@ -2,7 +2,8 @@
 set -euo pipefail
 
 # --- Configuration ---
-CA_URL="http://ca.mac-mini-m4.internal/ca.crt"
+HOSTNAME=$(hostname)
+CA_URL="http://ca.${HOSTNAME}.internal/ca.crt"
 FAILED=0
 TMPDIR_WORK=$(mktemp -d)
 trap 'rm -rf "$TMPDIR_WORK"' EXIT
@@ -72,7 +73,7 @@ echo "=== 🔒 HTTPS Verification ==="
 
 # Use the served CA cert to verify an HTTPS endpoint (proves the cert is functional)
 if curl -sf --max-time 10 --cacert <(openssl x509 -in "$CERT_FILE" -inform DER -outform PEM 2>/dev/null) \
-     "https://ca.mac-mini-m4.internal" > /dev/null 2>&1; then
+     "https://ca.${HOSTNAME}.internal" > /dev/null 2>&1; then
   pass "HTTPS verified using served CA certificate"
 else
   fail "HTTPS verification failed with served CA certificate"

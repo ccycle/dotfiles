@@ -17,7 +17,7 @@ Run from the repository root:
 
 ## Checks Performed
 
-1. **HTTP Response**: Fetches `http://ca.mac-mini-m4.internal/ca.crt` and verifies:
+1. **HTTP Response**: Fetches `http://ca.$(hostname).internal/ca.crt` and verifies:
    - HTTP 200 response
    - `Content-Type` is `application/x-x509-ca-cert`
    - `Content-Disposition` header is **absent** (required for iOS profile installation)
