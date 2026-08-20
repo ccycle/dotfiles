@@ -43,6 +43,7 @@
   }];
   custom.lm-studio.enable = true;
   services.llm-server.enable = true;
+  services.mtplx.enable = true;
 
   services.atticd.enable = true;
   services.staticReports.enable = true;

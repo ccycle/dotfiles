@@ -1,30 +1,37 @@
 { config, lib, ... }:
 
 let
-  catalog = builtins.fromJSON (builtins.readFile ../llm-server/catalog.json);
+  catalogs = [
+    (builtins.fromJSON (builtins.readFile ../llm-server/catalog.json))
+    (builtins.fromJSON (builtins.readFile ../mtplx/catalog.json))
+  ];
+
+  providerFromCatalog = catalog: {
+    name = catalog.provider.id;
+    value = {
+      npm = "@ai-sdk/openai-compatible";
+      name = catalog.provider.name;
+      options.baseURL = catalog.provider.baseURL;
+      models = lib.mapAttrs
+        (_: m: {
+          name = m.name;
+          limit = {
+            context = m.contextLength;
+            output = m.contextLength;
+          };
+        } // (lib.optionalAttrs (m ? reasoningEffort) {
+          options.reasoningEffort = m.reasoningEffort;
+        }))
+        catalog.models;
+    };
+  };
 
   opencodeConfig = {
     "$schema" = "https://opencode.ai/config.json";
     permission = {
       "*" = "allow";
     };
-    provider = {
-      ${catalog.provider.id} = {
-        npm = "@ai-sdk/openai-compatible";
-        name = catalog.provider.name;
-        options.baseURL = catalog.provider.baseURL;
-        models = lib.mapAttrs
-          (_: m: {
-            name = m.name;
-            limit = {
-              context = m.contextLength;
-              output = m.contextLength;
-            };
-          } // (lib.optionalAttrs (m ? reasoningEffort) {
-            options.reasoningEffort = m.reasoningEffort;
-          }))
-          catalog.models;
-      };
+    provider = (builtins.listToAttrs (map providerFromCatalog catalogs)) // {
       kimi = {
         npm = "@ai-sdk/openai-compatible";
         name = "kimi";

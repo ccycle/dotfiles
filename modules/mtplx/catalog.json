@@ -1,0 +1,23 @@
+{
+  "provider": {
+    "id": "mtplx",
+    "name": "MTPLX (mac-mini-m4-pro)",
+    "baseURL": "http://mtplx.mac-mini-m4-pro.internal/v1"
+  },
+  "models": {
+    "qwen/qwen3.8-27b-mtplx": {
+      "shortId": "qwen",
+      "name": "Qwen 3.8 27B (MTPLX)",
+      "contextLength": 262144,
+      "hfRepo": "Youssofal/Qwen3.8-27B-MTPLX-Optimized-Speed",
+      "extraFlags": [ "--preserve-thinking", "off" ]
+    },
+    "google/gemma-4-31b-mtplx": {
+      "shortId": "gemma4",
+      "name": "Gemma 4 31B (MTPLX)",
+      "contextLength": 262144,
+      "hfRepo": "Youssofal/Gemma4-MTPLX-Optimized-Speed",
+      "extraFlags": [ "--reasoning", "off", "--preserve-thinking", "off" ]
+    }
+  }
+}

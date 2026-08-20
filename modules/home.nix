@@ -33,6 +33,7 @@
     ./just/home.nix
     ./languages/home.nix
     ./lazygit/home.nix
+    ./mtplx/home.nix
     ./nix/home.nix
     ./nix-formatter/home.nix
     ./nodejs/home.nix
