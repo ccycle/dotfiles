@@ -1,0 +1,32 @@
+# Layered on top of modules/immich/compose.yaml only for the isolated
+# e2e stack (never for production). See tests/e2e-immich/design.md.
+#
+# modules/immich/compose.yaml hardcodes host ports for immich-server
+# (2283, 8091, 8092) and the two exporters (9188, 9122). A plain
+# `docker compose -p <other-project>` still binds those same host ports
+# regardless of project name - it would collide with (and could corrupt)
+# the real production containers. This override replaces them with
+# per-worktree, per-run values so the two stacks can never collide.
+# `!override` is required on `ports:` - compose merges sequences from
+# multiple -f files by concatenation by default, so without it these
+# lists would be appended to the base file's ports (still binding
+# production's host ports) rather than replacing them.
+#
+# The `model_cache` named volume and the immich-machine-learning/redis/
+# database services are NOT overridden here: they carry no explicit
+# `name:` in the base file, so Docker Compose auto-namespaces them by
+# project name already - a different `-p` is enough to isolate them.
+services:
+  immich-server:
+    ports: !override
+      - "127.0.0.1:${IMMICH_TEST_WEB_PORT}:2283"
+      - "127.0.0.1:${IMMICH_TEST_API_METRICS_PORT}:8081"
+      - "127.0.0.1:${IMMICH_TEST_ML_METRICS_PORT}:8082"
+
+  postgres-exporter:
+    ports: !override
+      - "127.0.0.1:${IMMICH_TEST_PG_EXPORTER_PORT}:9187"
+
+  redis-exporter:
+    ports: !override
+      - "127.0.0.1:${IMMICH_TEST_REDIS_EXPORTER_PORT}:9121"
