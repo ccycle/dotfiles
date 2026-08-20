@@ -70,8 +70,9 @@ root cert+key so the test Caddy's certificates are already trusted (see
    `dataDir` under `<branch-slug>/opencloud/` (pruned after 14 days of
    inactivity) — after this repo's `services.staticReports` module has
    been applied via `darwin-rebuild switch`, it's browsable at
-   `https://reports.<hostname>.internal/<branch-slug>/opencloud/` from
-   any device on the tailnet (see `modules/static-reports/design.md` for
+    `https://reports.<hostname>.internal/<branch-slug>/opencloud/` from
+    any device on the tailnet after a Pocket ID passkey login (see
+    `modules/static-reports/design.md` for
    why this is the only way to get an ad-hoc report reachable from
    another device without an ACL change — `tailscale serve` and
    arbitrary ports

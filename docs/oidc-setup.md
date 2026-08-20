@@ -19,6 +19,7 @@ OIDC クライアントとグループの登録は `scripts/pocket-id-register-c
 | Forgejo | confidential | OIDC | `forgejo` |
 | Immich | confidential | OIDC | `immich` |
 | Grafana | confidential | generic OAuth (OIDC) | `grafana` |
+| Reports (static-reports) | confidential | oauth2-proxy forward_auth | `reports` |
 | GitLab | - | - | (両 host で無効のため未登録) |
 | Prometheus | - | Caddy basicauth (OIDC非対応) | - |
 

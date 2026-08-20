@@ -1,0 +1,13 @@
+{
+  "name": "dotfiles-e2e-reports",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Passkey-gated E2E tests for the static-reports forward_auth gate (oauth2-proxy + Pocket ID), run against an isolated per-worktree stack",
+  "type": "module",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.59.1"
+  }
+}

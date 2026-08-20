@@ -1,0 +1,10 @@
+# Layered on top of modules/pocket-id/compose.yaml only for the isolated
+# e2e stack (never for production). Same rationale as
+# tests/e2e/fixtures/pocket-id.override.yaml: modules/pocket-id/compose.yaml
+# pins its data volume to the literal name "pocket-id-data", which bypasses
+# `docker compose -p`'s per-project namespacing — without this override the
+# e2e stack would mount the same Docker volume as a host's real, running
+# production Pocket ID.
+volumes:
+  pocket-id-data:
+    name: ${POCKET_ID_VOLUME_NAME}

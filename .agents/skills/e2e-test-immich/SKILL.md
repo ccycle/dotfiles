@@ -49,7 +49,7 @@ Run from anywhere inside the repository (any worktree):
    (pruned after 14 days of inactivity) - after `services.staticReports`
    has been applied via `darwin-rebuild switch`, it's browsable at
    `https://reports.<hostname>.internal/<branch-slug>/immich/` from any
-   device on the tailnet. Best-effort: a worktree on a host without that
+   device on the tailnet after a Pocket ID passkey login. Best-effort: a worktree on a host without that
    module enabled doesn't fail the test run over it.
 6. Tears the stack (containers + volumes + data dirs) down completely,
    so every run starts from a clean instance - the only admin a fresh

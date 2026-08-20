@@ -72,7 +72,7 @@ Run from anywhere inside the repository (any worktree):
    `services.staticReports` has been applied via `darwin-rebuild switch`,
    it's browsable at
    `https://reports.<hostname>.internal/<branch-slug>/forgejo/` from any
-   device on the tailnet. Best-effort: a worktree on a host without that
+   device on the tailnet after a Pocket ID passkey login. Best-effort: a worktree on a host without that
    module enabled doesn't fail the test run over it.
 
 ## When to Use
