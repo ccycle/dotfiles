@@ -128,6 +128,17 @@ if [ -x "$worktree_repo_root/tests/e2e/scripts/stack.sh" ]; then
     "$worktree_repo_root/tests/e2e/scripts/stack.sh" teardown >/dev/null 2>&1 || true
 fi
 
+# Remove this branch's published e2e reports (modules/static-reports),
+# keyed the same way the e2e run.sh scripts publish them: branch name with
+# '/' replaced by '-'. Whole branch dir, not per-service, since a branch may
+# have reports from multiple e2e suites (opencloud/forgejo/immich/monitoring).
+# Best-effort: reports_base_dir may not exist on hosts without static-reports
+# enabled, and each run.sh's own retention prune (14d) remains as a backstop
+# for branches cleaned up via workmux, where this script isn't invoked.
+reports_base_dir="/var/lib/static-reports"
+branch_slug=$(printf '%s' "$ws_branch" | tr '/' '-')
+rm -rf "${reports_base_dir:?}/${branch_slug}" 2>/dev/null || true
+
 herdr worktree remove --workspace "$ws_id" --json 2>/dev/null && \
     printf 'Removed worktree for %s\n' "$ws_branch" || \
     { printf 'Failed to remove worktree for %s\n' "$ws_branch" >&2; exit 1; }
