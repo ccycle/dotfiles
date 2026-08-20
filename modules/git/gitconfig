@@ -35,6 +35,12 @@
 [gpg]
     format = ssh
 
+# Trust list for verifying ssh signatures. A bare .pub cannot be used here:
+# the format requires the principal prefixed to the key, so the file is
+# generated from the signing key (see bootstrap/modules/git/user/home.nix).
+[gpg "ssh"]
+    allowedSignersFile = ~/.config/git/allowed_signers
+
 [init]
     defaultbranch = main
 
