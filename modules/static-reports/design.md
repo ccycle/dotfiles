@@ -114,6 +114,16 @@ failed with `x509: certificate signed by unknown authority` until
 (`/var/lib/caddy/caddy/pki/authorities/<hostname>/root.crt`), which
 sidesteps keychain state entirely.
 
+A live login also surfaced `Error redeeming code during OAuth2 callback:
+email in id_token isn't verified`: this Pocket ID instance has no SMTP
+configured, so `emailVerified` is permanently `false` for every account —
+not specific to any one user. oauth2-proxy's default `email_verified`
+enforcement would therefore reject every login forever, so
+`--insecure-oidc-allow-unverified-email=true` is set. This isn't a
+weakened check relative to the rest of the stack: no other Pocket
+ID-backed client here (OpenCloud, Immich, Grafana, Forgejo) enforces
+`email_verified` either.
+
 ## Constraints
 
 - **Consumers are responsible for populating and pruning their own

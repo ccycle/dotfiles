@@ -112,6 +112,10 @@ in
         export REPORTS_OIDC_CLIENT_SECRET=$(cat ${config.sops.secrets.reports_oidc_client_secret.path})
         export REPORTS_OAUTH_COOKIE_SECRET=$(cat ${config.sops.secrets.reports_oauth_cookie_secret.path})
 
+        # This Pocket ID deployment has no SMTP configured, so every
+        # account's emailVerified is permanently false; oauth2-proxy
+        # would otherwise reject every login with "email in id_token
+        # isn't verified".
         exec ${pkgs.oauth2-proxy}/bin/oauth2-proxy \
           --provider=oidc \
           --oidc-issuer-url=https://auth.${domain} \
@@ -122,6 +126,7 @@ in
           --http-address=127.0.0.1:${toString oauth2ProxyPort} \
           --upstream=static://202 \
           --email-domain='*' \
+          --insecure-oidc-allow-unverified-email=true \
           --set-xauthrequest=true \
           --pass-authorization-header=true \
           --reverse-proxy=true \
