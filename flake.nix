@@ -66,8 +66,7 @@
     uv2nix.url = "github:pyproject-nix/uv2nix";
     worktrunk.url = "github:max-sixty/worktrunk";
     worktrunk.inputs.nixpkgs.follows = "nixpkgs";
-    workmux.url = "github:raine/workmux";
-    workmux.inputs.nixpkgs.follows = "nixpkgs";
+
     yazi-plugins.flake = false;
     yazi-plugins.url = "github:yazi-rs/plugins";
   };
@@ -108,7 +107,6 @@
           pkgs-unstable = mkPkgs inputs.nixpkgs-unstable;
           freshPackage = inputs.fresh.packages.${system}.default;
           worktrunkPackage = inputs.worktrunk.packages.${system}.default;
-          workmuxPackage = inputs.workmux.packages.${system}.default;
           pyzoteroCliPackage = inputs.nixpkgs.legacyPackages.${system}.python3Packages.callPackage
             ./modules/python/pyzotero-cli/drv.nix
             { src = inputs.pyzotero-cli; };

@@ -1,5 +1,0 @@
-{ workmuxPackage, ... }:
-
-{
-  home.packages = [ workmuxPackage ];
-}

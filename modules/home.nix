@@ -53,7 +53,6 @@
     ./task-check/home.nix
     ./tmux/home.nix
     ./vscode/home.nix
-    ./workmux/home.nix
     ./worktrunk/home.nix
     ./yazi/home.nix
     ./zsh/home.nix
