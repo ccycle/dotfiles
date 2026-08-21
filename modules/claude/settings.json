@@ -208,6 +208,31 @@
       }
     ]
   },
+  "enabledPlugins": {
+    "cosense-cli@cosense-cli": true,
+    "ponytail@ponytail": true,
+    "launchdarkly@launchdarkly-ai-tooling": true
+  },
+  "extraKnownMarketplaces": {
+    "cosense-cli": {
+      "source": {
+        "source": "git",
+        "url": "https://github.com/helpfeel/cosense-cli.git"
+      }
+    },
+    "ponytail": {
+      "source": {
+        "source": "github",
+        "repo": "DietrichGebert/ponytail"
+      }
+    },
+    "launchdarkly-ai-tooling": {
+      "source": {
+        "source": "github",
+        "repo": "launchdarkly/ai-tooling"
+      }
+    }
+  },
   "effortLevel": "high",
   "tui": "fullscreen"
 }
