@@ -105,6 +105,15 @@ in
       logoutCallbackURLs = [ "https://grafana.${config.networking.hostName}.internal/login/generic_oauth" ];
       secretFile = "modules/monitoring/secrets-${config.networking.hostName}.yaml";
       secretKey = "grafana_oidc_client_secret";
+      allowedGroups = [ "grafana_admins" ];
+    }];
+
+    # Pocket ID group for Grafana access control. Only members of this
+    # group can log in to Grafana via OIDC (enforced by allowedGroups
+    # on the client above).
+    services.pocket-id.oidcGroups = [{
+      name = "grafana_admins";
+      friendlyName = "Grafana Admins";
     }];
 
     sops.secrets.grafana_admin_password = {
