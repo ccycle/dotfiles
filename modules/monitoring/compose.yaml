@@ -36,6 +36,8 @@ services:
       - grafana-data:/var/lib/grafana
       - ${GRAFANA_PROVISIONING_DIR}:/etc/grafana/provisioning:ro
       - ${GRAFANA_DASHBOARDS_DIR}:/var/lib/grafana/dashboards:ro
+      # Caddy internal CA certificate for OIDC token exchange with Pocket ID
+      - /var/lib/caddy/caddy/pki/authorities/${HOSTNAME}/root.crt:/etc/ssl/certs/caddy-ca.crt:ro
     environment:
       GF_SECURITY_ADMIN_USER: admin
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD}
@@ -50,6 +52,7 @@ services:
       GF_AUTH_GENERIC_OAUTH_AUTH_URL: ${GRAFANA_OIDC_ISSUER}/authorize
       GF_AUTH_GENERIC_OAUTH_TOKEN_URL: ${GRAFANA_OIDC_ISSUER}/api/oidc/token
       GF_AUTH_GENERIC_OAUTH_API_URL: ${GRAFANA_OIDC_ISSUER}/api/oidc/userinfo
+      GF_AUTH_GENERIC_OAUTH_TLS_SKIP_VERIFY_INSECURE: "true"
     depends_on:
       - prometheus
       - loki

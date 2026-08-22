@@ -207,6 +207,7 @@ in
         export GRAFANA_DASHBOARDS_DIR="${grafanaDashboardsDir}"
         export GRAFANA_ROOT_URL="https://grafana.${config.networking.hostName}.internal"
         export GITLAB_LOGS_DIR="${cfg.gitlabLogsDir}"
+        export HOSTNAME="${config.networking.hostName}"
 
         mkdir -p "$MONITORING_DATA_DIR/prometheus" \
                  "$MONITORING_DATA_DIR/loki"
