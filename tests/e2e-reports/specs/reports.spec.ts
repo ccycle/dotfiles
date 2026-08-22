@@ -105,7 +105,16 @@ test('signing out re-engages the gate', async ({ page }) => {
     await page.goto(`${REPORTS_URL}/oauth2/sign_out`);
     await page.context().clearCookies();
 
-    await page.goto(REPORTS_URL);
+    // Caddy's file_server browse response for "/" carries a Last-Modified
+    // header (from the seeded file inside the served directory) but no
+    // Cache-Control, so Chromium applies heuristic freshness and serves
+    // the re-visit below straight from its HTTP disk cache — confirmed
+    // via a HAR trace showing the request with zero response headers,
+    // an empty Cookie header, and `_transferSize: 0` (a cache hit),
+    // meaning it never reaches Caddy/oauth2-proxy at all despite the
+    // cookies genuinely being cleared just above. `Network.setCacheDisabled`
+    // via CDP does not prevent this hit; only changing the URL does.
+    await page.goto(`${REPORTS_URL}/?e2e-cache-bust=${Date.now()}`);
     await page.waitForURL(new RegExp(`^${escapeRegExp(POCKET_ID_URL)}`), { timeout: 20_000 });
     await expect(page).toHaveURL(new RegExp(`^${escapeRegExp(POCKET_ID_URL)}`));
   } finally {
