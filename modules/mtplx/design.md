@@ -165,6 +165,20 @@ penalty on every turn.
   chosen design runs MTPLX as a standalone always-on service instead,
   keeping its lifecycle independent of llama-swap's swap-on-demand model.
 
+## Alternative Model Variants
+
+The catalog ships the upstream `Youssofal/Qwen3.8-27B-MTPLX-Optimized-Speed`
+repo for Qwen 3.8, which is the official MTPLX-optimized checkpoint. A
+community variant exists:
+
+- **PocketAiHub/Qwen3.8-27B-Abliterated-MTPLX-Optimized-Speed** — a
+  "abliterated" (refusal-reduced) fork using 4bit mixed precision. A user
+  report (2026-08-17, M5 Max 128 GB) recorded ~60 tok/s with
+  `--preserve-thinking scoped`, compared to ~25 tok/s under llama.cpp with
+  the GGUF variant. This repo is not tracked in catalog.json; operators who
+  prefer it can swap `hfRepo` in their local catalog override or pass
+  `--model` directly.
+
 ## Constraints
 
 - Requires macOS with Xcode Command Line Tools installed (for the runtime
@@ -180,9 +194,8 @@ penalty on every turn.
   dropped, so every turn re-prefills the full context rather than reusing
   the previous turn's KV state. This is a known, open upstream issue as of
   2.8.3 (youssofal/MTPLX#291, #290, #278), not a configuration mistake on
-  our side. `--preserve-thinking off` (set via `extraFlags` in
-  `catalog.json`) is the workaround #291 recommends for Qwen 3.8's specific
-  mechanism, but it did not resolve the symptom for Gemma 4 in testing here
-  (`bytes`/`entries`/`writes_enqueued` all stayed 0 across a two-turn
-  session) — the flag is kept because it's a harmless no-op otherwise, not
-  because it's a confirmed fix.
+  our side. `--preserve-thinking scoped` (set via `extraFlags` in
+  `catalog.json`) limits thinking retention to the current turn rather than
+  disabling it entirely; upstream recommends `--preserve-thinking off` as a
+  more aggressive workaround, but `scoped` was chosen because it preserves
+  in-turn reasoning quality while still avoiding unbounded cache growth.

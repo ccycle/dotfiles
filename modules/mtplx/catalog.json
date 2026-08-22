@@ -10,7 +10,17 @@
       "name": "Qwen 3.8 27B (MTPLX)",
       "contextLength": 262144,
       "hfRepo": "Youssofal/Qwen3.8-27B-MTPLX-Optimized-Speed",
-      "extraFlags": [ "--preserve-thinking", "off" ]
+      "extraFlags": [
+        "--reasoning", "on",
+        "--reasoning-effort", "medium",
+        "--preserve-thinking", "scoped",
+        "--tool-prompt-mode", "hybrid",
+        "--batching-preset", "agent",
+        "--default-temperature", "0.6",
+        "--default-top-p", "0.95",
+        "--default-top-k", "20",
+        "--max-tokens", "16384"
+      ]
     },
     "google/gemma-4-31b-mtplx": {
       "shortId": "gemma4",
