@@ -18,6 +18,13 @@
       "contextLength": 262144,
       "hfRepo": "Youssofal/Gemma4-MTPLX-Optimized-Speed",
       "extraFlags": [ "--reasoning", "off", "--preserve-thinking", "off" ]
+    },
+    "ornith-ai/Ornith-1.5-35B-A3B-MLX-6bit": {
+      "shortId": "ornith35b",
+      "name": "Ornith-1.5-35B-A3B (MTPLX)",
+      "contextLength": 262144,
+      "hfRepo": "ornith-ai/Ornith-1.5-35B-A3B-MLX-6bit",
+      "extraFlags": []
     }
   }
 }
