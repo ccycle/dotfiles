@@ -102,7 +102,12 @@ derive_env() {
   : "${CADDY_POCKET_ID_PORT:=$(find_free_port)}"
   : "${CADDY_REPORTS_PORT:=$(find_free_port)}"
   : "${OAUTH2_PROXY_PORT:=$(find_free_port)}"
-  : "${REPORTS_COOKIE_SECRET:=$(openssl rand -base64 32)}"
+  # oauth2-proxy's --cookie-secret only auto-decodes URL-safe base64
+  # (`-`/`_`) into raw AES key bytes; standard base64's `+`/`/` chars make
+  # it fall back to treating the 44-char string itself as the key, which
+  # fails its 16/24/32-byte check. `tr` converts the alphabet without
+  # changing byte length. Verified against oauth2-proxy v7.15.2.
+  : "${REPORTS_COOKIE_SECRET:=$(openssl rand -base64 32 | tr '+/' '-_')}"
 
   mkdir -p "$STATE_DIR/pocket-id/data" "$STATE_DIR/reports"
 
