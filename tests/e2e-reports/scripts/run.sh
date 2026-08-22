@@ -43,10 +43,13 @@ cleanup() {
     find "$REPORTS_BASE_DIR" -mindepth 2 -maxdepth 2 -type d -mtime "+${REPORTS_RETENTION_DAYS}" -exec rm -rf {} + 2>/dev/null || true
     find "$REPORTS_BASE_DIR" -mindepth 1 -maxdepth 1 -type d -empty -exec rmdir {} + 2>/dev/null || true
   fi
-  # teardown, not down: a fresh Pocket ID per run is the point for this
-  # suite's admin-bootstrap-dependent client, and the one-time manual
-  # bootstrap is cheap once per worktree. See design.md.
-  "$STACK" teardown
+  # down, not teardown: the bootstrapped Pocket ID admin/passkey/OIDC
+  # client must survive across runs within a worktree (design.md: "same
+  # one-time manual admin-API-key bootstrap per worktree" as the
+  # OpenCloud suite). `teardown` would drop the pocket-id-data volume via
+  # `compose down -v`, destroying that identity and forcing a fresh
+  # manual bootstrap on every single run instead of once per worktree.
+  "$STACK" down
 }
 trap cleanup EXIT
 
