@@ -244,6 +244,10 @@ start_oauth2_proxy() {
   [ -n "${REPORTS_OIDC_CLIENT_SECRET:-}" ] || die "start_oauth2_proxy: missing REPORTS_OIDC_CLIENT_SECRET (run bootstrap first)"
   [ -n "${REPORTS_OIDC_CLIENT_ID:-}" ] || die "start_oauth2_proxy: missing REPORTS_OIDC_CLIENT_ID"
 
+  # This Pocket ID deployment has no SMTP configured, so every account's
+  # emailVerified is permanently false; oauth2-proxy would otherwise
+  # reject every login with "email in id_token isn't verified" (see
+  # modules/static-reports/options.nix, commit 23aa8ec).
   (
     exec nohup nix develop "$REPO_ROOT#e2e" -c oauth2-proxy \
       --provider=oidc \
@@ -254,6 +258,7 @@ start_oauth2_proxy() {
       --http-address="127.0.0.1:${OAUTH2_PROXY_PORT}" \
       --upstream=static://202 \
       --email-domain='*' \
+      --insecure-oidc-allow-unverified-email=true \
       --set-xauthrequest=true \
       --pass-authorization-header=true \
       --reverse-proxy=true \
