@@ -61,9 +61,8 @@ IMMICH_DB_DIR=${IMMICH_DB_DIR}
 IMMICH_UPLOAD_DIR=${IMMICH_UPLOAD_DIR}
 IMMICH_SERVER_URL=${IMMICH_SERVER_URL}
 IMMICH_HOST_DOMAIN=${IMMICH_HOST_DOMAIN}
-IMMICH_OIDC_ISSUER=unused-in-e2e-stack
-IMMICH_OIDC_CLIENT_ID=unused-in-e2e-stack
-IMMICH_OIDC_CLIENT_SECRET=unused-in-e2e-stack
+IMMICH_OIDC_CONFIG_HOST_PATH=${IMMICH_OIDC_CONFIG_HOST_PATH}
+IMMICH_OIDC_CA_HOST_PATH=${IMMICH_OIDC_CA_HOST_PATH}
 EOF
 }
 
@@ -81,11 +80,24 @@ derive_env() {
   # extra_hosts needs a syntactically valid hostname even though nothing
   # in this isolated stack ever resolves or dials it (no OIDC exercised).
   IMMICH_HOST_DOMAIN="unused-immich-e2e.internal"
+  # modules/immich/compose.yaml bind-mounts these paths unconditionally
+  # (see modules/immich/options.nix, which generates the real files for
+  # production). This suite deliberately never exercises OIDC (see
+  # design.md), so it just needs a syntactically valid config with OAuth
+  # off and an empty CA bundle for the mounts to resolve.
+  IMMICH_OIDC_CONFIG_HOST_PATH="$STATE_DIR/oidc/oidc-config.yaml"
+  IMMICH_OIDC_CA_HOST_PATH="$STATE_DIR/oidc/ca.crt"
   export IMMICH_TEST_WEB_PORT IMMICH_TEST_API_METRICS_PORT IMMICH_TEST_ML_METRICS_PORT
   export IMMICH_TEST_PG_EXPORTER_PORT IMMICH_TEST_REDIS_EXPORTER_PORT
   export IMMICH_DB_PASSWORD IMMICH_DB_DIR IMMICH_UPLOAD_DIR IMMICH_SERVER_URL IMMICH_HOST_DOMAIN
+  export IMMICH_OIDC_CONFIG_HOST_PATH IMMICH_OIDC_CA_HOST_PATH
   write_env_file
-  mkdir -p "$IMMICH_DB_DIR" "$IMMICH_UPLOAD_DIR"
+  mkdir -p "$IMMICH_DB_DIR" "$IMMICH_UPLOAD_DIR" "$STATE_DIR/oidc"
+  cat > "$IMMICH_OIDC_CONFIG_HOST_PATH" <<EOF
+oauth:
+  enabled: false
+EOF
+  : > "$IMMICH_OIDC_CA_HOST_PATH"
 }
 
 wait_healthy() {
@@ -115,7 +127,7 @@ cmd_down() {
 cmd_teardown() {
   derive_env
   compose down -v --remove-orphans 2>/dev/null || true
-  rm -rf "$IMMICH_DB_DIR" "$IMMICH_UPLOAD_DIR"
+  rm -rf "$IMMICH_DB_DIR" "$IMMICH_UPLOAD_DIR" "$STATE_DIR/oidc"
 }
 
 case "${1:-}" in
