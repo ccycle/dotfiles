@@ -2,7 +2,7 @@
   "lastChangelogVersion": "0.84.2",
   "defaultProvider": "llamaswap",
   "defaultModel": "ornith-ai/Ornith-1.5-35B-A3B-GGUF",
-  "defaultThinkingLevel": "low",
+  "defaultThinkingLevel": "medium",
   "enableSkillCommands": true,
   "packages": [
     "npm:pi-free",
