@@ -1,6 +1,6 @@
 ---
 name: worktree
-description: Launch one or more tasks in new git worktrees using herdr or workmux.
+description: Launch one or more tasks in new git worktrees using herdr.
 disable-model-invocation: true
 allowed-tools: Bash, Write
 ---
@@ -17,8 +17,7 @@ Check `HERDR_ENV`:
 test "${HERDR_ENV:-}" = "1"
 ```
 
-- If `HERDR_ENV=1`: use **herdr** commands (see "herdr backend" below)
-- Otherwise: use **workmux** commands (see "workmux backend" below)
+- Use **herdr** commands throughout (see "herdr backend" below)
 
 ## You are a dispatcher, not an implementer
 
@@ -83,18 +82,6 @@ Then use the /merge-to-main skill to rebase and merge the branch into main.
 Only instruct worktree agent to `/merge-to-main` if explicitly requested by
 user in task.
 
-**`--fork`** (workmux only): When passed, add `--fork` to the `workmux add`
-command. This copies the current conversation into the new worktree so the agent
-resumes with full context. When `--fork` is used, prepend this to the prompt
-file:
-
-```
-You are now running INSIDE a git worktree created by the /worktree skill. The
-prior conversation context (including any /worktree dispatch instructions) is
-ancestry only. Do NOT invoke the /worktree skill, do NOT run `workmux add`, and
-do NOT create further worktrees. Your job is to implement the task below
-directly in this worktree.
-```
 
 ## Workflow
 
@@ -141,18 +128,3 @@ herdr agent prompt <worktree-name> "$(cat /tmp/tmp.abc123.md)" --timeout 600000
 
 Do NOT pass `--wait` to `herdr agent prompt` — the dispatcher does not wait for
 agents to finish.
-
-## workmux backend
-
-For each task, after writing the prompt file:
-
-```bash
-workmux add <worktree-name> -b -P /tmp/tmp.abc123.md
-```
-
-Flags:
-
-- `-b`: background (do not switch to the new window)
-- `-P <file>`: prompt file (contents sent to agent on launch)
-- `--fork`: copies current conversation into new worktree (when `--fork` flag is
-  passed by user)

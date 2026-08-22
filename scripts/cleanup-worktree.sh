@@ -134,7 +134,7 @@ fi
 # have reports from multiple e2e suites (opencloud/forgejo/immich/monitoring).
 # Best-effort: reports_base_dir may not exist on hosts without static-reports
 # enabled, and each run.sh's own retention prune (14d) remains as a backstop
-# for branches cleaned up via workmux, where this script isn't invoked.
+# for branches whose cleanup script was never run (e.g. orphaned worktrees).
 reports_base_dir="/var/lib/static-reports"
 branch_slug=$(printf '%s' "$ws_branch" | tr '/' '-')
 rm -rf "${reports_base_dir:?}/${branch_slug}" 2>/dev/null || true

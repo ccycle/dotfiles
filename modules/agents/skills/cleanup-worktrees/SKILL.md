@@ -27,8 +27,7 @@ Check `HERDR_ENV`:
 test "${HERDR_ENV:-}" = "1"
 ```
 
-- If `HERDR_ENV=1`: use **herdr** commands throughout
-- Otherwise: use **workmux** commands throughout
+- Use **herdr** commands throughout
 
 ## Workflow
 
@@ -72,17 +71,6 @@ Only after an explicit yes, remove it:
 ./scripts/cleanup-worktree.sh --force
 ```
 
-### 4. Workmux backend (when not in herdr)
-
-There is no herdr worktree session to sit inside. For workmux-managed
-worktrees, use the workmux CLI instead:
-
-```bash
-workmux remove       # remove current worktree
-```
-
-Apply the same classification guard first: the branch must be started and
-merged to main before removing.
 
 ## Rules
 
