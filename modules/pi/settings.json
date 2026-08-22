@@ -1,8 +1,8 @@
 {
   "lastChangelogVersion": "0.84.2",
-  "defaultProvider": "llamaswap",
-  "defaultModel": "google/gemma-4-26b-a4b",
-  "defaultThinkingLevel": "off",
+  "defaultProvider": "cline",
+  "defaultModel": "stealth/ox-alpha",
+  "defaultThinkingLevel": "low",
   "enableSkillCommands": true,
   "packages": [
     "npm:pi-free",
