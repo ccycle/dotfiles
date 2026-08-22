@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import {
   provisionTestUser,
   loginViaPasskey,
+  revokeOwnClientAuthorization,
   type PocketIdAdmin,
 } from '../../e2e/lib/pocket-id-auth';
 
@@ -13,6 +14,7 @@ const REPORTS_URL = requireEnv('REPORTS_URL');
 const POCKET_ID_URL = requireEnv('POCKET_ID_URL');
 const POCKET_ID_API_KEY = requireEnv('POCKET_ID_API_KEY');
 const REPORTS_GROUP_ID = requireEnv('REPORTS_GROUP_ID');
+const REPORTS_OIDC_CLIENT_ID = requireEnv('REPORTS_OIDC_CLIENT_ID');
 
 const TEST_USERNAME = 'e2e-test-runner';
 // Seeded into the stack's static root by stack.sh's derive_env.
@@ -55,6 +57,13 @@ test('authenticated user can browse and read report files', async ({ page }) => 
   });
 
   try {
+    // Revoke any authorization a prior run left behind (pocket-id's
+    // consent state persists across runs — see tests/e2e-reports/design.md
+    // and pocket-id-auth.ts's revokeOwnClientAuthorization), so the
+    // consent screen loginViaPasskey() expects is always there,
+    // deterministically — same pattern as tests/e2e/specs/opencloud.spec.ts.
+    await revokeOwnClientAuthorization(page, POCKET_ID_URL, REPORTS_OIDC_CLIENT_ID);
+
     await page.goto(REPORTS_URL);
     // provisionTestUser left the browser authenticated to pocket-id (via
     // the one-time-access-token login), so oauth2-proxy's redirect lands
@@ -86,6 +95,8 @@ test('signing out re-engages the gate', async ({ page }) => {
   });
 
   try {
+    await revokeOwnClientAuthorization(page, POCKET_ID_URL, REPORTS_OIDC_CLIENT_ID);
+
     await page.goto(REPORTS_URL);
     await loginViaPasskey(page);
     await page.waitForURL(new RegExp(`^${escapeRegExp(REPORTS_URL)}`), { timeout: 20_000 });
