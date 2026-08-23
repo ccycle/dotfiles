@@ -57,15 +57,9 @@ Interpret the status:
 Tell the user the classification. If the status is not SAFE, explain why
 and stop. Do not attempt removal.
 
-### 3. Confirm and remove
+### 3. Remove
 
-If the classification is SAFE, ask the user for confirmation:
-
-```
-This worktree (<branch>) is merged to main. Remove it? [y/N]
-```
-
-Only after an explicit yes, remove it:
+If the classification is SAFE, remove it without confirmation:
 
 ```bash
 ./scripts/cleanup-worktree.sh --force
