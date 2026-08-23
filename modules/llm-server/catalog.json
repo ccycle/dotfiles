@@ -62,26 +62,6 @@
         "q8_0"
       ]
     },
-    "ornith-ai/Ornith-1.5-9B-GGUF": {
-      "name": "Ornith-1.5-9B-GGUF (Q4_K_M)",
-      "contextLength": 262144,
-      "thinking": true,
-      "reasoningEffort": "medium",
-      "files": [
-        {
-          "url": "https://huggingface.co/ornith-ai/Ornith-1.5-9B-GGUF/resolve/main/Ornith-1.5-9B-Q4_K_M.gguf",
-          "sha256": ""
-        }
-      ],
-      "extraFlags": [
-        "--repeat-penalty",
-        "1.15",
-        "--repeat-last-n",
-        "256",
-        "--flash-attn",
-        "on"
-      ]
-    },
     "ornith-ai/Ornith-1.5-35B-A3B-GGUF": {
       "name": "Ornith-1.5-35B-A3B-GGUF (Q4_K_M)",
       "contextLength": 262144,
