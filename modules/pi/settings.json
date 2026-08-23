@@ -9,7 +9,8 @@
     "npm:pi-rewind",
     "npm:pi-undo-redo",
     "npm:pi-workspace-history",
-    "npm:opencode-pi"
+    "npm:opencode-pi",
+    "npm:pi-ask-user"
   ],
   "terminal": {
     "showTerminalProgress": true
