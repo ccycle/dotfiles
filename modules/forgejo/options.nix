@@ -229,10 +229,24 @@ in
           # so Forgejo's OIDC client can verify Pocket ID's TLS certificate.
           FORGEJO_CADDY_CA_SRC="/var/lib/caddy/caddy/pki/authorities/${config.networking.hostName}/root.crt"
           FORGEJO_CADDY_CA_DST="''${FORGEJO_DATA_DIR}/caddy-ca.crt"
+          
+          # Wait for Caddy to generate its CA certificate (up to 60 seconds)
+          attempts=0
+          until [ -f "$FORGEJO_CADDY_CA_SRC" ]; do
+            attempts=$((attempts + 1))
+            if [ "$attempts" -ge 12 ]; then
+              echo "ERROR: Caddy CA cert not found at $FORGEJO_CADDY_CA_SRC after waiting; OIDC will fail."
+              break
+            fi
+            echo "Waiting for Caddy CA cert at $FORGEJO_CADDY_CA_SRC..."
+            sleep 5
+          done
+          
           if [ -f "$FORGEJO_CADDY_CA_SRC" ]; then
             ${pkgs.coreutils}/bin/cp "$FORGEJO_CADDY_CA_SRC" "$FORGEJO_CADDY_CA_DST"
+            echo "Copied Caddy CA cert to $FORGEJO_CADDY_CA_DST"
           else
-            echo "WARNING: Caddy CA cert not found at $FORGEJO_CADDY_CA_SRC; OIDC may fail."
+            echo "ERROR: Caddy CA cert not found; creating empty file."
             touch "$FORGEJO_CADDY_CA_DST"
           fi
           export FORGEJO_CADDY_CA_CERT="$FORGEJO_CADDY_CA_DST"
@@ -286,10 +300,32 @@ in
           # exec'ing the server, but `docker compose exec` attaches as root
           # by default, and forgejo refuses to run its CLI as root.
 
+          # Wait for Caddy CA cert to be available in the container
+          attempts=0
+          until ${pkgs.docker-compose}/bin/docker-compose -f ${composeFile} exec -T \
+            sh -c '[ -s /usr/local/share/ca-certificates/caddy-internal.crt ]'; do
+            attempts=$((attempts + 1))
+            if [ "$attempts" -ge 12 ]; then
+              echo "ERROR: Caddy CA cert not available in container after waiting; OIDC will fail."
+              break
+            fi
+            echo "Waiting for Caddy CA cert in container..."
+            sleep 5
+          done
+          
           # Update the container's CA store so Forgejo trusts Caddy's
           # internal CA (*.internal TLS certs used by Pocket ID OIDC).
+          # The Alpine-based Forgejo image's update-ca-certificates creates
+          # individual cert symlinks but may not include the cert in the
+          # ca-certificates.crt bundle that Go's crypto/x509 reads. Append
+          # it explicitly to ensure Forgejo's HTTP client can verify
+          # Pocket ID's TLS certificate.
           ${pkgs.docker-compose}/bin/docker-compose -f ${composeFile} exec -T \
-            sh -c 'update-ca-certificates 2>/dev/null || true'
+            sh -c 'update-ca-certificates 2>/dev/null || true; \
+              if ! grep -q "BEGIN CERTIFICATE" /etc/ssl/certs/ca-certificates.crt 2>/dev/null || \
+                 ! openssl x509 -in /etc/ssl/certs/ca-certificates.crt -inform PEM -noout 2>/dev/null | tail -1 | grep -q "Caddy"; then \
+                cat /usr/local/share/ca-certificates/caddy-internal.crt >> /etc/ssl/certs/ca-certificates.crt 2>/dev/null || true; \
+              fi'
 
           existing=$(${pkgs.docker-compose}/bin/docker-compose -f ${composeFile} exec -T -u git forgejo forgejo admin auth list 2>/dev/null || true)
           source_id=$(echo "$existing" | grep "PocketID" | awk '{print $1}')
