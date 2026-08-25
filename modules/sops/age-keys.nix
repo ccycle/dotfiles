@@ -32,15 +32,26 @@
   rules = [
     {
       path_regex = "bootstrap/modules/.*secrets.yaml$";
-      hosts = [ "private" "mac-mini-m4" "mac-mini-m4-pro" ];
+      hosts = [
+        "private"
+        "mac-mini-m4"
+        "mac-mini-m4-pro"
+      ];
     }
     {
       path_regex = "modules/git/github/safe-push/secrets.yaml$";
-      hosts = [ "private" "mac-mini-m4" "mac-mini-m4-pro" ];
+      hosts = [
+        "private"
+        "mac-mini-m4"
+        "mac-mini-m4-pro"
+      ];
     }
     {
       path_regex = "modules/tailscale/secrets.yaml$";
-      hosts = [ "mac-mini-m4" "mac-mini-m4-pro" ];
+      hosts = [
+        "mac-mini-m4"
+        "mac-mini-m4-pro"
+      ];
     }
     {
       # Per-host secret files for services running on both servers.

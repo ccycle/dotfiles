@@ -89,7 +89,7 @@ board="$HOME/Obsidian/zettelkasten/Kanban (dotfiles).md"
 
 2. **Collect remaining titles as "in flight"** — these are notes already
    dispatched by a prior batch whose worktree still exists (worker may be
-   idle, blocked, or mid-discussion with the human). Read this *after* the
+   idle, blocked, or mid-discussion with the human). Read this _after_ the
    reconcile script above has finished pruning and backfilling:
 
    ```bash
@@ -313,5 +313,8 @@ reconcile auto-applies on, so move each of these directly, without asking:
    note.
 6. Never edit `dispatched.json` by hand or skip Step 1's prune — the human's
    only supported way to make a note re-eligible is `herdr worktree
-   remove`, which the prune step then detects automatically.
+remove`, which the prune step then detects automatically.
+
+```
+
 ```

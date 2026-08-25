@@ -11,7 +11,10 @@ FAILED=0
 
 # --- Helpers ---
 pass() { echo "✅ $1"; }
-fail() { echo "❌ $1"; FAILED=1; }
+fail() {
+  echo "❌ $1"
+  FAILED=1
+}
 
 check_http() {
   local name="$1"
@@ -62,7 +65,7 @@ fi
 # touches a host's real ~/.config/attic/config.toml.
 CONFIG_HOME="$WORKDIR/xdg-config"
 mkdir -p "$CONFIG_HOME/attic"
-cat > "$CONFIG_HOME/attic/config.toml" <<EOF
+cat >"$CONFIG_HOME/attic/config.toml" <<EOF
 default-server = "smoke"
 
 [servers.smoke]
@@ -74,7 +77,7 @@ chmod 600 "$CONFIG_HOME/attic/config.toml"
 # Fresh, unique payload each run so `attic push` can't short-circuit on an
 # already-cached path.
 PAYLOAD_FILE="$WORKDIR/payload"
-printf 'attic smoke test %s %s\n' "$(date +%s)" "$RANDOM" > "$PAYLOAD_FILE"
+printf 'attic smoke test %s %s\n' "$(date +%s)" "$RANDOM" >"$PAYLOAD_FILE"
 STORE_PATH=$(nix-store --add "$PAYLOAD_FILE")
 
 PUSH_OUTPUT=$(XDG_CONFIG_HOME="$CONFIG_HOME" attic push --no-closure smoke:"$CACHE_NAME" "$STORE_PATH" 2>&1) && PUSH_OK=1 || PUSH_OK=0

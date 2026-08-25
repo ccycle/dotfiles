@@ -53,12 +53,12 @@ overlay を適用するには `darwin-rebuild switch` が必要だが、
 
 ### 試行した回避策
 
-| 回避策 | 結果 |
-|--------|------|
-| `--option substitute false` | ソース fetch も nix daemon の curl 経由 → 失敗 |
-| system curl で GitHub から手動 DL | github.com が **IPv6 非対応** → 到達不能 |
+| 回避策                                 | 結果                                                       |
+| -------------------------------------- | ---------------------------------------------------------- |
+| `--option substitute false`            | ソース fetch も nix daemon の curl 経由 → 失敗             |
+| system curl で GitHub から手動 DL      | github.com が **IPv6 非対応** → 到達不能                   |
 | system curl `-6` で tarballs.nixos.org | nix source の NAR hash で 404（tarball hash ではないため） |
-| releases.nixos.org から DL | nix 2.31.2 の source tarball が存在しない |
+| releases.nixos.org から DL             | nix 2.31.2 の source tarball が存在しない                  |
 
 ### 失敗の構造
 
@@ -93,19 +93,19 @@ overlay 適用には darwin-rebuild switch が必要
 
 ### 確認済みの事実
 
-| 項目 | 結果 |
-|------|------|
-| `curl` (システム) → cache.nixos.org | `curl -6` で成功 |
-| `curl` (システム) → github.com | **失敗**（IPv6 非対応） |
-| `curl -6 -sI https://cache.nixos.org` | 成功 (HTTP/2 200) |
-| `curl -6 -sI https://tarballs.nixos.org` | 成功 (HTTP/2 200) |
-| `nc -6 -z cache.nixos.org 443` | 成功 |
-| `nix store info --store https://cache.nixos.org` | **失敗** |
-| `nix store info` (ローカル daemon) | 成功 |
-| `nix eval` (ビルド評価自体) | `--impure` 付きで成功 |
-| github.com AAAA レコード | **なし**（IPv6 非対応） |
-| cache.nixos.org AAAA レコード | あり（Fastly CDN） |
-| tarballs.nixos.org AAAA レコード | あり（Fastly CDN） |
+| 項目                                             | 結果                    |
+| ------------------------------------------------ | ----------------------- |
+| `curl` (システム) → cache.nixos.org              | `curl -6` で成功        |
+| `curl` (システム) → github.com                   | **失敗**（IPv6 非対応） |
+| `curl -6 -sI https://cache.nixos.org`            | 成功 (HTTP/2 200)       |
+| `curl -6 -sI https://tarballs.nixos.org`         | 成功 (HTTP/2 200)       |
+| `nc -6 -z cache.nixos.org 443`                   | 成功                    |
+| `nix store info --store https://cache.nixos.org` | **失敗**                |
+| `nix store info` (ローカル daemon)               | 成功                    |
+| `nix eval` (ビルド評価自体)                      | `--impure` 付きで成功   |
+| github.com AAAA レコード                         | **なし**（IPv6 非対応） |
+| cache.nixos.org AAAA レコード                    | あり（Fastly CDN）      |
+| tarballs.nixos.org AAAA レコード                 | あり（Fastly CDN）      |
 
 ### 原因の絞り込み
 

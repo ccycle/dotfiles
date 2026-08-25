@@ -15,7 +15,7 @@ does a dump file actually land where the backup job expects it.
 It exists specifically because this module's design.md already documents
 two things that could only be confirmed by running the real commands: the
 exact commit-status context format Forgejo Actions reports, and (found
-*while building this suite*) that `forgejo-cli` calls must run as
+_while building this suite_) that `forgejo-cli` calls must run as
 `-u git` or they crash outright as root.
 
 ## Why Playwright, With No Browser
@@ -74,7 +74,7 @@ sufficient.
 
 - **`ports:` needs the `!override` YAML tag.** Docker Compose merges
   sequences from multiple `-f` files by concatenation, not replacement.
-  Without `!override`, the test stack's port list gets *appended* to
+  Without `!override`, the test stack's port list gets _appended_ to
   `modules/forgejo/compose.yaml`'s `127.0.0.1:3000`/`127.0.0.1:2223` -
   still binding those, and colliding with the real production container
   the moment it exists. Discovered by running this suite: it errored
@@ -100,18 +100,18 @@ sufficient.
 2. `specs/forgejo.spec.ts` runs as a single Playwright test, its steps in
    order:
    - Creates a local admin user + API token via `forgejo admin user
-     create`/`generate-access-token` (`-u git` - see
+create`/`generate-access-token` (`-u git` - see
      `modules/forgejo/design.md` on why exec defaults to root otherwise).
    - Creates a test repo via `request.post` (traced), pushes a minimal
      `.forgejo/workflows/e2e.yaml` (`runs-on: macos-latest`) via `git`.
    - Registers a runner the same way `forgejo-runner-bootstrap` does
      (`forgejo-cli actions generate-secret` + `register`, `forgejo-runner
-     generate-config`, `yq` patches the connection in), starts
+generate-config`, `yq` patches the connection in), starts
      `forgejo-runner daemon` as a background child process.
    - Pushes the workflow commit, polls the commit-status API (traced)
      until the runner reports a result, and logs the real context string
      observed - this is the value that must match `branchProtections.*.
-     statusCheckContexts` in `modules/mac-mini-m4-pro/darwin.nix`.
+statusCheckContexts` in `modules/mac-mini-m4-pro/darwin.nix`.
    - Applies branch protection via the same API call (traced)
      `forgejo-branch-protection-bootstrap` uses, with the just-observed
      context, then reads it back (traced) and asserts the fields stuck.
@@ -149,7 +149,7 @@ sufficient.
   makes that safe.
 - `nix shell nixpkgs#forgejo-runner`/`nixpkgs#yq-go` are used directly
   from the spec rather than via this flake's pinned inputs, since the
-  suite only needs *a* working binary, not the exact pinned version -
+  suite only needs _a_ working binary, not the exact pinned version -
   keeps the suite runnable without a full flake evaluation first. This is
   a version-drift risk in principle (the registry's `nixpkgs` isn't this
   repo's pinned input) but hasn't caused an issue in practice, since

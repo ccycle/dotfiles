@@ -12,17 +12,19 @@ let
       npm = "@ai-sdk/openai-compatible";
       name = catalog.provider.name;
       options.baseURL = catalog.provider.baseURL;
-      models = lib.mapAttrs
-        (_: m: {
+      models = lib.mapAttrs (
+        _: m:
+        {
           name = m.name;
           limit = {
             context = m.contextLength;
             output = m.contextLength;
           };
-        } // (lib.optionalAttrs (m ? reasoningEffort) {
+        }
+        // (lib.optionalAttrs (m ? reasoningEffort) {
           options.reasoningEffort = m.reasoningEffort;
-        }))
-        catalog.models;
+        })
+      ) catalog.models;
     };
   };
 
@@ -50,6 +52,5 @@ in
     builtins.toJSON opencodeConfig;
 
   home.file."${config.home.homeDirectory}/.config/opencode/agents/measure-reviewer.md".source =
-    config.lib.file.mkOutOfStoreSymlink
-      "${config.custom.dotfiles.dir}/.agents/agents/measure-reviewer.md";
+    config.lib.file.mkOutOfStoreSymlink "${config.custom.dotfiles.dir}/.agents/agents/measure-reviewer.md";
 }

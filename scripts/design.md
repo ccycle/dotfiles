@@ -94,7 +94,7 @@ standalone-script convention.
   `/merge-to-main` now only suggests `/cleanup-worktrees`.
 - **Detecting merged branch via ORIG_HEAD in post-merge.** Rejected in
   favor of checking the current branch against `git merge-base
-  --is-ancestor` main. The ORIG_HEAD approach is fragile for squash merges;
+--is-ancestor` main. The ORIG_HEAD approach is fragile for squash merges;
   the ancestor check is idempotent and safe.
 - **Detecting "never started" via git topology.** Rejected: a never-started
   branch and a fast-forward-merged branch are topologically identical

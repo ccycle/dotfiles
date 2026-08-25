@@ -42,7 +42,7 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: "Sidekiq failed {{ $value | printf \"%.0f\" }} jobs in the last 10m"
+          summary: 'Sidekiq failed {{ $value | printf "%.0f" }} jobs in the last 10m'
 
       - alert: GitLabSidekiqQueueBacklog
         expr: sidekiq_queue_size > 100
@@ -50,7 +50,7 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: "Sidekiq queue {{ $labels.name }} has {{ $value | printf \"%.0f\" }} pending jobs"
+          summary: 'Sidekiq queue {{ $labels.name }} has {{ $value | printf "%.0f" }} pending jobs'
 
   - name: immich
     rules:
@@ -63,7 +63,7 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: "Immich API returned {{ $value | printf \"%.0f\" }} 5xx responses in the last 10m"
+          summary: 'Immich API returned {{ $value | printf "%.0f" }} 5xx responses in the last 10m'
 
       - alert: ImmichPostgresDown
         expr: pg_up{job="immich-postgres"} == 0
@@ -94,4 +94,4 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: "Forgejo is using {{ $value | printf \"%.0f\" }}% of its file descriptor limit"
+          summary: 'Forgejo is using {{ $value | printf "%.0f" }}% of its file descriptor limit'

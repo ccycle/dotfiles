@@ -13,10 +13,12 @@ in
   ];
 
   config = mkIf cfg.enable {
-    assertions = [{
-      assertion = vol != "";
-      message = "custom.storage.volumes.llm-server must be set. Run: scripts/setup-local-storage.sh llm-server=~/Library/Caches/llama.cpp";
-    }];
+    assertions = [
+      {
+        assertion = vol != "";
+        message = "custom.storage.volumes.llm-server must be set. Run: scripts/setup-local-storage.sh llm-server=~/Library/Caches/llama.cpp";
+      }
+    ];
 
     # No subpath appended: vol points directly at llama.cpp's own default
     # model cache location, matching upstream convention instead of

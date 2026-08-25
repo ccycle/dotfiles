@@ -8,10 +8,10 @@ description: Run API-driven (plus one browser-rendered) E2E checks of the monito
 Drives Prometheus's real `/api/v1/targets` and `/api/v1/query`, Grafana's
 real local-admin login and dashboard API, a real browser render of a
 Grafana dashboard, and Loki's real `/loki/api/v1/query_range` - all
-against an isolated stack that deliberately still scrapes the *real*
+against an isolated stack that deliberately still scrapes the _real_
 host via `host-gateway`, using the real `modules/monitoring/prometheus.yml`
 (mounted unmodified). See `tests/e2e-monitoring/design.md` for the full
-rationale, including why target *health* is never asserted (only that
+rationale, including why target _health_ is never asserted (only that
 every configured job was discovered) and why this suite uses local auth
 instead of OIDC.
 
@@ -68,6 +68,6 @@ Run from anywhere inside the repository (any worktree):
 - Docker must be running.
 - First run in a given worktree does `npm install` (Playwright + its test
   runner) before the suite itself starts.
-- Target *health* depends on what's actually running on this host at
+- Target _health_ depends on what's actually running on this host at
   test time - every job except `job="prometheus"` may legitimately
   report down, and that's not treated as a failure (see design.md).

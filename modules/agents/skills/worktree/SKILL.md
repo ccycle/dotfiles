@@ -60,6 +60,7 @@ manual implementation steps.
 flag through to the skill invocation in the prompt.
 
 Example prompt:
+
 ```
 [Task description here]
 
@@ -81,7 +82,6 @@ Then use the /merge-to-main skill to rebase and merge the branch into main.
 
 Only instruct worktree agent to `/merge-to-main` if explicitly requested by
 user in task.
-
 
 ## Workflow
 

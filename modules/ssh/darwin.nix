@@ -1,4 +1,9 @@
-{ config, pkgs, username, ... }:
+{
+  config,
+  pkgs,
+  username,
+  ...
+}:
 
 {
   environment.etc."ssh/sshd_config.d/102-use-dns.conf".text = ''
@@ -11,7 +16,12 @@
   launchd.daemons.sshd-alt = {
     serviceConfig = {
       Label = "com.local.sshd-alt";
-      ProgramArguments = [ "/usr/sbin/sshd" "-D" "-p" "2222" ];
+      ProgramArguments = [
+        "/usr/sbin/sshd"
+        "-D"
+        "-p"
+        "2222"
+      ];
       KeepAlive = true;
       RunAtLoad = true;
     };

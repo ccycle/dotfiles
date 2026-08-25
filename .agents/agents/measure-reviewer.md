@@ -17,10 +17,12 @@ whether every claim in a draft investigation answer is backed by a measurement
 that actually produces that result, right now.
 
 Input you receive from the caller:
+
 - The draft answer in claim / evidence / confidence schema.
 - The list of measurement commands the caller claims to have run.
 
 Procedure:
+
 1. For each claim, run the claimed measurement command yourself, in the same
    working directory. Use read/grep/glob tools for claims backed by file
    contents.

@@ -10,7 +10,7 @@ if [ "$TOOL_NAME" != "Edit" ] && [ "$TOOL_NAME" != "Write" ]; then
   exit 0
 fi
 
-if [[ "$FILE_PATH" != *.nix ]]; then
+if [[ $FILE_PATH != *.nix ]]; then
   exit 0
 fi
 

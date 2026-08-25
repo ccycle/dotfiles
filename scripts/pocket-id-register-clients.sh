@@ -67,29 +67,29 @@ die() {
 
 while [ $# -gt 0 ]; do
   case "$1" in
-    --admin-user)
-      ADMIN_USER="${2:-}"
-      [ -n "${ADMIN_USER}" ] || die "--admin-user requires an argument"
-      shift 2
-      ;;
-    --dry-run)
-      DRY_RUN=true
-      shift
-      ;;
-    -h|--help)
-      usage
-      exit 0
-      ;;
-    *)
-      die "unknown option: $1 (see --help)"
-      ;;
+  --admin-user)
+    ADMIN_USER="${2:-}"
+    [ -n "${ADMIN_USER}" ] || die "--admin-user requires an argument"
+    shift 2
+    ;;
+  --dry-run)
+    DRY_RUN=true
+    shift
+    ;;
+  -h | --help)
+    usage
+    exit 0
+    ;;
+  *)
+    die "unknown option: $1 (see --help)"
+    ;;
   esac
 done
 
 HOST="$(hostname -s)"
 case "${HOST}" in
-  mac-mini-m4|mac-mini-m4-pro) ;;
-  *) die "unsupported host '${HOST}'; run this on mac-mini-m4 or mac-mini-m4-pro" ;;
+mac-mini-m4 | mac-mini-m4-pro) ;;
+*) die "unsupported host '${HOST}'; run this on mac-mini-m4 or mac-mini-m4-pro" ;;
 esac
 
 # Worktrees lack the gitignored .local/ state; restore it and wire the
@@ -140,8 +140,8 @@ api_code() { # method path [json-body] -> HTTP status code only
 }
 
 if [ "${HAS_KEY}" = true ]; then
-  [ "$(api_code GET /healthz)" = "204" ] \
-    || die "Pocket ID not reachable at ${API_BASE} (healthz failed). Is pocket-id running?"
+  [ "$(api_code GET /healthz)" = "204" ] ||
+    die "Pocket ID not reachable at ${API_BASE} (healthz failed). Is pocket-id running?"
 elif [ "${DRY_RUN}" = true ]; then
   echo "  (dry-run without admin API key: live client/group state is not checked)"
 fi
@@ -149,8 +149,8 @@ fi
 urlenc() { jq -rn --arg v "$1" '$v | @uri'; }
 
 # --- user groups ---------------------------------------------------------
-declare -A GROUP_IDS   # group name -> pocket-id group id (synthetic in dry-run)
-declare -A ADMIN_GROUP_IDS  # adminGroup=true group names -> id
+declare -A GROUP_IDS       # group name -> pocket-id group id (synthetic in dry-run)
+declare -A ADMIN_GROUP_IDS # adminGroup=true group names -> id
 
 echo "== reconciling user groups =="
 while IFS= read -r g; do
@@ -161,8 +161,8 @@ while IFS= read -r g; do
 
   id=""
   if [ "${HAS_KEY}" = true ]; then
-    id="$(api GET "/api/user-groups?search=$(urlenc "${name}")" \
-      | jq -r --arg n "${name}" '.data[] | select(.name == $n) | .id' | head -1)"
+    id="$(api GET "/api/user-groups?search=$(urlenc "${name}")" |
+      jq -r --arg n "${name}" '.data[] | select(.name == $n) | .id' | head -1)"
   fi
 
   if [ -z "${id}" ]; then
@@ -172,8 +172,8 @@ while IFS= read -r g; do
     else
       echo "  creating group ${name}"
       id="$(api POST /api/user-groups \
-        "$(jq -nc --arg n "${name}" --arg f "${friendly}" '{name: $n, friendlyName: $f}')" \
-        | jq -r '.id')"
+        "$(jq -nc --arg n "${name}" --arg f "${friendly}" '{name: $n, friendlyName: $f}')" |
+        jq -r '.id')"
     fi
   else
     echo "  group ${name} exists"
@@ -229,9 +229,9 @@ while IFS= read -r c; do
 
   placeholder=false
   if [ "${exists}" = true ] && [ -n "${secret_file}" ] && [ -n "${secret_key}" ]; then
-    sval="$(sops -d --output-type json "${REPO_ROOT}/${secret_file}" 2>/dev/null \
-      | jq -r --arg k "${secret_key}" '.[$k] // empty' 2>/dev/null || true)"
-    case "${sval}" in ""|CHANGE_ME_*) placeholder=true ;; esac
+    sval="$(sops -d --output-type json "${REPO_ROOT}/${secret_file}" 2>/dev/null |
+      jq -r --arg k "${secret_key}" '.[$k] // empty' 2>/dev/null || true)"
+    case "${sval}" in "" | CHANGE_ME_*) placeholder=true ;; esac
   fi
 
   action="reuse"
@@ -282,18 +282,18 @@ while IFS= read -r c; do
 
   # Confidential clients: capture a fresh secret into sops (piped via
   # --value-stdin so the secret never appears in the process list).
-  if [ -n "${secret_file}" ] && [ -n "${secret_key}" ] && \
-     { [ "${action}" = "create" ] || [ "${action}" = "recreate" ]; }; then
-    api POST "/api/oidc/clients/${client_id}/secret" | jq '.secret' \
-      | sops set --idempotent --value-stdin "${REPO_ROOT}/${secret_file}" "[\"${secret_key}\"]"
+  if [ -n "${secret_file}" ] && [ -n "${secret_key}" ] &&
+    { [ "${action}" = "create" ] || [ "${action}" = "recreate" ]; }; then
+    api POST "/api/oidc/clients/${client_id}/secret" | jq '.secret' |
+      sops set --idempotent --value-stdin "${REPO_ROOT}/${secret_file}" "[\"${secret_key}\"]"
     echo "  generated secret for ${client_id} -> ${secret_file}::${secret_key}"
   fi
 
   # Clean up the stale *_oidc_client_id sops key from the manual era.
-  if [ -n "${secret_file}" ] && [[ "${secret_key}" == *_secret ]]; then
+  if [ -n "${secret_file}" ] && [[ ${secret_key} == *_secret ]]; then
     stale_key="${secret_key%_secret}_id"
-    if sops -d --output-type json "${REPO_ROOT}/${secret_file}" 2>/dev/null \
-        | jq -e --arg k "${stale_key}" 'has($k)' >/dev/null 2>&1; then
+    if sops -d --output-type json "${REPO_ROOT}/${secret_file}" 2>/dev/null |
+      jq -e --arg k "${stale_key}" 'has($k)' >/dev/null 2>&1; then
       sops unset --idempotent "${REPO_ROOT}/${secret_file}" "[\"${stale_key}\"]"
       echo "  removed stale sops key ${stale_key} from ${secret_file}"
     fi
@@ -308,8 +308,8 @@ if [ -n "${ADMIN_USER}" ]; then
     echo "== assigning ${ADMIN_USER} to admin groups =="
     user_id=""
     if [ "${HAS_KEY}" = true ]; then
-      user_id="$(api GET "/api/users?search=$(urlenc "${ADMIN_USER}")" \
-        | jq -r --arg u "${ADMIN_USER}" '.data[] | select(.username == $u) | .id' | head -1)"
+      user_id="$(api GET "/api/users?search=$(urlenc "${ADMIN_USER}")" |
+        jq -r --arg u "${ADMIN_USER}" '.data[] | select(.username == $u) | .id' | head -1)"
     fi
     if [ -z "${user_id}" ]; then
       if [ "${DRY_RUN}" = true ]; then
@@ -318,8 +318,8 @@ if [ -n "${ADMIN_USER}" ]; then
       else
         echo "  creating user ${ADMIN_USER}"
         user_id="$(api POST /api/users \
-          "$(jq -nc --arg u "${ADMIN_USER}" '{username: $u, isAdmin: true}')" \
-          | jq -r '.id')"
+          "$(jq -nc --arg u "${ADMIN_USER}" '{username: $u, isAdmin: true}')" |
+          jq -r '.id')"
       fi
     fi
 

@@ -1,4 +1,10 @@
-{ pkgs, inputs, config, ... }: {
+{
+  pkgs,
+  inputs,
+  config,
+  ...
+}:
+{
   home.packages = [
     inputs.nix-claude-code.packages.${pkgs.stdenv.hostPlatform.system}.default
   ];

@@ -19,7 +19,7 @@ straight at this checkout) was tried and abandoned. It creates a failure mode
 that is invisible until it silently defeats every future update:
 
 Home Manager's own collision check compares each new per-skill symlink's
-*target* against whatever already sits at the corresponding path under
+_target_ against whatever already sits at the corresponding path under
 `$HOME`. If the whole `~/.claude/skills` directory is itself a leftover
 symlink into this checkout, then every per-skill path under it already
 resolves — via that stale outer symlink — to the exact same file the new

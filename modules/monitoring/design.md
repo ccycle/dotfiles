@@ -123,7 +123,7 @@ for agent-driven investigation.
   volumes, so `node_filesystem_*` would be wrong. The daemon binds
   loopback-only (`127.0.0.1:9100`, same as every other scraped metrics port)
   and is picked up by the same `host-gateway` scrape pattern as Caddy below.
-  This is how the *filesystem* of the host itself (e.g. whether
+  This is how the _filesystem_ of the host itself (e.g. whether
   `/var/lib/static-reports` is accumulating) becomes answerable, which
   container-level cAdvisor metrics cannot show.
 

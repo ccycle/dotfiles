@@ -1,9 +1,13 @@
-
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 let
   vaults = config.obsidian.vaults;
-  enableCheck = config.obsidian.enable && vaults != [];
+  enableCheck = config.obsidian.enable && vaults != [ ];
 in
 {
   options = {
@@ -11,7 +15,7 @@ in
       enable = lib.mkEnableOption "Obsidian integration";
       vaults = lib.mkOption {
         type = lib.types.listOf lib.types.str;
-        default = [];
+        default = [ ];
         description = "Paths to your Obsidian vaults.";
       };
     };
@@ -43,10 +47,14 @@ in
       "$HOME/.local/bin"
     ];
 
-    home.activation.obsidianSetup = lib.mkIf enableCheck (lib.hm.dag.entryAfter [ "writeBoundary" ] (
-      lib.concatStringsSep "\n" (map (vault: ''
-        $HOME/.local/bin/obsidian-cli-check "${vault}"
-      '') vaults)
-    ));
+    home.activation.obsidianSetup = lib.mkIf enableCheck (
+      lib.hm.dag.entryAfter [ "writeBoundary" ] (
+        lib.concatStringsSep "\n" (
+          map (vault: ''
+            $HOME/.local/bin/obsidian-cli-check "${vault}"
+          '') vaults
+        )
+      )
+    );
   };
 }

@@ -1,26 +1,26 @@
-import { test, expect } from '@playwright/test';
-import { existsSync, rmSync, writeFileSync, mkdtempSync } from 'node:fs';
-import { join } from 'node:path';
-import { tmpdir } from 'node:os';
+import { test, expect } from "@playwright/test";
+import { existsSync, rmSync, writeFileSync, mkdtempSync } from "node:fs";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
 import {
   provisionTestUser,
   loginViaPasskey,
   revokeOwnClientAuthorization,
   type PocketIdAdmin,
-} from '../lib/pocket-id-auth';
+} from "../lib/pocket-id-auth";
 
 // Env vars are set by tests/e2e/scripts/stack.sh before invoking
 // `playwright test`; see tests/e2e/design.md for the isolated per-worktree
 // stack this test runs against (never production).
-const POCKET_ID_URL = requireEnv('POCKET_ID_URL');
-const POCKET_ID_API_KEY = requireEnv('POCKET_ID_API_KEY');
-const OPENCLOUD_GROUP_ID = requireEnv('OPENCLOUD_GROUP_ID');
-const OPENCLOUD_OIDC_CLIENT_ID = requireEnv('OPENCLOUD_OIDC_CLIENT_ID');
+const POCKET_ID_URL = requireEnv("POCKET_ID_URL");
+const POCKET_ID_API_KEY = requireEnv("POCKET_ID_API_KEY");
+const OPENCLOUD_GROUP_ID = requireEnv("OPENCLOUD_GROUP_ID");
+const OPENCLOUD_OIDC_CLIENT_ID = requireEnv("OPENCLOUD_OIDC_CLIENT_ID");
 // Host-side path OpenCloud's posix storage driver mirrors the UI tree
 // into (STORAGE_USERS_POSIX_ROOT); see modules/opencloud/design.md.
-const USER_FILES_DIR = requireEnv('OPENCLOUD_USER_FILES_DIR');
+const USER_FILES_DIR = requireEnv("OPENCLOUD_USER_FILES_DIR");
 
-const TEST_USERNAME = 'e2e-test-runner';
+const TEST_USERNAME = "e2e-test-runner";
 const USER_DIR = join(USER_FILES_DIR, TEST_USERNAME);
 
 function requireEnv(name: string): string {
@@ -53,7 +53,7 @@ const admin: PocketIdAdmin = { baseUrl: POCKET_ID_URL, apiKey: POCKET_ID_API_KEY
 // it — exercises pocket-id's first-time consent screen. Every test after
 // it inherits an already-granted authorization, matching real-world
 // steady state (see "returning user" below).
-test('first-time OIDC authorization shows pocket-id consent screen', async ({ page }) => {
+test("first-time OIDC authorization shows pocket-id consent screen", async ({ page }) => {
   test.setTimeout(60_000);
   const { teardown } = await provisionTestUser(page, admin, {
     username: TEST_USERNAME,
@@ -63,7 +63,7 @@ test('first-time OIDC authorization shows pocket-id consent screen', async ({ pa
   try {
     await revokeOwnClientAuthorization(page, POCKET_ID_URL, OPENCLOUD_OIDC_CLIENT_ID);
 
-    await page.goto('/');
+    await page.goto("/");
     // Unlike loginToOpenCloud()'s steady-state helper below, this is a
     // hard assertion, not a best-effort click: with authorization freshly
     // revoked, landing on pocket-id is the whole point of this test.
@@ -71,7 +71,7 @@ test('first-time OIDC authorization shows pocket-id consent screen', async ({ pa
     await loginViaPasskey(page);
     await page.waitForURL(/\/files\//, { timeout: 15_000 });
 
-    await expect(page.getByRole('button', { name: 'My Account' })).toBeVisible({
+    await expect(page.getByRole("button", { name: "My Account" })).toBeVisible({
       timeout: 20_000,
     });
   } finally {
@@ -79,7 +79,7 @@ test('first-time OIDC authorization shows pocket-id consent screen', async ({ pa
   }
 });
 
-test('returning user gets silent SSO on subsequent logins', async ({ page }) => {
+test("returning user gets silent SSO on subsequent logins", async ({ page }) => {
   test.setTimeout(60_000);
   const { teardown } = await provisionTestUser(page, admin, {
     username: TEST_USERNAME,
@@ -93,7 +93,7 @@ test('returning user gets silent SSO on subsequent logins', async ({ page }) => 
     // "Spaces" overview) — only that the app considers us logged in,
     // via the account menu that's present on every view once
     // authenticated.
-    await expect(page.getByRole('button', { name: 'My Account' })).toBeVisible({
+    await expect(page.getByRole("button", { name: "My Account" })).toBeVisible({
       timeout: 20_000,
     });
   } finally {
@@ -101,7 +101,7 @@ test('returning user gets silent SSO on subsequent logins', async ({ page }) => 
   }
 });
 
-test('uploaded file reflects into host filesystem', async ({ page }) => {
+test("uploaded file reflects into host filesystem", async ({ page }) => {
   test.setTimeout(90_000);
   const { teardown } = await provisionTestUser(page, admin, {
     username: TEST_USERNAME,
@@ -114,18 +114,21 @@ test('uploaded file reflects into host filesystem', async ({ page }) => {
     // A freshly auto-provisioned user's personal space isn't necessarily
     // ready the instant the URL changes — the "New" button stays
     // disabled until it is, so wait for the file list itself.
-    await page.getByText(/No files found|e2e-marker-/).first().waitFor({ timeout: 20_000 });
+    await page
+      .getByText(/No files found|e2e-marker-/)
+      .first()
+      .waitFor({ timeout: 20_000 });
 
     // Upload a file via the UI. Unique filename per run, so a stale
     // id-cache entry for a previous run's file can never be hit.
     const marker = `e2e-marker-${Date.now()}.txt`;
-    const tmpDir = mkdtempSync(join(tmpdir(), 'e2e-opencloud-upload-'));
+    const tmpDir = mkdtempSync(join(tmpdir(), "e2e-opencloud-upload-"));
     const filePath = join(tmpDir, marker);
     writeFileSync(filePath, `${TEST_USERNAME} upload at ${new Date().toISOString()}\n`);
 
-    const fileChooserPromise = page.waitForEvent('filechooser');
-    await page.getByRole('button', { name: /new/i }).click({ timeout: 20_000 });
-    await page.getByRole('menuitem', { name: 'Files Upload' }).click();
+    const fileChooserPromise = page.waitForEvent("filechooser");
+    await page.getByRole("button", { name: /new/i }).click({ timeout: 20_000 });
+    await page.getByRole("menuitem", { name: "Files Upload" }).click();
     const fileChooser = await fileChooserPromise;
     await fileChooser.setFiles(filePath);
 
@@ -161,13 +164,13 @@ test('uploaded file reflects into host filesystem', async ({ page }) => {
 // wasted per call on a branch that structurally never fires here. The
 // "first-time" test above is the only place that flow is real, and it
 // asserts it directly instead of guessing.
-async function loginToOpenCloud(page: import('@playwright/test').Page): Promise<void> {
-  await page.goto('/');
+async function loginToOpenCloud(page: import("@playwright/test").Page): Promise<void> {
+  await page.goto("/");
   await page.waitForURL(/\/files\//, { timeout: 15_000 });
 }
 
 function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 // The web app's own OIDC token, as it stores it for its own Graph API
@@ -184,12 +187,11 @@ function escapeRegExp(value: string): string {
 // fixed — this Graph-API-based navigation is kept regardless since it's
 // more robust than relying on the app's own post-login routing either
 // way).
-async function navigateToPersonalSpace(page: import('@playwright/test').Page): Promise<void> {
+async function navigateToPersonalSpace(page: import("@playwright/test").Page): Promise<void> {
   const webUrl = await page.evaluate(async () => {
-    const key = Object.keys(localStorage).find((k) => k.startsWith('oc_oAuth.user'));
+    const key = Object.keys(localStorage).find((k) => k.startsWith("oc_oAuth.user"));
     const token = JSON.parse(localStorage.getItem(key!)!).access_token;
-    const url =
-      '/graph/v1beta1/me/drives?$filter=' + encodeURIComponent('driveType eq personal');
+    const url = "/graph/v1beta1/me/drives?$filter=" + encodeURIComponent("driveType eq personal");
     // The personal drive can take a moment to become listable right
     // after a freshly auto-provisioned user's first login.
     for (let attempt = 0; attempt < 20; attempt++) {
@@ -198,7 +200,7 @@ async function navigateToPersonalSpace(page: import('@playwright/test').Page): P
       if (value?.[0]?.webUrl) return value[0].webUrl as string;
       await new Promise((r) => setTimeout(r, 1500));
     }
-    throw new Error('personal drive never appeared in /me/drives');
+    throw new Error("personal drive never appeared in /me/drives");
   });
   await page.goto(new URL(webUrl).pathname);
 }

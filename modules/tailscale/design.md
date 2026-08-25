@@ -15,8 +15,7 @@ is explicitly excluded.
   before starting Caddy, following the same pattern as dnsmasq. This
   closes the LAN exposure that existed when Caddy bound to 0.0.0.0.
 - **ACL policy** (`policy.hujson`) defines a default-deny posture:
-  servers are tagged `tag:server`, and only specific ports (80, 443, 53,
-  22) are open to `group:users`. Backend service ports (1234, 2283, 3000,
+  servers are tagged `tag:server`, and only specific ports (80, 443, 53, 22) are open to `group:users`. Backend service ports (1234, 2283, 3000,
   8929, 9090, 9200) bind to 127.0.0.1 and are never directly reachable
   from the tailnet — Caddy is the single entry point.
 - The policy file is checked into this repo for review and versioning.

@@ -31,9 +31,18 @@ if [ "$(id -u)" -ne 0 ]; then
   exit 1
 fi
 
-[ -f "$DB" ] || { echo "Database not found: $DB" >&2; exit 1; }
-[ -d "$STORAGE" ] || { echo "Storage not found: $STORAGE" >&2; exit 1; }
-command -v sqlite3 >/dev/null 2>&1 || { echo "sqlite3 CLI not found" >&2; exit 1; }
+[ -f "$DB" ] || {
+  echo "Database not found: $DB" >&2
+  exit 1
+}
+[ -d "$STORAGE" ] || {
+  echo "Storage not found: $STORAGE" >&2
+  exit 1
+}
+command -v sqlite3 >/dev/null 2>&1 || {
+  echo "sqlite3 CLI not found" >&2
+  exit 1
+}
 
 deleted_names="$(mktemp /tmp/attic-deleted.XXXXXX)"
 found_files="$(mktemp /tmp/attic-found.XXXXXX)"
@@ -46,16 +55,16 @@ sqlite3 "$DB" "
                 instr(remote_file, '\"}') - instr(remote_file, 'name\":\"') - 7)
   FROM chunk
   WHERE state = 'D' AND remote_file LIKE '%name\":\"%';
-" | sort -u > "$deleted_names"
+" | sort -u >"$deleted_names"
 
-name_count="$(wc -l < "$deleted_names" | tr -d ' ')"
+name_count="$(wc -l <"$deleted_names" | tr -d ' ')"
 if [ "$name_count" -eq 0 ]; then
   echo "No orphan chunks in 'Deleted' state. Nothing to do."
   exit 0
 fi
 echo "Found $name_count orphan chunk files referenced in the DB."
 
-find "$STORAGE" -type f -name '*.chunk' > "$found_files"
+find "$STORAGE" -type f -name '*.chunk' >"$found_files"
 
 # Keep only files whose name appears in the Deleted set. The storage tree is
 # sharded (<h>/<hh>/<uuid>.chunk), so match on the basename only.
@@ -63,9 +72,9 @@ to_delete="$(mktemp /tmp/attic-to-delete.XXXXXX)"
 trap 'rm -f "$deleted_names" "$found_files" "$to_delete"' EXIT
 awk 'NR == FNR { del[$0] = 1; next }
      { n = $0; sub(/.*\//, "", n); if (n in del) print }' \
-  "$deleted_names" "$found_files" > "$to_delete"
+  "$deleted_names" "$found_files" >"$to_delete"
 
-delete_count="$(wc -l < "$to_delete" | tr -d ' ')"
+delete_count="$(wc -l <"$to_delete" | tr -d ' ')"
 echo "On disk: $delete_count orphan chunk files to remove."
 
 if [ "$delete_count" -eq 0 ]; then
@@ -80,7 +89,7 @@ if [ "$DRY_RUN" = "1" ]; then
   exit 0
 fi
 
-xargs rm -f < "$to_delete"
+xargs rm -f <"$to_delete"
 echo "Deleted $delete_count orphan chunk files."
 
 echo "Purging 'Deleted' rows from ${DB} ..."

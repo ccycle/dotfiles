@@ -74,7 +74,7 @@ The `--json` flag returns a structured envelope:
   "status": "success",
   "query": "...",
   "mode": "general",
-  "results": [{"title": "...", "url": "...", "snippet": "..."}],
+  "results": [{ "title": "...", "url": "...", "snippet": "..." }],
   "answers": [],
   "metadata": {
     "elapsed_ms": 1500,

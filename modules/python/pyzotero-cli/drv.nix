@@ -1,19 +1,20 @@
-{ lib
-, buildPythonPackage
-, src
+{
+  lib,
+  buildPythonPackage,
+  src,
 
-# build-system
-, setuptools
+  # build-system
+  setuptools,
 
-# dependencies
-, click
-, pyyaml
-, pyzotero
-, tabulate
-, python-dotenv
+  # dependencies
+  click,
+  pyyaml,
+  pyzotero,
+  tabulate,
+  python-dotenv,
 
-# tests
-, pytestCheckHook
+  # tests
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {

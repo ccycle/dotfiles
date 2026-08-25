@@ -10,7 +10,7 @@ cd "${REPO_ROOT}"
 
 LEDGER_JSON="$(nix eval --json --impure --expr 'import ./modules/sops/age-keys.nix')"
 
-cat > .sops.yaml <<EOF
+cat >.sops.yaml <<EOF
 $(echo "${LEDGER_JSON}" | jq -r '
   [ "creation_rules:",
     ( [ .rules[] as $r

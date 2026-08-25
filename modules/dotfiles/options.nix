@@ -1,4 +1,5 @@
-{ lib, ... }: {
+{ lib, ... }:
+{
   options.custom.dotfiles.dir = lib.mkOption {
     type = lib.types.str;
     default = "";

@@ -13,10 +13,12 @@ in
   ];
 
   config = mkIf cfg.enable {
-    assertions = [{
-      assertion = vol != "";
-      message = "custom.storage.volumes.opencloud must be set. Run: scripts/setup-local-storage.sh opencloud=/Volumes/<YOUR_DRIVE>";
-    }];
+    assertions = [
+      {
+        assertion = vol != "";
+        message = "custom.storage.volumes.opencloud must be set. Run: scripts/setup-local-storage.sh opencloud=/Volumes/<YOUR_DRIVE>";
+      }
+    ];
 
     services.opencloud.dataDir = mkDefault "${vol}/opencloud/data";
     services.opencloud.configDir = mkDefault "${vol}/opencloud/config";

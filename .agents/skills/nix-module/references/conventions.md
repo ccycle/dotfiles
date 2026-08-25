@@ -80,6 +80,7 @@ Host-specific configurations live in `modules/<hostname>/darwin.nix`. These file
      options.services.my-feature.enable = lib.mkEnableOption "My feature";
    }
    ```
+
 2. The feature's `darwin.nix` imports `./options.nix` and gates all config with `lib.mkIf`:
 
    ```nix
@@ -88,6 +89,7 @@ Host-specific configurations live in `modules/<hostname>/darwin.nix`. These file
      config = lib.mkIf config.services.my-feature.enable { ... };
    }
    ```
+
 3. `modules/darwin.nix` imports the feature unconditionally.
 4. The host module enables it:
 

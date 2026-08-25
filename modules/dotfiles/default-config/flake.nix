@@ -1,5 +1,7 @@
 {
-  outputs = { ... }: {
-    darwinModules.default = { ... }: { };
-  };
+  outputs =
+    { ... }:
+    {
+      darwinModules.default = { ... }: { };
+    };
 }

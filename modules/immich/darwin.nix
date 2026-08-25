@@ -13,10 +13,12 @@ in
   ];
 
   config = mkIf cfg.enable {
-    assertions = [{
-      assertion = vol != "";
-      message = "custom.storage.volumes.immich must be set. Run: scripts/setup-local-storage.sh immich=/Volumes/<YOUR_DRIVE>";
-    }];
+    assertions = [
+      {
+        assertion = vol != "";
+        message = "custom.storage.volumes.immich must be set. Run: scripts/setup-local-storage.sh immich=/Volumes/<YOUR_DRIVE>";
+      }
+    ];
 
     services.immich.uploadDir = mkDefault "${vol}/immich/upload";
     services.immich.dbDir = mkDefault "${vol}/immich/db";

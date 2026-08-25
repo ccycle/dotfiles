@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 let
   atticHost = "mac-mini-m4-pro";
@@ -40,26 +45,31 @@ in
         cat "$ATTIC_CA" >> /etc/nix/ca-bundle.crt
       fi
     }
-    ${if isAtticHost then ''
-      # Caddy stores each host's CA under pki/authorities/<hostName>/, since
-      # each host runs its own internal CA under a host-specific CA ID (see
-      # modules/caddy/darwin.nix).
-      LOCAL_CA="/var/lib/caddy/caddy/pki/authorities/${config.networking.hostName}/root.crt"
-      [ -f "$LOCAL_CA" ] && cp "$LOCAL_CA" "$ATTIC_CA"
-      rebuild_bundle
-      ( for _ in $(seq 1 24); do
-          [ -f "$LOCAL_CA" ] && { cp "$LOCAL_CA" "$ATTIC_CA"; rebuild_bundle; break; }
-          sleep 5
-        done ) &
-    '' else ''
-      rebuild_bundle
-      ( for _ in $(seq 1 24); do
-          curl -fsSL --max-time 5 "http://ca.${atticHost}.internal/ca.crt" -o "$ATTIC_CA" 2>/dev/null \
-            && ${pkgs.openssl}/bin/openssl x509 -inform DER -in "$ATTIC_CA" -out "$ATTIC_CA.tmp" 2>/dev/null \
-            && mv "$ATTIC_CA.tmp" "$ATTIC_CA" \
-            && { rebuild_bundle; break; }
-          sleep 5
-        done ) &
-    ''}
+    ${
+      if isAtticHost then
+        ''
+          # Caddy stores each host's CA under pki/authorities/<hostName>/, since
+          # each host runs its own internal CA under a host-specific CA ID (see
+          # modules/caddy/darwin.nix).
+          LOCAL_CA="/var/lib/caddy/caddy/pki/authorities/${config.networking.hostName}/root.crt"
+          [ -f "$LOCAL_CA" ] && cp "$LOCAL_CA" "$ATTIC_CA"
+          rebuild_bundle
+          ( for _ in $(seq 1 24); do
+              [ -f "$LOCAL_CA" ] && { cp "$LOCAL_CA" "$ATTIC_CA"; rebuild_bundle; break; }
+              sleep 5
+            done ) &
+        ''
+      else
+        ''
+          rebuild_bundle
+          ( for _ in $(seq 1 24); do
+              curl -fsSL --max-time 5 "http://ca.${atticHost}.internal/ca.crt" -o "$ATTIC_CA" 2>/dev/null \
+                && ${pkgs.openssl}/bin/openssl x509 -inform DER -in "$ATTIC_CA" -out "$ATTIC_CA.tmp" 2>/dev/null \
+                && mv "$ATTIC_CA.tmp" "$ATTIC_CA" \
+                && { rebuild_bundle; break; }
+              sleep 5
+            done ) &
+        ''
+    }
   '';
 }

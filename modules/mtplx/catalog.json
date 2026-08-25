@@ -11,15 +11,24 @@
       "contextLength": 262144,
       "hfRepo": "Youssofal/Qwen3.8-27B-MTPLX-Optimized-Speed",
       "extraFlags": [
-        "--reasoning", "on",
-        "--reasoning-effort", "medium",
-        "--preserve-thinking", "scoped",
-        "--tool-prompt-mode", "hybrid",
-        "--batching-preset", "agent",
-        "--default-temperature", "0.6",
-        "--default-top-p", "0.95",
-        "--default-top-k", "20",
-        "--max-tokens", "16384"
+        "--reasoning",
+        "on",
+        "--reasoning-effort",
+        "medium",
+        "--preserve-thinking",
+        "scoped",
+        "--tool-prompt-mode",
+        "hybrid",
+        "--batching-preset",
+        "agent",
+        "--default-temperature",
+        "0.6",
+        "--default-top-p",
+        "0.95",
+        "--default-top-k",
+        "20",
+        "--max-tokens",
+        "16384"
       ]
     },
     "google/gemma-4-31b-mtplx": {
@@ -27,7 +36,7 @@
       "name": "Gemma 4 31B (MTPLX)",
       "contextLength": 262144,
       "hfRepo": "Youssofal/Gemma4-MTPLX-Optimized-Speed",
-      "extraFlags": [ "--reasoning", "off", "--preserve-thinking", "off" ]
+      "extraFlags": ["--reasoning", "off", "--preserve-thinking", "off"]
     },
     "ornith-ai/Ornith-1.5-35B-A3B-MLX-6bit": {
       "shortId": "ornith35b",

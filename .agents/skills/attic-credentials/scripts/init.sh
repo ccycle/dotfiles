@@ -83,4 +83,3 @@ echo "  - Run '${0%/*}/generate-token.sh smoke' once, so smoke-test-attic can ve
 echo "  - For each client machine that should push, run"
 echo "    ${0%/*}/generate-token.sh client <machine>"
 echo "    and follow the printed 'attic login' instructions on that machine."
-

@@ -8,7 +8,7 @@ description: Validate whether k8s actually solves the six container-management p
 Runs six verification scenarios against the throwaway k8s testbed in
 `~/k8s-lab` (mirroring `modules/immich/compose.yaml`) to decide whether
 k8s actually solves the operational pain points from the
-kubernetes-on-homeserver note — not just whether it *configures* them.
+kubernetes-on-homeserver note — not just whether it _configures_ them.
 Every scenario asserts on a real k8s mechanism actually working
 (OOMKill enforced, pod recreated, rolling update applied, ...), the way
 `e2e-test-immich` asserts on a real thumbnail rather than an upload
@@ -69,5 +69,5 @@ Prerequisites: OrbStack running, `k8s.enable` set (declaratively via
 - The testbed shares the OrbStack VM with production Docker — run
   scenarios when the host has idle capacity.
 - Teardown is left to the operator (`kubectl delete -k ...`, `orb stop
-  k8s`); per the agreed exit strategy the cluster is destroyed with
+k8s`); per the agreed exit strategy the cluster is destroyed with
   `orb delete k8s` once validation is complete.

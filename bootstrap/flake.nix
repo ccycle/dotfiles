@@ -34,9 +34,18 @@
     sops-nix.url = "github:Mic92/sops-nix";
   };
 
-  outputs = inputs@{ self, nixpkgs, nix-darwin, ... }:
+  outputs =
+    inputs@{
+      self,
+      nixpkgs,
+      nix-darwin,
+      ...
+    }:
     let
-      darwinSystems = [ "aarch64-darwin" "x86_64-darwin" ];
+      darwinSystems = [
+        "aarch64-darwin"
+        "x86_64-darwin"
+      ];
       forDarwinSystems = nixpkgs.lib.genAttrs darwinSystems;
       # Helper to load env for a specific system context if needed, though here we load it globally or per-system.
       # Since env-impure.nix depends on builtins.getEnv, it's evaluated at call time.
@@ -46,13 +55,17 @@
       darwinModules.bootstrap = ./modules/darwin.nix;
 
       darwinConfigurations = {
-        bootstrap = forDarwinSystems (system:
+        bootstrap = forDarwinSystems (
+          system:
           nix-darwin.lib.darwinSystem {
             inherit system;
             modules = [
               self.darwinModules.bootstrap
             ];
-            specialArgs = { inherit inputs system; } // env;
+            specialArgs = {
+              inherit inputs system;
+            }
+            // env;
           }
         );
       };
@@ -64,13 +77,17 @@
         };
       });
 
-      devShells = forDarwinSystems (system:
+      devShells = forDarwinSystems (
+        system:
         let
           pkgs = nixpkgs.legacyPackages.${system};
         in
         {
           secrets = pkgs.mkShell {
-            packages = with pkgs; [ rbw pinentry_mac ];
+            packages = with pkgs; [
+              rbw
+              pinentry_mac
+            ];
             shellHook = ''
               # Configure pinentry if not set
               if ! rbw config show | grep -q "pinentry"; then

@@ -32,7 +32,7 @@ end.
 
 Pocket ID's WebAuthn `RPOrigins` is fixed to its `APP_URL` at startup
 (verified in `modules/pocket-id` and `tests/e2e/design.md`), and the whole
-point is a *browser-visible* redirect chain through a real IdP. That can
+point is a _browser-visible_ redirect chain through a real IdP. That can
 only be exercised against a live Pocket ID, so the suite gets its own
 per-worktree one, exactly like the OpenCloud suite — same container
 (`modules/pocket-id/compose.yaml` + a volume-name override so it never
@@ -52,7 +52,7 @@ proxied straight to oauth2-proxy, everything else `forward_auth`'d with a
 on the host (inside the pinned `devShells.e2e`, added in `flake.nix`),
 loopback-only, like the production launchd daemon.
 
-oauth2-proxy needs a *confidential* client with a generated secret, so the
+oauth2-proxy needs a _confidential_ client with a generated secret, so the
 bootstrap order differs from the OpenCloud suite: `bootstrap_if_needed`
 creates the client and captures its secret into `.env` **before**
 `start_oauth2_proxy` runs (the proxy can't start without the secret). The

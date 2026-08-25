@@ -13,7 +13,7 @@ echo "Detected host: $LOCAL_HOST"
 
 function check_syntax() {
   echo "=== 🔍 Checking Nix Syntax ==="
-  find . -name "*.nix" -not -path "*/node_modules/*" -not -path "*/.git/*" -print0 | xargs -0 -n 1 nix-instantiate --parse > /dev/null
+  find . -name "*.nix" -not -path "*/node_modules/*" -not -path "*/.git/*" -print0 | xargs -0 -n 1 nix-instantiate --parse >/dev/null
   echo "✅ Syntax check passed."
 }
 
@@ -68,7 +68,7 @@ function get_config_host() {
 function get_placeholder_storage() {
   local dir="${REPO_ROOT}/.local/.verify-placeholder-storage"
   mkdir -p "${dir}/vol"
-  cat > "${dir}/flake.nix" <<EOF
+  cat >"${dir}/flake.nix" <<EOF
 {
   outputs = { ... }: {
     darwinModules.default = { ... }: {
@@ -146,7 +146,7 @@ if [ -f /etc/nix/nix.conf ] && grep -q 'ssl-cert-file' /etc/nix/nix.conf; then
     security export -t certs -f pemseq \
       -k /Library/Keychains/System.keychain \
       -o /tmp/nix-certs-system.pem 2>/dev/null || cp /dev/null /tmp/nix-certs-system.pem
-    cat /tmp/nix-certs-root.pem /tmp/nix-certs-system.pem | sudo tee "$CERT_FILE" > /dev/null
+    cat /tmp/nix-certs-root.pem /tmp/nix-certs-system.pem | sudo tee "$CERT_FILE" >/dev/null
     rm -f /tmp/nix-certs-root.pem /tmp/nix-certs-system.pem
     echo "✅ SSL cert regenerated."
   fi

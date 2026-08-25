@@ -26,9 +26,9 @@ fi
 WORKSPACE=$(find "$REPO_PATH" -maxdepth 2 -name '*.xcworkspace' -print -quit)
 PROJECT=$(find "$REPO_PATH" -maxdepth 2 -name '*.xcodeproj' -print -quit)
 
-if [[ -n "$WORKSPACE" ]]; then
+if [[ -n $WORKSPACE ]]; then
   PROJECT_ARGS=(-workspace "$WORKSPACE")
-elif [[ -n "$PROJECT" ]]; then
+elif [[ -n $PROJECT ]]; then
   PROJECT_ARGS=(-project "$PROJECT")
 else
   echo "no .xcworkspace or .xcodeproj found under $REPO_PATH" >&2
@@ -66,7 +66,7 @@ xcodebuild -exportArchive \
   -exportOptionsPlist "$EXPORT_OPTIONS_PLIST"
 
 IPA_PATH=$(find "$EXPORT_PATH" -maxdepth 1 -name '*.ipa' -print -quit)
-if [[ -z "$IPA_PATH" ]]; then
+if [[ -z $IPA_PATH ]]; then
   echo "export produced no .ipa in $EXPORT_PATH" >&2
   exit 1
 fi

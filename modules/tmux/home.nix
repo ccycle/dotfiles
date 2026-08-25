@@ -1,4 +1,5 @@
-{ pkgs, ... }: {
+{ pkgs, ... }:
+{
   programs.tmux = {
     enable = true;
     # screen-256color avoids color/key issues inside tmux.
@@ -20,7 +21,7 @@
     extraConfig = ''
       # Explicitly enable UTF-8 support
       set -as terminal-features ",xterm-256color:UTF-8"
-      
+
       # --- コピーモードの設定 (Vim風操作) ---
       # v で選択開始
       bind-key -T copy-mode-vi v send-keys -X begin-selection
@@ -28,7 +29,7 @@
       bind-key -T copy-mode-vi V send-keys -X select-line
       # C-v で矩形選択の切り替え
       bind-key -T copy-mode-vi C-v send-keys -X rectangle-toggle
-      
+
       # y でコピー (tmux-yankがシステムのクリップボード pbcopy と連携します)
 
       # Tree Mode (Prefix + w や s) の時に 'x' キーでセッションを終了できるようにする

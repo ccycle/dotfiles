@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
@@ -28,22 +33,24 @@ in
     };
 
     pushMirrors = mkOption {
-      type = types.listOf (types.submodule {
-        options = {
-          owner = mkOption {
-            type = types.str;
-            description = "Owner of the repository on this Forgejo instance.";
+      type = types.listOf (
+        types.submodule {
+          options = {
+            owner = mkOption {
+              type = types.str;
+              description = "Owner of the repository on this Forgejo instance.";
+            };
+            repo = mkOption {
+              type = types.str;
+              description = "Name of the repository on this Forgejo instance.";
+            };
+            remoteUrl = mkOption {
+              type = types.str;
+              description = "HTTPS clone URL of the GitHub mirror target, without embedded credentials.";
+            };
           };
-          repo = mkOption {
-            type = types.str;
-            description = "Name of the repository on this Forgejo instance.";
-          };
-          remoteUrl = mkOption {
-            type = types.str;
-            description = "HTTPS clone URL of the GitHub mirror target, without embedded credentials.";
-          };
-        };
-      });
+        }
+      );
       default = [ ];
       description = ''
         Repositories to keep push-mirrored from this Forgejo instance to GitHub.
@@ -71,7 +78,10 @@ in
 
     runnerLabels = mkOption {
       type = types.listOf types.str;
-      default = [ "macos-latest:host" "native:host" ];
+      default = [
+        "macos-latest:host"
+        "native:host"
+      ];
       description = ''
         Labels this runner advertises to `runs-on`. "host" execution means
         job steps run directly on this machine with no isolation - do not
@@ -80,34 +90,36 @@ in
     };
 
     branchProtections = mkOption {
-      type = types.listOf (types.submodule {
-        options = {
-          owner = mkOption {
-            type = types.str;
-            description = "Owner of the repository on this Forgejo instance.";
+      type = types.listOf (
+        types.submodule {
+          options = {
+            owner = mkOption {
+              type = types.str;
+              description = "Owner of the repository on this Forgejo instance.";
+            };
+            repo = mkOption {
+              type = types.str;
+              description = "Name of the repository on this Forgejo instance.";
+            };
+            branch = mkOption {
+              type = types.str;
+              default = "main";
+              description = "Branch (or glob rule) to protect.";
+            };
+            statusCheckContexts = mkOption {
+              type = types.listOf types.str;
+              description = ''
+                Required commit-status contexts - the Forgejo Actions job
+                context string shown in the repository's Checks UI. No
+                default on purpose: confirm the exact context string against
+                a live workflow run before deploying, since a mismatched
+                context permanently blocks merges on a check that never
+                reports.
+              '';
+            };
           };
-          repo = mkOption {
-            type = types.str;
-            description = "Name of the repository on this Forgejo instance.";
-          };
-          branch = mkOption {
-            type = types.str;
-            default = "main";
-            description = "Branch (or glob rule) to protect.";
-          };
-          statusCheckContexts = mkOption {
-            type = types.listOf types.str;
-            description = ''
-              Required commit-status contexts - the Forgejo Actions job
-              context string shown in the repository's Checks UI. No
-              default on purpose: confirm the exact context string against
-              a live workflow run before deploying, since a mismatched
-              context permanently blocks merges on a check that never
-              reports.
-            '';
-          };
-        };
-      });
+        }
+      );
       default = [ ];
       description = ''
         Branches to keep protected via the Forgejo API: force-push disabled
@@ -135,41 +147,51 @@ in
       # Confidential OIDC client registered on Pocket ID. The client secret
       # is captured by scripts/pocket-id-register-clients.sh; the client ID
       # is fixed (plaintext) and matches FORGEJO_OIDC_CLIENT_ID below.
-      services.pocket-id.oidcClients = [{
-        name = "Forgejo";
-        clientId = "forgejo";
-        isPublic = false;
-        pkceEnabled = false;
-        # Path includes the auth source name ("PocketID", set via
-        # `forgejo admin auth add-oauth --name` in forgejo-oidc-bootstrap
-        # above) -- Forgejo's OAuth2 callback route is
-        # /user/oauth2/<source-name>/callback, not /user/oauth2/callback.
-        callbackURLs = [ "https://forgejo.${config.networking.hostName}.internal/user/oauth2/PocketID/callback" ];
-        logoutCallbackURLs = [ "https://forgejo.${config.networking.hostName}.internal/user/oauth2/PocketID/callback" ];
-        secretFile = "modules/forgejo/secrets.yaml";
-        secretKey = "forgejo_oidc_client_secret";
-      }];
+      services.pocket-id.oidcClients = [
+        {
+          name = "Forgejo";
+          clientId = "forgejo";
+          isPublic = false;
+          pkceEnabled = false;
+          # Path includes the auth source name ("PocketID", set via
+          # `forgejo admin auth add-oauth --name` in forgejo-oidc-bootstrap
+          # above) -- Forgejo's OAuth2 callback route is
+          # /user/oauth2/<source-name>/callback, not /user/oauth2/callback.
+          callbackURLs = [
+            "https://forgejo.${config.networking.hostName}.internal/user/oauth2/PocketID/callback"
+          ];
+          logoutCallbackURLs = [
+            "https://forgejo.${config.networking.hostName}.internal/user/oauth2/PocketID/callback"
+          ];
+          secretFile = "modules/forgejo/secrets.yaml";
+          secretKey = "forgejo_oidc_client_secret";
+        }
+      ];
 
       # Pocket ID's "groups" claim carries each group's `name` field verbatim
       # (not friendlyName) -- forgejo-oidc-bootstrap's --admin-group value
       # below must match this `name` exactly.
-      services.pocket-id.oidcGroups = [{
-        name = "forgejo_admins";
-        friendlyName = "Forgejo Admins";
-        adminGroup = true;
-      }];
+      services.pocket-id.oidcGroups = [
+        {
+          name = "forgejo_admins";
+          friendlyName = "Forgejo Admins";
+          adminGroup = true;
+        }
+      ];
 
       sops.secrets.forgejo_oidc_client_secret = {
         sopsFile = ./secrets.yaml;
       };
 
-      services.caddy.portalEntries = [{
-        name = "Forgejo";
-        url = "https://forgejo.${config.networking.hostName}.internal";
-        descriptionJa = "軽量 Git フォージ";
-        descriptionEn = "Lightweight Git Forge";
-        logoSvg = builtins.readFile ./forgejo-logo.svg;
-      }];
+      services.caddy.portalEntries = [
+        {
+          name = "Forgejo";
+          url = "https://forgejo.${config.networking.hostName}.internal";
+          descriptionJa = "軽量 Git フォージ";
+          descriptionEn = "Lightweight Git Forge";
+          logoSvg = builtins.readFile ./forgejo-logo.svg;
+        }
+      ];
 
       environment.etc."newsyslog.d/forgejo.conf".text = ''
         # logfilename          [owner:group]  mode  count  size  when  flags
@@ -518,7 +540,12 @@ in
           RunAtLoad = true;
           StandardOutPath = "/var/log/forgejo-backup.log";
           StandardErrorPath = "/var/log/forgejo-backup.log";
-          StartCalendarInterval = [{ Hour = 3; Minute = 0; }];
+          StartCalendarInterval = [
+            {
+              Hour = 3;
+              Minute = 0;
+            }
+          ];
         };
         script = ''
           set -euo pipefail

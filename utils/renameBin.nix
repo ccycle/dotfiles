@@ -1,4 +1,5 @@
-{ symlinkJoin }: drv: namePrev: nameFinal:
+{ symlinkJoin }:
+drv: namePrev: nameFinal:
 symlinkJoin {
   name = drv.name;
   paths = [ drv ];

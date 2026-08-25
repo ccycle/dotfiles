@@ -1,5 +1,7 @@
 {
-  outputs = { ... }: {
-    homeManagerModules.default = { ... }: { };
-  };
+  outputs =
+    { ... }:
+    {
+      homeManagerModules.default = { ... }: { };
+    };
 }

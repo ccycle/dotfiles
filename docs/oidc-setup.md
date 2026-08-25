@@ -10,18 +10,18 @@ OIDC クライアントとグループの登録は `scripts/pocket-id-register-c
 
 ## 0. サービス構成の前提
 
-| サービス | クライアント種別 | 認証方式 | 登録される Client ID |
-|----------|-----------------|----------|----------------------|
-| OpenCloud Web | public / PKCE | OIDC | `opencloud-web` |
-| OpenCloud Desktop | public / PKCE | ネイティブ OIDC | `OpenCloudDesktop` |
-| OpenCloud Android | public / PKCE | ネイティブ OIDC | `OpenCloudAndroid` |
-| OpenCloud iOS | public / PKCE | ネイティブ OIDC | `OpenCloudIOS` |
-| Forgejo | confidential | OIDC | `forgejo` |
-| Immich | confidential | OIDC | `immich` |
-| Grafana | confidential | generic OAuth (OIDC) | `grafana` |
-| Reports (static-reports) | confidential | oauth2-proxy forward_auth | `reports` |
-| GitLab | - | - | (両 host で無効のため未登録) |
-| Prometheus | - | Caddy basicauth (OIDC非対応) | - |
+| サービス                 | クライアント種別 | 認証方式                     | 登録される Client ID         |
+| ------------------------ | ---------------- | ---------------------------- | ---------------------------- |
+| OpenCloud Web            | public / PKCE    | OIDC                         | `opencloud-web`              |
+| OpenCloud Desktop        | public / PKCE    | ネイティブ OIDC              | `OpenCloudDesktop`           |
+| OpenCloud Android        | public / PKCE    | ネイティブ OIDC              | `OpenCloudAndroid`           |
+| OpenCloud iOS            | public / PKCE    | ネイティブ OIDC              | `OpenCloudIOS`               |
+| Forgejo                  | confidential     | OIDC                         | `forgejo`                    |
+| Immich                   | confidential     | OIDC                         | `immich`                     |
+| Grafana                  | confidential     | generic OAuth (OIDC)         | `grafana`                    |
+| Reports (static-reports) | confidential     | oauth2-proxy forward_auth    | `reports`                    |
+| GitLab                   | -                | -                            | (両 host で無効のため未登録) |
+| Prometheus               | -                | Caddy basicauth (OIDC非対応) | -                            |
 
 Client ID は固定文字列である。OAuth のモデル上 client ID は秘密ではなく
 識別子に過ぎず、セキュリティは confidential クライアントの自動生成

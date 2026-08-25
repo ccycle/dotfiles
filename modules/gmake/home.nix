@@ -1,5 +1,7 @@
 { pkgs, ... }:
-let gmake = pkgs.callPackage ./gmake/drv.nix { }; in
+let
+  gmake = pkgs.callPackage ./gmake/drv.nix { };
+in
 {
   home.packages = [ gmake ];
 }

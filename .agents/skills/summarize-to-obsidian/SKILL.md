@@ -87,6 +87,7 @@ git diff origin/main..HEAD
 ```
 
 Read the diff to understand:
+
 - What was implemented (functionality, not just file edits)
 - Key decisions visible in the code
 - Files that carry the bulk of the logic
@@ -106,9 +107,9 @@ note-conventions exactly (bullet tree only, no headings, no frontmatter):
 
 ```markdown
 - [[<title>]] への回答
-	- 実装内容の要約（何をしたか、なぜその設計か）
-		- 変更ファイルと役割
-	- 未解決・後続タスクがあればここに追記
+  - 実装内容の要約（何をしたか、なぜその設計か）
+    - 変更ファイルと役割
+  - 未解決・後続タスクがあればここに追記
 ```
 
 - Line 1 is always the wikilink to the source task.
@@ -125,6 +126,7 @@ If `AgentDrafts/` exists:
 ```
 
 Then tell the user:
+
 - The path to the result page (`AgentDrafts/<title>.md`)
 - A brief summary of what it contains
 - Remind them to push main and then run `/cleanup-worktrees`

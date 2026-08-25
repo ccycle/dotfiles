@@ -23,20 +23,20 @@ show_usage() {
 
 while [ $# -gt 0 ]; do
   case "$1" in
-    --command)
-      [ $# -lt 2 ] && echo "Error: --command requires an argument" >&2 && exit 1
-      COMMAND_ID="$2"
-      shift 2
-      ;;
-    --help|-h)
-      show_usage
-      exit 0
-      ;;
-    *)
-      echo "Error: Unknown option: $1" >&2
-      show_usage >&2
-      exit 1
-      ;;
+  --command)
+    [ $# -lt 2 ] && echo "Error: --command requires an argument" >&2 && exit 1
+    COMMAND_ID="$2"
+    shift 2
+    ;;
+  --help | -h)
+    show_usage
+    exit 0
+    ;;
+  *)
+    echo "Error: Unknown option: $1" >&2
+    show_usage >&2
+    exit 1
+    ;;
   esac
 done
 

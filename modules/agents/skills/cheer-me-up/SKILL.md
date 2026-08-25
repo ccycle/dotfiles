@@ -28,8 +28,8 @@ in question. If it isn't obvious, ask the user directly rather than guessing.
 
 Ask, or infer from how the user describes the stall:
 
-- Is the *method* unclear (don't know how, or it looks too hard to pull off)?
-- Is the *purpose* unclear (the method is known, but it feels pointless or
+- Is the _method_ unclear (don't know how, or it looks too hard to pull off)?
+- Is the _purpose_ unclear (the method is known, but it feels pointless or
   not worth the effort)?
 
 ## Step 3a: Method Is Unclear
@@ -49,7 +49,7 @@ Ask, or infer from how the user describes the stall:
 
 - If the task already exists as a note in `~/Obsidian/zettelkasten`, check
   its backlinks read-only, e.g. `grep -rl '\[\[<task title>\]\]'
-  ~/Obsidian/zettelkasten`. Many connections to other notes indicate real
+~/Obsidian/zettelkasten`. Many connections to other notes indicate real
   significance; near-isolation is a sign the task's importance was never
   established. Skip this check entirely when no corresponding note exists —
   do not create one.

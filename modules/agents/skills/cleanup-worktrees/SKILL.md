@@ -44,13 +44,13 @@ worktree must not be removed.
 
 Interpret the status:
 
-| Status | Meaning | Action |
-|--------|---------|--------|
-| `SAFE (started, merged to main, clean)` | ready for removal | proceed |
-| `NOT MERGED (branch is not an ancestor of main)` | work not in main yet | do NOT remove |
-| `NEVER STARTED (reflog shows only creation)` | no work ever done | do NOT remove |
-| `IN PROGRESS (uncommitted changes)` | has uncommitted work | do NOT remove |
-| `Refusing to remove` (main checkout) | not a linked worktree | do NOT remove |
+| Status                                           | Meaning               | Action        |
+| ------------------------------------------------ | --------------------- | ------------- |
+| `SAFE (started, merged to main, clean)`          | ready for removal     | proceed       |
+| `NOT MERGED (branch is not an ancestor of main)` | work not in main yet  | do NOT remove |
+| `NEVER STARTED (reflog shows only creation)`     | no work ever done     | do NOT remove |
+| `IN PROGRESS (uncommitted changes)`              | has uncommitted work  | do NOT remove |
+| `Refusing to remove` (main checkout)             | not a linked worktree | do NOT remove |
 
 ### 2. Report to the user
 
@@ -64,7 +64,6 @@ If the classification is SAFE, remove it without confirmation:
 ```bash
 ./scripts/cleanup-worktree.sh --force
 ```
-
 
 ## Rules
 

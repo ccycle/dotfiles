@@ -23,12 +23,12 @@ scripts/darwin-rebuild.sh <profile>
 
 ## Profiles
 
-| Profile | Description |
-|---------|-------------|
-| `private` | Default personal Darwin configuration (fallback when hostname doesn't match) |
-| `mac-mini-m4` | Configuration for Mac Mini M4 |
-| `mac-mini-m4-pro` | Configuration for Mac Mini M4 Pro |
-| `bootstrap` | Bootstrap flake — provisions sops-nix secrets on fresh install |
+| Profile           | Description                                                                  |
+| ----------------- | ---------------------------------------------------------------------------- |
+| `private`         | Default personal Darwin configuration (fallback when hostname doesn't match) |
+| `mac-mini-m4`     | Configuration for Mac Mini M4                                                |
+| `mac-mini-m4-pro` | Configuration for Mac Mini M4 Pro                                            |
+| `bootstrap`       | Bootstrap flake — provisions sops-nix secrets on fresh install               |
 
 ## When to Use
 

@@ -130,9 +130,9 @@ note-conventions (bullet tree only, no headings, no frontmatter):
 
 ```markdown
 - [[<title>]] への回答
-	- 実装内容の要約
-		- 変更ファイルと役割
-	- 未解決・後続タスクがあればここに追記
+  - 実装内容の要約
+    - 変更ファイルと役割
+  - 未解決・後続タスクがあればここに追記
 ```
 
 Report the path and brief summary.
@@ -151,11 +151,11 @@ Run the cleanup script from the repo root of the current worktree:
 
 Interpret the output:
 
-| Status | Action |
-|--------|--------|
-| `SAFE (started, merged to main, clean)` | proceed |
+| Status                                         | Action        |
+| ---------------------------------------------- | ------------- |
+| `SAFE (started, merged to main, clean)`        | proceed       |
 | `NOT MERGED` / `NEVER STARTED` / `IN PROGRESS` | stop, explain |
-| `Refusing to remove` (main checkout) | stop, explain |
+| `Refusing to remove` (main checkout)           | stop, explain |
 
 ### 3.2 Confirm and remove
 

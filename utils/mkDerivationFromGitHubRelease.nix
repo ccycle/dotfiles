@@ -1,4 +1,9 @@
-{ stdenv, fetchurl, findutils }: { url, sha256 }:
+{
+  stdenv,
+  fetchurl,
+  findutils,
+}:
+{ url, sha256 }:
 let
   matches = builtins.match "^https\:\/\/github\.com\/([^\/]+)\/([^\.]+)\/releases/download/([^\/]+)\/([^\/]+)" url;
   owner = builtins.elemAt matches 0;

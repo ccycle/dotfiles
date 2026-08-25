@@ -72,12 +72,13 @@ the server itself) on every real deployment.
 **Branch protection has no "block force push" field to set.** The
 Forgejo/Gitea branch-protection API (verified against the
 `forgejo-sdk` Go struct, and confirmed empirically by `tests/e2e-forgejo`
+
 - a force-push to a branch with only `enable_push`/`enable_status_check`
-set is in fact rejected) has no `enable_force_push`/`block_force_push`
-option; force-pushing a protected branch is simply disallowed as an
-inherent property of branch protection. `enable_push: true` +
-`enable_status_check: true` is what encodes "direct push allowed, CI
-required" here.
+  set is in fact rejected) has no `enable_force_push`/`block_force_push`
+  option; force-pushing a protected branch is simply disallowed as an
+  inherent property of branch protection. `enable_push: true` +
+  `enable_status_check: true` is what encodes "direct push allowed, CI
+  required" here.
 
 **`statusCheckContexts` has no default.** Per this repo's "no default
 fallbacks for critical configuration" convention: the config value is

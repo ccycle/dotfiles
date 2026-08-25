@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
@@ -31,13 +36,15 @@ in
   };
 
   config = mkIf cfg.enable {
-    services.caddy.portalEntries = [{
-      name = "Immich";
-      url = "https://immich.${config.networking.hostName}.internal";
-      descriptionJa = "フォト＆ビデオ管理";
-      descriptionEn = "Photo & Video Management";
-      logoSvg = builtins.readFile ./immich-logo.svg;
-    }];
+    services.caddy.portalEntries = [
+      {
+        name = "Immich";
+        url = "https://immich.${config.networking.hostName}.internal";
+        descriptionJa = "フォト＆ビデオ管理";
+        descriptionEn = "Photo & Video Management";
+        logoSvg = builtins.readFile ./immich-logo.svg;
+      }
+    ];
 
     environment.etc."newsyslog.d/immich.conf".text = ''
       # logfilename          [owner:group]  mode  count  size  when  flags
@@ -47,23 +54,25 @@ in
     # Confidential OIDC client registered on Pocket ID. The client secret is
     # captured by scripts/pocket-id-register-clients.sh; the client ID is
     # fixed (plaintext) and matches IMMICH_OIDC_CLIENT_ID below.
-    services.pocket-id.oidcClients = [{
-      name = "Immich";
-      clientId = "immich";
-      isPublic = false;
-      pkceEnabled = false;
-      callbackURLs = [
-        "https://immich.${config.networking.hostName}.internal/auth/login"
-        "https://immich.${config.networking.hostName}.internal/user-settings"
-        "app.immich:///oauth-callback"
-      ];
-      logoutCallbackURLs = [
-        "https://immich.${config.networking.hostName}.internal/auth/login"
-        "https://immich.${config.networking.hostName}.internal/user-settings"
-      ];
-      secretFile = "modules/immich/secrets-${config.networking.hostName}.yaml";
-      secretKey = "immich_oidc_client_secret";
-    }];
+    services.pocket-id.oidcClients = [
+      {
+        name = "Immich";
+        clientId = "immich";
+        isPublic = false;
+        pkceEnabled = false;
+        callbackURLs = [
+          "https://immich.${config.networking.hostName}.internal/auth/login"
+          "https://immich.${config.networking.hostName}.internal/user-settings"
+          "app.immich:///oauth-callback"
+        ];
+        logoutCallbackURLs = [
+          "https://immich.${config.networking.hostName}.internal/auth/login"
+          "https://immich.${config.networking.hostName}.internal/user-settings"
+        ];
+        secretFile = "modules/immich/secrets-${config.networking.hostName}.yaml";
+        secretKey = "immich_oidc_client_secret";
+      }
+    ];
 
     sops.secrets.immich_db_password = {
       sopsFile = ./secrets-${config.networking.hostName}.yaml;

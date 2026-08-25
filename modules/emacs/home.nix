@@ -1,3 +1,8 @@
 { pkgs, ... }:
 
-{ home.packages = with pkgs; [ emacs emacsPackages.magit ]; }
+{
+  home.packages = with pkgs; [
+    emacs
+    emacsPackages.magit
+  ];
+}

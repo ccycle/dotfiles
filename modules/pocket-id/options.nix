@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
@@ -34,119 +39,127 @@ in
     # live Pocket ID via its admin API (see that script and
     # docs/oidc-setup.md). Single source of truth is this option tree.
     oidcClients = mkOption {
-      type = types.listOf (types.submodule {
-        options = {
-          name = mkOption {
-            type = types.str;
-            description = "Display name shown in Pocket ID and on the consent screen.";
-          };
+      type = types.listOf (
+        types.submodule {
+          options = {
+            name = mkOption {
+              type = types.str;
+              description = "Display name shown in Pocket ID and on the consent screen.";
+            };
 
-          clientId = mkOption {
-            type = types.str;
-            description = ''
-              Fixed client ID. Pocket ID stores it verbatim (case-sensitive).
-              For OpenCloud desktop/mobile this MUST match the hardcoded
-              value in the app (OpenCloudDesktop / OpenCloudAndroid /
-              OpenCloudIOS); for other clients any string is fine.
-            '';
-          };
+            clientId = mkOption {
+              type = types.str;
+              description = ''
+                Fixed client ID. Pocket ID stores it verbatim (case-sensitive).
+                For OpenCloud desktop/mobile this MUST match the hardcoded
+                value in the app (OpenCloudDesktop / OpenCloudAndroid /
+                OpenCloudIOS); for other clients any string is fine.
+              '';
+            };
 
-          isPublic = mkOption {
-            type = types.bool;
-            default = false;
-            description = "Public client: no client secret, PKCE required (Pocket ID forces PKCE on public clients regardless of pkceEnabled).";
-          };
+            isPublic = mkOption {
+              type = types.bool;
+              default = false;
+              description = "Public client: no client secret, PKCE required (Pocket ID forces PKCE on public clients regardless of pkceEnabled).";
+            };
 
-          pkceEnabled = mkOption {
-            type = types.bool;
-            default = false;
-            description = "Require PKCE. Ignored (forced true) when isPublic is set.";
-          };
+            pkceEnabled = mkOption {
+              type = types.bool;
+              default = false;
+              description = "Require PKCE. Ignored (forced true) when isPublic is set.";
+            };
 
-          callbackURLs = mkOption {
-            type = types.listOf types.str;
-            description = "Allowed redirect URIs (OAuth redirect_uri allowlist).";
-          };
+            callbackURLs = mkOption {
+              type = types.listOf types.str;
+              description = "Allowed redirect URIs (OAuth redirect_uri allowlist).";
+            };
 
-          logoutCallbackURLs = mkOption {
-            type = types.listOf types.str;
-            default = [ ];
-            description = "Allowed post-logout redirect URIs (end_session).";
-          };
+            logoutCallbackURLs = mkOption {
+              type = types.listOf types.str;
+              default = [ ];
+              description = "Allowed post-logout redirect URIs (end_session).";
+            };
 
-          allowedGroups = mkOption {
-            type = types.listOf types.str;
-            default = [ ];
-            description = "Names of services.pocket-id.oidcGroups allowed to use this client. Non-empty enables group restriction (deny all other users).";
-          };
+            allowedGroups = mkOption {
+              type = types.listOf types.str;
+              default = [ ];
+              description = "Names of services.pocket-id.oidcGroups allowed to use this client. Non-empty enables group restriction (deny all other users).";
+            };
 
-          secretFile = mkOption {
-            type = types.nullOr types.str;
-            default = null;
-            description = ''
-              Confidential clients only: repo-relative path to the sops
-              secrets file holding the client secret (e.g.
-              modules/forgejo/secrets.yaml). Written by
-              scripts/pocket-id-register-clients.sh.
-            '';
-          };
+            secretFile = mkOption {
+              type = types.nullOr types.str;
+              default = null;
+              description = ''
+                Confidential clients only: repo-relative path to the sops
+                secrets file holding the client secret (e.g.
+                modules/forgejo/secrets.yaml). Written by
+                scripts/pocket-id-register-clients.sh.
+              '';
+            };
 
-          secretKey = mkOption {
-            type = types.nullOr types.str;
-            default = null;
-            description = "Confidential clients only: sops key name for the client secret (e.g. forgejo_oidc_client_secret).";
+            secretKey = mkOption {
+              type = types.nullOr types.str;
+              default = null;
+              description = "Confidential clients only: sops key name for the client secret (e.g. forgejo_oidc_client_secret).";
+            };
           };
-        };
-      });
+        }
+      );
       default = [ ];
       description = "OIDC clients to register on Pocket ID, declared by each service module.";
     };
 
     oidcGroups = mkOption {
-      type = types.listOf (types.submodule {
-        options = {
-          name = mkOption {
-            type = types.str;
-            description = "Group name (used as the match key and for claim mapping).";
-          };
+      type = types.listOf (
+        types.submodule {
+          options = {
+            name = mkOption {
+              type = types.str;
+              description = "Group name (used as the match key and for claim mapping).";
+            };
 
-          friendlyName = mkOption {
-            type = types.str;
-            default = "";
-            description = "Human-readable group name; falls back to name when empty.";
-          };
+            friendlyName = mkOption {
+              type = types.str;
+              default = "";
+              description = "Human-readable group name; falls back to name when empty.";
+            };
 
-          customClaims = mkOption {
-            type = types.listOf (types.submodule {
-              options = {
-                key = mkOption { type = types.str; };
-                value = mkOption { type = types.str; };
-              };
-            });
-            default = [ ];
-            description = "Custom claims applied to users in this group (e.g. opencloud_role -> opencloudAdmin).";
-          };
+            customClaims = mkOption {
+              type = types.listOf (
+                types.submodule {
+                  options = {
+                    key = mkOption { type = types.str; };
+                    value = mkOption { type = types.str; };
+                  };
+                }
+              );
+              default = [ ];
+              description = "Custom claims applied to users in this group (e.g. opencloud_role -> opencloudAdmin).";
+            };
 
-          adminGroup = mkOption {
-            type = types.bool;
-            default = false;
-            description = "If true, the user passed to scripts/pocket-id-register-clients.sh --admin-user is added to this group.";
+            adminGroup = mkOption {
+              type = types.bool;
+              default = false;
+              description = "If true, the user passed to scripts/pocket-id-register-clients.sh --admin-user is added to this group.";
+            };
           };
-        };
-      });
+        }
+      );
       default = [ ];
       description = "User groups to create on Pocket ID, declared by each service module.";
     };
   };
 
   config = mkIf cfg.enable {
-    services.caddy.portalEntries = [{
-      name = "Pocket ID";
-      url = "https://auth.${domain}";
-      descriptionJa = "パスキー認証プロバイダ (OIDC)";
-      descriptionEn = "Passkey Authentication Provider (OIDC)";
-      logoSvg = builtins.readFile ./pocket-id-logo.svg;
-    }];
+    services.caddy.portalEntries = [
+      {
+        name = "Pocket ID";
+        url = "https://auth.${domain}";
+        descriptionJa = "パスキー認証プロバイダ (OIDC)";
+        descriptionEn = "Passkey Authentication Provider (OIDC)";
+        logoSvg = builtins.readFile ./pocket-id-logo.svg;
+      }
+    ];
 
     environment.etc."newsyslog.d/pocket-id.conf".text = ''
       # logfilename            [owner:group]  mode  count  size  when  flags

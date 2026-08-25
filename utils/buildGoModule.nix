@@ -1,4 +1,12 @@
-{ gomod2nix, system, other-repo, pname, version, ... }: gomod2nix.legacyPackages.${system}.buildGoApplication {
+{
+  gomod2nix,
+  system,
+  other-repo,
+  pname,
+  version,
+  ...
+}:
+gomod2nix.legacyPackages.${system}.buildGoApplication {
   inherit pname version;
   src = ./.; # 自分のリポジトリ
 

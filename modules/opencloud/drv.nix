@@ -1,4 +1,9 @@
-{ stdenv, fetchurl, lib, unzip }:
+{
+  stdenv,
+  fetchurl,
+  lib,
+  unzip,
+}:
 
 # OpenCloud web apps, installed as Nix packages and served via WEB_ASSET_APPS_PATH.
 # The apps directory is built so each app lives in its own subdirectory holding a

@@ -6,7 +6,7 @@
 set -eu
 
 show_usage() {
-    cat <<'EOF'
+  cat <<'EOF'
 Usage: cleanup-worktree.sh [OPTIONS]
 
 Classify the current herdr worktree and remove it if it is merged to
@@ -25,16 +25,29 @@ dry_run=false
 force=false
 
 for arg in "$@"; do
-    case "$arg" in
-        --dry-run) dry_run=true ;;
-        --force) force=true ;;
-        -h|--help) show_usage; exit 0 ;;
-        *) printf 'Unknown option: %s\n' "$arg" >&2; show_usage; exit 1 ;;
-    esac
+  case "$arg" in
+  --dry-run) dry_run=true ;;
+  --force) force=true ;;
+  -h | --help)
+    show_usage
+    exit 0
+    ;;
+  *)
+    printf 'Unknown option: %s\n' "$arg" >&2
+    show_usage
+    exit 1
+    ;;
+  esac
 done
 
-command -v herdr >/dev/null 2>&1 || { printf 'herdr not found\n' >&2; exit 1; }
-command -v jq >/dev/null 2>&1 || { printf 'jq not found\n' >&2; exit 1; }
+command -v herdr >/dev/null 2>&1 || {
+  printf 'herdr not found\n' >&2
+  exit 1
+}
+command -v jq >/dev/null 2>&1 || {
+  printf 'jq not found\n' >&2
+  exit 1
+}
 
 cwd=$(pwd)
 
@@ -46,9 +59,9 @@ worktree_info=$(herdr worktree list --json 2>/dev/null | jq -r --arg path "$cwd"
 ' 2>/dev/null)
 
 if [ -z "$worktree_info" ]; then
-    printf 'Not inside a herdr worktree.\n' >&2
-    printf 'Open one first with: herdr worktree open <branch>\n' >&2
-    exit 1
+  printf 'Not inside a herdr worktree.\n' >&2
+  printf 'Open one first with: herdr worktree open <branch>\n' >&2
+  exit 1
 fi
 
 ws_branch=$(printf '%s\n' "$worktree_info" | cut -f1)
@@ -57,9 +70,9 @@ is_linked=$(printf '%s\n' "$worktree_info" | cut -f3)
 
 # Never remove the main checkout (is_linked_worktree = false)
 if [ "$is_linked" != "true" ]; then
-    printf 'This is the main checkout (branch: %s). Refusing to remove.\n' "$ws_branch" >&2
-    printf 'Run this inside a linked worktree instead.\n' >&2
-    exit 1
+  printf 'This is the main checkout (branch: %s). Refusing to remove.\n' "$ws_branch" >&2
+  printf 'Run this inside a linked worktree instead.\n' >&2
+  exit 1
 fi
 
 # Locate the repository root from the worktree itself
@@ -71,52 +84,55 @@ worktree_repo_root=$(git -C "$cwd" rev-parse --show-toplevel 2>/dev/null || echo
 # commit/rebase/merge/reset entries), 1 if never started (only the
 # initial creation entry) or if no reflog is available.
 branch_was_started() {
-    branch="$1"
-    entries=$(git -C "$worktree_repo_root" reflog show --format="%gs" "$branch" 2>/dev/null) || return 1
-    [ -z "$entries" ] && return 1
-    active=$(printf '%s\n' "$entries" \
-        | grep -vE '^(branch: Created from|checkout:|rebase \(start\))' \
-        | wc -l | tr -d ' ')
-    [ "$active" -gt 0 ]
+  branch="$1"
+  entries=$(git -C "$worktree_repo_root" reflog show --format="%gs" "$branch" 2>/dev/null) || return 1
+  [ -z "$entries" ] && return 1
+  active=$(printf '%s\n' "$entries" |
+    grep -vE '^(branch: Created from|checkout:|rebase \(start\))' |
+    wc -l | tr -d ' ')
+  [ "$active" -gt 0 ]
 }
 
 # Classification: IN PROGRESS / NEVER STARTED / NOT MERGED / SAFE
 status=""
 
 if [ -n "$(git -C "$cwd" status --porcelain 2>/dev/null)" ]; then
-    status="IN PROGRESS (uncommitted changes)"
+  status="IN PROGRESS (uncommitted changes)"
 elif ! branch_was_started "$ws_branch"; then
-    status="NEVER STARTED (reflog shows only creation)"
+  status="NEVER STARTED (reflog shows only creation)"
 elif ! git -C "$worktree_repo_root" merge-base --is-ancestor "$ws_branch" main 2>/dev/null; then
-    status="NOT MERGED (branch is not an ancestor of main)"
+  status="NOT MERGED (branch is not an ancestor of main)"
 else
-    status="SAFE (started, merged to main, clean)"
+  status="SAFE (started, merged to main, clean)"
 fi
 
 printf '%s\t%s\t%s\n' "$ws_branch" "$status" "$cwd"
 
 if [ "$status" != "SAFE (started, merged to main, clean)" ]; then
-    printf 'Not removing this worktree.\n' >&2
-    exit 1
+  printf 'Not removing this worktree.\n' >&2
+  exit 1
 fi
 
 if [ "$dry_run" = "true" ]; then
-    printf '[dry-run] Would remove worktree (workspace: %s)\n' "$ws_id"
-    exit 0
+  printf '[dry-run] Would remove worktree (workspace: %s)\n' "$ws_id"
+  exit 0
 fi
 
 if [ "$force" = "false" ]; then
-    printf 'Remove this worktree? [y/N] ' >&2
-    read -r confirm
-    [ "$confirm" != "y" ] && [ "$confirm" != "Y" ] && { printf 'Cancelled.\n' >&2; exit 1; }
+  printf 'Remove this worktree? [y/N] ' >&2
+  read -r confirm
+  [ "$confirm" != "y" ] && [ "$confirm" != "Y" ] && {
+    printf 'Cancelled.\n' >&2
+    exit 1
+  }
 fi
 
 # Tear down the worktree's vm-verify VM (.agents/skills/vm-verify), if any,
 # so reused-but-abandoned VMs don't linger on disk after the worktree is gone.
 vm_name="dotfiles-verify-$(basename "$worktree_repo_root")"
 if command -v tart >/dev/null 2>&1; then
-    tart stop "$vm_name" >/dev/null 2>&1 || true
-    tart delete "$vm_name" >/dev/null 2>&1 || true
+  tart stop "$vm_name" >/dev/null 2>&1 || true
+  tart delete "$vm_name" >/dev/null 2>&1 || true
 fi
 
 # Tear down the worktree's isolated e2e test stack (.agents/skills/
@@ -125,7 +141,7 @@ fi
 # inside the worktree checkout (tests/e2e/.state/) and is removed along
 # with it; only the running containers/process need explicit teardown.
 if [ -x "$worktree_repo_root/tests/e2e/scripts/stack.sh" ]; then
-    "$worktree_repo_root/tests/e2e/scripts/stack.sh" teardown >/dev/null 2>&1 || true
+  "$worktree_repo_root/tests/e2e/scripts/stack.sh" teardown >/dev/null 2>&1 || true
 fi
 
 # Remove this branch's published e2e reports (modules/static-reports),
@@ -139,6 +155,9 @@ reports_base_dir="/var/lib/static-reports"
 branch_slug=$(printf '%s' "$ws_branch" | tr '/' '-')
 rm -rf "${reports_base_dir:?}/${branch_slug}" 2>/dev/null || true
 
-herdr worktree remove --workspace "$ws_id" --json 2>/dev/null && \
-    printf 'Removed worktree for %s\n' "$ws_branch" || \
-    { printf 'Failed to remove worktree for %s\n' "$ws_branch" >&2; exit 1; }
+herdr worktree remove --workspace "$ws_id" --json 2>/dev/null &&
+  printf 'Removed worktree for %s\n' "$ws_branch" ||
+  {
+    printf 'Failed to remove worktree for %s\n' "$ws_branch" >&2
+    exit 1
+  }

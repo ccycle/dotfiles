@@ -8,7 +8,7 @@ allowed-tools: Bash, Read, Write
 # Export Session Info to Local Markdown
 
 Write a durable handoff snapshot of the current session's task state to
-`<slug>.md` at the git repo root. The file records the *plan and TODO state*
+`<slug>.md` at the git repo root. The file records the _plan and TODO state_
 the successor needs to continue the work: what the task is, what is done, what
 is in progress, what comes next, and what is blocking.
 
@@ -103,9 +103,11 @@ Adapt it to the task; the sections are a guide, not a straitjacket.
 - Repo: <repo root>
 
 ## Task summary
+
 <1–2 sentences on what this session is about>
 
 ## Progress
+
 - Done
   - <item>
 - In progress
@@ -114,12 +116,15 @@ Adapt it to the task; the sections are a guide, not a straitjacket.
   - <item>
 
 ## Key decisions
+
 - <decision and rationale>
 
 ## Next steps
+
 - <first concrete action for the successor>
 
 ## Blockers / open questions
+
 - <item> (or "none")
 ```
 
@@ -130,6 +135,7 @@ Adapt it to the task; the sections are a guide, not a straitjacket.
 ## Step 6 — Report
 
 Tell the user:
+
 - The path of the written file (`<slug>.md`)
 - A one-line summary of the snapshot
 - That the successor agent (or the human) can read the file to continue;

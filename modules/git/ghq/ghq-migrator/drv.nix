@@ -1,4 +1,8 @@
-{ ghq-migrator, stdenv, coreutils }:
+{
+  ghq-migrator,
+  stdenv,
+  coreutils,
+}:
 stdenv.mkDerivation {
   name = "ghq-migrator";
   src = ghq-migrator;

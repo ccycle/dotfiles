@@ -87,12 +87,12 @@ the built-in `idp` service (excluded via `OC_EXCLUDE_RUN_SERVICES=idp`).
 
 **OIDC clients (all public / PKCE):**
 
-| Client | Client ID | Callback URLs |
-|--------|-----------|---------------|
-| Web | `77e88611-a8b6-4eec-bfd7-7bd2bd4fe642` | `https://opencloud.<host>/`, `/oidc-callback.html`, `/oidc-silent-redirect.html` |
-| Desktop | `OpenCloudDesktop` | `http://127.0.0.1`, `http://localhost` |
-| iOS | `OpenCloudIOS` | `oc://ios.opencloud.eu` |
-| Android | `OpenCloudAndroid` | `oc://android.opencloud.eu` |
+| Client  | Client ID                              | Callback URLs                                                                    |
+| ------- | -------------------------------------- | -------------------------------------------------------------------------------- |
+| Web     | `77e88611-a8b6-4eec-bfd7-7bd2bd4fe642` | `https://opencloud.<host>/`, `/oidc-callback.html`, `/oidc-silent-redirect.html` |
+| Desktop | `OpenCloudDesktop`                     | `http://127.0.0.1`, `http://localhost`                                           |
+| iOS     | `OpenCloudIOS`                         | `oc://ios.opencloud.eu`                                                          |
+| Android | `OpenCloudAndroid`                     | `oc://android.opencloud.eu`                                                      |
 
 Clients are created manually in Pocket ID admin. The web client uses the
 UUID Pocket ID generates when the client is created as-is, with no
@@ -105,12 +105,12 @@ client keeps Pocket ID's generated UUID.
 
 **User groups (created manually in Pocket ID):**
 
-| Group | Custom Claim | Maps to OpenCloud role |
-|-------|-------------|----------------------|
-| `opencloud_admins` | `opencloud_role: opencloudAdmin` | admin |
-| `opencloud_spaceadmins` | `opencloud_role: opencloudSpaceAdmin` | spaceadmin |
-| `opencloud_users` | `opencloud_role: opencloudUser` | user |
-| `opencloud_guests` | `opencloud_role: opencloudGuest` | user-light |
+| Group                   | Custom Claim                          | Maps to OpenCloud role |
+| ----------------------- | ------------------------------------- | ---------------------- |
+| `opencloud_admins`      | `opencloud_role: opencloudAdmin`      | admin                  |
+| `opencloud_spaceadmins` | `opencloud_role: opencloudSpaceAdmin` | spaceadmin             |
+| `opencloud_users`       | `opencloud_role: opencloudUser`       | user                   |
+| `opencloud_guests`      | `opencloud_role: opencloudGuest`      | user-light             |
 
 Role mapping uses the oidc driver with `PROXY_ROLE_ASSIGNMENT_OIDC_CLAIM`
 set to `opencloud_role` (see `modules/opencloud/options.nix`). Every user

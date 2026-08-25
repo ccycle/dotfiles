@@ -1,4 +1,10 @@
-{ config, lib, pkgs, inputs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  inputs,
+  ...
+}:
 
 with lib;
 
@@ -46,8 +52,7 @@ in
         sopsFile = ./secrets.yaml;
       };
 
-      environment.etc."atticd/server.toml".source =
-        format.generate "server.toml" cfg.settings;
+      environment.etc."atticd/server.toml".source = format.generate "server.toml" cfg.settings;
 
       launchd.daemons.atticd = {
         serviceConfig = {

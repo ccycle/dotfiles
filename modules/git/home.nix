@@ -1,4 +1,10 @@
-{ pkgs, config, lib, ... }: {
+{
+  pkgs,
+  config,
+  lib,
+  ...
+}:
+{
   options.custom.git.configSource = lib.mkOption {
     type = lib.types.str;
     default = "${config.custom.dotfiles.dir}/modules/git/gitconfig";
@@ -7,8 +13,7 @@
 
   config = {
     xdg.configFile."git/config" = lib.mkForce {
-      source =
-        config.lib.file.mkOutOfStoreSymlink config.custom.git.configSource;
+      source = config.lib.file.mkOutOfStoreSymlink config.custom.git.configSource;
     };
     xdg.configFile."git/github/gitconfig".source =
       config.lib.file.mkOutOfStoreSymlink "${config.custom.dotfiles.dir}/modules/git/github/gitconfig";

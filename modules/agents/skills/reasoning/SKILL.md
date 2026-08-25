@@ -27,11 +27,11 @@ evidence invalidates its output.
 
 Every statement you rely on is in exactly one of three states:
 
-| State | Meaning | Allowed use |
-|---|---|---|
-| Verified | You observed it: read the file, ran the command, saw the output | Build on it freely |
-| Assumed | Plausible but unchecked | Build on it only if cheap to undo; label it |
-| Unknown | You have no evidence either way | Investigate before depending on it |
+| State    | Meaning                                                         | Allowed use                                 |
+| -------- | --------------------------------------------------------------- | ------------------------------------------- |
+| Verified | You observed it: read the file, ran the command, saw the output | Build on it freely                          |
+| Assumed  | Plausible but unchecked                                         | Build on it only if cheap to undo; label it |
+| Unknown  | You have no evidence either way                                 | Investigate before depending on it          |
 
 Rules:
 
@@ -60,14 +60,14 @@ When something is unknown or broken:
 - Write down at least two candidate explanations before investigating. A
   single hypothesis invites tunnel vision: every observation gets bent to
   confirm it.
-- Choose the next observation by how well it *discriminates* between the
+- Choose the next observation by how well it _discriminates_ between the
   candidates at the lowest cost — ideally one command or one file read that
   would produce a different result under each hypothesis.
 - After each observation, update the whole set: eliminate contradicted
   hypotheses, add new ones the evidence suggests. Do not keep testing a
   favorite that the evidence has already killed.
 - Distinguish "this fix worked" from "the symptom disappeared". If you cannot
-  explain *why* the fix works, the root cause is still unknown.
+  explain _why_ the fix works, the root cause is still unknown.
 
 ## 5. Read Before Writing
 
@@ -83,7 +83,7 @@ When something is unknown or broken:
 - Take small steps that can each be verified before building on them. One
   verified step is worth more than five stacked unverified ones.
 - Before any hard-to-reverse action (deleting, overwriting, pushing,
-  deploying), re-check that the evidence supports that *specific* action. A
+  deploying), re-check that the evidence supports that _specific_ action. A
   situation that pattern-matches a known problem may have a different cause.
 - If a step fails, do not immediately retry it verbatim. The failure is new
   evidence — feed it back into the ledger first.

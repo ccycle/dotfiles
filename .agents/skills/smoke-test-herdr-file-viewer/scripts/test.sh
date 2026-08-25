@@ -9,7 +9,10 @@ FAILED=0
 
 # --- Helpers ---
 pass() { echo "✅ $1"; }
-fail() { echo "❌ $1"; FAILED=1; }
+fail() {
+  echo "❌ $1"
+  FAILED=1
+}
 
 cleanup() {
   if [ -n "$WORKSPACE_ID" ]; then

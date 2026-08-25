@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 let
   # brew-nix default desktoppr has a broken installPhase; override so $out/bin/desktoppr exists.
   desktoppr = pkgs.brewCasks.desktoppr.overrideAttrs (_: {
@@ -18,7 +23,7 @@ in
   #   ls /run/current-system/user/Library/LaunchAgents/
   #   ls -la "$HOME/Library/LaunchAgents/"
   # and ensure ~/Library/LaunchAgents exists; then log out and log in again.
-  
+
   # launchd.user.agents.set-wallpaper = lib.mkIf config.stylix.enable {
   #   serviceConfig.RunAtLoad = true;
   #   serviceConfig.StandardOutPath = "/tmp/set-wallpaper.log";

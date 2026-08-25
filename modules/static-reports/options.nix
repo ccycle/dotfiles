@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
@@ -29,30 +34,34 @@ in
   };
 
   config = mkIf cfg.enable {
-    services.caddy.portalEntries = [{
-      name = "Reports";
-      url = reportsUrl;
-      descriptionJa = "静的レポート・成果物の閲覧 (テスト結果など)";
-      descriptionEn = "Browse static reports/artifacts (test results, etc.)";
-      logoSvg = builtins.readFile ./reports-logo.svg;
-    }];
+    services.caddy.portalEntries = [
+      {
+        name = "Reports";
+        url = reportsUrl;
+        descriptionJa = "静的レポート・成果物の閲覧 (テスト結果など)";
+        descriptionEn = "Browse static reports/artifacts (test results, etc.)";
+        logoSvg = builtins.readFile ./reports-logo.svg;
+      }
+    ];
 
     # Confidential OIDC client registered on Pocket ID. The client ID is
     # fixed (plaintext) and matches oauth2-proxy's --client-id below; the
     # secret is captured by scripts/pocket-id-register-clients.sh into this
     # module's per-host secrets file, then read by oauth2-proxy at startup.
     # No allowedGroups: any authenticated Pocket ID user may view reports.
-    services.pocket-id.oidcClients = [{
-      name = "Reports";
-      clientId = "reports";
-      isPublic = false;
-      pkceEnabled = false;
-      # oauth2-proxy's own callback path (see the launchd daemon below).
-      callbackURLs = [ "${reportsUrl}/oauth2/callback" ];
-      logoutCallbackURLs = [ "${reportsUrl}/oauth2/callback" ];
-      secretFile = "modules/static-reports/secrets-${config.networking.hostName}.yaml";
-      secretKey = "reports_oidc_client_secret";
-    }];
+    services.pocket-id.oidcClients = [
+      {
+        name = "Reports";
+        clientId = "reports";
+        isPublic = false;
+        pkceEnabled = false;
+        # oauth2-proxy's own callback path (see the launchd daemon below).
+        callbackURLs = [ "${reportsUrl}/oauth2/callback" ];
+        logoutCallbackURLs = [ "${reportsUrl}/oauth2/callback" ];
+        secretFile = "modules/static-reports/secrets-${config.networking.hostName}.yaml";
+        secretKey = "reports_oidc_client_secret";
+      }
+    ];
 
     sops.secrets.reports_oidc_client_secret = {
       sopsFile = ./secrets-${config.networking.hostName}.yaml;

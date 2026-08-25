@@ -8,13 +8,16 @@ FAILED=0
 
 # --- Helpers ---
 pass() { echo "✅ $1"; }
-fail() { echo "❌ $1"; FAILED=1; }
+fail() {
+  echo "❌ $1"
+  FAILED=1
+}
 
 check_http() {
   local name="$1"
   local url="$2"
   local extra_args="${3:-}"
-  if curl -sf --max-time 10 $extra_args "$url" > /dev/null 2>&1; then
+  if curl -sf --max-time 10 $extra_args "$url" >/dev/null 2>&1; then
     pass "$name ($url)"
   else
     fail "$name ($url)"
@@ -24,7 +27,7 @@ check_http() {
 # --- 1. Container Status ---
 echo "=== 🐳 Container Status ==="
 
-if ! docker compose -p "$PROJECT_NAME" ps --format json > /dev/null 2>&1; then
+if ! docker compose -p "$PROJECT_NAME" ps --format json >/dev/null 2>&1; then
   fail "Cannot reach Docker Compose project '$PROJECT_NAME'"
   echo ""
   echo "❌ Smoke test failed."
@@ -47,16 +50,16 @@ echo ""
 echo "=== 🏥 Health Endpoints ==="
 
 check_http "Prometheus" "http://127.0.0.1:9090/-/healthy"
-check_http "Grafana"    "http://127.0.0.1:3200/api/health"
-check_http "Loki"       "http://127.0.0.1:3100/ready"
-check_http "cAdvisor"   "http://127.0.0.1:8081/healthz"
+check_http "Grafana" "http://127.0.0.1:3200/api/health"
+check_http "Loki" "http://127.0.0.1:3100/ready"
+check_http "cAdvisor" "http://127.0.0.1:8081/healthz"
 
 echo ""
 
 # --- 3. Caddy Reverse Proxy (HTTPS) ---
 echo "=== 🔒 Caddy Reverse Proxy ==="
 
-check_http "Grafana (HTTPS)"    "https://grafana.${HOSTNAME}.internal" "--insecure"
+check_http "Grafana (HTTPS)" "https://grafana.${HOSTNAME}.internal" "--insecure"
 check_http "Prometheus (HTTPS)" "https://prometheus.${HOSTNAME}.internal" "--insecure"
 
 echo ""
@@ -87,7 +90,7 @@ echo "=== 📊 Provisioned Dashboards ==="
 EXPECTED_DASHBOARDS="services-overview gitlab-health immich-health opencloud-health logs-explorer"
 for uid in $EXPECTED_DASHBOARDS; do
   if docker compose -p "$PROJECT_NAME" exec -T grafana \
-    test -f "/var/lib/grafana/dashboards/${uid}.json" > /dev/null 2>&1; then
+    test -f "/var/lib/grafana/dashboards/${uid}.json" >/dev/null 2>&1; then
     pass "dashboard '$uid' is provisioned"
   else
     fail "dashboard '$uid' is missing from /var/lib/grafana/dashboards"

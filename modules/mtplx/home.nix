@@ -5,8 +5,10 @@ let
   modelEntries = lib.mapAttrsToList (id: m: { inherit id; } // m) catalog.models;
 
   aliasesForModel = model: {
-    "mtplx-start-${model.shortId}" = "launchctl kickstart -k gui/$(id -u)/org.nixos.mtplx-${model.shortId}";
-    "mtplx-stop-${model.shortId}" = "launchctl kill SIGTERM gui/$(id -u)/org.nixos.mtplx-${model.shortId}";
+    "mtplx-start-${model.shortId}" =
+      "launchctl kickstart -k gui/$(id -u)/org.nixos.mtplx-${model.shortId}";
+    "mtplx-stop-${model.shortId}" =
+      "launchctl kill SIGTERM gui/$(id -u)/org.nixos.mtplx-${model.shortId}";
   };
 in
 {

@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
@@ -49,13 +54,15 @@ in
   imports = [ ./options.nix ];
 
   config = mkIf cfg.enable {
-    services.caddy.portalEntries = [{
-      name = "MTPLX";
-      url = "https://mtplx.${config.networking.hostName}.internal";
-      descriptionJa = "MTPLX ローカル推論サーバー (MLX / 投機的デコーディング)";
-      descriptionEn = "MTPLX Local Inference Server (MLX / speculative decoding)";
-      logoSvg = builtins.readFile ./mtplx-logo.svg;
-    }];
+    services.caddy.portalEntries = [
+      {
+        name = "MTPLX";
+        url = "https://mtplx.${config.networking.hostName}.internal";
+        descriptionJa = "MTPLX ローカル推論サーバー (MLX / 投機的デコーディング)";
+        descriptionEn = "MTPLX Local Inference Server (MLX / speculative decoding)";
+        logoSvg = builtins.readFile ./mtplx-logo.svg;
+      }
+    ];
 
     environment.etc."caddy/sites/mtplx.caddy".text = ''
       http://mtplx.${config.networking.hostName}.internal, https://mtplx.${config.networking.hostName}.internal {
@@ -71,36 +78,38 @@ in
     # `mtplx-start-<shortId>`/`mtplx-stop-<shortId>` aliases in ./home.nix)
     # so starting a second one while the first is still running fails fast
     # on a port conflict rather than silently doubling memory use.
-    launchd.user.agents = listToAttrs (map
-      (model: nameValuePair "mtplx-${model.shortId}" {
-        serviceConfig = {
-          KeepAlive = false;
-          RunAtLoad = false;
-          StandardOutPath = "/var/tmp/mtplx-${model.shortId}.log";
-          StandardErrorPath = "/var/tmp/mtplx-${model.shortId}.log";
-        };
-        script = ''
-          set -euo pipefail
+    launchd.user.agents = listToAttrs (
+      map (
+        model:
+        nameValuePair "mtplx-${model.shortId}" {
+          serviceConfig = {
+            KeepAlive = false;
+            RunAtLoad = false;
+            StandardOutPath = "/var/tmp/mtplx-${model.shortId}.log";
+            StandardErrorPath = "/var/tmp/mtplx-${model.shortId}.log";
+          };
+          script = ''
+            set -euo pipefail
 
-          ${installScript}
+            ${installScript}
 
-          # "turbo" is mtplx's fastest profile that still supports our full
-          # context window; "performance-cold" is faster still but caps out
-          # at ~8K context, too short for opencode's system prompt.
-          exec "${cfg.installDir}/PythonRuntime/bin/mtplx" serve \
-            --model "${model.hfRepo}" \
-            --download \
-            --host 127.0.0.1 \
-            --port ${toString cfg.port} \
-            --no-auth \
-            --profile turbo \
-            --model-id "${model.id}" \
-            --context-window ${toString model.contextLength}${
-              optionalString ((model.extraFlags or [ ]) != [ ])
-                " ${concatStringsSep " " model.extraFlags}"
-            }
-        '';
-      })
-      modelEntries);
+            # "turbo" is mtplx's fastest profile that still supports our full
+            # context window; "performance-cold" is faster still but caps out
+            # at ~8K context, too short for opencode's system prompt.
+            exec "${cfg.installDir}/PythonRuntime/bin/mtplx" serve \
+              --model "${model.hfRepo}" \
+              --download \
+              --host 127.0.0.1 \
+              --port ${toString cfg.port} \
+              --no-auth \
+              --profile turbo \
+              --model-id "${model.id}" \
+              --context-window ${toString model.contextLength}${
+                optionalString ((model.extraFlags or [ ]) != [ ]) " ${concatStringsSep " " model.extraFlags}"
+              }
+          '';
+        }
+      ) modelEntries
+    );
   };
 }

@@ -31,7 +31,7 @@ script_dir="$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)"
 move_card="$script_dir/../../obsidian-to-herdr-worktree/scripts/move-card.sh"
 
 mkdir -p "$(dirname "$state_file")"
-test -f "$state_file" || echo '{}' > "$state_file"
+test -f "$state_file" || echo '{}' >"$state_file"
 
 current_branches=$(herdr worktree list | jq -r '.result.worktrees[].branch')
 keep=$(printf '%s\n' "$current_branches" | jq -R -s -c 'split("\n") | map(select(length > 0))')
@@ -77,7 +77,7 @@ removed=$(jq -r --argjson keep "$keep" \
 tmp=$(mktemp)
 jq --argjson keep "$keep" \
   'with_entries(select(.value.branch as $b | $keep | index($b)))' \
-  "$state_file" > "$tmp" && mv "$tmp" "$state_file"
+  "$state_file" >"$tmp" && mv "$tmp" "$state_file"
 
 if [ -n "$removed" ]; then
   while IFS=$'\t' read -r title branch; do
@@ -85,18 +85,18 @@ if [ -n "$removed" ]; then
     section=$(card_section "$title")
     [ -z "$section" ] && continue
     case "$(classify_branch "$branch")" in
-      MERGED)
-        "$move_card" "$board" "$section" "Done" "$title"
-        printf 'AUTO\t%s\tDone\t%s\t%s\n' "$section" "$title" "$branch"
-        ;;
-      NEVER_STARTED)
-        printf 'CONFIRM\t%s\tNEVER_STARTED\t%s\t%s\n' "$section" "$title" "$branch"
-        ;;
-      NOT_MERGED)
-        printf 'CONFIRM\t%s\tNOT_MERGED\t%s\t%s\n' "$section" "$title" "$branch"
-        ;;
+    MERGED)
+      "$move_card" "$board" "$section" "Done" "$title"
+      printf 'AUTO\t%s\tDone\t%s\t%s\n' "$section" "$title" "$branch"
+      ;;
+    NEVER_STARTED)
+      printf 'CONFIRM\t%s\tNEVER_STARTED\t%s\t%s\n' "$section" "$title" "$branch"
+      ;;
+    NOT_MERGED)
+      printf 'CONFIRM\t%s\tNOT_MERGED\t%s\t%s\n' "$section" "$title" "$branch"
+      ;;
     esac
-  done <<< "$removed"
+  done <<<"$removed"
 fi
 
 # 2) Live worktrees: Todo -> In progress is deterministic (a live worktree is
@@ -110,7 +110,7 @@ if [ -n "$live_titles" ]; then
       "$move_card" "$board" "Todo" "In progress" "$title"
       printf 'AUTO\tTodo\tIn progress\t%s\t%s\n' "$title" "$branch"
     fi
-  done <<< "$live_titles"
+  done <<<"$live_titles"
 fi
 
 # 3) Unregistered In progress cards: strict match only — a card's title,
@@ -144,12 +144,12 @@ if [ -n "$in_progress_titles" ]; then
       if [ "$(normalize "$branch")" = "$norm_title" ]; then
         tmp=$(mktemp)
         jq --arg slug "$branch" --arg title "$title" --arg branch "$branch" \
-           --arg backend "" --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-           '. + {($slug): {title: $title, branch: $branch, backend: $backend, dispatched_at: $ts}}' \
-           "$state_file" > "$tmp" && mv "$tmp" "$state_file"
+          --arg backend "" --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+          '. + {($slug): {title: $title, branch: $branch, backend: $backend, dispatched_at: $ts}}' \
+          "$state_file" >"$tmp" && mv "$tmp" "$state_file"
         printf 'BACKFILL\t%s\t%s\n' "$title" "$branch"
         break
       fi
-    done <<< "$current_branches"
-  done <<< "$in_progress_titles"
+    done <<<"$current_branches"
+  done <<<"$in_progress_titles"
 fi

@@ -14,14 +14,7 @@
           "sha256": ""
         }
       ],
-      "extraFlags": [
-        "--repeat-penalty",
-        "1.15",
-        "--repeat-last-n",
-        "256",
-        "--flash-attn",
-        "on"
-      ]
+      "extraFlags": ["--repeat-penalty", "1.15", "--repeat-last-n", "256", "--flash-attn", "on"]
     },
     "qwen/qwen3.8-27b": {
       "name": "Qwen 3.8 27B",
@@ -34,14 +27,7 @@
           "sha256": ""
         }
       ],
-      "extraFlags": [
-        "--flash-attn",
-        "on",
-        "-ctk",
-        "q8_0",
-        "-ctv",
-        "q8_0"
-      ]
+      "extraFlags": ["--flash-attn", "on", "-ctk", "q8_0", "-ctv", "q8_0"]
     },
     "qwen/qwen3.6-35b-a3b": {
       "name": "Qwen 3.6 35B A3B",
@@ -53,14 +39,7 @@
           "sha256": "707a55a8a4397ecde44de0c499d3e68c1ad1d240d1da65826b4949d1043f4450"
         }
       ],
-      "extraFlags": [
-        "--flash-attn",
-        "on",
-        "-ctk",
-        "q8_0",
-        "-ctv",
-        "q8_0"
-      ]
+      "extraFlags": ["--flash-attn", "on", "-ctk", "q8_0", "-ctv", "q8_0"]
     },
     "ornith-ai/Ornith-1.5-35B-A3B-GGUF": {
       "name": "Ornith-1.5-35B-A3B-GGUF (Q4_K_M)",
@@ -73,14 +52,7 @@
           "sha256": ""
         }
       ],
-      "extraFlags": [
-        "--repeat-penalty",
-        "1.15",
-        "--repeat-last-n",
-        "256",
-        "--flash-attn",
-        "on"
-      ]
+      "extraFlags": ["--repeat-penalty", "1.15", "--repeat-last-n", "256", "--flash-attn", "on"]
     }
   }
 }

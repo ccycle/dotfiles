@@ -1,5 +1,7 @@
 { pkgs, ... }:
-let go-task = pkgs.go-task; in
+let
+  go-task = pkgs.go-task;
+in
 {
   home.packages = [ go-task ];
   programs.git.ignores = [ ".task/" ];

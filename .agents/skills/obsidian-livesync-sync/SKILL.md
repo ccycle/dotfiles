@@ -15,10 +15,10 @@ Triggers a one-shot replication cycle of the Obsidian LiveSync plugin via the Ad
 
 ## Vault
 
-| Field | Value |
-|-------|-------|
-| Path | `$HOME/Obsidian/zettelkasten` |
-| Name | `zettelkasten` |
+| Field                | Value                                  |
+| -------------------- | -------------------------------------- |
+| Path                 | `$HOME/Obsidian/zettelkasten`          |
+| Name                 | `zettelkasten`                         |
 | Default sync command | `obsidian-livesync:livesync-replicate` |
 
 ## Usage
@@ -43,18 +43,18 @@ cat "$HOME/Obsidian/zettelkasten/<note-name>.md"
 
 ## Other Available Commands
 
-| Command ID | Description |
-|---|---|
-| `obsidian-livesync:livesync-replicate` | Run one-shot replication cycle |
-| `obsidian-livesync:livesync-toggle` | Toggle LiveSync on/off |
-| `obsidian-livesync:livesync-abortsync` | Abort running synchronization |
-| `obsidian-livesync:livesync-suspendall` | Toggle all sync on/off |
-| `obsidian-livesync:livesync-scan-files` | Scan vault files |
-| `obsidian-livesync:view-log` | View LiveSync log |
+| Command ID                              | Description                    |
+| --------------------------------------- | ------------------------------ |
+| `obsidian-livesync:livesync-replicate`  | Run one-shot replication cycle |
+| `obsidian-livesync:livesync-toggle`     | Toggle LiveSync on/off         |
+| `obsidian-livesync:livesync-abortsync`  | Abort running synchronization  |
+| `obsidian-livesync:livesync-suspendall` | Toggle all sync on/off         |
+| `obsidian-livesync:livesync-scan-files` | Scan vault files               |
+| `obsidian-livesync:view-log`            | View LiveSync log              |
 
 ## Files
 
-| Path | Purpose |
-|---|---|
-| `SKILL.md` | This file |
+| Path              | Purpose                |
+| ----------------- | ---------------------- |
+| `SKILL.md`        | This file              |
 | `scripts/sync.sh` | Script to trigger sync |

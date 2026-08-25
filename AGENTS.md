@@ -40,6 +40,7 @@ These rules are enforced mechanically: `scripts/package-by-feature/check.nix` va
 Modules must access external flake inputs through the `inputs` attribute, not as direct function arguments.
 
 **Rule:**
+
 - **Use `inputs.xxx`:** Always receive `inputs` in the module arguments and access dependencies as `inputs.sops-nix`, `inputs.attic`, etc.
 - **Do not spread inputs into specialArgs:** `mkSpecialArgs` must not use `inputs // { ... }`. Only explicitly defined attributes (`pkgs-*`, `tailscalePackage`, `system`, etc.) and `inputs` itself should be in `specialArgs`.
 - **Derived values are OK:** Convenience aliases like `pkgs-unstable`, `tailscalePackage` that are computed from inputs may remain as explicit `specialArgs`.
@@ -57,6 +58,7 @@ Modules must access external flake inputs through the `inputs` attribute, not as
 ## Configuration Policy
 
 **Rule:**
+
 - **No Default Fallbacks:** Do not use default values for critical configurations. Explicitly require the user or the environment to provide necessary values (e.g., using `mkOption` without a default, or `lib.mkIf` checks). Avoid "magic" defaults that might be incorrect in a different context.
 
 ## Nix Development Rules
@@ -95,11 +97,11 @@ from measurement, never from memory or speculation.
 
 Each profile has a different `nix build` attribute path due to how they are defined in `flake.nix`:
 
-| Profile | Attribute Path |
-|---|---|
-| bootstrap | `./bootstrap#darwinConfigurations.bootstrap.aarch64-darwin.system` |
-| private | `.#darwinConfigurations.private.aarch64-darwin.system` |
-| mac-mini-m4 | `.#darwinConfigurations.mac-mini-m4.system` (no architecture suffix) |
+| Profile         | Attribute Path                                                           |
+| --------------- | ------------------------------------------------------------------------ |
+| bootstrap       | `./bootstrap#darwinConfigurations.bootstrap.aarch64-darwin.system`       |
+| private         | `.#darwinConfigurations.private.aarch64-darwin.system`                   |
+| mac-mini-m4     | `.#darwinConfigurations.mac-mini-m4.system` (no architecture suffix)     |
 | mac-mini-m4-pro | `.#darwinConfigurations.mac-mini-m4-pro.system` (no architecture suffix) |
 
 **Why the difference:** `private` is wrapped with `forDarwinSystems`, so the key includes the architecture name. `mac-mini-m4` and `mac-mini-m4-pro` call `darwinSystem` directly, so there is no architecture suffix. See `flake.nix` for details.

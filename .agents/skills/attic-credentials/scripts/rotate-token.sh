@@ -15,27 +15,27 @@ CACHE_NAME="dotfiles"
 JWT_SECRET_PATH="/run/secrets/atticd-jwt-secret"
 
 case "$ROLE" in
-  ci)
-    SUB="ci"
-    SOP_KEY="attic-ci-token"
-    ;;
-  smoke)
-    SUB="smoke"
-    SOP_KEY="attic-smoke-token"
-    ;;
-  client)
-    MACHINE="${2:-}"
-    if [ -z "$MACHINE" ]; then
-      echo "Error: 'client' role requires a machine name: $0 client <machine>"
-      exit 1
-    fi
-    SUB="$MACHINE"
-    SOP_KEY="attic-client-${MACHINE}-token"
-    ;;
-  *)
-    echo "Unknown role: $ROLE (expected: ci, smoke, client)"
+ci)
+  SUB="ci"
+  SOP_KEY="attic-ci-token"
+  ;;
+smoke)
+  SUB="smoke"
+  SOP_KEY="attic-smoke-token"
+  ;;
+client)
+  MACHINE="${2:-}"
+  if [ -z "$MACHINE" ]; then
+    echo "Error: 'client' role requires a machine name: $0 client <machine>"
     exit 1
-    ;;
+  fi
+  SUB="$MACHINE"
+  SOP_KEY="attic-client-${MACHINE}-token"
+  ;;
+*)
+  echo "Unknown role: $ROLE (expected: ci, smoke, client)"
+  exit 1
+  ;;
 esac
 
 cd "$(git rev-parse --show-toplevel)"
@@ -64,23 +64,23 @@ sops --set '["'"$SOP_KEY"'"] "'"$NEW_TOKEN"'"' "$SECRETS_FILE"
 echo "New token encrypted to $SECRETS_FILE (key: $SOP_KEY)"
 
 case "$ROLE" in
-  ci)
-    echo ""
-    echo "=== New CI Token — update Forgejo Settings -> Actions -> Secrets (ATTIC_CI_TOKEN) ==="
-    echo "$NEW_TOKEN"
-    echo "======================================================================================"
-    ;;
-  smoke)
-    echo ""
-    echo "smoke-test-attic picks this up automatically via the sops secret"
-    echo "(~/.config/sops-nix/secrets/attic-smoke-token) once home-manager redeploys it."
-    ;;
-  client)
-    echo ""
-    echo "=== New Client Token — on $MACHINE, run once: ==="
-    echo "attic login $ATTIC_HOST https://cache.${ATTIC_HOST}.internal $NEW_TOKEN --set-default"
-    echo "===================================================="
-    ;;
+ci)
+  echo ""
+  echo "=== New CI Token — update Forgejo Settings -> Actions -> Secrets (ATTIC_CI_TOKEN) ==="
+  echo "$NEW_TOKEN"
+  echo "======================================================================================"
+  ;;
+smoke)
+  echo ""
+  echo "smoke-test-attic picks this up automatically via the sops secret"
+  echo "(~/.config/sops-nix/secrets/attic-smoke-token) once home-manager redeploys it."
+  ;;
+client)
+  echo ""
+  echo "=== New Client Token — on $MACHINE, run once: ==="
+  echo "attic login $ATTIC_HOST https://cache.${ATTIC_HOST}.internal $NEW_TOKEN --set-default"
+  echo "===================================================="
+  ;;
 esac
 
 cat <<'EOF'

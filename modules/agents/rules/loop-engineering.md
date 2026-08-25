@@ -11,6 +11,7 @@ Before starting implementation, state completion criteria as checkable assertion
 Each assertion must be verifiable by reading a file, running a command, or observing behavior.
 
 Minimum criteria by task type:
+
 - Nix changes: `nix flake check` passes (or `/verify-change` skill)
 - Service changes: the relevant smoke-test skill passes
 - All changes: name the specific files created or modified

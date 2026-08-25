@@ -16,17 +16,15 @@
     };
     syntaxHighlighting.enable = true;
     autosuggestion.enable = true;
-    completionInit =
-      ''
-        # compinit must be called before bashcompinit for both completion systems to work.
-        # https://stackoverflow.com/questions/67136714/how-to-properly-call-compinit-and-bashcompinit-in-zsh
-        autoload -Uz compinit bashcompinit && compinit && bashcompinit
-      '';
-    initContent =
-      ''
-        bindkey '^[^?' backward-kill-word
-        bindkey '^[[3;3~' backward-kill-word
-      '';
+    completionInit = ''
+      # compinit must be called before bashcompinit for both completion systems to work.
+      # https://stackoverflow.com/questions/67136714/how-to-properly-call-compinit-and-bashcompinit-in-zsh
+      autoload -Uz compinit bashcompinit && compinit && bashcompinit
+    '';
+    initContent = ''
+      bindkey '^[^?' backward-kill-word
+      bindkey '^[[3;3~' backward-kill-word
+    '';
     history = {
       size = 100000;
       save = 100000;

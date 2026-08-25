@@ -5,7 +5,7 @@ description: Run a browser-driven E2E test of the static-reports Caddy forward_a
 
 # Reports E2E Test (static-reports forward_auth gate)
 
-Drives the *real* auth chain of `modules/static-reports` end to end in a
+Drives the _real_ auth chain of `modules/static-reports` end to end in a
 browser: an anonymous visit to `reports.<hostname>.internal` must be
 redirected through oauth2-proxy's `/oauth2/sign_in` to Pocket ID's
 passkey-only login, then back to a served static file. The gate is

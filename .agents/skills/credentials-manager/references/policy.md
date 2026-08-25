@@ -5,6 +5,7 @@
 When configuring Nix access tokens (e.g., for fetching private flakes), use a dedicated file separate from the system's primary `access-tokens.conf`.
 
 **Rule:**
+
 - **Separate File:** Generate a specific file for work credentials, such as `/etc/nix/nix-access-tokens-work.conf`.
 - **Include mechanism:** Use the `!include` directive in `nix.extraOptions` to load this file.
 
@@ -28,6 +29,7 @@ When configuring Nix access tokens (e.g., for fetching private flakes), use a de
 ```
 
 **Reasoning:**
+
 - This prevents conflicts with the base `dotfiles` repository or other configurations that might manage `/etc/nix/access-tokens.conf`.
 - It allows multiple sources of credentials to coexist safely.
 

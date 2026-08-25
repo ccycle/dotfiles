@@ -1,37 +1,47 @@
-{ config, lib, pkgs, tailscalePackage, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  tailscalePackage,
+  ...
+}:
 
 let
   hostName = config.networking.hostName;
   domain = "${hostName}.internal";
 
-  caHtml = builtins.replaceStrings [ "__DOMAIN__" "__HOSTNAME__" ] [ domain hostName ]
-    (builtins.readFile ./ca.html);
+  caHtml = builtins.replaceStrings [ "__DOMAIN__" "__HOSTNAME__" ] [ domain hostName ] (
+    builtins.readFile ./ca.html
+  );
 
   sortedEntries = lib.sort (a: b: a.name < b.name) config.services.caddy.portalEntries;
 
-  portalCardsHtml = lib.concatMapStringsSep "\n"
-    (entry: ''
-      <a href="${entry.url}" class="card">
-        <div class="logo">${entry.logoSvg}</div>
-        <div class="card-body">
-          <h2>${entry.name}</h2>
-          <p data-lang="ja">${entry.descriptionJa}</p>
-          <p data-lang="en" hidden>${entry.descriptionEn}</p>
-        </div>
-      </a>
-    '')
-    sortedEntries;
+  portalCardsHtml = lib.concatMapStringsSep "\n" (entry: ''
+    <a href="${entry.url}" class="card">
+      <div class="logo">${entry.logoSvg}</div>
+      <div class="card-body">
+        <h2>${entry.name}</h2>
+        <p data-lang="ja">${entry.descriptionJa}</p>
+        <p data-lang="en" hidden>${entry.descriptionEn}</p>
+      </div>
+    </a>
+  '') sortedEntries;
 
-  indexHtml = builtins.replaceStrings
-    [ "@domain@" "@hostName@" "@portalCards@" ]
-    [ domain hostName portalCardsHtml ]
-    (builtins.readFile ./index.html);
+  indexHtml =
+    builtins.replaceStrings
+      [ "@domain@" "@hostName@" "@portalCards@" ]
+      [ domain hostName portalCardsHtml ]
+      (builtins.readFile ./index.html);
 
   # Hash all Caddy etc entries so the launchd plist changes (and nix-darwin
   # restarts the daemon) whenever any site config is added, removed, or modified.
-  caddyEtcHash = builtins.hashString "sha256" (lib.concatStrings
-    (lib.mapAttrsToList (_: v: v.text or "")
-      (lib.filterAttrs (n: _: lib.hasPrefix "caddy/" n) config.environment.etc)));
+  caddyEtcHash = builtins.hashString "sha256" (
+    lib.concatStrings (
+      lib.mapAttrsToList (_: v: v.text or "") (
+        lib.filterAttrs (n: _: lib.hasPrefix "caddy/" n) config.environment.etc
+      )
+    )
+  );
 in
 {
   imports = [
@@ -47,13 +57,16 @@ in
         descriptionEn = "Download Root Certificate";
         logoSvg = builtins.readFile ./ca-certificate-logo.svg;
       }
-    ] ++ lib.optionals config.services.atticd.enable [{
-      name = "Attic Cache";
-      url = "https://cache.${domain}";
-      descriptionJa = "Nix バイナリキャッシュ";
-      descriptionEn = "Nix Binary Cache";
-      logoSvg = builtins.readFile ./attic-logo.svg;
-    }];
+    ]
+    ++ lib.optionals config.services.atticd.enable [
+      {
+        name = "Attic Cache";
+        url = "https://cache.${domain}";
+        descriptionJa = "Nix バイナリキャッシュ";
+        descriptionEn = "Nix Binary Cache";
+        logoSvg = builtins.readFile ./attic-logo.svg;
+      }
+    ];
 
     environment.etc = {
       "caddy/Caddyfile".text = ''

@@ -1,9 +1,6 @@
 {
   username =
-    if builtins.getEnv "SUDO_USER" != "" then
-      builtins.getEnv "SUDO_USER"
-    else
-      builtins.getEnv "USER";
+    if builtins.getEnv "SUDO_USER" != "" then builtins.getEnv "SUDO_USER" else builtins.getEnv "USER";
   homeDirectory =
     if builtins.getEnv "SUDO_USER" != "" then
       if builtins.pathExists "/Users" then

@@ -19,7 +19,10 @@ source_heading="${2:?source heading required}"
 target_heading="${3:?target heading required}"
 title="${4:?card title required}"
 
-[ -f "$board" ] || { echo "board not found: $board" >&2; exit 1; }
+[ -f "$board" ] || {
+  echo "board not found: $board" >&2
+  exit 1
+}
 
 card="- [ ] [[${title}]]"
 plain="- [ ] ${title}"
@@ -40,7 +43,7 @@ in_section() {
 captured=$(mktemp)
 tmp=$(mktemp)
 if ! awk -v card="$card" -v plain="$plain" -v heading="## $source_heading" \
-     -v out="$captured" '
+  -v out="$captured" '
     $0 == heading { in_source = 1 }
     /^## / && in_source && $0 != heading { in_source = 0 }
     in_source && (index($0, card) || index($0, plain)) {
@@ -49,7 +52,7 @@ if ! awk -v card="$card" -v plain="$plain" -v heading="## $source_heading" \
     }
     { print }
     END { if (!removed) exit 1 }
-  ' "$board" > "$tmp"; then
+  ' "$board" >"$tmp"; then
   rm -f "$tmp" "$captured"
   echo "move-card: card not in '$source_heading' section (moved by hand?): $title" >&2
   exit 1
@@ -82,4 +85,4 @@ awk -v card="$insert_line" -v heading="## $target_heading" '
   }
   { print }
   END { if (in_target && !inserted) print card }
-' "$board" > "$tmp" && mv "$tmp" "$board"
+' "$board" >"$tmp" && mv "$tmp" "$board"

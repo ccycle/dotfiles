@@ -1,8 +1,8 @@
 {
   "name": "nix-node-tools",
   "version": "1.0.0",
-  "description": "Managed Node.js tools for Nix environment",
   "private": true,
+  "description": "Managed Node.js tools for Nix environment",
   "dependencies": {
     "@helpfeel/cosense-cli": "^1.5.1",
     "@jr2804/livesync-cli": "latest",

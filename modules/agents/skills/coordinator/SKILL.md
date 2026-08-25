@@ -112,7 +112,6 @@ herdr agent prompt auth-module "fix the failing tests" --wait --timeout 600000
 herdr agent prompt auth-module "/merge-to-main" --wait --timeout 120000
 ```
 
-
 ## Workflow Patterns
 
 ### Fan-out / Fan-in

@@ -10,11 +10,17 @@
     enable = true;
     enableZshIntegration = true;
     defaultCommand = "${pkgs.fd}/bin/fd --type f";
-    defaultOptions = [ "--height 40%" "--layout=reverse" "--border" ];
+    defaultOptions = [
+      "--height 40%"
+      "--layout=reverse"
+      "--border"
+    ];
     changeDirWidgetCommand = "${pkgs.fd}/bin/fd --type d";
     changeDirWidgetOptions = [ "--preview '${pkgs.tree}/bin/tree -C {} | head -200'" ];
     fileWidgetCommand = "${pkgs.fd}/bin/fd --type f";
-    fileWidgetOptions = [ "--preview '${pkgs.bat}/bin/bat --style=numbers --color=always --line-range :500 {}'" ];
+    fileWidgetOptions = [
+      "--preview '${pkgs.bat}/bin/bat --style=numbers --color=always --line-range :500 {}'"
+    ];
   };
   programs.zsh.initContent = ''
     # fzf history

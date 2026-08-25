@@ -1,4 +1,10 @@
-{ config, lib, pkgs, tailscalePackage, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  tailscalePackage,
+  ...
+}:
 
 let
   domain = "${config.networking.hostName}.internal";

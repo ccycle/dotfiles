@@ -8,12 +8,15 @@ FAILED=0
 
 # --- Helpers ---
 pass() { echo "PASS: $1"; }
-fail() { echo "FAIL: $1"; FAILED=1; }
+fail() {
+  echo "FAIL: $1"
+  FAILED=1
+}
 
 check_http() {
   local name="$1"
   local url="$2"
-  if curl -sf --max-time 10 "$url" > /dev/null 2>&1; then
+  if curl -sf --max-time 10 "$url" >/dev/null 2>&1; then
     pass "$name ($url)"
   else
     fail "$name ($url)"

@@ -1,4 +1,9 @@
-{ config, pkgs, lib, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 
 {
   programs.ssh = {
@@ -9,14 +14,20 @@
     package = lib.mkIf pkgs.stdenv.isDarwin null;
     extraConfig = ''
       SendEnv LANG LC_*
-    '' + (if pkgs.stdenv.isDarwin then ''
-      UseKeychain yes
-    '' else "");
+    ''
+    + (
+      if pkgs.stdenv.isDarwin then
+        ''
+          UseKeychain yes
+        ''
+      else
+        ""
+    );
   };
 
   # home.file.".ssh/authorized_keys".text = ''
   #   # ipad-pro-7th-gen
-  #   ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID0Z244BL6t4u5ILComih2Bf1yrL+KXYOCDGwOPc1Ezb 
+  #   ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID0Z244BL6t4u5ILComih2Bf1yrL+KXYOCDGwOPc1Ezb
   # '';
 
   programs.zsh.initContent =
@@ -34,11 +45,14 @@
         unset _AGENT_SOCK
       '';
     in
-    if pkgs.stdenv.isDarwin then ''
-      ${agentSetup}
-      ssh-add --apple-load-keychain > /dev/null 2>&1
-    '' else ''
-      ${agentSetup}
-      ssh-add ~/.ssh/id_ed25519_signing > /dev/null 2>&1
-    '';
+    if pkgs.stdenv.isDarwin then
+      ''
+        ${agentSetup}
+        ssh-add --apple-load-keychain > /dev/null 2>&1
+      ''
+    else
+      ''
+        ${agentSetup}
+        ssh-add ~/.ssh/id_ed25519_signing > /dev/null 2>&1
+      '';
 }

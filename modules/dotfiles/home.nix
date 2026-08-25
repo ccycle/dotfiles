@@ -1,9 +1,15 @@
-{ config, lib, dotfilesDir, ... }:
+{
+  config,
+  lib,
+  dotfilesDir,
+  ...
+}:
 with lib;
 
 let
   cfg = config.custom.dotfiles;
-in {
+in
+{
   options.custom.dotfiles.dir = mkOption {
     type = types.str;
     description = ''

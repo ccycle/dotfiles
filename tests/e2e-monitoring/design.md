@@ -13,11 +13,11 @@ dry-run and a container-status check structurally cannot verify.
 
 Unlike every other suite in `tests/e2e-*` (which stand up fully
 synthetic, isolated data), this one deliberately keeps Prometheus
-scraping the *real* host via `host-gateway` and the *real*
+scraping the _real_ host via `host-gateway` and the _real_
 `modules/monitoring/prometheus.yml` (mounted unmodified, same as
 production - see `scripts/stack.sh`'s `derive_env`). The alternative -
 standing up dummy scrape targets - would only prove Prometheus can
-scrape *something*, not that the repo's actual scrape config is
+scrape _something_, not that the repo's actual scrape config is
 correct. The whole point of this suite is the latter.
 
 A consequence: `activeTargets` health is asserted per-job as
@@ -45,8 +45,7 @@ Four of this suite's five tests use only Playwright's `request` fixture
 the real browser UI and opens a real dashboard, asserting zero
 console/page errors during render - this is the one thing an API call
 can't verify: that the dashboard JSON itself is well-formed enough for
-Grafana's frontend to actually render it, not just that the API returns
-200. A dashboard with a broken panel query can still return valid JSON
+Grafana's frontend to actually render it, not just that the API returns 200. A dashboard with a broken panel query can still return valid JSON
 from `/api/dashboards/uid/...`; it just fails to render.
 
 ## Why Isolated, Not the Real Instance
@@ -85,8 +84,8 @@ project.
      dashboard, and asserts zero console/page errors during render.
    - Polls Loki's `/loki/api/v1/query_range` for `{compose_project=~".+"}`
      - Alloy discovers and tails every container on the host (including
-     this isolated stack's own containers), so real log lines appear
-     without needing to seed anything.
+       this isolated stack's own containers), so real log lines appear
+       without needing to seed anything.
 3. `scripts/run.sh` publishes `test-results/html/` (trace: 'on') to
    `modules/static-reports`'s `dataDir/<branch-slug>/monitoring/`, same
    mechanism the other `e2e-test-*` skills use.

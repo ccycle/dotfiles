@@ -1,4 +1,13 @@
-{ rustPlatform, pkg-config, cmake, openssl, libiconv, lib, stdenv, src }:
+{
+  rustPlatform,
+  pkg-config,
+  cmake,
+  openssl,
+  libiconv,
+  lib,
+  stdenv,
+  src,
+}:
 
 rustPlatform.buildRustPackage {
   pname = "gitui";
@@ -7,9 +16,11 @@ rustPlatform.buildRustPackage {
 
   cargoLock.lockFile = "${src}/Cargo.lock";
 
-  nativeBuildInputs = [ pkg-config cmake ];
-  buildInputs = [ openssl ]
-    ++ lib.optionals stdenv.isDarwin [ libiconv ];
+  nativeBuildInputs = [
+    pkg-config
+    cmake
+  ];
+  buildInputs = [ openssl ] ++ lib.optionals stdenv.isDarwin [ libiconv ];
 
   postPatch = ''
     rm -f .cargo/config.toml

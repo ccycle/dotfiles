@@ -1,4 +1,4 @@
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig, devices } from "@playwright/test";
 
 // baseURL/ports come from the isolated per-worktree stack, resolved by
 // tests/e2e/scripts/stack.sh and exported before `playwright test` runs.
@@ -6,14 +6,14 @@ import { defineConfig, devices } from '@playwright/test';
 // fronted by a dedicated test Caddy (tls internal) rather than reached
 // directly on a loopback port.
 export default defineConfig({
-  testDir: './specs',
+  testDir: "./specs",
   fullyParallel: false,
   retries: 0,
   workers: 1,
-  reporter: [['list'], ['html', { open: 'never', outputFolder: 'test-results/html' }]],
-  outputDir: 'test-results/artifacts',
+  reporter: [["list"], ["html", { open: "never", outputFolder: "test-results/html" }]],
+  outputDir: "test-results/artifacts",
   use: {
-    baseURL: process.env.OPENCLOUD_URL ?? 'https://localhost:9200',
+    baseURL: process.env.OPENCLOUD_URL ?? "https://localhost:9200",
     // The test Caddy's certs chain to a copy of production's internal CA
     // (see stack.sh's ensure_test_ca), which this Node/Playwright process
     // has no reason to have imported into its own trust store.
@@ -22,13 +22,13 @@ export default defineConfig({
     // config for the same reason — this suite's own OIDC/consent flow
     // (passkey ceremony, pocket-id redirects, upload) is worth inspecting
     // in trace viewer even on a passing run, not just to debug failures.
-    trace: 'on',
-    screenshot: 'only-on-failure',
+    trace: "on",
+    screenshot: "only-on-failure",
   },
   projects: [
     {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      name: "chromium",
+      use: { ...devices["Desktop Chrome"] },
     },
   ],
 });

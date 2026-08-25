@@ -25,8 +25,8 @@ entries_file="$(mktemp)"
 trap 'rm -f "${entries_file}" "${entries_file}.tmp"' EXIT
 
 if [ -f "${target_file}" ]; then
-  grep -E '^ +[A-Za-z0-9_-]+ = "' "${target_file}" \
-    | sed -E 's/^ +([A-Za-z0-9_-]+) = "(.*)";/\1 \2/' > "${entries_file}"
+  grep -E '^ +[A-Za-z0-9_-]+ = "' "${target_file}" |
+    sed -E 's/^ +([A-Za-z0-9_-]+) = "(.*)";/\1 \2/' >"${entries_file}"
 fi
 
 for arg in "$@"; do
@@ -36,9 +36,9 @@ for arg in "$@"; do
     echo "Invalid argument: ${arg} (expected <service>=<path>)" >&2
     exit 1
   fi
-  grep -v "^${service} " "${entries_file}" > "${entries_file}.tmp" || true
+  grep -v "^${service} " "${entries_file}" >"${entries_file}.tmp" || true
   mv "${entries_file}.tmp" "${entries_file}"
-  echo "${service} ${path}" >> "${entries_file}"
+  echo "${service} ${path}" >>"${entries_file}"
 done
 
 mkdir -p "${target_dir}"
@@ -54,7 +54,7 @@ mkdir -p "${target_dir}"
   echo "    };"
   echo "  };"
   echo "}"
-} > "${target_file}"
+} >"${target_file}"
 
 echo "Updated ${target_file}:"
 sort "${entries_file}" | while read -r service path; do

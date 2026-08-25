@@ -10,14 +10,14 @@ let
   # One home.file entry per skill rather than a single entry for the whole
   # directory: a directory-wide symlink would own ~/.claude/skills outright and
   # leave no way for a sibling repo (dotfiles-work) to add its own skills.
-  linkSkills = dir:
-    lib.listToAttrs (map
-      (name: {
+  linkSkills =
+    dir:
+    lib.listToAttrs (
+      map (name: {
         name = "${config.home.homeDirectory}/${dir}/${name}";
-        value.source = config.lib.file.mkOutOfStoreSymlink
-          "${config.custom.dotfiles.dir}/modules/agents/skills/${name}";
-      })
-      skillNames);
+        value.source = config.lib.file.mkOutOfStoreSymlink "${config.custom.dotfiles.dir}/modules/agents/skills/${name}";
+      }) skillNames
+    );
 in
 {
   # Pi reads ~/.agents/skills; Claude Code reads ~/.claude/skills.
@@ -26,12 +26,11 @@ in
   # Guard against a stale whole-directory symlink at ~/.claude/skills or
   # ~/.agents/skills (see design.md for how this happens and why it
   # otherwise survives every subsequent activation unnoticed).
-  home.activation.removeStaleSkillsContainerSymlink =
-    lib.hm.dag.entryBefore [ "checkLinkTargets" ] ''
-      for dir in "$HOME/.claude/skills" "$HOME/.agents/skills"; do
-        if [[ -L "$dir" ]]; then
-          rm -f "$dir"
-        fi
-      done
-    '';
+  home.activation.removeStaleSkillsContainerSymlink = lib.hm.dag.entryBefore [ "checkLinkTargets" ] ''
+    for dir in "$HOME/.claude/skills" "$HOME/.agents/skills"; do
+      if [[ -L "$dir" ]]; then
+        rm -f "$dir"
+      fi
+    done
+  '';
 }

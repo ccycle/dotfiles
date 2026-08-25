@@ -32,7 +32,7 @@ Three earlier designs were rejected in favor of this one:
   against the live Pocket ID/OpenCloud) was the original plan, but it
   means every test run touches production auth state.
 - **A VM replicating the full production stack** (`.agents/skills/
-  vm-verify`'s approach) is impossible for this specific case: Apple
+vm-verify`'s approach) is impossible for this specific case: Apple
   Silicon's Virtualization.framework does not support nested
   virtualization for macOS guests (confirmed via Tart's own FAQ and
   `cirruslabs/tart` discussion #701 — a macOS VM cannot itself host
@@ -64,7 +64,7 @@ fixes its WebAuthn `RPOrigins` to exactly its configured `APP_URL` at
 startup (`RPID: utils.GetHostnameFromURL(deps.AppURL)`, `RPOrigins:
 []string{deps.AppURL}` — verified directly in pocket-id v2.11.0's
 `internal/webauthn/service.go`), and the go-webauthn library requires an
-*exact* origin match. A remote device on the tailnet necessarily sees a
+_exact_ origin match. A remote device on the tailnet necessarily sees a
 different origin than a loopback-only one (different IP at minimum), so
 there is no way for both "fast local access" and "remote tailnet access"
 to independently reach pocket-id on two different origins and have
@@ -74,12 +74,12 @@ origin) was tried first and hit exactly this mismatch.
 
 The fix: pocket-id (and, for consistency, OpenCloud) is fronted by a
 single dedicated per-worktree Caddy process (`start_caddy` in
-`scripts/stack.sh`) bound to *both* `127.0.0.1` and the Tailscale IP for
+`scripts/stack.sh`) bound to _both_ `127.0.0.1` and the Tailscale IP for
 the same vhosts (`<worktree>-pocket-id-test.<hostname>.internal`,
 `<worktree>-opencloud-test.<hostname>.internal`) — mirroring production
 Caddy's own `default_bind {$TAILSCALE_IP} 127.0.0.1` pattern. `APP_URL`
 is set to this Caddy-fronted HTTPS URL from the start, so there is only
-ever *one* origin, reachable both ways at once; local Playwright runs and
+ever _one_ origin, reachable both ways at once; local Playwright runs and
 a human on another tailnet device hit the identical URL. `tls internal`
 mints certs from a copy of production's internal CA (see below), so both
 paths get an already-trusted cert with no extra client-side trust step.
@@ -102,7 +102,7 @@ pointing at different IPs. `tests/e2e/fixtures/opencloud.override.yaml`
 adds `extra_hosts: <vhost>:host-gateway` entries (Docker's host-gateway
 alias, confirmed to reach loopback-bound host ports, which a
 Tailscale-IP-bound port is at least as reachable through) to the
-OpenCloud container *only* for this e2e stack — layered on top of the
+OpenCloud container _only_ for this e2e stack — layered on top of the
 shared `modules/opencloud/compose.yaml` via an extra `-f`, never
 modifying that file's behavior for production.
 
@@ -117,15 +117,15 @@ An earlier version of this design created a fresh pocket-id user
 (`POST /api/users`) at the start of every run and deleted it at the end
 (`DELETE /api/users/:id`), on the theory that a disposable identity
 limits what accumulates from an admin API key that pocket-id has no way
-to scope down. In practice this broke on the *second* run against the
+to scope down. In practice this broke on the _second_ run against the
 same worktree: OpenCloud tracks identity by pocket-id's `sub` internally,
-but templates its on-disk personal-space directory from the *username*
+but templates its on-disk personal-space directory from the _username_
 (`STORAGE_USERS_POSIX_PERSONAL_SPACE_PATH_TEMPLATE`, see
 `modules/opencloud/design.md`). Deleting and recreating the pocket-id
 user every run gives it a fresh `sub` each time while OpenCloud's own
 data intentionally persists across runs (see above) — so after the first
 run, OpenCloud was left holding write permissions for a now-deleted
-`sub` against a personal-space directory a *new* `sub` with the same
+`sub` against a personal-space directory a _new_ `sub` with the same
 username was trying to reuse, and the "New" button stayed permanently
 disabled. Confirmed empirically: a run against a freshly wiped OpenCloud
 data directory passed; the very next run, same worktree, failed exactly
@@ -135,7 +135,7 @@ The fix: the pocket-id user (`e2e-test-runner`) is now found-or-created
 once and reused indefinitely — `findOrCreateUser` in
 `lib/pocket-id-auth.ts` looks it up by username before creating it, so
 its `sub` never changes for a given worktree, matching what OpenCloud's
-identity model expects. What *is* still replaced every run is just the
+identity model expects. What _is_ still replaced every run is just the
 passkey credential itself (`clearPasskeys` deletes all of the user's
 WebAuthn credentials via `DELETE /api/users/:id/webauthn-credentials/
 :credentialId` before registering a fresh one) — this keeps each run's
@@ -143,7 +143,7 @@ CDP virtual authenticator (which starts empty in every new browser
 process) in sync with what pocket-id has on record, without needing to
 export/import private key material across runs.
 
-Registering the passkey itself needs a real WebAuthn *registration*
+Registering the passkey itself needs a real WebAuthn _registration_
 ceremony (not pocket-id's own test fixtures, which pre-inject an
 already-known credential for already-seeded users — not applicable since
 our user is freshly created with no credential at all). The only
@@ -184,9 +184,9 @@ processes ever touching the same live PKI storage concurrently.
 An SSH-tunnel-only alternative (no new process, no CA copying, browser
 reaches a forwarded `localhost` port) was considered for remote access
 specifically, but doesn't help here: it would still leave pocket-id's
-`APP_URL`/`RPOrigins` pinned to whatever *local* origin the tunnel's
+`APP_URL`/`RPOrigins` pinned to whatever _local_ origin the tunnel's
 target port uses, and the underlying problem this design solves is that
-there must be exactly *one* origin for local and remote access to share
+there must be exactly _one_ origin for local and remote access to share
 in the first place — an SSH tunnel doesn't create that, a shared Caddy
 front door does.
 
@@ -215,14 +215,14 @@ personal space, and the "New" upload button staying permanently
 disabled). Ruled out along the way:
 
 - **Not a missing NATS backend.** `STORAGE_USERS_ID_CACHE_STORE=
-  nats-js-kv` (required for the posix driver) looked at first like it
+nats-js-kv` (required for the posix driver) looked at first like it
   needed an external NATS server that `modules/opencloud/compose.yaml`
   never provisions. Checked against OpenCloud's own
-  `services/nats/README.md`: `nats-js-kv` is the *embedded, self-contained*
+  `services/nats/README.md`: `nats-js-kv` is the _embedded, self-contained_
   default registry — no external server needed. This was a dead end.
 - **Root cause, confirmed by direct measurement:** repeatedly deleting
   and recreating the pocket-id test user out-of-band via `curl` (done
-  manually while debugging, to reset state between experiments) *without*
+  manually while debugging, to reset state between experiments) _without_
   also wiping OpenCloud's own data directory left OpenCloud holding
   orphaned internal state tied to a `sub` that no longer existed. A fully
   clean pairing (`stack.sh teardown` + wiping
@@ -237,7 +237,7 @@ this suite's design — it was an artifact of ad-hoc manual state resets
 during debugging that the actual code path (`findOrCreateUser` in
 `lib/pocket-id-auth.ts`, which never deletes the pocket-id user) doesn't
 do. The lesson generalizes: pocket-id identity and OpenCloud's own data
-must be reset *together*, never independently — see "Why a Stable,
+must be reset _together_, never independently — see "Why a Stable,
 Fixed-Name Test User" above for why they're coupled at all.
 
 ## Debugging Note: `personal drive never appeared in /me/drives` On A Brand-New Worktree
@@ -257,7 +257,7 @@ worktree's very first run:
   directory that already exists with no space-id xattr at all — exactly
   what a pre-emptive `mkdirSync` produces — falls through to
   `len(spaceID) == 0` and returns `InternalError("encountered empty
-  space id on disk")`.
+space id on disk")`.
 - `XattrsBackend.IdentifyPath` (`metadata/xattrs_backend.go`) is why
   `IsAttrUnset` never fires here: it discards `xattr.Get`'s error
   entirely (`spaceID, _ := xattr.Get(...)`) and always returns `nil`,
@@ -286,7 +286,7 @@ worktree's very first run:
   directory, exactly as reva's `IsNotExist` branch implies it should.
 
 The general lesson: never pre-create a path this driver is responsible
-for provisioning, even to work around an *apparent* gap in when it gets
+for provisioning, even to work around an _apparent_ gap in when it gets
 created — an empty pre-existing directory and a missing one are not
 equivalent to the posix driver's own lookup, only to a casual `ls`.
 
@@ -302,7 +302,7 @@ repeatedly (including back-to-back with no gap) rather than just once:
   holding its port. Fixed by having `start_caddy` call `stop_caddy`
   first.
 - The "is this persisted port taken by something unrelated" check used
-  `docker compose ps -q`, which only lists *running* containers. Right
+  `docker compose ps -q`, which only lists _running_ containers. Right
   after `down` (`compose stop`, not `rm`), the containers still exist
   but aren't running, so this misread the check's own just-stopped
   containers as "nothing exists here" and treated their

@@ -13,10 +13,12 @@ in
   ];
 
   config = mkIf cfg.enable {
-    assertions = [{
-      assertion = vol != "";
-      message = "custom.storage.volumes.gitlab must be set. Run: scripts/setup-local-storage.sh gitlab=/Volumes/<YOUR_DRIVE>";
-    }];
+    assertions = [
+      {
+        assertion = vol != "";
+        message = "custom.storage.volumes.gitlab must be set. Run: scripts/setup-local-storage.sh gitlab=/Volumes/<YOUR_DRIVE>";
+      }
+    ];
 
     services.gitlab.dataDir = mkDefault "${vol}/gitlab/data";
     services.gitlab.configDir = mkDefault "${vol}/gitlab/config";

@@ -22,7 +22,7 @@ echo "Creating module directory: $MODULE_DIR"
 mkdir -p "$MODULE_DIR"
 
 # Create darwin.nix
-cat > "$MODULE_DIR/darwin.nix" <<EOF
+cat >"$MODULE_DIR/darwin.nix" <<EOF
 { ... }:
 {
   # System-level configuration for $MODULE_NAME
@@ -30,7 +30,7 @@ cat > "$MODULE_DIR/darwin.nix" <<EOF
 EOF
 
 # Create home.nix
-cat > "$MODULE_DIR/home.nix" <<EOF
+cat >"$MODULE_DIR/home.nix" <<EOF
 { ... }:
 {
   # User-level configuration for $MODULE_NAME

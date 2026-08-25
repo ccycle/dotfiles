@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
@@ -7,9 +12,9 @@ let
   composeFile = ./compose.yaml;
   waitForMount = import ../../utils/waitForMount.nix;
   oidcDomain = "auth.${config.networking.hostName}.internal";
-  cspFile = pkgs.writeText "opencloud-csp.yaml"
-    (builtins.replaceStrings [ "__OIDC_DOMAIN__" ] [ oidcDomain ]
-      (builtins.readFile ./csp.yaml));
+  cspFile = pkgs.writeText "opencloud-csp.yaml" (
+    builtins.replaceStrings [ "__OIDC_DOMAIN__" ] [ oidcDomain ] (builtins.readFile ./csp.yaml)
+  );
   webApps = pkgs.callPackage ./drv.nix { };
 in
 {
@@ -61,34 +66,42 @@ in
         name = "opencloud_admins";
         friendlyName = "OpenCloud Admins";
         adminGroup = true;
-        customClaims = [{
-          key = "opencloud_role";
-          value = "opencloudAdmin";
-        }];
+        customClaims = [
+          {
+            key = "opencloud_role";
+            value = "opencloudAdmin";
+          }
+        ];
       }
       {
         name = "opencloud_spaceadmins";
         friendlyName = "OpenCloud Space Admins";
-        customClaims = [{
-          key = "opencloud_role";
-          value = "opencloudSpaceAdmin";
-        }];
+        customClaims = [
+          {
+            key = "opencloud_role";
+            value = "opencloudSpaceAdmin";
+          }
+        ];
       }
       {
         name = "opencloud_users";
         friendlyName = "OpenCloud Users";
-        customClaims = [{
-          key = "opencloud_role";
-          value = "opencloudUser";
-        }];
+        customClaims = [
+          {
+            key = "opencloud_role";
+            value = "opencloudUser";
+          }
+        ];
       }
       {
         name = "opencloud_guests";
         friendlyName = "OpenCloud Guests";
-        customClaims = [{
-          key = "opencloud_role";
-          value = "opencloudGuest";
-        }];
+        customClaims = [
+          {
+            key = "opencloud_role";
+            value = "opencloudGuest";
+          }
+        ];
       }
     ];
 
@@ -119,7 +132,10 @@ in
         clientId = "OpenCloudDesktop";
         isPublic = true;
         pkceEnabled = true;
-        callbackURLs = [ "http://127.0.0.1" "http://localhost" ];
+        callbackURLs = [
+          "http://127.0.0.1"
+          "http://localhost"
+        ];
         allowedGroups = [
           "opencloud_admins"
           "opencloud_spaceadmins"
@@ -157,13 +173,15 @@ in
       }
     ];
 
-    services.caddy.portalEntries = [{
-      name = "OpenCloud";
-      url = "https://opencloud.${config.networking.hostName}.internal";
-      descriptionJa = "クラウドストレージ (ownCloud Infinite)";
-      descriptionEn = "Cloud Storage (ownCloud Infinite)";
-      logoSvg = builtins.readFile ./opencloud-logo.svg;
-    }];
+    services.caddy.portalEntries = [
+      {
+        name = "OpenCloud";
+        url = "https://opencloud.${config.networking.hostName}.internal";
+        descriptionJa = "クラウドストレージ (ownCloud Infinite)";
+        descriptionEn = "Cloud Storage (ownCloud Infinite)";
+        logoSvg = builtins.readFile ./opencloud-logo.svg;
+      }
+    ];
 
     environment.etc."newsyslog.d/opencloud.conf".text = ''
       # logfilename          [owner:group]  mode  count  size  when  flags

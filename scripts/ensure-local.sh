@@ -18,11 +18,11 @@ repo_root="$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)"
 
 check_mode=false
 case "${1:-}" in
-  --check)
-    check_mode=true
-    ;;
-  -h|--help)
-    cat <<'EOF'
+--check)
+  check_mode=true
+  ;;
+-h | --help)
+  cat <<'EOF'
 Usage: ensure-local.sh [--check]
 
 Ensures the machine-local .local state for the current checkout.
@@ -30,8 +30,8 @@ Ensures the machine-local .local state for the current checkout.
   --check   Report what would be created/rewritten without changing anything;
             exits 1 if changes are needed.
 EOF
-    exit 0
-    ;;
+  exit 0
+  ;;
 esac
 
 changes_needed=0
@@ -80,8 +80,8 @@ for m in storage obsidian-vault; do
     fi
   else
     case "$m" in
-      storage) warn "missing .local/storage/ everywhere. Run: scripts/setup-local-storage.sh <service>=/Volumes/<YOUR_DRIVE>" ;;
-      obsidian-vault) warn "missing .local/obsidian-vault/ everywhere. Run: scripts/setup-obsidian-vault.sh /path/to/your/vault" ;;
+    storage) warn "missing .local/storage/ everywhere. Run: scripts/setup-local-storage.sh <service>=/Volumes/<YOUR_DRIVE>" ;;
+    obsidian-vault) warn "missing .local/obsidian-vault/ everywhere. Run: scripts/setup-obsidian-vault.sh /path/to/your/vault" ;;
     esac
     need_change
   fi
@@ -93,10 +93,10 @@ if [ -f "${dotfiles_local}/flake.nix" ] && grep -q "${repo_root}" "${dotfiles_lo
   info "dotfiles.dir already points at ${repo_root}"
 else
   act "wrote .local/dotfiles/flake.nix (custom.dotfiles.dir = ${repo_root})" \
-      "would write .local/dotfiles/flake.nix (custom.dotfiles.dir = ${repo_root})"
+    "would write .local/dotfiles/flake.nix (custom.dotfiles.dir = ${repo_root})"
   if [ "$check_mode" = false ]; then
     mkdir -p "${dotfiles_local}"
-    cat > "${dotfiles_local}/flake.nix" <<- EOF
+    cat >"${dotfiles_local}/flake.nix" <<-EOF
 		{
 		  outputs = { ... }: {
 		    darwinModules.default = { ... }: {

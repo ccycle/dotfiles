@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
@@ -37,13 +42,15 @@ in
   };
 
   config = mkIf cfg.enable {
-    services.caddy.portalEntries = [{
-      name = "GitLab";
-      url = "https://gitlab.${config.networking.hostName}.internal";
-      descriptionJa = "ソースコード管理 & CI/CD";
-      descriptionEn = "Source Code Management & CI/CD";
-      logoSvg = builtins.readFile ./gitlab-logo.svg;
-    }];
+    services.caddy.portalEntries = [
+      {
+        name = "GitLab";
+        url = "https://gitlab.${config.networking.hostName}.internal";
+        descriptionJa = "ソースコード管理 & CI/CD";
+        descriptionEn = "Source Code Management & CI/CD";
+        logoSvg = builtins.readFile ./gitlab-logo.svg;
+      }
+    ];
 
     environment.etc."newsyslog.d/gitlab.conf".text = ''
       # logfilename          [owner:group]  mode  count  size  when  flags

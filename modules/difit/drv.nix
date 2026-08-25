@@ -1,6 +1,7 @@
-{ pkgs
-, nodejs
-, ...
+{
+  pkgs,
+  nodejs,
+  ...
 }:
 let
   npmDeps = pkgs.importNpmLock.buildNodeModules {

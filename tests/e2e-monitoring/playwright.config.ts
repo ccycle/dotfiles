@@ -1,4 +1,4 @@
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig, devices } from "@playwright/test";
 
 // URLs/ports come from the isolated per-worktree stack, resolved by
 // tests/e2e-monitoring/scripts/stack.sh and exported before
@@ -11,21 +11,21 @@ import { defineConfig, devices } from '@playwright/test';
 // (see specs/monitoring.spec.ts) alongside its otherwise request-fixture-
 // only checks.
 export default defineConfig({
-  testDir: './specs',
+  testDir: "./specs",
   fullyParallel: false,
   retries: 0,
   workers: 1,
   timeout: 60_000,
-  reporter: [['list'], ['html', { open: 'never', outputFolder: 'test-results/html' }]],
-  outputDir: 'test-results/artifacts',
+  reporter: [["list"], ["html", { open: "never", outputFolder: "test-results/html" }]],
+  outputDir: "test-results/artifacts",
   use: {
-    trace: 'on',
-    screenshot: 'only-on-failure',
+    trace: "on",
+    screenshot: "only-on-failure",
   },
   projects: [
     {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      name: "chromium",
+      use: { ...devices["Desktop Chrome"] },
     },
   ],
 });

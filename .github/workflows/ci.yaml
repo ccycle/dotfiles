@@ -3,22 +3,22 @@ name: CI
 on:
   push:
     branches:
-      - '**'
+      - "**"
     paths-ignore:
-      - '**.md'
-      - 'docs/**'
-      - 'issues/**'
-      - '.agents/skills/**'
-      - 'modules/agents/skills/*/**'
-      - '.claude/**'
+      - "**.md"
+      - "docs/**"
+      - "issues/**"
+      - ".agents/skills/**"
+      - "modules/agents/skills/*/**"
+      - ".claude/**"
   pull_request:
     paths-ignore:
-      - '**.md'
-      - 'docs/**'
-      - 'issues/**'
-      - '.agents/skills/**'
-      - 'modules/agents/skills/*/**'
-      - '.claude/**'
+      - "**.md"
+      - "docs/**"
+      - "issues/**"
+      - ".agents/skills/**"
+      - "modules/agents/skills/*/**"
+      - ".claude/**"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

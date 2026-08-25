@@ -10,6 +10,4 @@ lib: service: vol:
 if vol == "" || builtins.pathExists vol then
   vol
 else
-  lib.warn
-    "custom.storage.volumes.${service} = \"${vol}\" does not currently exist. If the volume is just unmounted right now, this is expected. If this is a typo, fix it in .local/storage/flake.nix."
-    vol
+  lib.warn "custom.storage.volumes.${service} = \"${vol}\" does not currently exist. If the volume is just unmounted right now, this is expected. If this is a typo, fix it in .local/storage/flake.nix." vol

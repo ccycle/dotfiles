@@ -13,10 +13,12 @@ in
   ];
 
   config = mkIf cfg.enable {
-    assertions = [{
-      assertion = vol != "";
-      message = "custom.storage.volumes.monitoring must be set. Run: scripts/setup-local-storage.sh monitoring=/Volumes/<YOUR_DRIVE>";
-    }];
+    assertions = [
+      {
+        assertion = vol != "";
+        message = "custom.storage.volumes.monitoring must be set. Run: scripts/setup-local-storage.sh monitoring=/Volumes/<YOUR_DRIVE>";
+      }
+    ];
 
     services.monitoring.dataDir = mkDefault "${vol}/monitoring";
     services.monitoring.mountPoint = mkIf (hasPrefix "/Volumes/" vol) (mkDefault vol);

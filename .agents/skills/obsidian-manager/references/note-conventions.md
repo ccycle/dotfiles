@@ -48,15 +48,15 @@ Any draft that violates these rules will read as foreign to the user and defeat 
 Agent-authored drafts are always **concept notes** (root-level, per the rules above).
 The following areas are machine-generated or template-driven; read them for context, but never edit them and never imitate their format:
 
-| Area | What it is |
-|---|---|
-| `ReferenceNotes/@*.md` | Zotero mdnotes exports; regenerated, hand edits get overwritten. Cite as `[[@<citekey>]]` |
-| `Clippings/` | Web clipper output with its own frontmatter |
-| `copilot-conversations/`, `copilot-custom-prompts/` | Copilot plugin artifacts |
-| `予定メモ *.md` | Templater-generated schedule memos |
-| `YYYYMMDD.md` | Daily notes (`# YYYY-MM-DD` heading, timestamped bullets) |
-| `Templater/`, `MDNotes_templates/` | Templates |
-| `Excalidraw/` | Drawings |
+| Area                                                | What it is                                                                                |
+| --------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `ReferenceNotes/@*.md`                              | Zotero mdnotes exports; regenerated, hand edits get overwritten. Cite as `[[@<citekey>]]` |
+| `Clippings/`                                        | Web clipper output with its own frontmatter                                               |
+| `copilot-conversations/`, `copilot-custom-prompts/` | Copilot plugin artifacts                                                                  |
+| `予定メモ *.md`                                     | Templater-generated schedule memos                                                        |
+| `YYYYMMDD.md`                                       | Daily notes (`# YYYY-MM-DD` heading, timestamped bullets)                                 |
+| `Templater/`, `MDNotes_templates/`                  | Templates                                                                                 |
+| `Excalidraw/`                                       | Drawings                                                                                  |
 
 ## Reference example
 
@@ -65,7 +65,7 @@ A representative concept note (`LLMが指示を守らない問題に対しては
 ```markdown
 - [Claude Codeの「すぐルール忘れる問題」を解決する超効果的な方法を見つけた気がする](https://zenn.dev/sesere/articles/0420ecec9526dc)
 - これ毎チャット出力させると圧迫感あるからもう少し工夫でなんとかならないかな？
-	- 例えば指示と異なる作業をし始めたときに「ルールを表示してください」と指示するとか？
+  - 例えば指示と異なる作業をし始めたときに「ルールを表示してください」と指示するとか？
 ```
 
 Note the pattern: conclusion in the title, sources as top-level bullets, the user's own doubt as a question bullet, indentation with tabs.

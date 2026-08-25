@@ -1,4 +1,5 @@
-{ ... }: {
+{ ... }:
+{
   home.sessionVariables = {
     # EDITOR = "code";
   };

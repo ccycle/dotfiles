@@ -95,6 +95,6 @@ is suspected to be corrupted).
 ## When to Use
 
 - After making dotfiles changes in a git worktree, to confirm `darwin-rebuild
-  switch` and the resulting symlinks actually work — without risking the host's
+switch` and the resulting symlinks actually work — without risking the host's
   `$HOME` or colliding with other worktrees doing the same thing in parallel (up
   to the 2-VM concurrency limit).

@@ -1,3 +1,4 @@
-{ ... }: {
+{ ... }:
+{
   imports = [ ./orbstack/darwin.nix ];
 }

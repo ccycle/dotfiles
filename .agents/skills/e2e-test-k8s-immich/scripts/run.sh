@@ -13,10 +13,16 @@ NS="immich-lab"
 WEB_URL="http://localhost:32283"
 
 log() { echo "[k8s-lab] $*" >&2; }
-die() { echo "[k8s-lab] ERROR: $*" >&2; exit 1; }
+die() {
+  echo "[k8s-lab] ERROR: $*" >&2
+  exit 1
+}
 
 pass() { echo "  PASS: $*"; }
-fail() { echo "  FAIL: $*"; FAILURES=$((FAILURES + 1)); }
+fail() {
+  echo "  FAIL: $*"
+  FAILURES=$((FAILURES + 1))
+}
 
 require_cmd() {
   command -v "$1" >/dev/null 2>&1 || die "required command not found: $1"

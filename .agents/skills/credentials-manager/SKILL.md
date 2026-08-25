@@ -10,6 +10,7 @@ This skill helps you manage secrets and access tokens in the dotfiles, following
 ## Features
 
 ### 1. Edit Secrets
+
 Safely edit `secrets.yaml` files using the `sops` wrapper.
 
 ```bash
@@ -17,6 +18,7 @@ Safely edit `secrets.yaml` files using the `sops` wrapper.
 ```
 
 ### 2. Configure Nix Access Tokens
+
 Generate the necessary Nix configuration to securely inject access tokens (e.g., GitHub PAT) into `/etc/nix/nix-access-tokens-work.conf`.
 
 ```bash
@@ -24,9 +26,11 @@ Generate the necessary Nix configuration to securely inject access tokens (e.g.,
 ```
 
 Example:
+
 ```bash
 .agents/skills/credentials-manager/scripts/setup-token.sh github_pat_work
 ```
+
 This will output the `sops.templates` and `nix.extraOptions` configuration to be added to your `darwin.nix`.
 
 ## Policies

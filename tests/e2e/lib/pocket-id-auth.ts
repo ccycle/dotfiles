@@ -1,4 +1,4 @@
-import type { Page } from '@playwright/test';
+import type { Page } from "@playwright/test";
 
 // Shared passkey-authentication helper for any pocket-id-fronted service
 // under test (currently only OpenCloud; see tests/e2e/design.md for why
@@ -25,7 +25,7 @@ export interface PocketIdAdmin {
 // browser. Only ever talks to this worktree's own isolated test
 // instance, never anything external, so disabling verification
 // process-wide is scoped enough to be safe.
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
 async function api(
   admin: PocketIdAdmin,
@@ -36,8 +36,8 @@ async function api(
   const res = await fetch(`${admin.baseUrl}${path}`, {
     method,
     headers: {
-      'X-API-KEY': admin.apiKey,
-      'Content-Type': 'application/json',
+      "X-API-KEY": admin.apiKey,
+      "Content-Type": "application/json",
     },
     body: body === undefined ? undefined : JSON.stringify(body),
   });
@@ -58,7 +58,7 @@ async function findUserByUsername(
   admin: PocketIdAdmin,
   username: string,
 ): Promise<TestUser | undefined> {
-  const res = await api(admin, 'GET', `/api/users?search=${encodeURIComponent(username)}`);
+  const res = await api(admin, "GET", `/api/users?search=${encodeURIComponent(username)}`);
   const { data } = (await res.json()) as { data: Array<{ id: string; username: string }> };
   const match = data.find((u) => u.username === username);
   return match ? { id: match.id, username: match.username } : undefined;
@@ -84,16 +84,16 @@ async function findOrCreateUser(
   const existing = await findUserByUsername(admin, opts.username);
   if (existing) return existing;
 
-  const res = await api(admin, 'POST', '/api/users', {
+  const res = await api(admin, "POST", "/api/users", {
     username: opts.username,
     email: `${opts.username}@e2e.invalid`,
-    firstName: 'E2E',
-    lastName: 'Runner',
+    firstName: "E2E",
+    lastName: "Runner",
     isAdmin: false,
   });
   const user = (await res.json()) as { id: string };
 
-  await api(admin, 'PUT', `/api/users/${user.id}/user-groups`, {
+  await api(admin, "PUT", `/api/users/${user.id}/user-groups`, {
     userGroupIds: [opts.groupId],
   });
 
@@ -101,10 +101,10 @@ async function findOrCreateUser(
 }
 
 async function clearPasskeys(admin: PocketIdAdmin, userId: string): Promise<void> {
-  const res = await api(admin, 'GET', `/api/users/${userId}/webauthn-credentials`);
+  const res = await api(admin, "GET", `/api/users/${userId}/webauthn-credentials`);
   const credentials = (await res.json()) as Array<{ id: string }>;
   for (const credential of credentials) {
-    await api(admin, 'DELETE', `/api/users/${userId}/webauthn-credentials/${credential.id}`);
+    await api(admin, "DELETE", `/api/users/${userId}/webauthn-credentials/${credential.id}`);
   }
 }
 
@@ -117,7 +117,7 @@ async function clearPasskeys(admin: PocketIdAdmin, userId: string): Promise<void
 // modules/pocket-id/design.md) and open signups are disabled too
 // (ALLOW_USER_SIGNUPS=disabled).
 async function createOneTimeAccessToken(admin: PocketIdAdmin, userId: string): Promise<string> {
-  const res = await api(admin, 'POST', `/api/users/${userId}/one-time-access-token`, {});
+  const res = await api(admin, "POST", `/api/users/${userId}/one-time-access-token`, {});
   const { token } = (await res.json()) as { token: string };
   return token;
 }
@@ -134,11 +134,11 @@ export interface VirtualAuthenticator {
 // needed to satisfy the ceremony.
 export async function setupVirtualAuthenticator(page: Page): Promise<VirtualAuthenticator> {
   const client = await page.context().newCDPSession(page);
-  await client.send('WebAuthn.enable');
-  const { authenticatorId } = await client.send('WebAuthn.addVirtualAuthenticator', {
+  await client.send("WebAuthn.enable");
+  const { authenticatorId } = await client.send("WebAuthn.addVirtualAuthenticator", {
     options: {
-      protocol: 'ctap2',
-      transport: 'internal',
+      protocol: "ctap2",
+      transport: "internal",
       hasResidentKey: true,
       hasUserVerification: true,
       isUserVerified: true,
@@ -160,14 +160,14 @@ export async function registerPasskey(
   oneTimeAccessToken: string,
 ): Promise<void> {
   await page.goto(`${pocketIdBaseUrl}/lc/${oneTimeAccessToken}`);
-  await page.waitForURL('**/settings/account');
+  await page.waitForURL("**/settings/account");
 
   // A brand-new user with zero passkeys also shows an alert banner with
   // its own "Add Passkey" action, so the plain role/name locator is
   // ambiguous (2 matches). Scope to the passkey list section specifically.
-  await page.getByRole('list').getByRole('button', { name: 'Add Passkey' }).click();
-  await page.getByLabel('Name', { exact: true }).fill('e2e-test-runner');
-  await page.getByLabel('Name Passkey').getByRole('button', { name: 'Save' }).click();
+  await page.getByRole("list").getByRole("button", { name: "Add Passkey" }).click();
+  await page.getByLabel("Name", { exact: true }).fill("e2e-test-runner");
+  await page.getByLabel("Name Passkey").getByRole("button", { name: "Save" }).click();
 }
 
 // Completes the pocket-id consent screen the browser lands on after a
@@ -183,7 +183,7 @@ export async function registerPasskey(
 // state, that's a different, currently-untested flow this helper doesn't
 // cover.
 export async function loginViaPasskey(page: Page): Promise<void> {
-  await page.getByRole('button', { name: 'Sign in' }).click({ timeout: 15_000 });
+  await page.getByRole("button", { name: "Sign in" }).click({ timeout: 15_000 });
 }
 
 // Revokes the current browser session's own OIDC client authorization
@@ -206,9 +206,7 @@ export async function revokeOwnClientAuthorization(
     `${pocketIdBaseUrl}/api/oidc/users/me/authorized-clients/${clientId}`,
   );
   if (!res.ok() && res.status() !== 404) {
-    throw new Error(
-      `revoke client authorization failed: ${res.status()} ${await res.text()}`,
-    );
+    throw new Error(`revoke client authorization failed: ${res.status()} ${await res.text()}`);
   }
 }
 

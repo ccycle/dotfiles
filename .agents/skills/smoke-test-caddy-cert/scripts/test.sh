@@ -10,7 +10,10 @@ trap 'rm -rf "$TMPDIR_WORK"' EXIT
 
 # --- Helpers ---
 pass() { echo "✅ $1"; }
-fail() { echo "❌ $1"; FAILED=1; }
+fail() {
+  echo "❌ $1"
+  FAILED=1
+}
 
 # --- 1. HTTP Response ---
 echo "=== 🌐 HTTP Response ==="
@@ -73,7 +76,7 @@ echo "=== 🔒 HTTPS Verification ==="
 
 # Use the served CA cert to verify an HTTPS endpoint (proves the cert is functional)
 if curl -sf --max-time 10 --cacert <(openssl x509 -in "$CERT_FILE" -inform DER -outform PEM 2>/dev/null) \
-     "https://ca.${HOSTNAME}.internal" > /dev/null 2>&1; then
+  "https://ca.${HOSTNAME}.internal" >/dev/null 2>&1; then
   pass "HTTPS verified using served CA certificate"
 else
   fail "HTTPS verification failed with served CA certificate"

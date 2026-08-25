@@ -14,17 +14,20 @@ FRESH=0
 
 for arg in "$@"; do
   case "$arg" in
-    --fresh) FRESH=1 ;;
-    *)
-      echo "Unknown option: $arg" >&2
-      echo "Usage: $0 [--fresh]" >&2
-      exit 1
-      ;;
+  --fresh) FRESH=1 ;;
+  *)
+    echo "Unknown option: $arg" >&2
+    echo "Usage: $0 [--fresh]" >&2
+    exit 1
+    ;;
   esac
 done
 
 pass() { echo "✅ $1"; }
-fail() { echo "❌ $1"; FAILED=1; }
+fail() {
+  echo "❌ $1"
+  FAILED=1
+}
 
 ssh_vm() {
   sshpass -p "$VM_PASS" ssh "${SSH_OPTS[@]}" "${VM_USER}@${vm_ip}" -- "$@"
@@ -110,7 +113,7 @@ pass "Worktree transferred to ~/${REMOTE_DIR} in VM"
 
 # --- Install Nix and run darwin-rebuild switch inside the VM ---
 echo "=== 🔧 Installing Nix and running darwin-rebuild switch (private) in VM ==="
-if ssh_vm bash -s <<REMOTE
+if ssh_vm bash -s <<REMOTE; then
 set -euo pipefail
 # Plain nix-darwin (nix.package = pkgs.nix, nix.enable defaults to true) expects to
 # manage the Nix install itself; the Determinate Nix installer's daemon conflicts
@@ -123,7 +126,6 @@ set -u
 cd ~/${REMOTE_DIR}
 scripts/darwin-rebuild.sh private
 REMOTE
-then
   pass "darwin-rebuild switch (private) succeeded in VM"
 else
   fail "darwin-rebuild switch (private) failed in VM"
@@ -132,7 +134,8 @@ fi
 # --- Verify mkOutOfStoreSymlink targets resolve into the VM-local checkout ---
 echo "=== 🔗 Verifying dotfiles symlinks ==="
 if [ "$FAILED" -eq 0 ]; then
-  symlink_report="$(ssh_vm bash -s <<'REMOTE'
+  symlink_report="$(
+    ssh_vm bash -s <<'REMOTE'
 set -uo pipefail
 FAILED=0
 check_symlink() {
@@ -161,11 +164,11 @@ check_symlink "$HOME/.config/direnv/direnvrc" "modules/direnv/direnvrc"
 
 exit "$FAILED"
 REMOTE
-)" || FAILED=1
+  )" || FAILED=1
   echo "$symlink_report" | while IFS= read -r line; do
     case "$line" in
-      PASS\ *) echo "✅ ${line#PASS }" ;;
-      FAIL\ *) echo "❌ ${line#FAIL }" ;;
+    PASS\ *) echo "✅ ${line#PASS }" ;;
+    FAIL\ *) echo "❌ ${line#FAIL }" ;;
     esac
   done
 else

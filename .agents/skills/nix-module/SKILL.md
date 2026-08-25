@@ -16,6 +16,7 @@ Run the generation script to create a new module structure:
 ```
 
 This will:
+
 1. Create `modules/<module-name>/`
 2. Create `modules/<module-name>/darwin.nix` (System config)
 3. Create `modules/<module-name>/home.nix` (User config)

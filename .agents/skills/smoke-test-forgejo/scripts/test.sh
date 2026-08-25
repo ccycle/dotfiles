@@ -8,13 +8,16 @@ FAILED=0
 
 # --- Helpers ---
 pass() { echo "✅ $1"; }
-fail() { echo "❌ $1"; FAILED=1; }
+fail() {
+  echo "❌ $1"
+  FAILED=1
+}
 
 check_http() {
   local name="$1"
   local url="$2"
   local extra_args="${3:-}"
-  if curl -sf --max-time 10 $extra_args "$url" > /dev/null 2>&1; then
+  if curl -sf --max-time 10 $extra_args "$url" >/dev/null 2>&1; then
     pass "$name ($url)"
   else
     fail "$name ($url)"
@@ -24,7 +27,7 @@ check_http() {
 # --- 1. Container Status ---
 echo "=== 🐳 Container Status ==="
 
-if ! docker compose -p "$PROJECT_NAME" ps --format json > /dev/null 2>&1; then
+if ! docker compose -p "$PROJECT_NAME" ps --format json >/dev/null 2>&1; then
   fail "Cannot reach Docker Compose project '$PROJECT_NAME'"
   echo ""
   echo "❌ Smoke test failed."
