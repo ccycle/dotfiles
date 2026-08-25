@@ -22,10 +22,10 @@ Any draft that violates these rules will read as foreign to the user and defeat 
 
 ## Body style
 
-- **Bullets only, Scrapbox style.**
-  The body is a nested `-` bullet tree.
-  The main claim or subject goes in the top-level bullets; elaboration, evidence, and objections are nested under it.
-  Do not write prose paragraphs.
+- **Complete and faithful content.**
+  Drafts must capture the full substance of the source without omissions or additions. Do not summarize away details, and do not insert information the source did not contain.
+- **Include background, solution, and outcome.**
+  When the source describes a problem or question, the draft must always include the background context (what the problem was), the proposed solution or approach, and the result or conclusion. Omitting any of these three weakens the note's usefulness.
 - **No headings.**
   `#` headings belong to daily notes and generated notes, not concept notes.
   (A trailing `## References` section listing `[[@citekey]]` links is the one accepted exception, from the Zotero workflow.)
