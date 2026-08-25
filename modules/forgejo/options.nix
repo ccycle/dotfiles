@@ -229,7 +229,7 @@ in
           # so Forgejo's OIDC client can verify Pocket ID's TLS certificate.
           FORGEJO_CADDY_CA_SRC="/var/lib/caddy/caddy/pki/authorities/${config.networking.hostName}/root.crt"
           FORGEJO_CADDY_CA_DST="''${FORGEJO_DATA_DIR}/caddy-ca.crt"
-          
+
           # Wait for Caddy to generate its CA certificate (up to 60 seconds)
           attempts=0
           until [ -f "$FORGEJO_CADDY_CA_SRC" ]; do
@@ -241,7 +241,7 @@ in
             echo "Waiting for Caddy CA cert at $FORGEJO_CADDY_CA_SRC..."
             sleep 5
           done
-          
+
           if [ -f "$FORGEJO_CADDY_CA_SRC" ]; then
             ${pkgs.coreutils}/bin/cp "$FORGEJO_CADDY_CA_SRC" "$FORGEJO_CADDY_CA_DST"
             echo "Copied Caddy CA cert to $FORGEJO_CADDY_CA_DST"
@@ -445,7 +445,7 @@ in
             # is the "direct push allowed, CI required" combination.
             BODY=$(${pkgs.jq}/bin/jq -n \
               --arg branch_name "${p.branch}" \
-              --argjson status_check_contexts ${builtins.toJSON p.statusCheckContexts} \
+              --argjson status_check_contexts '${builtins.toJSON p.statusCheckContexts}' \
               '{
                 branch_name: $branch_name,
                 enable_push: true,
@@ -501,6 +501,14 @@ in
         script = ''
           set -euo pipefail
 
+          # docker-compose parses the whole compose file (including the
+          # volumes section) even for `exec`, so these must be set even
+          # though exec doesn't start a new container - same requirement
+          # as forgejo-oidc-bootstrap above.
+          export FORGEJO_DATA_DIR="${cfg.dataDir}"
+          export FORGEJO_EXTERNAL_URL="https://forgejo.${config.networking.hostName}.internal"
+          export FORGEJO_CADDY_CA_CERT="${cfg.dataDir}/caddy-ca.crt"
+
           RUNNER_DIR="${cfg.runnerDataDir}"
           mkdir -p "$RUNNER_DIR"
           SECRET_FILE="$RUNNER_DIR/secret"
@@ -534,7 +542,16 @@ in
             ${pkgs.forgejo-runner}/bin/forgejo-runner generate-config > "$CONFIG_FILE"
           fi
 
-          export RUNNER_URL="https://forgejo.${config.networking.hostName}.internal/"
+          # Loopback, not the https://forgejo.*.internal hostname: this
+          # runner always runs on the same host as the server (see
+          # design.md), and forgejo-runner's Go binary uses the pure-Go
+          # DNS resolver, which only reads /etc/resolv.conf and ignores
+          # macOS's per-domain /etc/resolver/internal split-DNS entry -
+          # so it cannot resolve *.internal names even though every other
+          # tool on this host (curl, browsers, dscacheutil) can. Confirmed
+          # live: the runner logged "lookup forgejo.*.internal ... no such
+          # host" against the ISP nameservers from /etc/resolv.conf.
+          export RUNNER_URL="http://127.0.0.1:3000/"
           export RUNNER_UUID="$UUID"
           export RUNNER_TOKEN_URL="file:$SECRET_FILE"
 
@@ -556,6 +573,13 @@ in
         };
         script = ''
           CONFIG_FILE="${cfg.runnerDataDir}/config.yaml"
+
+          # LaunchDaemons (unlike LaunchAgents) get no HOME from launchd -
+          # it's unset, so job steps that expand `~` or `$HOME/.cache`
+          # resolve to "/.cache" and fail on the read-only root volume.
+          # Confirmed live: a job crashed with "mkdir /.cache: read-only
+          # file system" before this was added.
+          export HOME="${cfg.runnerDataDir}"
 
           until [ -f "$CONFIG_FILE" ]; do
             echo "Waiting for forgejo-runner-bootstrap to write $CONFIG_FILE..."
