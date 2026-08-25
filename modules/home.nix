@@ -35,7 +35,6 @@
     ./lazygit/home.nix
     ./mtplx/home.nix
     ./nix/home.nix
-    ./nix-formatter/home.nix
     ./nodejs/home.nix
     ./openclaw/home.nix
     ./opencloud/home.nix

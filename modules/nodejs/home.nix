@@ -14,6 +14,6 @@
   ];
   imports = [
     ./bun/home.nix
-    ./eslint/home.nix
+    ./oxlint/home.nix
   ];
 }

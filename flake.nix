@@ -54,6 +54,8 @@
     pi.url = "github:lukasl-dev/pi.nix";
     stylix.url = "github:nix-community/stylix/release-26.05";
     tailscale.url = "github:tailscale/tailscale/v1.92.5";
+    treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
+    treefmt-nix.url = "github:numtide/treefmt-nix";
     pip2nix.url = "github:nix-community/pip2nix";
     pyzotero-cli.flake = false;
     pyzotero-cli.url = "github:chriscarrollsmith/pyzotero-cli";
@@ -71,28 +73,45 @@
     yazi-plugins.url = "github:yazi-rs/plugins";
   };
 
-  outputs = inputs@{ flake-parts, nix-darwin, ... }:
+  outputs =
+    inputs@{
+      flake-parts,
+      nix-darwin,
+      treefmt-nix,
+      ...
+    }:
     let
-      darwinSystems = [ "aarch64-darwin" "x86_64-darwin" ];
-      linuxSystems = [ "aarch64-linux" "x86_64-linux" ];
+      darwinSystems = [
+        "aarch64-darwin"
+        "x86_64-darwin"
+      ];
+      linuxSystems = [
+        "aarch64-linux"
+        "x86_64-linux"
+      ];
       allSystems = darwinSystems ++ linuxSystems;
 
       forAllSystems = inputs.nixpkgs.lib.genAttrs allSystems;
       forDarwinSystems = inputs.nixpkgs.lib.genAttrs darwinSystems;
 
       # Only pass `inputs` itself and explicit derived values — do not spread inputs.
-      mkSpecialArgs = system:
+      mkSpecialArgs =
+        system:
         let
           mkPkgs = input: input.legacyPackages.${system};
-          env = if builtins.pathExists ./generated/env.nix then import ./generated/env.nix else import ./env-impure.nix;
+          env =
+            if builtins.pathExists ./generated/env.nix then
+              import ./generated/env.nix
+            else
+              import ./env-impure.nix;
         in
         {
           inherit inputs;
           inherit system;
           tailscalePackage = inputs.tailscale.packages.${system}.tailscale;
-          gituiPackage = inputs.nixpkgs.legacyPackages.${system}.callPackage
-            ./modules/gitui/drv.nix
-            { src = inputs.gitui; };
+          gituiPackage = inputs.nixpkgs.legacyPackages.${system}.callPackage ./modules/gitui/drv.nix {
+            src = inputs.gitui;
+          };
           herdrPackage = inputs.herdr.packages.${system}.default;
           hunkPackage = inputs.hunk.packages.${system}.default;
           piPackage = inputs.pi.packages.${system}.coding-agent;
@@ -107,13 +126,34 @@
           pkgs-unstable = mkPkgs inputs.nixpkgs-unstable;
           freshPackage = inputs.fresh.packages.${system}.default;
           worktrunkPackage = inputs.worktrunk.packages.${system}.default;
-          pyzoteroCliPackage = inputs.nixpkgs.legacyPackages.${system}.python3Packages.callPackage
-            ./modules/python/pyzotero-cli/drv.nix
-            { src = inputs.pyzotero-cli; };
-        } // env;
+          pyzoteroCliPackage =
+            inputs.nixpkgs.legacyPackages.${system}.python3Packages.callPackage
+              ./modules/python/pyzotero-cli/drv.nix
+              { src = inputs.pyzotero-cli; };
+        }
+        // env;
     in
     flake-parts.lib.mkFlake { inherit inputs; } {
       systems = allSystems;
+
+      imports = [
+        inputs.treefmt-nix.flakeModule
+      ];
+
+      perSystem =
+        { pkgs, ... }:
+        {
+          treefmt = {
+            projectRootFile = "flake.nix";
+            programs = {
+              nixfmt.enable = true;
+              oxfmt.enable = true;
+              shfmt.enable = true;
+              taplo.enable = true;
+            };
+          };
+        };
+
       flake = {
         packages = forAllSystems (system: {
           gwq = inputs.nixpkgs.legacyPackages.${system}.callPackage ./modules/git/gwq/drv.nix {
@@ -125,12 +165,13 @@
           gitui = inputs.nixpkgs.legacyPackages.${system}.callPackage ./modules/gitui/drv.nix {
             src = inputs.gitui;
           };
-          pyzotero-cli = inputs.nixpkgs.legacyPackages.${system}.python3Packages.callPackage ./modules/python/pyzotero-cli/drv.nix {
-            src = inputs.pyzotero-cli;
-          };
+          pyzotero-cli =
+            inputs.nixpkgs.legacyPackages.${system}.python3Packages.callPackage
+              ./modules/python/pyzotero-cli/drv.nix
+              {
+                src = inputs.pyzotero-cli;
+              };
         });
-
-        formatter = forAllSystems (system: inputs.nixpkgs.legacyPackages.${system}.nixpkgs-fmt);
 
         devShells = forAllSystems (system: {
           default = inputs.nixpkgs.legacyPackages.${system}.mkShell {
@@ -145,35 +186,44 @@
               inputs.nixpkgs.legacyPackages.${system}.caddy
             ];
             shellHook = ''
-              export PLAYWRIGHT_BROWSERS_PATH=${inputs.nixpkgs-playwright.legacyPackages.${system}.playwright-driver.browsers}
+              export PLAYWRIGHT_BROWSERS_PATH=${
+                inputs.nixpkgs-playwright.legacyPackages.${system}.playwright-driver.browsers
+              }
               export PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
               export PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS=true
             '';
           };
         });
 
-        homeManagerModules.default = { ... }: {
-          imports = [
-            ./home.nix
-            inputs.sops-nix.homeManagerModules.sops
-          ];
-        };
-        darwinModules.base = { ... }: {
-          imports = [
-            ./darwin.nix
-          ];
-        };
-        darwinModules.bootstrap = { ... }: {
-          imports = [
-            ./bootstrap/modules/darwin.nix
-          ];
-        };
+        homeManagerModules.default =
+          { ... }:
+          {
+            imports = [
+              ./home.nix
+              inputs.sops-nix.homeManagerModules.sops
+            ];
+          };
+        darwinModules.base =
+          { ... }:
+          {
+            imports = [
+              ./darwin.nix
+            ];
+          };
+        darwinModules.bootstrap =
+          { ... }:
+          {
+            imports = [
+              ./bootstrap/modules/darwin.nix
+            ];
+          };
         # `private` uses forDarwinSystems, so the attr path includes the arch
         # (e.g. .private.aarch64-darwin.system).
         # `mac-mini-m4` / `mac-mini-m4-pro` call darwinSystem directly,
         # so there is no arch suffix (e.g. .mac-mini-m4.system).
         darwinConfigurations = {
-          private = forDarwinSystems (system:
+          private = forDarwinSystems (
+            system:
             inputs.nix-darwin.lib.darwinSystem {
               modules = [
                 ./darwin.nix
@@ -209,7 +259,8 @@
         extraSpecialArgs = forAllSystems (system: mkSpecialArgs system);
 
         homeConfigurations = {
-          private = forAllSystems (system:
+          private = forAllSystems (
+            system:
             inputs.home-manager.lib.homeManagerConfiguration {
               pkgs = inputs.nixpkgs.legacyPackages.${system};
               modules = [
