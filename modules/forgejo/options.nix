@@ -299,33 +299,13 @@ in
           # -u git: the container's entrypoint drops root -> git before
           # exec'ing the server, but `docker compose exec` attaches as root
           # by default, and forgejo refuses to run its CLI as root.
-
-          # Wait for Caddy CA cert to be available in the container
-          attempts=0
-          until ${pkgs.docker-compose}/bin/docker-compose -f ${composeFile} exec -T \
-            sh -c '[ -s /usr/local/share/ca-certificates/caddy-internal.crt ]'; do
-            attempts=$((attempts + 1))
-            if [ "$attempts" -ge 12 ]; then
-              echo "ERROR: Caddy CA cert not available in container after waiting; OIDC will fail."
-              break
-            fi
-            echo "Waiting for Caddy CA cert in container..."
-            sleep 5
-          done
-          
-          # Update the container's CA store so Forgejo trusts Caddy's
-          # internal CA (*.internal TLS certs used by Pocket ID OIDC).
-          # The Alpine-based Forgejo image's update-ca-certificates creates
-          # individual cert symlinks but may not include the cert in the
-          # ca-certificates.crt bundle that Go's crypto/x509 reads. Append
-          # it explicitly to ensure Forgejo's HTTP client can verify
-          # Pocket ID's TLS certificate.
-          ${pkgs.docker-compose}/bin/docker-compose -f ${composeFile} exec -T \
-            sh -c 'update-ca-certificates 2>/dev/null || true; \
-              if ! grep -q "BEGIN CERTIFICATE" /etc/ssl/certs/ca-certificates.crt 2>/dev/null || \
-                 ! openssl x509 -in /etc/ssl/certs/ca-certificates.crt -inform PEM -noout 2>/dev/null | tail -1 | grep -q "Caddy"; then \
-                cat /usr/local/share/ca-certificates/caddy-internal.crt >> /etc/ssl/certs/ca-certificates.crt 2>/dev/null || true; \
-              fi'
+          #
+          # Caddy's CA cert is trusted by the container's own entrypoint
+          # (see compose.yaml) before the gitea process execs, since Go
+          # caches its certificate pool at process start and never re-reads
+          # it from disk -- patching the trust store via `docker exec`
+          # after the container is already up cannot affect a process
+          # that's already running.
 
           existing=$(${pkgs.docker-compose}/bin/docker-compose -f ${composeFile} exec -T -u git forgejo forgejo admin auth list 2>/dev/null || true)
           source_id=$(echo "$existing" | grep "PocketID" | awk '{print $1}')

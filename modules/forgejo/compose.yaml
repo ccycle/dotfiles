@@ -3,6 +3,23 @@ name: forgejo
 services:
   forgejo:
     image: codeberg.org/forgejo/forgejo:16
+    # Go's crypto/x509 loads the system cert pool once and caches it for
+    # the life of the process, so trusting Caddy's CA via `docker exec`
+    # after gitea is already running never takes effect (verified live:
+    # patching /etc/ssl/certs/ca-certificates.crt post-boot did not stop
+    # the running server's OIDC provider init from rejecting Pocket ID's
+    # TLS cert). update-ca-certificates must run before `gitea web` execs,
+    # so trust setup is folded into the entrypoint, then handed off to the
+    # image's real entrypoint unchanged.
+    entrypoint:
+      - sh
+      - -c
+      - |
+        if [ -s /usr/local/share/ca-certificates/caddy-internal.crt ]; then
+          update-ca-certificates
+        fi
+        exec /usr/bin/entrypoint "$@"
+      - sh
     ports:
       - "127.0.0.1:3000:3000"
       - "127.0.0.1:2223:22"
