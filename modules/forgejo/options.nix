@@ -223,6 +223,20 @@ in
           export FORGEJO_DATA_DIR="${cfg.dataDir}"
           export FORGEJO_EXTERNAL_URL="https://forgejo.${config.networking.hostName}.internal"
 
+          # Caddy issues *.internal certs from its own local CA, which the
+          # container's system CA bundle doesn't trust. Copy the (public)
+          # root cert into the container via a bind mount (see compose.yaml)
+          # so Forgejo's OIDC client can verify Pocket ID's TLS certificate.
+          FORGEJO_CADDY_CA_SRC="/var/lib/caddy/caddy/pki/authorities/${config.networking.hostName}/root.crt"
+          FORGEJO_CADDY_CA_DST="''${FORGEJO_DATA_DIR}/caddy-ca.crt"
+          if [ -f "$FORGEJO_CADDY_CA_SRC" ]; then
+            ${pkgs.coreutils}/bin/cp "$FORGEJO_CADDY_CA_SRC" "$FORGEJO_CADDY_CA_DST"
+          else
+            echo "WARNING: Caddy CA cert not found at $FORGEJO_CADDY_CA_SRC; OIDC may fail."
+            touch "$FORGEJO_CADDY_CA_DST"
+          fi
+          export FORGEJO_CADDY_CA_CERT="$FORGEJO_CADDY_CA_DST"
+
           mkdir -p "$FORGEJO_DATA_DIR"
 
           exec ${pkgs.docker-compose}/bin/docker-compose \
@@ -251,6 +265,7 @@ in
           # though exec doesn't start a new container.
           export FORGEJO_DATA_DIR="${cfg.dataDir}"
           export FORGEJO_EXTERNAL_URL="https://forgejo.${config.networking.hostName}.internal"
+          export FORGEJO_CADDY_CA_CERT="${cfg.dataDir}/caddy-ca.crt"
 
           FORGEJO_OIDC_CLIENT_ID="forgejo"
           FORGEJO_OIDC_CLIENT_SECRET=$(cat ${config.sops.secrets.forgejo_oidc_client_secret.path})
@@ -270,6 +285,12 @@ in
           # -u git: the container's entrypoint drops root -> git before
           # exec'ing the server, but `docker compose exec` attaches as root
           # by default, and forgejo refuses to run its CLI as root.
+
+          # Update the container's CA store so Forgejo trusts Caddy's
+          # internal CA (*.internal TLS certs used by Pocket ID OIDC).
+          ${pkgs.docker-compose}/bin/docker-compose -f ${composeFile} exec -T \
+            sh -c 'update-ca-certificates 2>/dev/null || true'
+
           existing=$(${pkgs.docker-compose}/bin/docker-compose -f ${composeFile} exec -T -u git forgejo forgejo admin auth list 2>/dev/null || true)
           source_id=$(echo "$existing" | grep "PocketID" | awk '{print $1}')
 

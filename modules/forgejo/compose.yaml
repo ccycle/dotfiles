@@ -51,6 +51,10 @@ services:
       - forgejo-gitea-data:/data/gitea
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
+      # Caddy's internal CA for *.internal TLS certs (OIDC provider at
+      # auth.*.internal). Without this, Forgejo's Go HTTP client rejects
+      # Pocket ID's TLS certificate as "signed by unknown authority".
+      - ${FORGEJO_CADDY_CA_CERT}:/usr/local/share/ca-certificates/caddy-internal.crt:ro
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/api/healthz"]
       interval: 30s
