@@ -29,6 +29,7 @@
     "modules/storage/default-config" # standalone flake used as --override-input stub
     "modules/obsidian/default-config" # standalone flake used as --override-input stub
     "modules/dotfiles/default-config" # standalone flake used as --override-input stub
+    "modules/user/default-config" # standalone flake used as --override-input stub
   ];
 
   # Feature directories intentionally not imported by their parent

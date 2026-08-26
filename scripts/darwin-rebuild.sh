@@ -82,6 +82,10 @@ if [ -d "${repo_root}/.local/dotfiles" ]; then
   overrides="${overrides} --override-input dotfiles-config \"path:${repo_root}/.local/dotfiles\""
 fi
 
+if [ -d "${repo_root}/.local/user" ]; then
+  overrides="${overrides} --override-input user-config \"path:${repo_root}/.local/user\""
+fi
+
 eval sudo -H ${NIX} run "${flake_root}#${app}" -- switch --flake "${flake_root}#${config}" --impure -L ${overrides}
 
 # Best-effort push of the new system and home-manager closures to the attic

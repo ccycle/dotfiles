@@ -2868,6 +2868,7 @@
         "stylix": "stylix",
         "tailscale": "tailscale",
         "treefmt-nix": "treefmt-nix_3",
+        "user-config": "user-config",
         "uv2nix": "uv2nix_2",
         "worktrunk": "worktrunk",
         "yazi-plugins": "yazi-plugins"
@@ -3398,6 +3399,17 @@
         "repo": "treefmt-nix",
         "type": "github"
       }
+    },
+    "user-config": {
+      "locked": {
+        "path": "./modules/user/default-config",
+        "type": "path"
+      },
+      "original": {
+        "path": "./modules/user/default-config",
+        "type": "path"
+      },
+      "parent": []
     },
     "uv2nix": {
       "inputs": {

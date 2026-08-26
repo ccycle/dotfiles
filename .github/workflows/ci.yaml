@@ -33,9 +33,4 @@ jobs:
       - uses: nixbuild/nix-quick-install-action@v34
       - uses: DeterminateSystems/magic-nix-cache-action@v8
 
-      # Mock generated/env.nix to ensure pure evaluation
-      - run: |
-          mkdir -p generated
-          echo '{ username = "runner"; homeDirectory = "/home/runner"; }' > generated/env.nix
-
       - run: nix flake check --impure --no-update-lock-file

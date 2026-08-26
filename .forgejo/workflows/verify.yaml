@@ -31,11 +31,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Generate env.nix
-        run: |
-          mkdir -p generated
-          echo '{ username = "runner"; homeDirectory = "/Users/runner"; }' > generated/env.nix
-
       - name: Run verify-change
         run: .agents/skills/verify-change/scripts/check.sh
 

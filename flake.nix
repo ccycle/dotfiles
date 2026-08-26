@@ -64,6 +64,7 @@
     dotfiles-config.url = "path:./modules/dotfiles/default-config";
     storage-config.url = "path:./modules/storage/default-config";
     obsidian-vault-config.url = "path:./modules/obsidian/default-config";
+    user-config.url = "path:./modules/user/default-config";
     uv2nix.inputs.nixpkgs.follows = "nixpkgs";
     uv2nix.url = "github:pyproject-nix/uv2nix";
     worktrunk.url = "github:max-sixty/worktrunk";
@@ -99,15 +100,11 @@
         system:
         let
           mkPkgs = input: input.legacyPackages.${system};
-          env =
-            if builtins.pathExists ./generated/env.nix then
-              import ./generated/env.nix
-            else
-              import ./env-impure.nix;
         in
         {
           inherit inputs;
           inherit system;
+          inherit (inputs.user-config) username homeDirectory;
           tailscalePackage = inputs.tailscale.packages.${system}.tailscale;
           gituiPackage = inputs.nixpkgs.legacyPackages.${system}.callPackage ./modules/gitui/drv.nix {
             src = inputs.gitui;
@@ -130,8 +127,7 @@
             inputs.nixpkgs.legacyPackages.${system}.python3Packages.callPackage
               ./modules/python/pyzotero-cli/drv.nix
               { src = inputs.pyzotero-cli; };
-        }
-        // env;
+        };
     in
     flake-parts.lib.mkFlake { inherit inputs; } {
       systems = allSystems;

@@ -125,6 +125,9 @@ function build_dry_run() {
     if [ -d "${REPO_ROOT}/.local/obsidian-vault" ]; then
       override_args+=(--override-input obsidian-vault-config "path:${REPO_ROOT}/.local/obsidian-vault")
     fi
+    if [ -d "${REPO_ROOT}/.local/user" ]; then
+      override_args+=(--override-input user-config "path:${REPO_ROOT}/.local/user")
+    fi
   fi
 
   local target="${flake_path}#darwinConfigurations.${config}.system"

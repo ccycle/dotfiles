@@ -7,6 +7,12 @@
 #   - storage / obsidian-vault: pure machine state, copied verbatim
 #   - dotfiles: path-dependent, (re)generated to point at the CURRENT checkout
 #     so that builds validate this checkout's own files instead of main's
+#   - user: identity of whoever is running this script right now, (re)generated
+#     every run - `id -un`/$HOME rather than $USER, since $USER is unset for
+#     launchd-spawned processes (confirmed live: Forgejo Actions' runner daemon
+#     has no $USER, which crashed a build with an empty users.users."" before
+#     this existed). Callers that need the real invoking user under sudo
+#     (darwin-rebuild.sh) run this script before sudo, not after.
 #   - hints point at setup-* scripts when the main checkout also lacks a
 #     module (e.g. on a fresh machine)
 #
@@ -102,6 +108,30 @@ else
 		    darwinModules.default = { ... }: {
 		      custom.dotfiles.dir = "${repo_root}";
 		    };
+		  };
+		}
+	EOF
+  fi
+fi
+
+# --- user: identity of whoever is running this script, refreshed every run ---
+user_local="${repo_root}/.local/user"
+current_username="$(id -un)"
+current_home="${HOME:-}"
+if [ -f "${user_local}/flake.nix" ] &&
+  grep -q "username = \"${current_username}\";" "${user_local}/flake.nix" 2>/dev/null &&
+  grep -q "homeDirectory = \"${current_home}\";" "${user_local}/flake.nix" 2>/dev/null; then
+  info "user identity already up to date (${current_username})"
+else
+  act "wrote .local/user/flake.nix (username = ${current_username})" \
+    "would write .local/user/flake.nix (username = ${current_username})"
+  if [ "$check_mode" = false ]; then
+    mkdir -p "${user_local}"
+    cat >"${user_local}/flake.nix" <<-EOF
+		{
+		  outputs = { ... }: {
+		    username = "${current_username}";
+		    homeDirectory = "${current_home}";
 		  };
 		}
 	EOF
