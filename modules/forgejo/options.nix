@@ -581,6 +581,16 @@ in
           # file system" before this was added.
           export HOME="${cfg.runnerDataDir}"
 
+          # This LaunchDaemon (root) doesn't inherit the interactive
+          # shell's PATH, so job steps default to a bare
+          # /usr/bin:/bin:/usr/sbin:/sbin - enough for Apple's bundled
+          # git (actions/checkout's own clone works without this), but
+          # not for `nix` (used by verify.yaml's build steps) or `node`
+          # (every JS-based action, including actions/checkout's own
+          # post-run hook, needs it to execute - confirmed live: "Cannot
+          # find: node in PATH" failed a run before this was added).
+          export PATH="/run/current-system/sw/bin:${pkgs.nodejs}/bin:$PATH"
+
           until [ -f "$CONFIG_FILE" ]; do
             echo "Waiting for forgejo-runner-bootstrap to write $CONFIG_FILE..."
             sleep 5
