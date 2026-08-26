@@ -5,12 +5,6 @@ creation_rules:
           - age16fu8k22snemzhljtrg7puedvypww5pv9uauutv4ckuns783fd9ds5perdr
           - age15z4jwrurefasz3qulmhuygnrjvqmpenf9l9dv4ese8vx6hq3rg6qw8s950
           - age1fwsg098n3t7n7vh0sf6fey6r7r2nkewl0eksk3t3d3g8sh75rv4s8xe42k
-  - path_regex: modules/git/github/safe-push/secrets.yaml$
-    key_groups:
-      - age:
-          - age16fu8k22snemzhljtrg7puedvypww5pv9uauutv4ckuns783fd9ds5perdr
-          - age15z4jwrurefasz3qulmhuygnrjvqmpenf9l9dv4ese8vx6hq3rg6qw8s950
-          - age1fwsg098n3t7n7vh0sf6fey6r7r2nkewl0eksk3t3d3g8sh75rv4s8xe42k
   - path_regex: modules/tailscale/secrets.yaml$
     key_groups:
       - age:

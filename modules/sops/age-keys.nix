@@ -39,14 +39,6 @@
       ];
     }
     {
-      path_regex = "modules/git/github/safe-push/secrets.yaml$";
-      hosts = [
-        "private"
-        "mac-mini-m4"
-        "mac-mini-m4-pro"
-      ];
-    }
-    {
       path_regex = "modules/tailscale/secrets.yaml$";
       hosts = [
         "mac-mini-m4"
