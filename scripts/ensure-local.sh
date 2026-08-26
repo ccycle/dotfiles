@@ -118,6 +118,14 @@ fi
 user_local="${repo_root}/.local/user"
 current_username="$(id -un)"
 current_home="${HOME:-}"
+# nix-darwin hardcodes `users.users.root.home` to null-or-/var/root - it
+# refuses to let root be configured like a regular dotfiles user. root only
+# shows up here for a launchd-spawned CI job (e.g. Forgejo Actions), never
+# for an interactive rebuild, so substitute a clearly-synthetic identity
+# instead of the real root account.
+if [ "${current_username}" = "root" ]; then
+  current_username="ci"
+fi
 if [ -f "${user_local}/flake.nix" ] &&
   grep -q "username = \"${current_username}\";" "${user_local}/flake.nix" 2>/dev/null &&
   grep -q "homeDirectory = \"${current_home}\";" "${user_local}/flake.nix" 2>/dev/null; then
