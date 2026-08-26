@@ -79,7 +79,8 @@
         "home-manager": "home-manager",
         "nix-darwin": "nix-darwin",
         "nixpkgs": "nixpkgs",
-        "sops-nix": "sops-nix"
+        "sops-nix": "sops-nix",
+        "user-config": "user-config"
       }
     },
     "sops-nix": {
@@ -99,6 +100,17 @@
         "repo": "sops-nix",
         "type": "github"
       }
+    },
+    "user-config": {
+      "locked": {
+        "path": "./user-default",
+        "type": "path"
+      },
+      "original": {
+        "path": "./user-default",
+        "type": "path"
+      },
+      "parent": []
     }
   },
   "root": "root",

@@ -32,6 +32,13 @@
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
     home-manager.url = "github:nix-community/home-manager/release-26.05";
     sops-nix.url = "github:Mic92/sops-nix";
+    # Self-contained default (see the header comment above) - not shared
+    # with the root flake's modules/user/default-config. $USER/$SUDO_USER
+    # based, same as the old env-impure.nix; overridden with an id -un
+    # based .local/user for CI/dry-run validation by
+    # bootstrap/scripts/ensure-user.sh, which $USER-dependent detection
+    # can't cover (see scripts/ensure-local.sh at the repo root for why).
+    user-config.url = "path:./user-default";
   };
 
   outputs =
@@ -47,9 +54,6 @@
         "x86_64-darwin"
       ];
       forDarwinSystems = nixpkgs.lib.genAttrs darwinSystems;
-      # Helper to load env for a specific system context if needed, though here we load it globally or per-system.
-      # Since env-impure.nix depends on builtins.getEnv, it's evaluated at call time.
-      env = import ./env-impure.nix;
     in
     {
       darwinModules.bootstrap = ./modules/darwin.nix;
@@ -64,8 +68,8 @@
             ];
             specialArgs = {
               inherit inputs system;
-            }
-            // env;
+              inherit (inputs.user-config) username homeDirectory;
+            };
           }
         );
       };

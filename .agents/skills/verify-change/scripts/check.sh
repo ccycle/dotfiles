@@ -128,6 +128,12 @@ function build_dry_run() {
     if [ -d "${REPO_ROOT}/.local/user" ]; then
       override_args+=(--override-input user-config "path:${REPO_ROOT}/.local/user")
     fi
+  else
+    # bootstrap's own self-contained user-config default already covers a
+    # real interactive run ($USER/$SUDO_USER); only a CI/dry-run needs the
+    # id -un based override (see bootstrap/scripts/ensure-user.sh).
+    "${flake_path}/scripts/ensure-user.sh"
+    override_args+=(--override-input user-config "path:${flake_path}/.local/user")
   fi
 
   local target="${flake_path}#darwinConfigurations.${config}.system"
