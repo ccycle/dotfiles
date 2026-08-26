@@ -31,6 +31,34 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # This runner IS mac-mini-m4-pro, but a CI checkout has no real
+      # attached volumes to point custom.storage.volumes at - unlike a real
+      # deployment of this host, which always has .local/storage from
+      # scripts/setup-local-storage.sh. Writing this placeholder here,
+      # explicitly, keeps check.sh's own logic untouched (it already treats
+      # a present .local/storage as "the current host's real machine state"
+      # for every other caller) rather than having it guess when a fallback
+      # is appropriate.
+      - name: Provide placeholder storage config for CI
+        run: |
+          mkdir -p .local/storage/vol
+          cat > .local/storage/flake.nix <<EOF
+          {
+            outputs = { ... }: {
+              darwinModules.default = { ... }: {
+                custom.storage.volumes = {
+                  forgejo = "$(pwd)/.local/storage/vol";
+                  gitlab = "$(pwd)/.local/storage/vol";
+                  immich = "$(pwd)/.local/storage/vol";
+                  llm-server = "$(pwd)/.local/storage/vol";
+                  monitoring = "$(pwd)/.local/storage/vol";
+                  opencloud = "$(pwd)/.local/storage/vol";
+                };
+              };
+            };
+          }
+          EOF
+
       - name: Run verify-change
         run: .agents/skills/verify-change/scripts/check.sh
 
@@ -44,7 +72,10 @@ jobs:
           OUT_PATHS=$(nix build \
             .#darwinConfigurations.mac-mini-m4-pro.system \
             .#darwinConfigurations.mac-mini-m4.system \
-            --impure --no-update-lock-file --print-out-paths)
+            --impure --no-update-lock-file --print-out-paths \
+            --override-input storage-config "path:$(pwd)/.local/storage" \
+            --override-input dotfiles-config "path:$(pwd)/.local/dotfiles" \
+            --override-input user-config "path:$(pwd)/.local/user")
           nix run github:zhaofengli/attic -- login dotfiles-ci \
             https://cache.mac-mini-m4-pro.internal "$ATTIC_TOKEN" --set-default
           nix run github:zhaofengli/attic -- push dotfiles $OUT_PATHS
