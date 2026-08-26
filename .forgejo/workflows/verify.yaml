@@ -62,9 +62,11 @@ jobs:
       - name: Run verify-change
         run: .agents/skills/verify-change/scripts/check.sh
 
-      # Assumes this runner's keychain already trusts the Caddy internal CA
+      # Requires this runner's System keychain to trust the Caddy internal CA
       # for https://cache.mac-mini-m4-pro.internal (see .agents/skills/attic-credentials
-      # for the manual CA-trust step). Unverified for the actual Forgejo runner.
+      # for the manual CA-trust step - security add-trusted-cert on the
+      # System keychain triggers a GUI SecurityAgent prompt, so this has to
+      # be done once via Screen Sharing/console login, not SSH).
       - name: Build and push to Attic
         env:
           ATTIC_TOKEN: ${{ secrets.ATTIC_CI_TOKEN }}
