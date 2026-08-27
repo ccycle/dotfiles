@@ -72,6 +72,8 @@
 
     yazi-plugins.flake = false;
     yazi-plugins.url = "github:yazi-rs/plugins";
+
+    deploy-rs.url = "github:serokell/deploy-rs";
   };
 
   outputs =
@@ -129,7 +131,7 @@
               { src = inputs.pyzotero-cli; };
         };
     in
-    flake-parts.lib.mkFlake { inherit inputs; } {
+    flake-parts.lib.mkFlake { inherit inputs; } (top@{ self, ... }: {
       systems = allSystems;
 
       imports = [
@@ -167,6 +169,19 @@
               {
                 src = inputs.pyzotero-cli;
               };
+          caddyConfig = let
+            caddyModule = import ./modules/caddy/config.nix {
+              inherit inputs system;
+              config = {
+                networking.hostName = "mac-mini-m4-pro";
+                services.caddy.enable = true;
+                services.caddy.portalEntries = [];
+                services.atticd.enable = false;
+              };
+              lib = inputs.nixpkgs.lib;
+              pkgs = inputs.nixpkgs.legacyPackages.${system};
+            };
+          in caddyModule.caddyConfig;
         });
 
         devShells = forAllSystems (system: {
@@ -267,6 +282,47 @@
             }
           );
         };
+
+        deploy = {
+          nodes.caddy = {
+            hostname = "localhost";
+            profiles.system = {
+              user = "root";
+              path = inputs.deploy-rs.lib.aarch64-darwin.activate.custom
+                (inputs.nixpkgs.legacyPackages.aarch64-darwin.writeShellScript "deploy-caddy" ''
+                  #!/bin/bash
+                  set -euo pipefail
+
+                  # Deploy Caddy config files from Nix store
+                  echo "Deploying Caddy configuration..."
+                  mkdir -p /etc/caddy/sites
+
+                  # Get the Caddy config from the flake
+                  CADDY_CONFIG=$(nix build --no-link --print-out-paths .#caddyConfig 2>/dev/null || echo "")
+                  if [ -z "$CADDY_CONFIG" ]; then
+                    echo "Error: Could not build Caddy config"
+                    exit 1
+                  fi
+
+                  cp "$CADDY_CONFIG/etc/caddy/Caddyfile" /etc/caddy/Caddyfile
+                  cp "$CADDY_CONFIG/etc/caddy/sites/"* /etc/caddy/sites/
+
+                  # Restart Caddy via launchctl
+                  echo "Restarting Caddy..."
+                  launchctl kickstart -k system/com.github.caddy.caddy 2>/dev/null || \
+                    launchctl kickstart -k gui/$(id -u)/com.github.caddy.caddy 2>/dev/null || \
+                    echo "Warning: Could not restart Caddy via launchctl"
+
+                  echo "Caddy deployment complete."
+                '');
+            };
+          };
+        };
+
+        checks = inputs.nixpkgs.lib.genAttrs [ "aarch64-darwin" ] (
+          system: inputs.deploy-rs.lib.${system}.deployChecks top.self.deploy
+        );
+
       };
-    };
+    });
 }
