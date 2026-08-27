@@ -1,0 +1,10 @@
+https://__DOMAIN__ {
+  import internal_tls
+  handle /index {
+    header Content-Type "text/html; charset=utf-8"
+    respond `__INDEX_HTML__` 200
+  }
+  handle {
+    redir / /index
+  }
+}

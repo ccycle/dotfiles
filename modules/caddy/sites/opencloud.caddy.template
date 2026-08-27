@@ -1,0 +1,9 @@
+https://opencloud.__DOMAIN__ {
+  import internal_tls
+  reverse_proxy 127.0.0.1:9200 {
+    flush_interval -1
+    transport http {
+      response_header_timeout 120s
+    }
+  }
+}

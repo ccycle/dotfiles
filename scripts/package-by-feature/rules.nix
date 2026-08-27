@@ -22,6 +22,7 @@
     "drv.nix"
     "gemset.nix"
     "age-keys.nix" # age key ledger: hosts / transitionKeys / per-file recipient rules for sops
+    "config.nix" # build-time config derivation helper (e.g. caddy config.nix)
   ];
 
   # Paths (repo-relative) fully exempt from every check.

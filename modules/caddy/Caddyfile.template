@@ -1,0 +1,72 @@
+{
+  admin off
+  # Listen on the Tailscale interface only, so vhosts are not
+  # reachable from the LAN. TAILSCALE_IP is resolved by the launchd
+  # script before Caddy starts; if the Tailscale IP ever changes,
+  # Caddy must be restarted to rebind.
+  default_bind {$TAILSCALE_IP} 127.0.0.1
+
+  # Each host runs its own internal CA under a host-specific CA ID
+  # (the host name, not "local"), so the root CN is distinct per
+  # machine ("Caddy Local Authority - <host> - <year> ECC Root") and
+  # no root is ever shared between hosts. A fresh CA ID also means
+  # the storage namespace (pki/authorities/<host>/ and
+  # certificates/<host>/) is new, so a previous auto-generated root
+  # or cached leaf certs from an older CA are never reused — no
+  # manual storage cleanup is required when the CA changes.
+  #
+  # The intermediate is auto-generated and auto-renewed. A 730d
+  # lifetime with renewal_window_ratio 0.3 (renew at 30% remaining,
+  # i.e. ~219d) guarantees the intermediate always has at least
+  # ~219d of signing lifetime left, so a 180d leaf is never clamped
+  # by the issuer's NotAfter (default 0.2 would leave only ~146d).
+  pki {
+    ca __HOSTNAME__ {
+      name "Caddy Local Authority - __HOSTNAME__"
+      intermediate_lifetime 730d
+      renewal_window_ratio 0.3
+    }
+  }
+}
+
+# Common snippets
+(internal_tls) {
+  tls {
+    issuer internal {
+      ca __HOSTNAME__
+      lifetime 180d
+    }
+  }
+
+  # Access log, shared by every vhost that imports this snippet so
+  # logging config lives in one place rather than each service
+  # module's own site block. The query string is dropped entirely
+  # (not selectively masked) because Pocket ID's OIDC flow puts
+  # authorization codes and state values in query parameters on
+  # these same Caddy-fronted URLs; a denylist of "sensitive"
+  # parameter names would need to be kept in sync with every
+  # OIDC-fronted service added in the future, and a missed one
+  # would leak a token into the log. Written under /var/log so the
+  # existing host-log convention already scraped by the log
+  # collector picks it up with no collector-side change.
+  log {
+    output file /var/log/caddy-access.log
+    format filter {
+      wrap json
+      fields {
+        request>uri regexp \?.* ""
+      }
+    }
+  }
+}
+
+# Prometheus metrics, loopback-only like every other scraped
+# service's metrics port (see modules/monitoring/prometheus.yml).
+# A dedicated port rather than the admin API, since the admin API
+# is disabled above.
+:9091 {
+  bind 127.0.0.1
+  metrics
+}
+
+import /etc/caddy/sites/*.caddy

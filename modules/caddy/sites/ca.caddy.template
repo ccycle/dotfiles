@@ -1,0 +1,15 @@
+http://ca.__DOMAIN__, https://ca.__DOMAIN__ {
+  import internal_tls
+  handle /ca.crt {
+    root * /var/lib/caddy
+    @caddy_exists file /caddy/pki/authorities/__HOSTNAME__/root.der
+    rewrite @caddy_exists /caddy/pki/authorities/__HOSTNAME__/root.der
+
+    header Content-Type "application/x-x509-ca-cert"
+    file_server
+  }
+  handle {
+    header Content-Type "text/html; charset=utf-8"
+    respond `__CA_HTML__` 200
+  }
+}

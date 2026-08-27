@@ -68,6 +68,31 @@ Modules must access external flake inputs through the `inputs` attribute, not as
 - **Secrets Management:** Secrets are managed with sops-nix — never hardcode them in Nix files. Edit the per-module `secrets.yaml` files with the `sops` CLI, never the encrypted file directly. Reference secrets via `config.sops.secrets.<name>.path`.
 - **Flake Lock:** Never edit `flake.lock` directly — use `nix flake update` or `nix flake lock --update-input <input>`.
 
+## File Preference Policy
+
+**Rule:**
+
+- **Use actual files where possible:** When creating configuration files or data files, prefer actual files in the repository over generating them with `pkgs.writeText` or similar Nix functions.
+- **Exceptions:** Use `writeText` only when the file content requires Nix interpolation (variable substitution from `config.*`, `lib.*`, or other Nix values) or when the file is dynamically generated at build time.
+- **Static files:** For HTML, CSS, JavaScript, SVG, and other static assets that don't require Nix interpolation, always use actual files and reference them with `builtins.readFile`.
+- **Rationale:** Actual files are easier to review, version control, and maintain. They also work better with external tooling (editors, linters, etc.).
+
+**Examples:**
+
+```nix
+# Good - actual file for static content
+logoSvg = builtins.readFile ./logo.svg;
+
+# Good - writeText for dynamic content requiring Nix interpolation
+configFile = pkgs.writeText "config.yaml" ''
+  hostname: ${config.networking.hostName}
+  port: ${toString config.services.foo.port}
+'';
+
+# Bad - writeText for static content
+logoSvg = pkgs.writeText "logo.svg" (builtins.readFile ./logo.svg);
+```
+
 ## Agent Skills
 
 We use [Agent Skills](https://agentskills.io) for task automation and guideline enforcement. Repo-scoped skills live in `.agents/skills/`; repo-agnostic skills live in `modules/agents/skills/` and are deployed globally to `~/.claude/skills` and `~/.agents/skills`. Placement criteria are documented in `.agents/skills/README.md`.
