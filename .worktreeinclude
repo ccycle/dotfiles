@@ -1,0 +1,17 @@
+# Gitignored files to copy into new worktrees from the main checkout.
+# Uses .gitignore syntax — a file is copied only if it matches a pattern
+# AND is gitignored. See: herdr plugin install untalfranfernandez/herdr-worktreeinclude
+
+# E2E test environment overrides
+tests/e2e/.env
+tests/e2e-forgejo/.env
+tests/e2e-immich/.env
+tests/e2e-monitoring/.env
+tests/e2e-reports/.env
+
+# Local editor/tool settings
+settings.local.json
+
+# Machine-local state (verbatim copy from main checkout)
+.local/storage/
+.local/obsidian-vault/
