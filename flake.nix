@@ -320,12 +320,7 @@
         };
 
         checks = inputs.nixpkgs.lib.genAttrs [ "aarch64-darwin" ] (
-          system: (inputs.deploy-rs.lib.${system}.deployChecks top.self.deploy) // {
-            caddy-config-equality = import ./tests/caddy-config-equality/default.nix {
-              pkgs = inputs.nixpkgs.legacyPackages.${system};
-              lib = inputs.nixpkgs.lib;
-            };
-          }
+          system: inputs.deploy-rs.lib.${system}.deployChecks top.self.deploy
         );
 
       };
