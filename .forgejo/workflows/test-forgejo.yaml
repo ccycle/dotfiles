@@ -1,0 +1,40 @@
+name: Test Forgejo
+
+on:
+  push:
+    branches:
+      - "**"
+    # Only run when something this suite actually exercises changes. Keeps a
+    # cheap per-branch build from spinning up the whole standalone stack on
+    # unrelated churn; see tests/e2e-forgejo/design.md.
+    paths:
+      - modules/forgejo/**
+      - tests/e2e-forgejo/**
+      - flake.nix
+  pull_request:
+    paths:
+      - modules/forgejo/**
+      - tests/e2e-forgejo/**
+      - flake.nix
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  forgejo-e2e:
+    name: Forgejo service startup + e2e
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Tests spin up their own isolated, worktree-isolated compose project via
+      # scripts/run.sh (up -> playwright -> publish report -> teardown), so no
+      # shared state or secrets are required between CI runs. The runner just
+      # needs Docker running, which is the case for this self-hosted Mac
+      # Actions instance. First run installs Playwright deps inside the pinned
+      # devShell (`nix develop .#e2e` sets PLAYWRIGHT_BROWSERS_PATH); allow
+      # plenty of headroom for that image/network pull and npm install.
+      - name: Run Forgejo E2E suite
+        run: ./tests/e2e-forgejo/scripts/run.sh
+        timeout-minutes: 60
