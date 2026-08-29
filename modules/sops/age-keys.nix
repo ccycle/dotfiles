@@ -51,7 +51,7 @@
       hosts = [ "mac-mini-m4" ];
     }
     {
-      path_regex = "modules/(immich|monitoring|opencloud|pocket-id|static-reports)/secrets-mac-mini-m4-pro.yaml$";
+      path_regex = "modules/(immich|monitoring|opencloud|pocket-id|static-reports|opencode-web|pi-web)/secrets-mac-mini-m4-pro.yaml$";
       hosts = [ "mac-mini-m4-pro" ];
     }
     {

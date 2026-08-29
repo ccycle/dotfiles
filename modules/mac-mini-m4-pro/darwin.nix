@@ -47,6 +47,8 @@
   ];
   custom.lm-studio.enable = true;
   services.llm-server.enable = true;
+  services.opencode-web.enable = true;
+  services.pi-web.enable = true;
   services.mtplx.enable = true;
 
   services.atticd.enable = true;

@@ -14,7 +14,7 @@ creation_rules:
     key_groups:
       - age:
           - age15z4jwrurefasz3qulmhuygnrjvqmpenf9l9dv4ese8vx6hq3rg6qw8s950
-  - path_regex: modules/(immich|monitoring|opencloud|pocket-id|static-reports)/secrets-mac-mini-m4-pro.yaml$
+  - path_regex: modules/(immich|monitoring|opencloud|pocket-id|static-reports|opencode-web|pi-web)/secrets-mac-mini-m4-pro.yaml$
     key_groups:
       - age:
           - age1fwsg098n3t7n7vh0sf6fey6r7r2nkewl0eksk3t3d3g8sh75rv4s8xe42k
