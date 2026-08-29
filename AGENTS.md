@@ -93,6 +93,55 @@ configFile = pkgs.writeText "config.yaml" ''
 logoSvg = pkgs.writeText "logo.svg" (builtins.readFile ./logo.svg);
 ```
 
+## Age Key Management with rbw
+
+Age private keys are managed via rbw (Rust Bitwarden CLI) to eliminate plaintext key storage on disk.
+
+### Setup
+
+1. Install rbw: `nix-env -iA nixpkgs.rbw` or via home-manager
+2. Configure rbw: `rbw config set email your@email.com`
+3. Add age key to rbw: `rbw add dotfiles-age-key-$(hostname -s)`
+4. Verify integration: `scripts/sops/verify-rbw-integration.sh`
+
+### Usage
+
+Use `sops-with-rbw` wrapper script instead of plain `sops`:
+
+```bash
+# Decrypt a secrets file
+scripts/sops/sops-with-rbw -d modules/attic/secrets.yaml
+
+# Edit a secrets file
+scripts/sops/sops-with-rbw edit modules/attic/secrets.yaml
+
+# Encrypt a secrets file
+scripts/sops/sops-with-rbw -e modules/attic/secrets.yaml
+```
+
+### Security Properties
+
+- Age key fetched from rbw (no plaintext on disk)
+- sops fetches the key itself via `SOPS_AGE_KEY_CMD=rbw get ...`; only that command line (not the key) is ever visible in the process environment (`ps eww`) or inherited by a `sops edit` `$EDITOR` child
+- No fallback to local keys.txt (fail hard if rbw unavailable)
+- No key caching
+- Authentication via rbw-agent + pinentry
+
+### Verification
+
+Run the verification script to ensure rbw integration works:
+
+```bash
+scripts/sops/verify-rbw-integration.sh
+```
+
+### Troubleshooting
+
+- If rbw is locked: `rbw unlock`
+- If rbw-agent is not running: `rbw-agent`
+- If age key item not found: `rbw add dotfiles-age-key-$(hostname -s)`
+- If verification fails: Check the output for specific error messages
+
 ## Agent Skills
 
 We use [Agent Skills](https://agentskills.io) for task automation and guideline enforcement. Repo-scoped skills live in `.agents/skills/`; repo-agnostic skills live in `modules/agents/skills/` and are deployed globally to `~/.claude/skills` and `~/.agents/skills`. Placement criteria are documented in `.agents/skills/README.md`.

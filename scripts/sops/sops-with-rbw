@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# Let sops fetch the age key from rbw itself via SOPS_AGE_KEY_CMD, so the
+# plaintext key never sits in this process's (or sops's) environment table —
+# only the rbw command line does. SOPS_AGE_KEY would put the raw key in
+# `ps eww` output and leak into any $EDITOR child spawned by `sops edit`.
+# Usage: sops-with-rbw [sops-options] <file>
+set -euo pipefail
+export SOPS_AGE_KEY_CMD="rbw get ${RBW_ITEM_NAME:-dotfiles-age-key-$(hostname -s)}"
+exec sops "$@"
