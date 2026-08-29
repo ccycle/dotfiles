@@ -34,18 +34,27 @@ let
       (builtins.readFile ./index.html);
 
   # Template substitution function
-  substituteTemplate = template: replacements:
-    builtins.replaceStrings (map (r: r.from) replacements) (map (r: r.to) replacements)
-      (builtins.readFile template);
+  substituteTemplate =
+    template: replacements:
+    builtins.replaceStrings (map (r: r.from) replacements) (map (r: r.to) replacements) (
+      builtins.readFile template
+    );
 
   # Apply substitutions to a template file
-  applyTemplate = template: replacements:
+  applyTemplate =
+    template: replacements:
     pkgs.writeText "${baseNameOf template}" (substituteTemplate template replacements);
 
   # Common replacements for all templates
   commonReplacements = [
-    { from = "__HOSTNAME__"; to = hostName; }
-    { from = "__DOMAIN__"; to = domain; }
+    {
+      from = "__HOSTNAME__";
+      to = hostName;
+    }
+    {
+      from = "__DOMAIN__";
+      to = domain;
+    }
   ];
 
   # Caddyfile
@@ -55,13 +64,25 @@ let
   sites = {
     "opencloud.caddy" = applyTemplate ./sites/opencloud.caddy.template commonReplacements;
     "immich.caddy" = applyTemplate ./sites/immich.caddy.template commonReplacements;
-    "index.caddy" = applyTemplate ./sites/index.caddy.template (commonReplacements ++ [
-      { from = "__INDEX_HTML__"; to = indexHtml; }
-    ]);
+    "index.caddy" = applyTemplate ./sites/index.caddy.template (
+      commonReplacements
+      ++ [
+        {
+          from = "__INDEX_HTML__";
+          to = indexHtml;
+        }
+      ]
+    );
     "attic.caddy" = applyTemplate ./sites/attic.caddy.template commonReplacements;
-    "ca.caddy" = applyTemplate ./sites/ca.caddy.template (commonReplacements ++ [
-      { from = "__CA_HTML__"; to = caHtml; }
-    ]);
+    "ca.caddy" = applyTemplate ./sites/ca.caddy.template (
+      commonReplacements
+      ++ [
+        {
+          from = "__CA_HTML__";
+          to = caHtml;
+        }
+      ]
+    );
   };
 
   # Hash all Caddy etc entries so the launchd plist changes (and nix-darwin
