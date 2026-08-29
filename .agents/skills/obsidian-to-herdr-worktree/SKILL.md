@@ -52,7 +52,17 @@ its own chat. The only vault writes you may make are the Kanban column moves
 from Step 1's reconcile and Step 7's direct move — nothing else goes into the
 Obsidian vault.
 
-## Step 1 — Prune state, reconcile the Kanban, check load
+## Step 1 — Sync the vault, prune state, reconcile the Kanban, check load
+
+Before reading anything from the Obsidian vault, trigger a one-shot LiveSync
+cycle with the `obsidian-livesync-sync` skill and verify it landed by
+re-reading a note, otherwise every local read below can miss notes that were
+syncing as they sit in the running app:
+
+```bash
+.claude/skills/obsidian-livesync-sync/scripts/sync.sh
+cat "$HOME/Obsidian/zettelkasten/<any-note>.md"   # confirm content is current
+```
 
 This step exists so repeated invocations of this skill drain the TODO backlog
 gradually instead of stacking load on top of whatever prior batches are still
