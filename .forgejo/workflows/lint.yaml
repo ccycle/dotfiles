@@ -1,0 +1,52 @@
+name: Lint
+
+on:
+  push:
+    branches:
+      - "**"
+    # Files that never need formatting checks. When adding a new formatter to
+    # flake.nix's treefmt config, verify whether its target file types fall under
+    # any of these exclusions — if not, no update is needed (they'll be checked
+    # automatically). Only add a new entry here when a new file type should be
+    # *excluded* from triggering the formatter gate.
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
+      - "issues/**"
+      - ".agents/skills/**"
+      - "modules/agents/skills/*/**"
+      - ".claude/**"
+  pull_request:
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
+      - "issues/**"
+      - ".agents/skills/**"
+      - "modules/agents/skills/*/**"
+      - ".claude/**"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Formatter
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Formatting is done through treefmt's perSystem.treefmt config in
+      # flake.nix, which exposes a top-level .#formatter.<system>. The check
+      # must be read-only though: `nix fmt` rewrites files in place and this
+      # build has no --check/--fail-on-change flag that keeps them untouched,
+      # so gate on the resulting diff instead of the exit code alone. See
+      # tests/e2e/design.md for why CI integration was deferred until now.
+      - name: Run formatter
+        run: |
+          nix fmt
+
+      # Exit non-zero if anything was rewritten by `nix fmt`, i.e. the working
+      # tree did not match what oxformatter/nixfmt/shfmt/taplo would produce.
+      - name: Check formatting (read-only)
+        run: git diff --exit-code
