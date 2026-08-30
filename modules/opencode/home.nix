@@ -33,6 +33,7 @@ let
     permission = {
       "*" = "allow";
     };
+    plugin = [ "@dietrichgebert/ponytail" ];
     provider = (builtins.listToAttrs (map providerFromCatalog catalogs)) // {
       kimi = {
         npm = "@ai-sdk/openai-compatible";
