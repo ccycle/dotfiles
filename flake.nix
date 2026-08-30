@@ -114,7 +114,12 @@
             src = inputs.gitui;
           };
           herdrPackage = inputs.herdr.packages.${system}.default;
-          herdrWebuiPackage = inputs.herdr-webui.packages.${system}.default;
+          # doCheck disabled: upstream's cargo test suite shells out to `git`,
+          # which isn't on PATH inside the Nix build sandbox (os error 2),
+          # unrelated to the built binary's correctness.
+          herdrWebuiPackage = inputs.herdr-webui.packages.${system}.default.overrideAttrs (_: {
+            doCheck = false;
+          });
           hunkPackage = inputs.hunk.packages.${system}.default;
           piPackage = inputs.pi.packages.${system}.coding-agent;
           pkgs-2211 = mkPkgs inputs.nixpkgs-2211;
