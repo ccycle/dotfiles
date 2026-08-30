@@ -23,6 +23,7 @@ pi coding agentのWeb UIを提供し、ブラウザからコーディングセ�
 ## Agent Data
 
 pi-webはpi agentのデータを直接読み込む:
+
 - セッションファイル: `~/.pi/agent/sessions/<encoded-cwd>/<timestamp>_<uuid>.jsonl`
 - 設定ファイル: `~/.pi/agent/`内
 

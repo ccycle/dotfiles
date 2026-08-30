@@ -61,7 +61,10 @@ Options:
 EOF
 }
 
-die() { echo "Error: $*" >&2; exit 1; }
+die() {
+  echo "Error: $*" >&2
+  exit 1
+}
 
 profile=""
 message=""
@@ -73,18 +76,49 @@ file=""
 
 while [ $# -gt 0 ]; do
   case "$1" in
-    -k|--key)      [ $# -ge 2 ] || die "--key requires a value"; key="$2"; shift 2 ;;
-    -v|--value)    [ $# -ge 2 ] || die "--value requires a value"; value="$2"; shift 2 ;;
-    -p|--profile)  [ $# -ge 2 ] || die "--profile requires a value"; profile="$2"; shift 2 ;;
-    -m|--message)  [ $# -ge 2 ] || die "--message requires a value"; message="$2"; shift 2 ;;
-    --no-rebuild)  no_rebuild=1; shift ;;
-    --allow-dirty) allow_dirty=1; shift ;;
-    -h|--help)     usage; exit 0 ;;
-    *)             file="$1"; shift ;;
+  -k | --key)
+    [ $# -ge 2 ] || die "--key requires a value"
+    key="$2"
+    shift 2
+    ;;
+  -v | --value)
+    [ $# -ge 2 ] || die "--value requires a value"
+    value="$2"
+    shift 2
+    ;;
+  -p | --profile)
+    [ $# -ge 2 ] || die "--profile requires a value"
+    profile="$2"
+    shift 2
+    ;;
+  -m | --message)
+    [ $# -ge 2 ] || die "--message requires a value"
+    message="$2"
+    shift 2
+    ;;
+  --no-rebuild)
+    no_rebuild=1
+    shift
+    ;;
+  --allow-dirty)
+    allow_dirty=1
+    shift
+    ;;
+  -h | --help)
+    usage
+    exit 0
+    ;;
+  *)
+    file="$1"
+    shift
+    ;;
   esac
 done
 
-[ -n "${file}" ] || { usage >&2; exit 1; }
+[ -n "${file}" ] || {
+  usage >&2
+  exit 1
+}
 [ -f "${file}" ] || die "secrets file not found: ${file}"
 command -v sops >/dev/null 2>&1 || die "sops is not installed or not on PATH"
 
@@ -109,8 +143,8 @@ fi
 
 # --- Sanity check BEFORE opening the editor ---
 echo "==> Pre-edit recipient check: ${file}"
-"${REPO_ROOT}/scripts/sops/check-recipients.sh" >/dev/null \
-  || die "recipient check failed before edit; fix key rules first (see scripts/sops/)"
+"${REPO_ROOT}/scripts/sops/check-recipients.sh" >/dev/null ||
+  die "recipient check failed before edit; fix key rules first (see scripts/sops/)"
 
 # --- Edit phase ---
 before_hash="$(git hash-object -- "${file}")"
@@ -146,8 +180,8 @@ fi
 
 # --- Post-edit verification ---
 echo "==> Post-edit recipient check (all secrets files)..."
-"${REPO_ROOT}/scripts/sops/check-recipients.sh" \
-  || die "edit broke recipient rules; NOT committing. Inspect 'git diff ${file}' and revert if needed."
+"${REPO_ROOT}/scripts/sops/check-recipients.sh" ||
+  die "edit broke recipient rules; NOT committing. Inspect 'git diff ${file}' and revert if needed."
 
 echo "==> Change summary (metadata only):"
 git diff --stat -- "${file}"
@@ -207,7 +241,7 @@ if [ -z "${profile}" ]; then
       mark="  (Recommended)"
     fi
     printf "  %d) %s%s\n" "${i}" "${p}" "${mark}"
-  done <<< "${profiles}"
+  done <<<"${profiles}"
 
   default_reply="${recommended:-}"
   printf "Profile [%s]: " "${default_reply:-required}"
@@ -216,8 +250,8 @@ if [ -z "${profile}" ]; then
     profile="${default_reply}"
   else
     case "${reply}" in
-      ''|*[!0-9]*) profile="${reply}" ;;
-      *) profile="$(sed -n "${reply}p" <<< "${profiles}")" ;;
+    '' | *[!0-9]*) profile="${reply}" ;;
+    *) profile="$(sed -n "${reply}p" <<<"${profiles}")" ;;
     esac
   fi
 fi

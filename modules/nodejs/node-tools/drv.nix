@@ -36,10 +36,11 @@ let
         p: p != "" && !(lock.packages.${p} ? integrity) && !(lock.packages.${p} ? link)
       ) (builtins.attrNames lock.packages);
     in
-    lock // {
-      packages = builtins.mapAttrs (
-        _: pkg: builtins.removeAttrs pkg [ "hasShrinkwrap" ]
-      ) (builtins.removeAttrs lock.packages noIntegrity);
+    lock
+    // {
+      packages = builtins.mapAttrs (_: pkg: builtins.removeAttrs pkg [ "hasShrinkwrap" ]) (
+        builtins.removeAttrs lock.packages noIntegrity
+      );
     };
 
   npmDeps = pkgs.importNpmLock.buildNodeModules {

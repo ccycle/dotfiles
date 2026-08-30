@@ -32,6 +32,7 @@ opencodeの組み込みツールを活用する:
 ## Agent
 
 `opencode-web`エージェント（`agents/opencode-web.md`）が検索指示を定義する:
+
 - 検索対象パスの指定
 - zotコマンドの使い方
 - 回答スタイル

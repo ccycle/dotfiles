@@ -19,19 +19,21 @@ let
   # the system eval, where home-only options are not visible; reading sibling
   # *.lock as data is allowed by Package-by-Feature (only .drv imports differ).
   rawNodeLock = builtins.fromJSON (builtins.readFile ../nodejs/node-tools/package-lock.json);
-  excludeOptionalDeps = names: lock:
+  excludeOptionalDeps =
+    names: lock:
     let
       modulePaths = map (n: "node_modules/${n}") names;
-      stripOpt = _: pkg:
+      stripOpt =
+        _: pkg:
         if pkg ? optionalDependencies then
           pkg // { optionalDependencies = builtins.removeAttrs pkg.optionalDependencies names; }
         else
           pkg;
     in
-      lock // {
-        packages =
-          builtins.mapAttrs stripOpt (builtins.removeAttrs lock.packages modulePaths);
-      };
+    lock
+    // {
+      packages = builtins.mapAttrs stripOpt (builtins.removeAttrs lock.packages modulePaths);
+    };
   fixShrinkwrap =
     lock:
     let
@@ -39,10 +41,11 @@ let
         p: p != "" && !(lock.packages.${p} ? integrity) && !(lock.packages.${p} ? link)
       ) (builtins.attrNames lock.packages);
     in
-    lock // {
-      packages = builtins.mapAttrs (
-        _: pkg: builtins.removeAttrs pkg [ "hasShrinkwrap" ]
-      ) (builtins.removeAttrs lock.packages noIntegrity);
+    lock
+    // {
+      packages = builtins.mapAttrs (_: pkg: builtins.removeAttrs pkg [ "hasShrinkwrap" ]) (
+        builtins.removeAttrs lock.packages noIntegrity
+      );
     };
 
   npmDeps = pkgs.importNpmLock.buildNodeModules {
@@ -60,9 +63,10 @@ let
     npmConfigHook = pkgs.importNpmLock.hooks.linkNodeModulesHook;
     dontNpmInstall = true;
     dontNpmBuild = true;
-    installPhase = "mkdir -p \$out/bin\n" +
-      "ln -s ${npmDeps}/node_modules $out/node_modules\n" +
-      "ln -s ${npmDeps}/node_modules/.bin/* $out/bin/\n";
+    installPhase =
+      "mkdir -p \$out/bin\n"
+      + "ln -s ${npmDeps}/node_modules $out/node_modules\n"
+      + "ln -s ${npmDeps}/node_modules/.bin/* $out/bin/\n";
   };
 in
 {
