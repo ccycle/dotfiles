@@ -10,6 +10,7 @@ in
 {
   imports = [
     ./options.nix
+    ./self-healing/darwin.nix
   ];
 
   config = mkIf cfg.enable {
