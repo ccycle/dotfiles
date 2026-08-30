@@ -12,6 +12,7 @@
     ./forgejo/darwin.nix
     ./ghostty/darwin.nix
     ./gitlab/darwin.nix
+    ./herdr/darwin.nix
     ./immich/darwin.nix
     ./llm-server/darwin.nix
     ./opencode-web/darwin.nix
