@@ -117,6 +117,22 @@ in
       }
     '';
 
+    # Zotero's --local API (used by zot for full-note-body search) only
+    # answers while Zotero.app is running; brewCasks.zotero only installs
+    # the app, it doesn't keep it open. `open -W` blocks until the app
+    # quits, so KeepAlive only relaunches it after an actual crash/quit.
+    launchd.user.agents.zotero-keepalive = {
+      serviceConfig = {
+        KeepAlive = true;
+        RunAtLoad = true;
+        StandardOutPath = "/var/tmp/zotero-keepalive.log";
+        StandardErrorPath = "/var/tmp/zotero-keepalive.log";
+      };
+      script = ''
+        exec /usr/bin/open -W -j -g "${pkgs.brewCasks.zotero}/Applications/Zotero.app"
+      '';
+    };
+
     launchd.user.agents.opencode-web = {
       serviceConfig = {
         KeepAlive = true;

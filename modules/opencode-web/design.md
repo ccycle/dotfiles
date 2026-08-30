@@ -49,9 +49,12 @@ opencodeの組み込みツールを活用する:
 - opencode webは単一ユーザー向け（認証はPocketID SSOで対応）
 - 起動時にvaultディレクトリにcdする必要がある
 - llama-swapが起動している必要がある（mac-mini-m4-pro）
+- zotは`--local`モード（`~/.config/zotcli/config.ini`で個人設定）を前提とする。Zotero Web APIのノート検索は先頭1行しかマッチしないが、`--local`モードはZoteroデスクトップ本体の検索エンジン（全文ノートインデックス）を直接叩くため、この制約を受けない。この前提のため`zotero-keepalive` launchdエージェントでZotero.appを常時起動させる（`brewCasks.zotero`はインストールのみで自動起動はしない）。
 
 ## Rejected Alternatives
 
 - **OpenWebUI + Pythonプラグイン**: 実装コストが高い（10-15日）。Python検索ツール3つの実装が必要。
 - **自前Chat UI**: WebSocketラッパーの実装が必要。維持コストが高い。
-- **ベクトル検索**: インデックス更新の管理が複雑。grep + zotで十分と判断。
+- **ベクトル検索**: インデックス更新の管理が複雑。grep + zotで十分と判断。実利用でヒットしなかったケースが出た後も再検討したが、埋め込みインデックスではなくエージェント自身の多角的探索（類義語・関連語での再検索、タイトル一覧の一覧眺め）で対応する方針を維持。
+- **Zoteroノートのダンプ/同期による全文検索**: `--local`モードが既にZoteroデスクトップの全文ノートインデックスを検索するため、別途ダンプ・同期パイプラインは不要と判断。
+- **zot認証モードのNixオプション化**: 個人のZotero認証情報はパスワードに近い扱いであり、`obsidian.vaults`のような宣言的オプションにはせず、手動の`~/.config/zotcli/config.ini`を維持する。
