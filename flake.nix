@@ -29,6 +29,8 @@
     gwq.flake = false;
     herdr.url = "github:ogulcancelik/herdr";
     herdr.inputs.nixpkgs.follows = "nixpkgs";
+    herdr-webui.url = "github:alecuba16/herdr-webui";
+    herdr-webui.inputs.nixpkgs.follows = "nixpkgs";
     home-manager.follows = "bootstrap/home-manager";
     hunk.url = "github:modem-dev/hunk";
     hunk.inputs.nixpkgs.follows = "nixpkgs";
@@ -112,6 +114,7 @@
             src = inputs.gitui;
           };
           herdrPackage = inputs.herdr.packages.${system}.default;
+          herdrWebuiPackage = inputs.herdr-webui.packages.${system}.default;
           hunkPackage = inputs.hunk.packages.${system}.default;
           piPackage = inputs.pi.packages.${system}.coding-agent;
           pkgs-2211 = mkPkgs inputs.nixpkgs-2211;
