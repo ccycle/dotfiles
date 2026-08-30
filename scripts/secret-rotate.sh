@@ -19,6 +19,8 @@
 #     clean beforehand, unless --allow-dirty is passed).
 #
 # Usage:
+#   scripts/secret-rotate.sh --key <key> --value <val> [--profile <name>]
+#                            [--no-rebuild] <path/to/secrets.yaml>
 #   scripts/secret-rotate.sh [--profile <name>] [--message <msg>]
 #                            [--no-rebuild] [--allow-dirty]
 #                            <path/to/secrets.yaml>
@@ -35,12 +37,22 @@ Usage: $(basename -- "$0") [options] <path/to/secrets.yaml>
 
 Rotate a secret inside a sops-encrypted YAML file and propagate it.
 
+Two modes:
+  Key mode (non-interactive):
+    --key <key> --value <val>   Set a specific key via sops set.
+    Example: $(basename -- "$0") --key attic.push-token --value abc123 secrets/attic/secrets.yaml
+
+  Editor mode (interactive):
+    Without --key, opens the file in \$EDITOR via sops for manual editing.
+
 Options:
+  -k, --key <key>       Dot-separated key path to rotate (enables key mode).
+  -v, --value <val>     New value for the key (required with --key).
   -p, --profile <name>  darwin profile to rebuild (e.g. private,
                         mac-mini-m4-pro, bootstrap). Prompted for when
                         omitted on a TTY.
   -m, --message <msg>   Custom commit subject
-                        (default: "rotate(secrets): <file>")
+                        (default: "rotate(secrets): <file> key=<key>")
       --no-rebuild      Stop after committing; skip darwin-rebuild.
       --allow-dirty     Permit rotation even with unrelated uncommitted
                         changes (the commit still stages only the target
@@ -55,10 +67,14 @@ profile=""
 message=""
 no_rebuild=0
 allow_dirty=0
+key=""
+value=""
 file=""
 
 while [ $# -gt 0 ]; do
   case "$1" in
+    -k|--key)      [ $# -ge 2 ] || die "--key requires a value"; key="$2"; shift 2 ;;
+    -v|--value)    [ $# -ge 2 ] || die "--value requires a value"; value="$2"; shift 2 ;;
     -p|--profile)  [ $# -ge 2 ] || die "--profile requires a value"; profile="$2"; shift 2 ;;
     -m|--message)  [ $# -ge 2 ] || die "--message requires a value"; message="$2"; shift 2 ;;
     --no-rebuild)  no_rebuild=1; shift ;;
@@ -71,7 +87,16 @@ done
 [ -n "${file}" ] || { usage >&2; exit 1; }
 [ -f "${file}" ] || die "secrets file not found: ${file}"
 command -v sops >/dev/null 2>&1 || die "sops is not installed or not on PATH"
-command -v jq >/dev/null 2>&1 || die "jq is not installed or not on PATH"
+
+# Validate --key / --value pairing
+if [ -n "${key}" ] && [ -z "${value}" ]; then
+  die "--key requires --value"
+fi
+if [ -z "${key}" ] && [ -n "${value}" ]; then
+  die "--value requires --key"
+fi
+key_mode=0
+[ -n "${key}" ] && key_mode=1
 
 # --- Pre-flight: refuse to mix unrelated changes into the rotation commit ---
 if ! git diff --quiet -- . ':!.local' || ! git diff --cached --quiet -- . ':!.local'; then
@@ -87,21 +112,30 @@ echo "==> Pre-edit recipient check: ${file}"
 "${REPO_ROOT}/scripts/sops/check-recipients.sh" >/dev/null \
   || die "recipient check failed before edit; fix key rules first (see scripts/sops/)"
 
-# --- Edit phase: sops decrypts into $EDITOR and re-encrypts on save ---
-echo "==> Opening ${file} in \${EDITOR:-vi} via sops..."
+# --- Edit phase ---
 before_hash="$(git hash-object -- "${file}")"
-# sops exits with code 200 when the editor closed without changes; that is
-# a normal outcome ("nothing to rotate"), not an error.
-set +e
-EDITOR="${EDITOR:-vi}" sops "${file}"
-sops_rc=$?
-set -e
 
-if [ "${sops_rc}" -eq 200 ]; then
-  echo "No changes made to ${file}; nothing to rotate."
-  exit 0
-elif [ "${sops_rc}" -ne 0 ]; then
-  die "sops exited with code ${sops_rc}; aborting without committing."
+if [ "${key_mode}" -eq 1 ]; then
+  # Key mode: set a specific key non-interactively
+  # sops set expects JSON-encoded values; wrap strings in quotes.
+  echo "==> Setting '${key}' in ${file}"
+  sops set "${file}" "${key}" "\"${value}\""
+else
+  # Editor mode: open in $EDITOR via sops (re-encrypts on save)
+  echo "==> Opening ${file} in \${EDITOR:-vi} via sops..."
+  # sops exits with code 200 when the editor closed without changes; that is
+  # a normal outcome ("nothing to rotate"), not an error.
+  set +e
+  EDITOR="${EDITOR:-vi}" sops "${file}"
+  sops_rc=$?
+  set -e
+
+  if [ "${sops_rc}" -eq 200 ]; then
+    echo "No changes made to ${file}; nothing to rotate."
+    exit 0
+  elif [ "${sops_rc}" -ne 0 ]; then
+    die "sops exited with code ${sops_rc}; aborting without committing."
+  fi
 fi
 
 after_hash="$(git hash-object -- "${file}")"
@@ -119,7 +153,13 @@ echo "==> Change summary (metadata only):"
 git diff --stat -- "${file}"
 
 # --- Commit ---
-[ -n "${message}" ] || message="rotate(secrets): ${file}"
+if [ -n "${message}" ]; then
+  : # use user-provided message
+elif [ "${key_mode}" -eq 1 ]; then
+  message="rotate(secrets): ${file} key=${key}"
+else
+  message="rotate(secrets): ${file}"
+fi
 git add -- "${file}"
 git commit -m "${message}"
 echo "==> Committed: ${message}"
