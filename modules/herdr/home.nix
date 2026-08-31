@@ -1,6 +1,5 @@
 {
   herdrPackage,
-  herdrWebuiPackage,
   config,
   lib,
   pkgs,
@@ -10,10 +9,6 @@
 {
   home.packages = [
     herdrPackage
-    # Ships both herdr-webui (browser server) and herdr-webui-tui (terminal
-    # client) binaries from a single derivation - see src/bin/herdr-webui-tui.rs
-    # upstream.
-    herdrWebuiPackage
     # Optional external renderers for herdr-file-viewer (markdown/diff/syntax highlighting)
     pkgs.glow
     pkgs.delta

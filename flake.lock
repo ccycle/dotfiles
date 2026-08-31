@@ -1254,26 +1254,6 @@
         "type": "github"
       }
     },
-    "herdr-webui": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1787917073,
-        "narHash": "sha256-RKwgN53vI4/EGCjwVIdK3ryAT5cDfmDj899dXwZXcUw=",
-        "owner": "alecuba16",
-        "repo": "herdr-webui",
-        "rev": "682210879f1b1669954648fd4a178d410cee94ed",
-        "type": "github"
-      },
-      "original": {
-        "owner": "alecuba16",
-        "repo": "herdr-webui",
-        "type": "github"
-      }
-    },
     "hls": {
       "flake": false,
       "locked": {
@@ -2910,7 +2890,6 @@
         "gwq": "gwq",
         "haskellNix": "haskellNix_2",
         "herdr": "herdr",
-        "herdr-webui": "herdr-webui",
         "home-manager": [
           "bootstrap",
           "home-manager"
