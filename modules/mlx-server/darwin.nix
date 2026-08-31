@@ -9,7 +9,12 @@ with lib;
 
 let
   cfg = config.services.mlx-server;
-  mlxEnv = pkgs.python3.withPackages (ps: with ps; [ mlx-lm mlx ]);
+  mlxEnv = pkgs.python3.withPackages (
+    ps: with ps; [
+      mlx-lm
+      mlx
+    ]
+  );
 in
 {
   imports = [ ./options.nix ];
