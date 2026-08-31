@@ -296,6 +296,13 @@ reconcile auto-applies on, so move each of these directly, without asking:
   "$board" "Todo" "In progress" "<title>"
 ```
 
+After all card moves are done, trigger a final LiveSync cycle so the Kanban
+changes propagate to other devices (Obsidian mobile, other desktops):
+
+```bash
+.claude/skills/obsidian-livesync-sync/scripts/sync.sh
+```
+
 ## Rules
 
 1. Never let a worker touch code — the prompt must say plan-only every time.
