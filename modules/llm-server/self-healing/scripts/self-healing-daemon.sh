@@ -31,12 +31,12 @@ is_in_scope_project() {
 # call, not as a duplicate of that skill's full triage knowledge.
 job_to_project() {
   case "$1" in
-    gitlab-*) echo "gitlab" ;;
-    immich-*) echo "immich" ;;
-    opencloud) echo "opencloud" ;;
-    forgejo) echo "forgejo" ;;
-    prometheus | cadvisor) echo "monitoring" ;;
-    *) echo "" ;;
+  gitlab-*) echo "gitlab" ;;
+  immich-*) echo "immich" ;;
+  opencloud) echo "opencloud" ;;
+  forgejo) echo "forgejo" ;;
+  prometheus | cadvisor) echo "monitoring" ;;
+  *) echo "" ;;
   esac
 }
 
@@ -104,21 +104,21 @@ verify_alert_cleared() {
   local alertname="$1"
   sleep 60
   curl -sf "$PROMETHEUS_URL/api/v1/query" \
-    --data-urlencode "query=ALERTS{alertname=\"$alertname\"}" \
-    | jq -e '.data.result | length == 0' >/dev/null 2>&1
+    --data-urlencode "query=ALERTS{alertname=\"$alertname\"}" |
+    jq -e '.data.result | length == 0' >/dev/null 2>&1
 }
 
 execute_action() {
   local action="$1" target="$2"
   local project="${target%%/*}"
   case "$action" in
-    restart-service)
-      local service="${target#*/}"
-      docker-compose -p "$project" restart "$service"
-      ;;
-    restart-stack)
-      docker-compose -p "$project" restart
-      ;;
+  restart-service)
+    local service="${target#*/}"
+    docker-compose -p "$project" restart "$service"
+    ;;
+  restart-stack)
+    docker-compose -p "$project" restart
+    ;;
   esac
 }
 
@@ -150,8 +150,8 @@ if [ "$(echo "$IN_SCOPE" | jq 'length')" -eq 0 ]; then
 fi
 
 # --- Shared context (computed once, reused for every in-scope alert) ---
-DOWN_TARGETS=$(curl -sf "$PROMETHEUS_URL/api/v1/targets" 2>/dev/null \
-  | jq -c '[.data.activeTargets[] | select(.health != "up") | {job: .labels.job, health, lastError}]')
+DOWN_TARGETS=$(curl -sf "$PROMETHEUS_URL/api/v1/targets" 2>/dev/null |
+  jq -c '[.data.activeTargets[] | select(.health != "up") | {job: .labels.job, health, lastError}]')
 
 PROJECT_STATUS=""
 for project in $TARGET_PROJECTS; do
@@ -162,8 +162,8 @@ done
 
 RECENT_ERRORS=$(curl -sG "$LOKI_URL/loki/api/v1/query_range" \
   --data-urlencode "query={compose_project=~\"$(echo "$TARGET_PROJECTS" | tr ' ' '|')\"} |~ \"(?i)(error|fatal|panic)\"" \
-  --data-urlencode "since=15m" --data-urlencode "limit=50" 2>/dev/null \
-  | jq -r '.data.result[].values[][1]' 2>/dev/null || echo "")
+  --data-urlencode "since=15m" --data-urlencode "limit=50" 2>/dev/null |
+  jq -r '.data.result[].values[][1]' 2>/dev/null || echo "")
 
 # --- Per-alert decision + (optional) execution ---
 while IFS= read -r alert; do
@@ -185,11 +185,11 @@ while IFS= read -r alert; do
   reason=$(echo "$decision" | jq -r '.reason // empty' 2>/dev/null || true)
 
   case "$action" in
-    restart-service | restart-stack | wait-and-recheck | escalate-log-only) ;;
-    *)
-      action="escalate-log-only"
-      reason="unparseable or invalid LLM output"
-      ;;
+  restart-service | restart-stack | wait-and-recheck | escalate-log-only) ;;
+  *)
+    action="escalate-log-only"
+    reason="unparseable or invalid LLM output"
+    ;;
   esac
 
   if [ "$action" = "restart-service" ] || [ "$action" = "restart-stack" ]; then
