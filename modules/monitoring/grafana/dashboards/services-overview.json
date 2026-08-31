@@ -94,6 +94,47 @@
           "legendFormat": "{{name}}"
         }
       ]
+    },
+    {
+      "id": 6,
+      "type": "stat",
+      "title": "Attic cache (logical / physical / dedup)",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 5, "w": 24, "x": 0, "y": 23 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes"
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Dedup ratio" },
+            "properties": [
+              { "id": "unit", "value": "short" },
+              { "id": "decimals", "value": 2 }
+            ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "LOGICAL",
+          "expr": "attic_cache_nars_bytes",
+          "instant": true,
+          "legendFormat": "Logical"
+        },
+        {
+          "refId": "PHYSICAL",
+          "expr": "attic_cache_chunks_bytes",
+          "instant": true,
+          "legendFormat": "Physical"
+        },
+        {
+          "refId": "DEDUP",
+          "expr": "attic_cache_dedup_ratio",
+          "instant": true,
+          "legendFormat": "Dedup ratio"
+        }
+      ]
     }
   ]
 }

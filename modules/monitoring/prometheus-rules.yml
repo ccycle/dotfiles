@@ -95,3 +95,21 @@ groups:
           severity: warning
         annotations:
           summary: 'Forgejo is using {{ $value | printf "%.0f" }}% of its file descriptor limit'
+
+  - name: attic
+    rules:
+      - alert: AtticCapacityHigh
+        expr: attic_cache_nars_bytes > 20e9
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Attic cache logical size is {{ $value | humanize1024 }}B (threshold: 20GiB)"
+
+      - alert: AtticSqliteSizeHigh
+        expr: attic_cache_sqlite_bytes > 300e6
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Attic SQLite database is {{ $value | humanize1024 }}B (threshold: 300MB)"

@@ -12,6 +12,17 @@ let
   cfg = config.services.atticd;
   atticPkg = inputs.attic.packages.${pkgs.stdenv.hostPlatform.system}.default;
   format = pkgs.formats.toml { };
+
+  atticExporter = pkgs.writeShellApplication {
+    name = "attic-exporter";
+    runtimeInputs = [
+      pkgs.python3
+      pkgs.sqlite
+    ];
+    text = ''
+      exec ${pkgs.python3}/bin/python3 ${./attic-exporter.py} "$@"
+    '';
+  };
 in
 {
   options.services.atticd = {
@@ -69,6 +80,21 @@ in
           exec ${atticPkg}/bin/atticd \
             -f /etc/atticd/server.toml \
             --mode monolithic
+        '';
+      };
+
+      launchd.daemons.attic-exporter = {
+        serviceConfig = {
+          KeepAlive = true;
+          RunAtLoad = true;
+          StandardOutPath = "/var/log/attic-exporter.log";
+          StandardErrorPath = "/var/log/attic-exporter.log";
+        };
+        script = ''
+          exec ${atticExporter}/bin/attic-exporter \
+            --db /var/lib/atticd/server.db \
+            --storage /var/lib/atticd/storage \
+            --port 9201
         '';
       };
     })
