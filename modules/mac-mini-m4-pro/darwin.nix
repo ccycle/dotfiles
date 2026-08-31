@@ -50,6 +50,7 @@
   services.opencode-web.enable = true;
   services.pi-web.enable = true;
   services.mtplx.enable = true;
+  services.mlx-server.enable = true;
 
   services.atticd.enable = true;
   services.staticReports.enable = true;
