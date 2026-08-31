@@ -15,6 +15,13 @@ in
   imports = [ ./options.nix ];
 
   config = mkIf cfg.enable {
+    environment.etc."caddy/sites/mlx-server.caddy".text = ''
+      http://mlx.${config.networking.hostName}.internal, https://mlx.${config.networking.hostName}.internal {
+        import internal_tls
+        reverse_proxy 127.0.0.1:${toString cfg.port}
+      }
+    '';
+
     launchd.user.agents.mlx-server = {
       serviceConfig = {
         KeepAlive = true;
