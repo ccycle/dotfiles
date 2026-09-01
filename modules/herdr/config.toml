@@ -37,3 +37,8 @@ command = '''
 path=$(herdr worktree list | jq -r '.result.worktrees[] | select(.is_linked_worktree) | "\(.branch // \"detached\")\t\(.path)"' | fzf --height 40% --layout=reverse --border --with-nth=1 | awk -F'\t' '{print $2}')
 [ -n "$path" ] && herdr worktree open --path "$path" --focus
 '''
+
+[[keys.command]]
+key = "prefix+b"
+type = "shell"
+command = "herdr plugin action invoke open-split --plugin zenbu-labs.terminal-browser"
