@@ -42,3 +42,8 @@ path=$(herdr worktree list | jq -r '.result.worktrees[] | select(.is_linked_work
 key = "prefix+b"
 type = "shell"
 command = "herdr plugin action invoke open-split --plugin zenbu-labs.terminal-browser"
+
+[[keys.command]]
+key = "prefix+c"
+type = "shell"
+command = "herdr plugin action invoke open-split --plugin zenbu-labs.tode"

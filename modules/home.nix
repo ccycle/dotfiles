@@ -53,6 +53,7 @@
     ./sync-home-files/home.nix
     ./task-check/home.nix
     ./terminal-browser/home.nix
+    ./terminal-code/home.nix
     ./tmux/home.nix
     ./vscode/home.nix
     ./worktrunk/home.nix
