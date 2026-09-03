@@ -9,7 +9,7 @@ services:
       - ND_MUSICFOLDER=/music
       - ND_DATAFOLDER=/data
       - ND_PORT=4533
-      - ND_BASEURL=""
+      - ND_BASEURL=/
       - ND_EXTAUTH=true
       - ND_EXTAUTH_TRUSTEDSOURCES=172.16.0.0/12,192.168.0.0/16,10.0.0.0/8,127.0.0.0/8
       - ND_SCANSCHEDULE=1h

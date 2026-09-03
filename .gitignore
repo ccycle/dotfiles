@@ -14,6 +14,9 @@ tests/e2e-immich/test-results/
 tests/e2e-monitoring/.env
 tests/e2e-monitoring/.state/
 tests/e2e-monitoring/test-results/
+tests/e2e-navidrome/.env
+tests/e2e-navidrome/.state/
+tests/e2e-navidrome/test-results/
 tests/e2e-reports/.env
 tests/e2e-reports/.state/
 tests/e2e-reports/test-results/
