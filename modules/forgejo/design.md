@@ -123,6 +123,50 @@ No rebuild or restart required — the change takes effect immediately.
 - **API**: `curl -s -H "Authorization: token $FORGEJO_TOKEN" http://127.0.0.1:3000/api/v1/repos/<org>/<repo>/push_mirrors | jq .`
 - **Logs**: `tail -50 /var/log/forgejo-mirror-bootstrap.log`
 
+## API Token Management: Browser-Only, Not Scriptable
+
+**Access tokens (`Settings > Applications`) can be listed and created via
+the API, but not deleted or bulk-managed with an API token.** Forgejo's
+`/api/v1/users/{username}/tokens` DELETE route hard-rejects any
+API-token-based auth (`Authorization: token ...` or `user:token` as
+Basic Auth) with `"auth method not allowed"`, even with a token scoped
+`write:application`/`admin:application` — it requires real
+username/password Basic Auth. This is intentional upstream hardening
+(a leaked API token must not be able to mint or revoke other tokens for
+the same account) and is unrelated to any site-wide `DISABLE_BASIC_AUTHENTICATION`
+setting — Basic Auth with a token as the password works fine on every
+other endpoint (e.g. `GET /api/v1/user`), just not this one.
+
+On this instance the `ccycle` account has no usable local password to
+begin with: it was created via OIDC auto-registration
+(`FORGEJO__oauth2_client__ENABLE_AUTO_REGISTRATION=true` in
+`compose.yaml`), which Gitea/Forgejo creates without a local password —
+confirmed indirectly via `GET /api/v1/admin/users`, where `login_name`
+is the Pocket ID subject UUID rather than the username (the tell for an
+OIDC-auto-registered account). Temporarily setting a local password via
+`forgejo admin user change-password` to unlock the Basic Auth route was
+considered and rejected: Forgejo has no way to truly unset a password
+afterward (only rotate it to another value), so it would leave a
+password-login path permanently possible on an account that's meant to
+be OIDC-only, for the sake of a one-off cleanup. **Bulk token deletion
+is done by hand in the browser instead.**
+
+### `fj` CLI: `auth logout` vs `auth add-key` disagree on host format
+
+`fj -H https://<host> auth add-key <user>` and `fj auth logout <host>`
+both operate on the same stored entry, but `add-key` normalizes the
+`-H` value (scheme required) while `logout` expects the bare host with
+no scheme, matching what `fj auth list` prints
+(`user@host`, no scheme). Passing a scheme to `logout` silently no-ops
+(`already not signed in`) against a host string that doesn't match
+anything stored, so the real entry survives and the next `add-key`
+fails with `key for <host> already exists`. Correct sequence:
+
+```bash
+fj auth logout forgejo.mac-mini-m4-pro.internal   # bare host, no scheme
+fj -H https://forgejo.mac-mini-m4-pro.internal auth add-key ccycle  # scheme required here
+```
+
 ## Backup: `forgejo dump` via the Existing Bind Mount
 
 **The daily backup job writes into `dataDir/dumps` instead of a
