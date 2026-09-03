@@ -15,6 +15,7 @@ services:
       - ND_SCANSCHEDULE=1h
       - ND_ENABLEDOWNLOADS=false
       - ND_ENABLESHARING=false
+      - ND_ENABLEUSEREDITING=false
     volumes:
       - ${NAVIDROME_DATA_DIR}:/data
       - ${NAVIDROME_MUSIC_DIR}:/music:ro
