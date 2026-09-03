@@ -78,6 +78,7 @@ function get_placeholder_storage() {
         immich = "${dir}/vol";
         llm-server = "${dir}/vol";
         monitoring = "${dir}/vol";
+        navidrome = "${dir}/vol";
         opencloud = "${dir}/vol";
       };
     };

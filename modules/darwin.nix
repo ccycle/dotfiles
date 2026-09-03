@@ -20,6 +20,8 @@
     ./lm-studio/darwin.nix
     ./monitoring/darwin.nix
     ./mtplx/darwin.nix
+    ./navidrome/darwin.nix
+    ./navidrome/darwin.nix
     ./nix/darwin.nix
     ./opencloud/darwin.nix
     ./pocket-id/darwin.nix

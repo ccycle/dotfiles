@@ -1,0 +1,13 @@
+{
+  "name": "dotfiles-e2e-navidrome",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Browser-driven E2E tests for Navidrome (web UI, Subsonic API, library scan), run against an isolated per-worktree stack",
+  "type": "module",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.59.1"
+  }
+}

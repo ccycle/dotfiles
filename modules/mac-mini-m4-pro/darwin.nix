@@ -21,6 +21,14 @@
   services.gitlab.enable = false;
   services.pocket-id.enable = true;
   services.forgejo.enable = true;
+  services.navidrome.enable = true;
+  services.forgejo.pushMirrors = [
+    {
+      owner = "ccycle";
+      repo = "dotfiles";
+      remoteUrl = "https://github.com/ccycle/dotfiles.git";
+    }
+  ];
   services.forgejo.runnerEnable = true;
   services.forgejo.backupEnable = true;
   # Branch protection is managed via the Forgejo GUI (repo Settings >

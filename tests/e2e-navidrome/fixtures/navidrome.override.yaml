@@ -1,0 +1,33 @@
+# Layered on top of modules/navidrome/compose.yaml only for the isolated
+# e2e stack (never for production). See tests/e2e-navidrome/design.md.
+#
+# modules/navidrome/compose.yaml hardcodes the host port as
+# 127.0.0.1:${NAVIDROME_PORT}:4533. A plain `docker compose -p <other-project>`
+# still binds that same host port regardless of project name — it would
+# collide with the real production container. This override replaces it
+# with a per-worktree, per-run value.
+# `!override` is required on `ports:` — compose merges sequences from
+# multiple -f files by concatenation by default, so without it these
+# lists would be appended to the base file's ports (still binding
+# production's host port) rather than replacing them.
+#
+# Environment variables for the isolated stack are different from
+# production: NAVIDROME_DATA_DIR and NAVIDROME_MUSIC_DIR point at the
+# per-worktree .state/ directory, NAVIDROME_PORT is the dynamically
+# assigned port, and ND_EXTAUTH is disabled (see design.md).
+services:
+  navidrome:
+    ports: !override
+      - "127.0.0.1:${NAVIDROME_TEST_PORT}:4533"
+    environment: !override
+      - ND_MUSICFOLDER=/music
+      - ND_DATAFOLDER=/data
+      - ND_PORT=4533
+      - ND_BASEURL=""
+      - ND_EXTAUTH=false
+      - ND_SCANSCHEDULE=1h
+      - ND_ENABLEDOWNLOADS=false
+      - ND_ENABLESHARING=false
+    volumes:
+      - ${NAVIDROME_TEST_DATA_DIR}:/data
+      - ${NAVIDROME_TEST_MUSIC_DIR}:/music:rw
