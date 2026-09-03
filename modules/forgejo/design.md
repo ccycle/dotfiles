@@ -91,6 +91,38 @@ from that pattern (or confirmed against the repo's Checks UI) - an
 incorrect value here would silently block every merge on a check that
 never reports.
 
+## Push Mirror: GUI-Based Setup
+
+**Push mirrors are set up via the Forgejo web UI, not the API.**
+The `forgejo-mirror-bootstrap` daemon's role is limited to ensuring
+mirrors configured in `services.forgejo.pushMirrors` exist on boot —
+it skips repos that already have one, so GUI-created mirrors are
+left untouched.
+
+### Initial Setup
+
+1. Create the target repo on GitHub (empty, same name).
+2. In Forgejo, open the repo > **Settings** > **Repository** > **Mirror Settings**.
+3. Fill in:
+   - **Git Remote Repository URL**: `https://github.com/<org>/<repo>.git`
+   - **Authorization**: Username = `x-access-token`, Password = `<GitHub PAT>`
+   - **Sync when new commits are pushed**: checked
+4. Click **Add Push Mirror**.
+
+### Token Rotation
+
+1. In Forgejo, open the repo > **Settings** > **Repository** > **Mirror Settings**.
+2. Delete the existing push mirror.
+3. Add a new push mirror with the new PAT (same steps as initial setup).
+
+No rebuild or restart required — the change takes effect immediately.
+
+### Verification
+
+- **GUI**: Repo > Settings > Mirror Settings shows the active mirror.
+- **API**: `curl -s -H "Authorization: token $FORGEJO_TOKEN" http://127.0.0.1:3000/api/v1/repos/<org>/<repo>/push_mirrors | jq .`
+- **Logs**: `tail -50 /var/log/forgejo-mirror-bootstrap.log`
+
 ## Backup: `forgejo dump` via the Existing Bind Mount
 
 **The daily backup job writes into `dataDir/dumps` instead of a
