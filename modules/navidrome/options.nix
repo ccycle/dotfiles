@@ -74,7 +74,7 @@ in
           forward_auth 127.0.0.1:${toString oauth2ProxyPort} {
             uri /oauth2/auth
             header_up X-Real-IP {remote_host}
-            copy_headers X-Auth-Request-User X-Auth-Request-Email
+            copy_headers X-Auth-Request-Preferred-Username X-Auth-Request-Email
             @error status 401
             handle_response @error {
               redir * /oauth2/sign_in?rd={scheme}://{host}{uri}
@@ -82,8 +82,8 @@ in
           }
 
           reverse_proxy 127.0.0.1:${toString cfg.port} {
-            header_up Remote-User {http.miss.X-Auth-Request-User}
-            header_up Remote-Email {http.miss.X-Auth-Request-Email}
+            header_up Remote-User {http.request.header.X-Auth-Request-Preferred-Username}
+            header_up Remote-Email {http.request.header.X-Auth-Request-Email}
           }
         }
       }
