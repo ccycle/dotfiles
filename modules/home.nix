@@ -36,6 +36,7 @@
     ./opencode-web/home.nix
     ./mtplx/home.nix
     ./mlx-server/home.nix
+    ./nh/home.nix
     ./nix/home.nix
     ./nodejs/home.nix
     ./openclaw/home.nix
