@@ -36,7 +36,7 @@ false leads:
   no WAL sidecar and is world-readable) found no stuck `object`/`nar`/
   `chunk` rows for this path - ruling out server-side leftover
   corruption (the kind `scripts/attic-cleanup-orphans.sh` fixes), but
-  not ruling out *client-side* (local store) corruption.
+  not ruling out _client-side_ (local store) corruption.
 - Raising `chunking.min-size`/`avg-size`/`max-size` from Attic's
   upstream defaults (16K/64K/256K) to 256K/1M/4M, on the theory that
   fewer chunks meant less exposure to a per-chunk transient failure,
@@ -61,7 +61,7 @@ error: filesystem error: in rename: Not a directory [".../OrbStack_v2.2.1_20628_
 `orbstack`'s derivation unpacks a `.dmg` fetched by a separate
 fixed-output derivation; repairing `orbstack` transitively tries to
 repair that `.dmg` output too, and attic hit a Nix bug where repair's
-backup-rename step assumes it can nest `.old-<pid>-<rand>` *inside*
+backup-rename step assumes it can nest `.old-<pid>-<rand>` _inside_
 the output path - which fails for a plain-file (non-recursive) output
 like a single `.dmg`, since a file can't have a child path. This
 reproduced consistently regardless of whether the `.dmg` already
