@@ -80,4 +80,6 @@ jobs:
             --override-input user-config "path:$(pwd)/.local/user")
           nix run github:zhaofengli/attic -- login dotfiles-ci \
             https://cache.mac-mini-m4-pro.internal "$ATTIC_TOKEN" --set-default
-          nix run github:zhaofengli/attic -- push dotfiles $OUT_PATHS
+          if ! nix run github:zhaofengli/attic -- push dotfiles $OUT_PATHS; then
+            echo "Warning: attic push failed; cache not updated. Build itself succeeded." >&2
+          fi
