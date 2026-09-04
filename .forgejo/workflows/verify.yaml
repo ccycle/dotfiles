@@ -59,6 +59,7 @@ jobs:
                   immich = "$(pwd)/.local/storage/vol";
                   llm-server = "$(pwd)/.local/storage/vol";
                   monitoring = "$(pwd)/.local/storage/vol";
+                  navidrome = "$(pwd)/.local/storage/vol";
                   opencloud = "$(pwd)/.local/storage/vol";
                 };
               };
