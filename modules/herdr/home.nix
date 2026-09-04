@@ -15,6 +15,10 @@
     pkgs.bat
   ];
 
+  programs.zsh.initContent = ''
+    source <(${herdrPackage}/bin/herdr completion zsh)
+  '';
+
   home.file."${config.home.homeDirectory}/.config/herdr/config.toml".source =
     config.lib.file.mkOutOfStoreSymlink "${config.custom.dotfiles.dir}/modules/herdr/config.toml";
 
