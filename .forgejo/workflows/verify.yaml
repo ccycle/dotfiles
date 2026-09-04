@@ -4,21 +4,7 @@ on:
   push:
     branches:
       - "**"
-    paths-ignore:
-      - "**.md"
-      - "docs/**"
-      - "issues/**"
-      - ".agents/skills/**"
-      - "modules/agents/skills/*/**"
-      - ".claude/**"
   pull_request:
-    paths-ignore:
-      - "**.md"
-      - "docs/**"
-      - "issues/**"
-      - ".agents/skills/**"
-      - "modules/agents/skills/*/**"
-      - ".claude/**"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -30,6 +16,26 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Full history so the gate below can diff against origin/main.
+          fetch-depth: 0
+
+      # Path gate replacing the old paths-ignore lists: skill-only, docs-only,
+      # and similar changes skip the heavy steps, but the job itself still
+      # succeeds so the required "Verify / ..." context always reports.
+      # (Forgejo, unlike GitHub, blocks merges on required checks that never
+      # run, so paths-ignore on the trigger permanently blocks such PRs.)
+      - name: Detect relevant changes
+        id: gate
+        run: |
+          CHANGED=$(git diff --name-only origin/main...HEAD)
+          echo "Changed files:"
+          echo "$CHANGED"
+          if echo "$CHANGED" | grep -qvE '\.md$|^docs/|^issues/|^.agents/skills/|^modules/agents/skills/[^/]+/|^.claude/'; then
+            echo "relevant=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "relevant=false" >> "$GITHUB_OUTPUT"
+          fi
 
       # This runner IS mac-mini-m4-pro, but a CI checkout has no real
       # attached volumes to point custom.storage.volumes at - unlike a real
@@ -40,6 +46,7 @@ jobs:
       # for every other caller) rather than having it guess when a fallback
       # is appropriate.
       - name: Provide placeholder storage config for CI
+        if: steps.gate.outputs.relevant == 'true'
         run: |
           mkdir -p .local/storage/vol
           cat > .local/storage/flake.nix <<EOF
@@ -60,6 +67,7 @@ jobs:
           EOF
 
       - name: Run verify-change
+        if: steps.gate.outputs.relevant == 'true'
         run: .agents/skills/verify-change/scripts/check.sh
 
       # Requires this runner's System keychain to trust the Caddy internal CA
@@ -68,6 +76,7 @@ jobs:
       # System keychain triggers a GUI SecurityAgent prompt, so this has to
       # be done once via Screen Sharing/console login, not SSH).
       - name: Build and push to Attic
+        if: steps.gate.outputs.relevant == 'true'
         env:
           ATTIC_TOKEN: ${{ secrets.ATTIC_CI_TOKEN }}
         run: |
