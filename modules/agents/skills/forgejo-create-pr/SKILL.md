@@ -36,6 +36,7 @@ Create a pull request on the Forgejo instance with `fj` (the binary name of the 
      was changed. Prefer `Stop failing scrapes against the disabled GitLab`
      over `Remove GitLab scrape jobs from Prometheus`.
    - Write the body with this template:
+
      ```markdown
      ## Summary
 
@@ -50,6 +51,7 @@ Create a pull request on the Forgejo instance with `fj` (the binary name of the 
 
      [How you verified it works]
      ```
+
    - Guidelines: lead with a concise summary, explain the "why" before the "how", keep commit messages in English.
 
 6. **Report the Result**
