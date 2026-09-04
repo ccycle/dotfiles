@@ -40,6 +40,16 @@ the host running atticd (`attic push dotfiles
 Given it reproduces standalone against our own atticd (not just under
 CI's environment) and there is no corrupted state to clear, this reads
 as an Attic-side limitation/bug with very large single-file NARs rather
-than something fixable from this repo's config or database. No fix was
-attempted upstream; the pragmatic response here is the non-fatal CI
-push above, so an un-cacheable large binary doesn't block merges.
+than something fixable from this repo's config or database. The
+non-fatal CI push above keeps an un-cacheable large binary from
+blocking merges regardless of whether the underlying issue is fixed.
+
+**Mitigation: larger chunk sizes.** `chunking.min-size`/`avg-size`/
+`max-size` were raised from Attic's own upstream defaults
+(16K/64K/256K) to 256K/1M/4M. This isn't a confirmed root-cause fix -
+the exact failure mechanism inside the reassembly/verification path
+wasn't pinned down - but it cuts the chunk count for a 680MB NAR from
+10,000+ down to a few hundred, shrinking the exposure to whatever
+per-chunk transient or edge-case failure is causing the mismatch.
+Downside is coarser dedup across packages, which doesn't matter for a
+mostly-unshared macOS `.app` bundle like this one.

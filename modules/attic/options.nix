@@ -46,9 +46,14 @@ in
         };
         chunking = {
           nar-size-threshold = 64 * 1024;
-          min-size = 16 * 1024;
-          avg-size = 64 * 1024;
-          max-size = 256 * 1024;
+          # Larger than Attic's own upstream default (16K/64K/256K). Some
+          # cached closures include multi-hundred-MB macOS .app bundles
+          # (e.g. orbstack, ~680MB), which at the default chunk size split
+          # into 10000+ chunks per NAR - see modules/attic/design.md for the
+          # "Bad NAR Hash or Size" push failure this was raised to mitigate.
+          min-size = 256 * 1024;
+          avg-size = 1024 * 1024;
+          max-size = 4 * 1024 * 1024;
         };
         # Age out cache objects not accessed within the retention period.
         # last_accessed_at is bumped only on nar downloads (not on pushes),
