@@ -23,11 +23,7 @@ function requireEnv(name: string): string {
   return value;
 }
 
-async function subsonicGet(
-  request: any,
-  endpoint: string,
-  params: Record<string, string> = {}
-) {
+async function subsonicGet(request: any, endpoint: string, params: Record<string, string> = {}) {
   const qs = new URLSearchParams({
     u: TEST_USER,
     p: TEST_PASS,
@@ -64,9 +60,7 @@ test("Subsonic API ping responds with ok", async ({ request }) => {
   expect(ping["subsonic-response"]?.serverVersion).toBeTruthy();
 });
 
-test("music library scan picks up file via Subsonic API", async ({
-  request,
-}) => {
+test("music library scan picks up file via Subsonic API", async ({ request }) => {
   test.setTimeout(90_000);
 
   // Write a parseable FLAC: valid STREAMINFO (44.1kHz stereo 16-bit,
