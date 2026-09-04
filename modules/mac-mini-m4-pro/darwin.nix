@@ -23,21 +23,9 @@
   services.forgejo.enable = true;
   services.forgejo.runnerEnable = true;
   services.forgejo.backupEnable = true;
-  services.forgejo.branchProtections = [
-    {
-      owner = "ccycle";
-      repo = "dotfiles";
-      # Forgejo Actions reports commit-status contexts as
-      # "<workflow name> / <job id> (<event>)" - confirmed against a live
-      # instance via tests/e2e-forgejo (it observed "E2E / verify (push)"
-      # for a workflow named "E2E" with job id "verify"; .forgejo/workflows
-      # /verify.yaml has workflow name "Verify" and job id "verify", so this
-      # follows the same pattern). Still worth a one-time check against the
-      # real repo's Checks UI after the first live run, since a mismatched
-      # context permanently blocks merges.
-      statusCheckContexts = [ "Verify / verify (push)" ];
-    }
-  ];
+  # Branch protection is managed via the Forgejo GUI (repo Settings >
+  # Branches), not services.forgejo.branchProtections - required check
+  # contexts live with the workflows that report them.
   custom.lm-studio.enable = true;
   services.llm-server.enable = true;
   services.opencode-web.enable = true;
