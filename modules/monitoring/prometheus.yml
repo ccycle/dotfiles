@@ -58,30 +58,8 @@ scrape_configs:
     static_configs:
       - targets: ["host-gateway:3000"]
 
-  - job_name: "gitlab-rails"
-    metrics_path: "/-/metrics"
-    static_configs:
-      - targets: ["host-gateway:8929"]
-
-  - job_name: "gitlab-sidekiq"
-    static_configs:
-      - targets: ["host-gateway:8082"]
-
-  - job_name: "gitlab-postgres"
-    static_configs:
-      - targets: ["host-gateway:9187"]
-
-  - job_name: "gitlab-redis"
-    static_configs:
-      - targets: ["host-gateway:9121"]
-
-  # gitlab_exporter's /sidekiq is the only source of queue backlog metrics
-  # (sidekiq_queue_size / sidekiq_queue_latency_seconds); the sidekiq metrics
-  # server above only reports job execution.
-  - job_name: "gitlab-exporter-sidekiq"
-    metrics_path: "/sidekiq"
-    static_configs:
-      - targets: ["host-gateway:9168"]
+  # GitLab jobs removed: services.gitlab.enable is false on all hosts.
+  # Restore from git history if GitLab is re-enabled.
 
   # Attic cache metrics from the attic-exporter (Python HTTP server on 9201).
   # Queries the atticd SQLite database on each scrape for cache size, dedup
