@@ -81,6 +81,16 @@ completed cleanly - `repair-path` requires `--store local` (bypassing
 the nix-daemon, which doesn't implement this operation remotely) and
 therefore root.
 
+**This is a known, unfixed upstream Nix bug - upgrading Nix will not
+help.** [NixOS/nix#15659](https://github.com/NixOS/nix/issues/15659)
+reports the identical error (a flat-file fixed-output path renamed to
+`<path>/.old-<pid>-<num>` during `--repair`) against Nix 2.31.3; it was
+still open with no fix merged as of this writing. This host runs Nix
+2.34.7+1 - newer than the reported version - and reproduced the same
+failure, confirming the bug spans multiple releases rather than being
+version-specific. The delete-the-dependency-first workaround above is
+the durable mitigation, not a Nix version bump.
+
 The CI push step was still made non-fatal (matching
 `scripts/darwin-rebuild.sh`'s existing pattern) so a future one-off
 cache push failure - for whatever reason - doesn't block merges; this
