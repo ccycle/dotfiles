@@ -83,7 +83,7 @@ now_ts=$(date +%s)
 threshold_ts=$((now_ts - threshold_days * 86400))
 
 # Gather running agent names
-agent_names=$(herdr agent list --json 2>/dev/null | jq -r '
+agent_names=$(herdr agent list 2>/dev/null | jq -r '
   .result.agents[]? | .name
 ' 2>/dev/null || true)
 
