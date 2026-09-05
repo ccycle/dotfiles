@@ -34,6 +34,7 @@
     ./languages/home.nix
     ./lazygit/home.nix
     ./opencode-web/home.nix
+    ./mosh/home.nix
     ./mtplx/home.nix
     ./mlx-server/home.nix
     ./nh/home.nix
