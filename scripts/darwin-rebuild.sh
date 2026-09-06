@@ -94,7 +94,11 @@ if [ "${app}" != "default" ] && command -v attic >/dev/null 2>&1; then
   system_path="$(readlink -f /run/current-system 2>/dev/null || true)"
   hm_path="$(readlink -f "${HOME}/.local/state/nix/profiles/home-manager" 2>/dev/null || true)"
   for p in ${system_path} ${hm_path}; do
-    [ -n "${p}" ] || continue
+    # readlink -f on macOS returns the literal path unresolved (not empty)
+    # when the target doesn't exist, e.g. modern home-manager embedded as a
+    # nix-darwin module no longer creates ~/.local/state/nix/profiles/home-manager
+    # unless enableLegacyProfileManagement is set - so also require -e here.
+    [ -n "${p}" ] && [ -e "${p}" ] || continue
     echo "Pushing ${p} to attic cache 'dotfiles'..."
     if ! attic push dotfiles "${p}" >/dev/null 2>&1; then
       echo "Warning: attic push failed for ${p}; cache not updated." >&2
