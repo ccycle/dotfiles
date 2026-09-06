@@ -230,5 +230,38 @@
   },
   "effortLevel": "high",
   "tui": "fullscreen",
-  "preferredNotifChannel": "notifications_disabled"
+  "preferredNotifChannel": "notifications_disabled",
+  "autoMode": {
+    "soft_deny": [
+      "$defaults",
+      "Bash(sops-nix age key file writes/overwrites under ~/.config/sops/age/*)",
+      "Writes to modules/*/secrets*.yaml files (sops-encrypted secrets) outside of sops-managed re-encryption flows"
+    ],
+    "environment": [
+      "### Org-wide",
+      "**Organization**: None configured",
+      "**Cloud provider(s)**: None configured",
+      "**Repository visibility**: Not queryable via gh (host `forgejo.mac-mini-m4-pro.internal` is not GitHub/GHE-derivable); assume private for the self-hosted Forgejo remote; the GitHub mirror `github.com/ccycle/dotfiles` visibility is unverified — treat as private unless confirmed otherwise",
+      "**Internal sharing / snippet hosting**: None configured — treat public paste/gist services as outside the trust boundary",
+      "**Secrets management**: sops-nix with age keys (per README: age key placed at `~/.config/sops/age/keys.txt`, retrieved via `rbw`); repo contains numerous `secrets*.yaml` files under `modules/*/` managed via sops",
+      "**Default / protected branches**: Default branch is `main`; protection status not queryable (gh repo lookup unavailable for this remote)",
+      "**CI/CD deploy targets**: None configured",
+      "**Network posture**: Personal homelab infrastructure — self-hosted Forgejo at `forgejo.mac-mini-m4-pro.internal`, plus other `*.mac-mini-m4-pro.internal` services (used heavily in this project's transcripts)",
+      "**Source control**: This repo (`ccycle/dotfiles`) and its two remotes — `github.com/ccycle/dotfiles` and `forgejo.mac-mini-m4-pro.internal/ccycle/dotfiles.git` — no additional orgs configured",
+      "**Trusted internal domains**: `forgejo.mac-mini-m4-pro.internal` and related `*.mac-mini-m4-pro.internal` hosts (frequently contacted in this project's transcripts)",
+      "**Trusted cloud buckets**: None configured",
+      "**Key internal services**: Forgejo (`forgejo.mac-mini-m4-pro.internal`, git hosting), mlx.mac-mini-m4-pro.internal (seen in transcripts, purpose unconfirmed), opencloud (seen in transcripts, purpose unconfirmed)",
+      "**Internal package registry**: None configured",
+      "**Sensitive data locations & audiences**: sops-encrypted secrets files — `modules/attic/secrets.yaml`, `modules/forgejo/secrets.yaml`, `modules/gitlab/secrets.yaml`, `modules/immich/secrets-mac-mini-m4-pro.yaml`, `modules/immich/secrets-mac-mini-m4.yaml`, `modules/monitoring/secrets-mac-mini-m4-pro.yaml`, `modules/monitoring/secrets-mac-mini-m4.yaml`, `modules/navidrome/secrets-mac-mini-m4-pro.yaml`, `modules/opencloud/secrets-mac-mini-m4-pro.yaml`, `modules/opencloud/secrets-mac-mini-m4.yaml`, `modules/opencode-web/secrets-mac-mini-m4-pro.yaml`, `modules/pi-web/secrets-mac-mini-m4-pro.yaml`, `modules/pocket-id/secrets-mac-mini-m4-pro.yaml`, `modules/pocket-id/secrets-mac-mini-m4.yaml`, `modules/static-reports/secrets-mac-mini-m4-pro.yaml`, `modules/tailscale/secrets.yaml`, and `.env` test fixtures under `tests/e2e*/.env`; share only with the repo owner (personal/hobby use)",
+      "**Data retention / declassification**: None configured",
+      "**Sensitive remote targets**: any namespace, host, or container whose name carries `prod` or `production` as a whole word or name segment",
+      "**Protected deployment namespaces / environments**: None configured — fall back to the Sensitive remote targets heuristic",
+      "**Protected IaC scopes**: IAM, RBAC, networking, quota, and node-pool resources; anything whose name or tag carries `prod` or `production` as a whole word or name segment; also treat home-lab node-defining Nix modules (`modules/*` machine-specific configs) as sensitive infra scope given personal-infra posture",
+      "### User-specific",
+      "**Primary use of Claude Code**: personal infrastructure-as-code / dotfiles management (Nix flakes, nix-darwin, home-manager) for a personal macOS + homelab setup",
+      "**Trusted repo**: `/Users/mfuruki/repositories/github.com/ccycle/dotfiles` and its remotes `github.com/ccycle/dotfiles` and `forgejo.mac-mini-m4-pro.internal/ccycle/dotfiles.git`",
+      "**Org-specific CLIs**: None configured — project-specific tools observed: `herdr`, `fj` (Forgejo CLI), `nix`/`nix-instantiate`, `orbctl`, `rbw`, `kanban`/`board`/`state_file` (project scripting)",
+      "routine under this repo's `scripts/` prefix: frequently-invoked local automation (`scripts` seen 9× in transcripts)"
+    ]
+  }
 }
