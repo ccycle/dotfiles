@@ -60,6 +60,7 @@ Modules must access external flake inputs through the `inputs` attribute, not as
 **Rule:**
 
 - **No Default Fallbacks:** Do not use default values for critical configurations. Explicitly require the user or the environment to provide necessary values (e.g., using `mkOption` without a default, or `lib.mkIf` checks). Avoid "magic" defaults that might be incorrect in a different context.
+- **This applies to scripts too:** In shell scripts and generated config, do not silently substitute an empty or placeholder value for a required input (no `${VAR:-fallback}`, no `trusted_key=""`). Fail hard with a clear error naming the missing value.
 
 ## Nix Development Rules
 
