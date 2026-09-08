@@ -20,3 +20,10 @@ tests/e2e-navidrome/test-results/
 tests/e2e-reports/.env
 tests/e2e-reports/.state/
 tests/e2e-reports/test-results/
+
+# OpenTofu local state and provider cache — never commit (may contain
+# secrets/sensitive attributes in plan/state). .terraform.lock.hcl IS
+# committed (like flake.lock), so it's not listed here.
+**/.terraform/
+**/terraform.tfstate
+**/terraform.tfstate.backup

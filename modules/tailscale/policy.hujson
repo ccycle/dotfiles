@@ -1,6 +1,6 @@
 // Tailscale ACL policy — default-deny, grant access per role.
 //
-// Apply with: tailscale set --policy-file or via the Tailscale admin console.
+// Apply with: scripts/tailscale-acl-apply.sh (see the tailscale-acl-apply skill).
 // See modules/tailscale/design.md for the zero-trust roadmap.
 {
   // --- Tag ownership ---
@@ -10,36 +10,19 @@
     "tag:client": ["autogroup:admin"],
   },
 
-  // --- Groups (for readability in ACLs) ---
-  "groups": {
-    // All human users. In a personal tailnet this is just the owner.
-    "group:users": ["autogroup:member"],
-  },
-
   // --- ACLs: default-deny, explicit grants ---
   "acls": [
-    // Allow all users/clients to reach server HTTP(S) vhosts (Caddy).
-    // Caddy is the only tailnet-facing listener; backend ports (1234,
-    // 2283, 3000, 8929, 9090, 9200) bind to 127.0.0.1 and are not
-    // directly exposed.
+    // Client devices (the owner's own) may reach any port on a
+    // tag:server device. See design.md, "Why Client→Server Access Is
+    // Fully Open, But Server→Server Isn't" — this is a single-user
+    // tailnet, so there's no third party to isolate tag:server from.
+    // Backend ports that stay 127.0.0.1-bound (1234, 2283, 3000, 8929,
+    // 9090, 9200 on hosts this repo manages) remain unreachable
+    // regardless, since bind address is the actual defense there.
     {
       "action": "accept",
-      "src":    ["group:users"],
-      "dst":    ["tag:server:80,443"],
-    },
-
-    // DNS — dnsmasq serves wildcard *.internal on port 53.
-    {
-      "action": "accept",
-      "src":    ["group:users"],
-      "dst":    ["tag:server:53"],
-    },
-
-    // SSH — only the owner's devices can SSH into servers.
-    {
-      "action": "accept",
-      "src":    ["group:users"],
-      "dst":    ["tag:server:22"],
+      "src":    ["autogroup:member"],
+      "dst":    ["tag:server:*"],
     },
 
     // Allow servers to reach each other for cross-host services
@@ -55,7 +38,7 @@
   "ssh": [
     {
       "action": "check",
-      "src":    ["group:users"],
+      "src":    ["autogroup:member"],
       "dst":    ["tag:server"],
       "users":  ["autogroup:nonroot"],
     },

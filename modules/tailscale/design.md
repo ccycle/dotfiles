@@ -15,12 +15,18 @@ is explicitly excluded.
   before starting Caddy, following the same pattern as dnsmasq. This
   closes the LAN exposure that existed when Caddy bound to 0.0.0.0.
 - **ACL policy** (`policy.hujson`) defines a default-deny posture:
-  servers are tagged `tag:server`, and only specific ports (80, 443, 53, 22) are open to `group:users`. Backend service ports (1234, 2283, 3000,
-  8929, 9090, 9200) bind to 127.0.0.1 and are never directly reachable
-  from the tailnet — Caddy is the single entry point.
-- The policy file is checked into this repo for review and versioning.
-  It must be applied to the tailnet manually via the Tailscale admin
-  console or API; there is no automated GitOps sync yet.
+  servers are tagged `tag:server`. Client-to-server access is open on
+  every port; server-to-server access stays restricted to the ports
+  servers actually use to talk to each other — see "Why Client→Server
+  Access Is Fully Open, But Server→Server Isn't" below. Backend
+  service ports (1234, 2283, 3000, 8929, 9090, 9200) bind to 127.0.0.1
+  and are never directly reachable from the tailnet — Caddy is the
+  single entry point.
+- The policy file is checked into this repo for review and versioning,
+  and applied via OpenTofu (`modules/tailscale/terraform/`,
+  `scripts/tailscale-acl-apply.sh` — see the `tailscale-acl-apply`
+  skill). Apply is still a deliberate human step: `tofu plan` first,
+  `tofu apply` second, never unattended/CI-driven.
 
 ### Phase 2 — L7 per-request authentication (in progress)
 
@@ -97,12 +103,45 @@ sites/*.caddy"`). A per-site `bind` directive would require every module
 to repeat the Tailscale IP reference, coupling them to the networking
 layer.
 
-## Why the ACL Policy Is Not Auto-Applied
+## Why ACL Apply Stays a Human Step
 
 Applying ACLs via the API is a destructive operation that can lock out
-devices. The policy file is versioned here for review, but applying it
-is a deliberate manual step. Automated GitOps sync (e.g.
-`gitops-acl-action`) is a future option once the policy stabilizes.
+devices. OpenTofu (`modules/tailscale/terraform/`) replaced the old
+copy-into-the-admin-console step with `tofu plan`/`tofu apply`, which
+mitigates the lockout risk by showing the exact diff before anything
+changes — but apply is still run by a human reading that diff, never by
+CI or on a schedule. `tofu import` was used once to adopt the
+already-live policy without recreating it; see the `tailscale-acl-apply`
+skill for the full workflow.
+
+## Why Client→Server Access Is Fully Open, But Server→Server Isn't
+
+This is a single-user tailnet: `autogroup:member` is only the owner's
+own devices, never a third party. Restricting client→server access
+port-by-port therefore only guards against one scenario — a
+compromised client device (malware, a malicious dependency, a rogue
+background process) using its tailnet reach to pivot into a service
+that was never meant to be network-reachable. That guard was judged
+not worth its cost: per-port rules meant every new service needed a
+policy edit and re-apply before it was reachable at all, which is
+exactly the kind of day-to-day friction the OpenTofu migration was
+meant to remove. So client→server grants cover every port on
+`tag:server` devices.
+
+Server→server traffic stays restricted to the ports servers actually
+use to talk to each other. A compromised server (a container escape,
+a vulnerable dependency) is a more realistic and higher-value target
+than a personal device, and — unlike the client case — nothing about
+day-to-day development depends on servers reaching arbitrary ports on
+each other, so the narrower rule costs nothing in practice while still
+limiting lateral movement between hosts.
+
+Backend service ports that bind to 127.0.0.1 stay unreachable from the
+tailnet regardless of this ACL (defense in depth). For a host this
+repo doesn't manage (a NAS, say), the ACL is the *only* defense for
+its tailnet-facing ports, since a bind-address restriction isn't an
+option there — the fully-open client→server grant relies on that
+host's own services not exposing anything unintended.
 
 ## Constraints
 
@@ -110,5 +149,8 @@ is a deliberate manual step. Automated GitOps sync (e.g.
   cannot start (KeepAlive retries until it succeeds).
 - If the Tailscale IP changes (rare — typically stable), Caddy must be
   restarted to rebind.
-- `tag:server` must be applied to mac-mini-m4-pro and mac-mini-m4 in
-  the Tailscale admin console before the ACL policy takes effect.
+- Any device that should be reachable under the server grants (Caddy,
+  DNS, SSH, and now full client access) must be tagged `tag:server` in
+  the Tailscale admin console first — an untagged device matches none
+  of the `tag:server` rules and is unreachable, including for Tailscale
+  SSH, which is gated by its own independent ACL layer.
