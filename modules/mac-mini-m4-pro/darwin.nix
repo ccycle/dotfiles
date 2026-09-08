@@ -3,6 +3,9 @@
 {
   networking.hostName = "mac-mini-m4-pro";
 
+  # No local GUI session ever available (see modules/pinentry/darwin.nix).
+  custom.pinentry.headless = true;
+
   services.altserver.enable = true;
   services.tailscale.splitDns.enable = true;
   services.opencloud.enable = true;

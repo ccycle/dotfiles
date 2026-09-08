@@ -25,6 +25,7 @@
     ./navidrome/darwin.nix
     ./nix/darwin.nix
     ./opencloud/darwin.nix
+    ./pinentry/darwin.nix
     ./pocket-id/darwin.nix
     ./ssh/darwin.nix
     ./static-reports/darwin.nix
