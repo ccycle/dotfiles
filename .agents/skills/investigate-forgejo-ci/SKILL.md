@@ -14,7 +14,7 @@ Forgejo PR for this repo, without asking the user to open a browser.
   action.** `fj pr -R origin status 17` works; `fj pr status -R origin 17`
   does not (`unexpected argument '-R'`).
 - **`fj pr status` and `fj pr view` sometimes crash** with `Error: the
-  response from forgejo was not properly structured` when a job's log URL
+response from forgejo was not properly structured` when a job's log URL
   field can't be parsed as a relative URL. Don't retry these — fall back to
   `fj actions tasks` (below), which is unaffected.
 - **`fj actions tasks` has no log-viewing subcommand.** Listing tasks only
@@ -59,7 +59,7 @@ Forgejo PR for this repo, without asking the user to open a browser.
    ```
 
    Common Nix CI failure signature in this repo: `hash mismatch in
-   fixed-output derivation '<drv>': specified: <old-hash> got: <new-hash>`.
+fixed-output derivation '<drv>': specified: <old-hash> got: <new-hash>`.
    This means a flake input that a `drv.nix` vendors (e.g. `vendorHash` /
    `npmDepsHash` / `cargoHash`) moved without the corresponding derivation's
    pinned hash being updated — grep the repo for the `specified` hash to find
