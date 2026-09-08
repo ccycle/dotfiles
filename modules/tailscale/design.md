@@ -138,7 +138,7 @@ limiting lateral movement between hosts.
 
 Backend service ports that bind to 127.0.0.1 stay unreachable from the
 tailnet regardless of this ACL (defense in depth). For a host this
-repo doesn't manage (a NAS, say), the ACL is the *only* defense for
+repo doesn't manage (a NAS, say), the ACL is the _only_ defense for
 its tailnet-facing ports, since a bind-address restriction isn't an
 option there — the fully-open client→server grant relies on that
 host's own services not exposing anything unintended.
