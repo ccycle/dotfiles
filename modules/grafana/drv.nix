@@ -3,6 +3,6 @@ buildGoModule {
   pname = "gcx";
   version = "master";
   inherit src;
-  vendorHash = "sha256-Ka5rFZAiqdKCKjQ3X2Ba+PawiEx4swdk9NBBED9DmYM=";
+  vendorHash = "sha256-oBCpBz5GSuUVQyA3KmEcv1CjHaZvTGmmZSfKLufTmiE=";
   doCheck = false;
 }
