@@ -14,6 +14,45 @@ let
   nodeExporterTextfileDir = "/var/lib/node-exporter-textfile";
   composeFile = ./compose.yaml;
   waitForMount = import ../../utils/waitForMount.nix;
+  # Every enabled service that owns a dataDir gets one size-over-time
+  # metric, labeled by service name, so "is X accumulating?" is answerable
+  # for all of them from a single textfile collector instead of one
+  # launchd daemon per service. Attic has no dataDir option (its storage
+  # path is hardcoded in modules/attic/options.nix), so it's hardcoded
+  # here too rather than invented as a new option nothing else reads.
+  dataDirTargets =
+    lib.optional config.services.opencloud.enable {
+      name = "opencloud";
+      dir = config.services.opencloud.dataDir;
+    }
+    ++ lib.optional config.services.forgejo.enable {
+      name = "forgejo";
+      dir = config.services.forgejo.dataDir;
+    }
+    ++ lib.optional config.services.navidrome.enable {
+      name = "navidrome";
+      dir = config.services.navidrome.dataDir;
+    }
+    ++ lib.optional config.services.gitlab.enable {
+      name = "gitlab";
+      dir = config.services.gitlab.dataDir;
+    }
+    ++ lib.optional config.services.staticReports.enable {
+      name = "static-reports";
+      dir = config.services.staticReports.dataDir;
+    }
+    ++ lib.optional config.services.atticd.enable {
+      name = "attic";
+      dir = "/var/lib/atticd/storage";
+    }
+    ++ lib.optional config.services.immich.enable {
+      name = "immich-upload";
+      dir = config.services.immich.uploadDir;
+    }
+    ++ lib.optional config.services.immich.enable {
+      name = "immich-db";
+      dir = config.services.immich.dbDir;
+    };
   prometheusConfig = ./prometheus.yml;
   prometheusRules = ./prometheus-rules.yml;
   lokiConfig = ./loki-config.yml;
@@ -163,32 +202,68 @@ in
       '';
     };
 
-    # Directory-specific size metric for /var/lib/static-reports (the
-    # question is "is reports/ accumulating over time?"), which the
-    # whole-volume node_filesystem_* metrics cannot answer directly. Runs
-    # regularly, writing a .prom file into node_exporter's textfile dir for
-    # the next scrape to pick up. Opt-in per-directory via staticReports
-    # enabling; consumers of static-reports could add siblings here.
-    launchd.daemons.static-reports-size = lib.mkIf config.services.staticReports.enable {
+    # Per-service dataDir size metric (the question is "is this service's
+    # data accumulating over time?"), which the whole-volume
+    # node_filesystem_* metrics cannot answer directly. Runs regularly,
+    # writing one .prom file into node_exporter's textfile dir, one line per
+    # entry in dataDirTargets, for the next scrape to pick up.
+    launchd.daemons.data-dir-size = lib.mkIf (dataDirTargets != [ ]) {
       serviceConfig = {
         RunAtLoad = true;
         StartInterval = 300;
-        StandardOutPath = "/var/log/static-reports-size.log";
-        StandardErrorPath = "/var/log/static-reports-size.log";
+        StandardOutPath = "/var/log/data-dir-size.log";
+        StandardErrorPath = "/var/log/data-dir-size.log";
       };
       script = ''
-        DIR="${config.services.staticReports.dataDir}"
         OUT="${nodeExporterTextfileDir}"
-        if [ ! -d "$DIR" ]; then
-          exit 0
-        fi
-        SIZE=$(${pkgs.coreutils}/bin/du -sb "$DIR" | ${pkgs.coreutils}/bin/awk '{print $1}')
-        cat > "$OUT/static_reports_size_bytes.prom".tmp <<EOF
-        # HELP static_reports_size_bytes Size of the static-reports dataDir in bytes.
-        # TYPE static_reports_size_bytes gauge
-        static_reports_size_bytes $SIZE
+        mkdir -p "$OUT"
+        {
+          echo "# HELP data_dir_size_bytes Size of a service's dataDir in bytes."
+          echo "# TYPE data_dir_size_bytes gauge"
+          ${lib.concatMapStringsSep "\n" (t: ''
+            if [ -d "${t.dir}" ]; then
+              SIZE=$(${pkgs.coreutils}/bin/du -sb "${t.dir}" | ${pkgs.coreutils}/bin/awk '{print $1}')
+              echo "data_dir_size_bytes{service=\"${t.name}\"} $SIZE"
+            fi
+          '') dataDirTargets}
+        } > "$OUT/data_dir_size_bytes.prom".tmp
+        ${pkgs.coreutils}/bin/mv "$OUT/data_dir_size_bytes.prom".tmp "$OUT/data_dir_size_bytes.prom"
+      '';
+    };
+
+    # Thermal pressure (root daemon: powermetrics requires root). Apple
+    # Silicon exposes no numeric die-temperature sampler in this macOS
+    # version's powermetrics (`--samplers smc` doesn't exist; verified live
+    # on mac-mini-m4-pro, macOS 26.5.2) — only a categorical pressure level
+    # via `--samplers thermal` ("Current pressure level: Nominal"), so that
+    # categorical level is encoded numerically instead of a Celsius reading.
+    launchd.daemons.thermal-pressure = {
+      serviceConfig = {
+        RunAtLoad = true;
+        StartInterval = 300;
+        StandardOutPath = "/var/log/thermal-pressure.log";
+        StandardErrorPath = "/var/log/thermal-pressure.log";
+      };
+      script = ''
+        OUT="${nodeExporterTextfileDir}"
+        mkdir -p "$OUT"
+        LEVEL=$(/usr/bin/powermetrics -i1000 -n1 --samplers thermal 2>/dev/null \
+          | ${pkgs.gnugrep}/bin/grep "Current pressure level" \
+          | ${pkgs.gnused}/bin/sed 's/.*: *//')
+        case "$LEVEL" in
+          Nominal) VALUE=0 ;;
+          Moderate) VALUE=1 ;;
+          Heavy) VALUE=2 ;;
+          Trapping) VALUE=3 ;;
+          Sleeping) VALUE=4 ;;
+          *) VALUE=-1 ;;
+        esac
+        cat > "$OUT/thermal_pressure_level.prom".tmp <<EOF
+        # HELP thermal_pressure_level macOS thermal pressure level (0=Nominal,1=Moderate,2=Heavy,3=Trapping,4=Sleeping,-1=unknown).
+        # TYPE thermal_pressure_level gauge
+        thermal_pressure_level $VALUE
         EOF
-        ${pkgs.coreutils}/bin/mv "$OUT/static_reports_size_bytes.prom".tmp "$OUT/static_reports_size_bytes.prom"
+        ${pkgs.coreutils}/bin/mv "$OUT/thermal_pressure_level.prom".tmp "$OUT/thermal_pressure_level.prom"
       '';
     };
 

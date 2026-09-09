@@ -1,0 +1,55 @@
+{
+  "title": "Caddy RED (by vhost)",
+  "uid": "caddy-red",
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": true,
+  "time": { "from": "now-6h", "to": "now" },
+  "refresh": "1m",
+  "panels": [
+    {
+      "id": 1,
+      "type": "timeseries",
+      "title": "Request rate by vhost",
+      "description": "Derived from Caddy's JSON access log (vhost label from alloy-config.alloy), not the caddy_http_* Prometheus metrics, which only expose an aggregate server label. Covers services with no app-level HTTP metrics (e.g. Forgejo).",
+      "datasource": { "type": "loki", "uid": "loki" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (vhost) (rate({vhost=~\".+\"} | json | __error__=\"\" [5m]))",
+          "legendFormat": "{{vhost}}"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "5xx error rate by vhost",
+      "datasource": { "type": "loki", "uid": "loki" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (vhost) (rate({vhost=~\".+\"} | json | __error__=\"\" | status >= 500 [5m]))",
+          "legendFormat": "{{vhost}}"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "p95 request duration by vhost",
+      "datasource": { "type": "loki", "uid": "loki" },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 8 },
+      "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "quantile_over_time(0.95, {vhost=~\".+\"} | json | __error__=\"\" | unwrap duration [5m]) by (vhost)",
+          "legendFormat": "{{vhost}}"
+        }
+      ]
+    }
+  ]
+}
