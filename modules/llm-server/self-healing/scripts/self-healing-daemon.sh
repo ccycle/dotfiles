@@ -6,6 +6,20 @@ set -euo pipefail
 
 TS() { date -u +%FT%TZ; }
 
+# Heartbeat: written on every exit path (early "no firing alerts" return
+# included), so SelfHealingHeartbeatMissing in prometheus-rules.yml only
+# fires when the daemon itself has stopped running, not when it simply
+# had nothing to do.
+write_heartbeat() {
+  local out="${NODE_EXPORTER_TEXTFILE_DIR}/self_healing_heartbeat.prom"
+  {
+    echo "# HELP self_healing_last_run_timestamp_seconds Unix time of the self-healing daemon's last completed run."
+    echo "# TYPE self_healing_last_run_timestamp_seconds gauge"
+    echo "self_healing_last_run_timestamp_seconds $(date +%s)"
+  } >"${out}.tmp" && mv "${out}.tmp" "${out}"
+}
+trap write_heartbeat EXIT
+
 log() {
   # One-JSON-object-per-line, printed to stdout (captured by launchd into
   # /var/log/self-healing.log — see the Alloy JSON-extraction stage in
@@ -60,7 +74,7 @@ You are a remediation-decision assistant for a self-hosted homelab. Choose
 exactly one action for the alert below. Respond with a single JSON object
 and nothing else, matching this schema:
 
-{"action": "restart-service" | "restart-stack" | "wait-and-recheck" | "escalate-log-only",
+{"action": "restart-service" | "restart-stack" | "wait-and-recheck" | "escalate-log-only" | "propose-fix-pr",
  "target_service": "<compose-project>/<service-name>" (restart-service),
                     "<compose-project>" (restart-stack), or "" otherwise,
  "reason": "<one sentence>"}
@@ -73,9 +87,13 @@ Rules:
   root cause.
 - Choose wait-and-recheck for a failure that looks transient (e.g. a brief
   error-rate blip) and doesn't yet warrant action.
-- Choose escalate-log-only if unsure, or the failure looks structural
-  (data corruption, misconfiguration, disk full) rather than a hung
-  process — restarting will not help.
+- Choose propose-fix-pr only when the failure looks structural (e.g. a
+  resource limit or config value is plausibly wrong) AND a small, scoped
+  config change plausibly fixes it - never for data corruption or anything
+  a config edit can't address. This drafts a PR for human review; it does
+  not restart anything itself.
+- Choose escalate-log-only if unsure, or the failure looks structural but
+  no small config change plausibly fixes it (data corruption, disk full).
 - <compose-project> in target_service MUST be exactly one of: $TARGET_PROJECTS
 
 Alert:
@@ -109,7 +127,7 @@ verify_alert_cleared() {
 }
 
 execute_action() {
-  local action="$1" target="$2"
+  local action="$1" target="$2" alertname="$3" reason="$4" alert_json_file="$5"
   local project="${target%%/*}"
   case "$action" in
   restart-service)
@@ -118,6 +136,9 @@ execute_action() {
     ;;
   restart-stack)
     docker-compose -p "$project" restart
+    ;;
+  propose-fix-pr)
+    bash "$PROPOSE_FIX_SCRIPT" "$alertname" "$reason" "$alert_json_file"
     ;;
   esac
 }
@@ -185,7 +206,7 @@ while IFS= read -r alert; do
   reason=$(echo "$decision" | jq -r '.reason // empty' 2>/dev/null || true)
 
   case "$action" in
-  restart-service | restart-stack | wait-and-recheck | escalate-log-only) ;;
+  restart-service | restart-stack | wait-and-recheck | escalate-log-only | propose-fix-pr) ;;
   *)
     action="escalate-log-only"
     reason="unparseable or invalid LLM output"
@@ -201,15 +222,23 @@ while IFS= read -r alert; do
 
   executed=false
   verified=""
-  if [ "$SELF_HEALING_MODE" = "auto-remediate" ] && { [ "$action" = "restart-service" ] || [ "$action" = "restart-stack" ]; }; then
-    if execute_action "$action" "$target"; then
+  if [ "$SELF_HEALING_MODE" = "auto-remediate" ] &&
+    { [ "$action" = "restart-service" ] || [ "$action" = "restart-stack" ] || [ "$action" = "propose-fix-pr" ]; }; then
+    alert_json_file=$(mktemp)
+    echo "$alert" >"$alert_json_file"
+    if execute_action "$action" "$target" "$alertname" "$reason" "$alert_json_file"; then
       executed=true
-      if verify_alert_cleared "$alertname"; then
-        verified=true
-      else
-        verified=false
+      # A draft PR's verification is human review + CI, not an automated
+      # re-check of the alert - it never restarts anything itself.
+      if [ "$action" != "propose-fix-pr" ]; then
+        if verify_alert_cleared "$alertname"; then
+          verified=true
+        else
+          verified=false
+        fi
       fi
     fi
+    rm -f "$alert_json_file"
   fi
 
   log "$(jq -nc \

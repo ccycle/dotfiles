@@ -58,6 +58,7 @@ let
   lokiConfig = ./loki-config.yml;
   alloyConfig = ./alloy-config.alloy;
   tempoConfig = ./tempo.yml;
+  alertmanagerConfig = ./alertmanager.yml;
   grafanaProvisioningDir = ./grafana/provisioning;
   grafanaDashboardsDir = ./grafana/dashboards;
 in
@@ -297,6 +298,7 @@ in
         export LOKI_CONFIG="${lokiConfig}"
         export ALLOY_CONFIG="${alloyConfig}"
         export TEMPO_CONFIG="${tempoConfig}"
+        export ALERTMANAGER_CONFIG="${alertmanagerConfig}"
         export GRAFANA_PROVISIONING_DIR="${grafanaProvisioningDir}"
         export GRAFANA_DASHBOARDS_DIR="${grafanaDashboardsDir}"
         export GRAFANA_ROOT_URL="https://grafana.${config.networking.hostName}.internal"

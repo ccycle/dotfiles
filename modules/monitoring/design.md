@@ -10,9 +10,14 @@ for agent-driven investigation.
 ## Non-Goals
 
 - **No alert notifications.** Alert rules are evaluated so their firing state
-  is queryable via the Prometheus API and visible in Grafana, but there is no
-  Alertmanager and no notification channel. Adding one is a deliberate future
-  decision, not an oversight.
+  is queryable via the Prometheus API and visible in Grafana, and there is
+  still no notification channel (Slack, email, ...) of any kind. The "no
+  Alertmanager" half of this non-goal is scoped down, not lifted: one
+  Alertmanager instance now exists (`modules/monitoring/alertmanager.yml`),
+  but its only receiver is a local webhook that wakes
+  `modules/llm-server/self-healing`'s daemon — see that module's design.md
+  for the full detection-latency rationale. Adding a real notification
+  channel remains a deliberate future decision, not an oversight.
 - No blackbox/synthetic probing — reachability is covered by the
   smoke-test skills.
 - No vendored community dashboards. Only compact hand-written dashboard JSONs
@@ -127,6 +132,14 @@ for agent-driven investigation.
   `/var/lib/static-reports` is accumulating) becomes answerable, which
   container-level cAdvisor metrics cannot show.
 
+- **Alertmanager runs inside this same compose stack**, wired to Prometheus
+  via `alerting.alertmanagers` in `prometheus.yml`, with no host port
+  published — Prometheus reaches it over the compose network
+  (`alertmanager:9093`) the same way Alloy reaches Loki/Tempo. Its one
+  webhook receiver targets `host-gateway:9096`, the loopback port
+  `modules/llm-server/self-healing`'s webhook listener binds — a native
+  host process, not a stack container, following the same
+  host-gateway pattern already used for Caddy/node-exporter scraping.
 - **Tempo runs inside this same compose stack**, not a separate stack, and
   Alloy is the one OTLP ingestion point for traces (`otelcol.receiver.otlp`
   forwarding to `otelcol.exporter.otlp` → Tempo), mirroring the role Alloy

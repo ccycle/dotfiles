@@ -5,6 +5,13 @@ global:
 rule_files:
   - /etc/prometheus/rules.yml
 
+# Webhook-only Alertmanager (see modules/monitoring/design.md): fires the
+# self-healing webhook receiver, no notification channel is configured.
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ["alertmanager:9093"]
+
 # Cross-stack targets are scraped via host-gateway: each service stack
 # publishes its metrics ports on the host's 127.0.0.1, which OrbStack makes
 # reachable from containers through the host-gateway extra_host.

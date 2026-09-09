@@ -1,5 +1,7 @@
-# Alert rules are evaluated without an Alertmanager: no notifications are
-# sent. Firing state is the machine-readable triage entry point, queryable at
+# Alert rules are evaluated with a webhook-only Alertmanager (see
+# design.md): its one receiver wakes the self-healing daemon, and no
+# notification channel is configured, so firing state is still the
+# machine-readable triage entry point, queryable at
 # http://127.0.0.1:9090/api/v1/alerts (see the investigate-service skill).
 groups:
   - name: availability
@@ -113,3 +115,17 @@ groups:
           severity: warning
         annotations:
           summary: "Attic SQLite database is {{ $value | humanize1024 }}B (threshold: 300MB)"
+
+  - name: self-healing
+    rules:
+      # Dead-man's-switch: self_healing_last_run_timestamp_seconds is
+      # written by the daemon itself after every run (poll- or
+      # webhook-triggered - see modules/llm-server/self-healing). This
+      # never triggers remediation - only a log line + the Grafana
+      # heartbeat panel, per design.md.
+      - alert: SelfHealingHeartbeatMissing
+        expr: time() - self_healing_last_run_timestamp_seconds > 100000
+        labels:
+          severity: warning
+        annotations:
+          summary: "self-healing daemon has not completed a run in over ~28h"

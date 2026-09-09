@@ -65,6 +65,68 @@ full decision tree.
   edit + `darwin-rebuild switch`**, not an automatic graduation after N
   clean days. Automatic promotion would need its own judgment criteria
   layered on top of the same LLM this module is still building trust in.
+- **Detection is now primarily an Alertmanager webhook, not the daily
+  poll.** `modules/monitoring`'s "no Alertmanager" non-goal is scoped down
+  — not lifted — specifically to allow one Alertmanager instance whose
+  only receiver is a webhook to `self-healing-webhook`'s local listener
+  (see `modules/monitoring/design.md`); no notification channel exists.
+  The webhook payload itself is never parsed for alert detail — the daemon
+  already re-queries Prometheus's `/api/v1/alerts` for the full current
+  firing set on every run, so the webhook only needs to serve as a "poll
+  now" wake-up. The daily poll (`launchd.user.agents.self-healing`,
+  `StartInterval = 86400`) stays as a backstop for a missed webhook
+  delivery, not because a short poll interval is wanted (that's still
+  rejected — see Rejected Alternatives).
+- **`self-healing` and `self-healing-webhook` are user LaunchAgents
+  (`launchd.user.agents`), not root daemons — a change from this module's
+  original shape.** The new `propose-fix-pr` action needs this user's own
+  opencode config (`~/.config/opencode/opencode.json`, already pointed at
+  the local llamaswap provider by `modules/opencode/home.nix`) and git/fj
+  credentials for pushing a branch and opening a PR — both only resolve
+  correctly in that user's own home directory context, not root's.
+  `docker-compose` itself needs no elevated privilege under OrbStack
+  (unlike Docker Desktop on Linux), so nothing else was relying on root
+  either.
+- **`propose-fix-pr` is a fifth allow-listed action**, chosen by the same
+  judgment LLM as the other four, for alerts that look structural (a
+  config value plausibly wrong) rather than a hung process. Unlike the
+  restart actions, its own execution doesn't touch the failing service at
+  all — it drafts a change in a separate working copy and opens a PR. Its
+  "verification" is human review + CI, not `verify_alert_cleared`, since a
+  draft PR by definition hasn't changed anything live yet.
+- **`propose-fix-pr` reuses `opencode run --auto` against a local model**
+  (`fixModel`, default `llamaswap/qwen/qwen3.6-35b-a3b` — already present
+  in this repo's model catalog) to actually draft the change, not the
+  small judgment LLM that only ever returns one fixed-schema decision.
+  Drafting a real, scoped code change needs genuine coding ability the
+  judgment LLM was deliberately never given (see the "no tool-calling"
+  bullet below) — this is a second, separate LLM call with a completely
+  different job, not an extension of the first one's agentic scope.
+- **The guard is a hard, fail-closed changed-file allow-list
+  (`fixAllowList`, default empty) plus an unconditional `secrets*.yaml`
+  reject, enforced by the script after the fact** — not by restricting
+  what opencode is told it may touch in its prompt alone. A prompt
+  instruction is not a security boundary; `propose-fix.sh` inspects
+  `git diff --name-only` itself and discards (never pushes) any change
+  touching a path outside the list. An empty `fixAllowList` disables the
+  action outright, so a host must opt in explicitly to what an autonomous
+  coding run may modify — same "no default fallback for critical config"
+  policy as the rest of this repo.
+- **The PR is always opened as a Forgejo draft** (title prefixed `WIP: `,
+  Forgejo/Gitea's own draft convention, via `fj pr create`) and this
+  script never merges anything — merging still needs a human approval and
+  a passing CI run through this repo's normal branch-protection flow
+  (already configured on `mac-mini-m4-pro`), unchanged by this feature.
+- **A heartbeat metric closes the loop on "did the daemon actually run"**:
+  `self-healing-daemon.sh` writes
+  `self_healing_last_run_timestamp_seconds` to the node-exporter textfile
+  dir on every exit path (via a `trap ... EXIT`), including the early
+  "nothing firing" return. `SelfHealingHeartbeatMissing` in
+  `prometheus-rules.yml` fires if that timestamp goes stale for ~28h
+  (longer than the 24h poll backstop, so a normal poll cycle never trips
+  it) — this only ever produces a log line + a Grafana panel, never a
+  remediation action, by design (an agent that can't confirm it's alive
+  shouldn't also be deciding to restart things).
 
 ## Non-Goals
 
@@ -75,9 +137,15 @@ full decision tree.
   once a project-specific playbook is worth the complexity.
 - **No notification channel.** Same non-goal as `modules/monitoring`:
   reviewing output is a pull (Grafana dashboard, log tail), not a push.
-- **No tool-calling / agentic loop for the LLM.** The model only ever
+- **No tool-calling / agentic loop for the judgment LLM.** It only ever
   sees one prompt and returns one JSON object; it cannot issue further
-  queries. Data gathering is entirely the script's job.
+  queries. Data gathering is entirely the script's job. `propose-fix-pr`'s
+  `opencode run` is a deliberate, separate exception to this for a
+  different model with a different job (drafting an actual code change,
+  not deciding what to do) — see Why This Structure.
+- **No push notification for a proposed fix.** Same as the rest of this
+  module: reviewing it is a pull (Forgejo's own PR list/notifications),
+  not a push from this daemon.
 
 ## Constraints
 
@@ -122,4 +190,37 @@ full decision tree.
   cadence; the resulting detection-latency gap is recorded above as a
   known, accepted limitation rather than solved.
 - **A lock file for concurrent-run prevention** — rejected as unneeded
-  ceremony at a one-poll-per-day cadence (see above).
+  ceremony at a one-poll-per-day cadence (see above). Still true once the
+  webhook is the primary trigger: Alertmanager's own `group_wait`/
+  `group_interval` (30s/5m) already coalesce a burst of alerts into one
+  webhook call, and the daily poll only overlaps the webhook path at most
+  once a day.
+- **Short-interval polling, or a persistent monitoring loop, as the
+  detection mechanism instead of Alertmanager** — rejected; see
+  `modules/monitoring/design.md`'s equivalent rejection. A webhook only
+  fires on an actual state transition, unlike a poll loop that has to
+  guess an interval short enough to matter yet cheap enough to run
+  constantly.
+- **An Alertmanager receiver with a real notification channel** (Slack,
+  email, ...) — rejected; the whole point of scoping down the "no
+  Alertmanager" non-goal was the firing-webhook use case only, not
+  reopening the "no notification channel" non-goal above.
+- **Giving `propose-fix.sh` write access without a changed-file
+  allow-list, relying on the prompt alone to keep it scoped** — rejected;
+  a prompt instruction is not enforcement, see Why This Structure.
+- **Auto-merging a passing `propose-fix-pr`** — rejected; CI passing is
+  necessary but not sufficient for a change an LLM drafted unsupervised.
+  Human review stays mandatory, same bar as every other PR in this repo.
+
+## Constraints (propose-fix-pr)
+
+- **Not yet verified against a real firing alert.** `opencode run --auto`
+  succeeding, actually drafting a scoped fix, and `fj pr create` opening a
+  draft PR end-to-end has been checked for syntax/allow-list logic only,
+  not exercised live — creating a real branch/PR on the production
+  Forgejo instance was deliberately not done as part of this
+  implementation pass (see the task's own prohibition on touching
+  production). Same "unverified as of this writing" caveat pattern as the
+  thinking-model-JSON-output note above.
+- **`fixAllowList` and `fixRepoUrl`/`fixRepo` are empty by default** — the
+  action is inert until a host sets them explicitly.

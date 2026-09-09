@@ -54,6 +54,14 @@
   services.tokenUsage.enable = true;
   services.tokenUsage.remoteHost = "mac-mini-m4-pro.internal";
 
+  # log-only (the default) - decisions get logged and reviewable on the
+  # Self-Healing Grafana dashboard, nothing executes yet. propose-fix-pr
+  # stays inert too (fixAllowList/fixRepoUrl/fixRepo left at their empty
+  # defaults) - deliberately not turned on here; granting an LLM the
+  # ability to open PRs against this repo is a separate decision for a
+  # human to make explicitly, not a side effect of enabling detection.
+  services.selfHealing.enable = true;
+
   # Enable macOS Remote Login (SSH on port 22)
   system.activationScripts.postActivation.text = ''
     if ! systemsetup -getremotelogin | grep -q "On"; then

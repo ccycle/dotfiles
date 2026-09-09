@@ -35,6 +35,48 @@
       ]
     },
     {
+      "id": 4,
+      "type": "stat",
+      "title": "Heartbeat (last completed run)",
+      "description": "self_healing_last_run_timestamp_seconds, written on every run (poll- or webhook-triggered). Stale here means the daemon itself stopped running, not that nothing fired - see SelfHealingHeartbeatMissing in prometheus-rules.yml.",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 5, "w": 12, "x": 0, "y": 19 },
+      "fieldConfig": { "defaults": { "unit": "dateTimeFromNow" }, "overrides": [] },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "self_healing_last_run_timestamp_seconds * 1000",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "Heartbeat missing",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 5, "w": 12, "x": 12, "y": 19 },
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "red", "value": 1 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "ALERTS{alertname=\"SelfHealingHeartbeatMissing\"}",
+          "instant": true
+        }
+      ]
+    },
+    {
       "id": 3,
       "type": "logs",
       "title": "Self-healing decisions (newest first)",
