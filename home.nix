@@ -1,8 +1,15 @@
-{ ... }:
+{ username, homeDirectory, ... }:
 
 {
   imports = [
-    ./bootstrap/modules/home.nix
     ./modules/home.nix
   ];
+
+  home.username = username;
+  home.homeDirectory = homeDirectory;
+
+  home.stateVersion = "25.05";
+
+  programs.home-manager.enable = true;
+  xdg.enable = true;
 }

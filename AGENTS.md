@@ -166,7 +166,7 @@ from measurement, never from memory or speculation.
 
 ## Legacy Guidelines
 
-- Bootstrap configuration: rationale and maintenance guidelines are documented as comments in `bootstrap/flake.nix`.
+- Bootstrap profile: config-only base (shared module set, no host profile, all host-toggled services off). Use for settings-only switches that must not trigger service/package builds.
 
 ## Profile Build Attribute Paths
 
@@ -174,12 +174,12 @@ Each profile has a different `nix build` attribute path due to how they are defi
 
 | Profile         | Attribute Path                                                           |
 | --------------- | ------------------------------------------------------------------------ |
-| bootstrap       | `./bootstrap#darwinConfigurations.bootstrap.aarch64-darwin.system`       |
+| bootstrap       | `.#darwinConfigurations.bootstrap.aarch64-darwin.system`                 |
 | private         | `.#darwinConfigurations.private.aarch64-darwin.system`                   |
 | mac-mini-m4     | `.#darwinConfigurations.mac-mini-m4.system` (no architecture suffix)     |
 | mac-mini-m4-pro | `.#darwinConfigurations.mac-mini-m4-pro.system` (no architecture suffix) |
 
-**Why the difference:** `private` is wrapped with `forDarwinSystems`, so the key includes the architecture name. `mac-mini-m4` and `mac-mini-m4-pro` call `darwinSystem` directly, so there is no architecture suffix. See `flake.nix` for details.
+**Why the difference:** `bootstrap` and `private` are wrapped with `forDarwinSystems`, so the key includes the architecture name. `mac-mini-m4` and `mac-mini-m4-pro` call `darwinSystem` directly, so there is no architecture suffix. See `flake.nix` for details.
 
 ## Summary Checklist
 

@@ -30,7 +30,6 @@ show_usage() {
   echo "Usage: $(basename -- "$0") <profile>"
   echo ""
   echo "Profiles:"
-  echo "  bootstrap        Run bootstrap flake (provisions sops-nix secrets on fresh install)"
   if [ -n "${display_profiles}" ]; then
     echo "${display_profiles}" | while IFS= read -r p; do
       printf "  %-18s Run main flake configuration\n" "${p}"
@@ -45,24 +44,18 @@ fi
 
 profile="$1"
 
-if [ "${profile}" = "bootstrap" ]; then
-  flake_root="${repo_root}/bootstrap"
-  app="default"
-  config="bootstrap.${arch}"
-else
-  flake_root="${repo_root}"
-  app="darwin-rebuild"
+flake_root="${repo_root}"
+app="darwin-rebuild"
 
-  if echo "${all_configs}" | grep -qx "${profile}"; then
-    config="${profile}"
-  elif echo "${all_configs}" | grep -qx "${profile}\.${arch}"; then
-    config="${profile}.${arch}"
-  else
-    echo "Unknown profile: ${profile}" >&2
-    echo "" >&2
-    show_usage >&2
-    exit 1
-  fi
+if echo "${all_configs}" | grep -qx "${profile}"; then
+  config="${profile}"
+elif echo "${all_configs}" | grep -qx "${profile}\.${arch}"; then
+  config="${profile}.${arch}"
+else
+  echo "Unknown profile: ${profile}" >&2
+  echo "" >&2
+  show_usage >&2
+  exit 1
 fi
 
 overrides=""

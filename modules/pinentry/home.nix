@@ -3,8 +3,8 @@
   lib,
   # Only set when this home-manager config is built through nix-darwin's
   # integration (home-manager.users.<user> inside a darwinConfiguration —
-  # see bootstrap/modules/home-manager/darwin.nix), which is how all of
-  # private/mac-mini-m4/mac-mini-m4-pro are actually deployed (darwin-rebuild).
+  # see the home-manager wiring in darwin.nix), which is how all of
+  # bootstrap/private/mac-mini-m4/mac-mini-m4-pro are actually deployed (darwin-rebuild).
   # The standalone `homeConfigurations.private` flake output (plain
   # `home-manager switch`, e.g. on Linux) never provides it.
   darwinConfig ? { },

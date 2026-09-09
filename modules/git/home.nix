@@ -12,6 +12,21 @@
   };
 
   config = {
+    programs.git = {
+      enable = true;
+      ignores = [
+        "*~"
+        "*.swp"
+        ".DS_Store"
+        "worktree-*"
+        "*.log"
+        "*.local"
+        "result-*"
+        "result"
+        ".my-local-workspace/"
+      ];
+    };
+
     xdg.configFile."git/config" = lib.mkForce {
       source = config.lib.file.mkOutOfStoreSymlink config.custom.git.configSource;
     };
@@ -21,6 +36,7 @@
       config.lib.file.mkOutOfStoreSymlink "${config.custom.dotfiles.dir}/modules/git/ghq/gitconfig";
 
     home.packages = [
+      pkgs.git-lfs
       pkgs.git-credential-oauth
     ];
   };
@@ -30,5 +46,6 @@
     ./github/home.nix
     ./gitlab/home.nix
     ./gwq/home.nix
+    ./user/home.nix
   ];
 }

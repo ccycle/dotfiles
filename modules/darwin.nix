@@ -11,6 +11,7 @@
     ./docker/darwin.nix
     ./forgejo/darwin.nix
     ./ghostty/darwin.nix
+    ./git/darwin.nix
     ./gitlab/darwin.nix
     ./immich/darwin.nix
     ./llm-server/darwin.nix
@@ -26,10 +27,12 @@
     ./opencloud/darwin.nix
     ./pinentry/darwin.nix
     ./pocket-id/darwin.nix
+    ./sops/darwin.nix
     ./ssh/darwin.nix
     ./static-reports/darwin.nix
     ./storage/darwin.nix
     ./stylix/darwin.nix
+    ./system/darwin.nix
     ./tailscale/darwin.nix
     ./tart/darwin.nix
     ./token-usage/darwin.nix

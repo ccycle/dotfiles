@@ -31,7 +31,7 @@
   # Rules are evaluated in order; the first match wins (sops semantics).
   rules = [
     {
-      path_regex = "bootstrap/modules/.*secrets.yaml$";
+      path_regex = "modules/git/.*secrets.yaml$";
       hosts = [
         "private"
         "mac-mini-m4"

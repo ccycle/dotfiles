@@ -1,5 +1,5 @@
 creation_rules:
-  - path_regex: bootstrap/modules/.*secrets.yaml$
+  - path_regex: modules/git/.*secrets.yaml$
     key_groups:
       - age:
           - age16fu8k22snemzhljtrg7puedvypww5pv9uauutv4ckuns783fd9ds5perdr

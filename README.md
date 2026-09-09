@@ -7,7 +7,7 @@ Declarative macOS system and home configuration using Nix flakes, nix-darwin, an
 1. Install Nix:
 
    ```sh
-   sh bootstrap/install-nix.sh
+   sh scripts/install-nix.sh
    ```
 
 2. If the first build fails around CA certificates, symlink the bundled cert as a one-time workaround:
@@ -24,13 +24,13 @@ Declarative macOS system and home configuration using Nix flakes, nix-darwin, an
    rbw get "<age key item name>" > ~/.config/sops/age/keys.txt
    ```
 
-4. Run the bootstrap flake to provision credentials for private flake inputs (see the comment block at the top of [`bootstrap/flake.nix`](./bootstrap/flake.nix) for why this step exists):
+4. Switch to the `bootstrap` profile (config-only base: shared settings, no host services). This provisions credentials without triggering service/package builds:
 
    ```sh
-   nix run ./bootstrap -- switch --flake ./bootstrap
+   ./scripts/darwin-rebuild.sh bootstrap
    ```
 
-5. Switch to the main flake:
+5. Switch to the full configuration for this host:
 
    ```sh
    just darwin-rebuild

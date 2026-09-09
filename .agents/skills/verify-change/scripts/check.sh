@@ -104,37 +104,29 @@ function build_dry_run() {
   fi
 
   local override_args=()
-  if [ "${flake_path}" != "./bootstrap" ]; then
-    # Host-agnostic configs and the current host's config use the real
-    # machine-local storage; foreign hosts use a placeholder so their volume
-    # assertions cannot fail from missing machine state.
-    local storage_override=""
-    local host
-    host="$(get_config_host "$flake_path" "$config")"
-    if [ -n "${host}" ] && [ "${host}" != "null" ] && [ "${host}" != "${LOCAL_HOST}" ]; then
-      echo "  (host '${host}' != current '${LOCAL_HOST}': using placeholder storage config)"
-      storage_override="$(get_placeholder_storage)"
-    elif [ -d "${REPO_ROOT}/.local/storage" ]; then
-      storage_override="${REPO_ROOT}/.local/storage"
-    fi
-    if [ -n "${storage_override}" ]; then
-      override_args+=(--override-input storage-config "path:${storage_override}")
-    fi
-    if [ -d "${REPO_ROOT}/.local/dotfiles" ]; then
-      override_args+=(--override-input dotfiles-config "path:${REPO_ROOT}/.local/dotfiles")
-    fi
-    if [ -d "${REPO_ROOT}/.local/obsidian-vault" ]; then
-      override_args+=(--override-input obsidian-vault-config "path:${REPO_ROOT}/.local/obsidian-vault")
-    fi
-    if [ -d "${REPO_ROOT}/.local/user" ]; then
-      override_args+=(--override-input user-config "path:${REPO_ROOT}/.local/user")
-    fi
-  else
-    # bootstrap's own self-contained user-config default already covers a
-    # real interactive run ($USER/$SUDO_USER); only a CI/dry-run needs the
-    # id -un based override (see bootstrap/scripts/ensure-user.sh).
-    "${flake_path}/scripts/ensure-user.sh"
-    override_args+=(--override-input user-config "path:${flake_path}/.local/user")
+  # Host-agnostic configs and the current host's config use the real
+  # machine-local storage; foreign hosts use a placeholder so their volume
+  # assertions cannot fail from missing machine state.
+  local storage_override=""
+  local host
+  host="$(get_config_host "$flake_path" "$config")"
+  if [ -n "${host}" ] && [ "${host}" != "null" ] && [ "${host}" != "${LOCAL_HOST}" ]; then
+    echo "  (host '${host}' != current '${LOCAL_HOST}': using placeholder storage config)"
+    storage_override="$(get_placeholder_storage)"
+  elif [ -d "${REPO_ROOT}/.local/storage" ]; then
+    storage_override="${REPO_ROOT}/.local/storage"
+  fi
+  if [ -n "${storage_override}" ]; then
+    override_args+=(--override-input storage-config "path:${storage_override}")
+  fi
+  if [ -d "${REPO_ROOT}/.local/dotfiles" ]; then
+    override_args+=(--override-input dotfiles-config "path:${REPO_ROOT}/.local/dotfiles")
+  fi
+  if [ -d "${REPO_ROOT}/.local/obsidian-vault" ]; then
+    override_args+=(--override-input obsidian-vault-config "path:${REPO_ROOT}/.local/obsidian-vault")
+  fi
+  if [ -d "${REPO_ROOT}/.local/user" ]; then
+    override_args+=(--override-input user-config "path:${REPO_ROOT}/.local/user")
   fi
 
   local target="${flake_path}#darwinConfigurations.${config}.system"
@@ -182,7 +174,7 @@ echo ""
 # 2.5. Sops recipient check against the age key ledger
 check_recipients
 
-# 3. Build dry-run every compatible profile from the root and bootstrap flakes
+# 3. Build dry-run every compatible profile from the root flake
 echo "=== 📋 Discovering profiles in root flake ==="
 ROOT_CONFIGS=$(list_configs ".")
 echo "Found: $ROOT_CONFIGS"
@@ -190,15 +182,5 @@ for config in $ROOT_CONFIGS; do
   build_dry_run "." "$config"
   echo ""
 done
-
-if [ -d "./bootstrap" ]; then
-  echo "=== 📋 Discovering profiles in bootstrap flake ==="
-  BOOTSTRAP_CONFIGS=$(list_configs "./bootstrap")
-  echo "Found: $BOOTSTRAP_CONFIGS"
-  for config in $BOOTSTRAP_CONFIGS; do
-    build_dry_run "./bootstrap" "$config"
-    echo ""
-  done
-fi
 
 echo "🎉 All checks passed! You are safe to commit."

@@ -5,7 +5,6 @@
   # Module trees to validate, relative to the repo root.
   roots = [
     "modules"
-    "bootstrap/modules"
   ];
 
   # Aggregation file names. A directory is a feature module iff it

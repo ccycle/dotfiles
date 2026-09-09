@@ -1,13 +1,15 @@
 {
   # Main system configuration flake.
   #
-  # NOTE: If this is a fresh installation and you have private flake inputs,
-  # you MUST run the bootstrap flake first to provision access tokens.
+  # NOTE: If this is a fresh installation, switch to the `bootstrap`
+  # profile first to provision access tokens and base settings without
+  # triggering service/package builds:
   #
-  # See `bootstrap/flake.nix` for details.
+  #   ./scripts/darwin-rebuild.sh bootstrap
+  #
+  # Then switch to the full configuration for the host.
   inputs = {
     attic.url = "github:zhaofengli/attic";
-    bootstrap.url = "path:./bootstrap";
     brew-nix.url = "github:BatteredBunny/brew-nix";
     nix-claude-code.url = "github:ryoppippi/nix-claude-code";
     devx.url = "github:input-output-hk/devx";
@@ -29,10 +31,12 @@
     gwq.flake = false;
     herdr.url = "github:ogulcancelik/herdr";
     herdr.inputs.nixpkgs.follows = "nixpkgs";
-    home-manager.follows = "bootstrap/home-manager";
+    home-manager.inputs.nixpkgs.follows = "nixpkgs";
+    home-manager.url = "github:nix-community/home-manager/release-26.05";
     hunk.url = "github:modem-dev/hunk";
     hunk.inputs.nixpkgs.follows = "nixpkgs";
-    nix-darwin.follows = "bootstrap/nix-darwin";
+    nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
+    nix-darwin.url = "github:nix-darwin/nix-darwin/nix-darwin-26.05";
     nixpkgs-2211.url = "github:nixos/nixpkgs/22.11";
     nixpkgs-2305.url = "github:nixos/nixpkgs/23.05";
     nixpkgs-2311.url = "github:nixos/nixpkgs/23.11";
@@ -194,6 +198,19 @@
                 inputs.nixpkgs.legacyPackages.${system}.nix-update
               ];
             };
+            secrets = inputs.nixpkgs.legacyPackages.${system}.mkShell {
+              packages = with inputs.nixpkgs.legacyPackages.${system}; [
+                rbw
+                pinentry_mac
+              ];
+              shellHook = ''
+                # Configure pinentry if not set
+                if ! rbw config show | grep -q "pinentry"; then
+                  rbw config set pinentry "${inputs.nixpkgs.legacyPackages.${system}.pinentry_mac}/bin/pinentry-mac"
+                fi
+                echo "Bitwarden shell ready. Run 'rbw login' to authenticate."
+              '';
+            };
             e2e = inputs.nixpkgs.legacyPackages.${system}.mkShell {
               packages = [
                 inputs.nixpkgs.legacyPackages.${system}.nodejs
@@ -225,18 +242,25 @@
                 ./darwin.nix
               ];
             };
-          darwinModules.bootstrap =
-            { ... }:
-            {
-              imports = [
-                ./bootstrap/modules/darwin.nix
-              ];
-            };
           # `private` uses forDarwinSystems, so the attr path includes the arch
           # (e.g. .private.aarch64-darwin.system).
           # `mac-mini-m4` / `mac-mini-m4-pro` call darwinSystem directly,
           # so there is no arch suffix (e.g. .mac-mini-m4.system).
           darwinConfigurations = {
+            # Config-only base: the shared module set (./darwin.nix) with no
+            # host profile, so every host-toggled service stays at its
+            # default (off). Use for settings-only switches that must not
+            # trigger service/package builds:
+            #   darwin-rebuild switch --flake .#bootstrap
+            bootstrap = forDarwinSystems (
+              system:
+              inputs.nix-darwin.lib.darwinSystem {
+                modules = [
+                  ./darwin.nix
+                ];
+                specialArgs = mkSpecialArgs system;
+              }
+            );
             private = forDarwinSystems (
               system:
               inputs.nix-darwin.lib.darwinSystem {

@@ -10,8 +10,8 @@
 
 {
   imports = [
-    ./bootstrap/modules/darwin.nix
     ./modules/darwin.nix
+    inputs.home-manager.darwinModules.home-manager
     inputs.storage-config.darwinModules.default
     inputs.dotfiles-config.darwinModules.default
   ];
@@ -42,6 +42,9 @@
       };
 
       # Home Manager configuration
+      home-manager.useGlobalPkgs = true;
+      home-manager.useUserPackages = true;
+      home-manager.backupFileExtension = "backup";
       home-manager.extraSpecialArgs = inputs.self.extraSpecialArgs.${pkgs.stdenv.hostPlatform.system} // {
         dotfilesDir = config.custom.dotfiles.dir;
       };
