@@ -115,3 +115,32 @@ loki.write "default" {
     url = "http://loki:3100/loki/api/v1/push"
   }
 }
+
+// OTLP trace receiver, forwarding straight to Tempo. Alloy stays the one
+// collector entry point for both logs and traces, same role it already
+// plays for logs above. No instrumented service sends traces yet — this
+// is the receiving end only, so it can be confirmed working (e.g. with a
+// manually-sent test span) before any app is wired to it. Caddy is the
+// intended first trace source, but its OTel support is unverified as of
+// this writing (see design.md), so it isn't configured here.
+otelcol.receiver.otlp "default" {
+  grpc {
+    endpoint = "0.0.0.0:4317"
+  }
+  http {
+    endpoint = "0.0.0.0:4318"
+  }
+
+  output {
+    traces = [otelcol.exporter.otlp.tempo.input]
+  }
+}
+
+otelcol.exporter.otlp "tempo" {
+  client {
+    endpoint = "tempo:4317"
+    tls {
+      insecure = true
+    }
+  }
+}

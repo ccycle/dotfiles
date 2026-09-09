@@ -96,6 +96,22 @@ services:
       - "/etc/alloy/config.alloy"
     depends_on:
       - loki
+      - tempo
+    restart: always
+
+  tempo:
+    # Pinned, not :latest like the rest of this stack: Tempo 3.x replaced
+    # the classic single-binary ingester+compactor local-storage
+    # architecture with a Kafka-based ingest pipeline (block-builder +
+    # live-store) by default, which this "just get a receiving end
+    # working" scope has no need for. 2.7.1 is the last 2.x release and
+    # still speaks the config below.
+    image: grafana/tempo:2.7.1
+    command:
+      - "-config.file=/etc/tempo/tempo.yml"
+    volumes:
+      - ${MONITORING_DATA_DIR:-/var/lib/monitoring}/tempo:/var/tempo
+      - ${TEMPO_CONFIG}:/etc/tempo/tempo.yml:ro
     restart: always
 
   cadvisor:

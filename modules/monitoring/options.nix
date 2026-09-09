@@ -57,6 +57,7 @@ let
   prometheusRules = ./prometheus-rules.yml;
   lokiConfig = ./loki-config.yml;
   alloyConfig = ./alloy-config.alloy;
+  tempoConfig = ./tempo.yml;
   grafanaProvisioningDir = ./grafana/provisioning;
   grafanaDashboardsDir = ./grafana/dashboards;
 in
@@ -291,6 +292,7 @@ in
         export PROMETHEUS_RULES="${prometheusRules}"
         export LOKI_CONFIG="${lokiConfig}"
         export ALLOY_CONFIG="${alloyConfig}"
+        export TEMPO_CONFIG="${tempoConfig}"
         export GRAFANA_PROVISIONING_DIR="${grafanaProvisioningDir}"
         export GRAFANA_DASHBOARDS_DIR="${grafanaDashboardsDir}"
         export GRAFANA_ROOT_URL="https://grafana.${config.networking.hostName}.internal"
@@ -298,7 +300,8 @@ in
         export HOSTNAME="${config.networking.hostName}"
 
         mkdir -p "$MONITORING_DATA_DIR/prometheus" \
-                 "$MONITORING_DATA_DIR/loki"
+                 "$MONITORING_DATA_DIR/loki" \
+                 "$MONITORING_DATA_DIR/tempo"
         chmod -R 777 "$MONITORING_DATA_DIR"
 
         # --abort-on-container-exit: see modules/forgejo/options.nix for why

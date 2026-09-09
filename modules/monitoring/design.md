@@ -127,6 +127,20 @@ for agent-driven investigation.
   `/var/lib/static-reports` is accumulating) becomes answerable, which
   container-level cAdvisor metrics cannot show.
 
+- **Tempo runs inside this same compose stack**, not a separate stack, and
+  Alloy is the one OTLP ingestion point for traces (`otelcol.receiver.otlp`
+  forwarding to `otelcol.exporter.otlp` → Tempo), mirroring the role Alloy
+  already plays for logs. This keeps "one collector, one place" true for
+  both signals and reuses the existing launchd/compose lifecycle rather than
+  standing up a second stack with its own startup ordering. Scope is
+  intentionally narrow for now: only the receiving pipeline exists (Alloy →
+  Tempo → Grafana datasource), confirmed working with a manually-sent test
+  span. No service sends real traces yet. Caddy is the intended first trace
+  source, but whether the Caddy build in use has usable OTel tracing support
+  is unverified as of this writing (same caution as the Caddy metrics-module
+  constraint below) — wiring it in is a deliberate later decision, not an
+  oversight.
+
 ## Rejected Alternatives
 
 - **Shared docker network between stacks** for scraping — rejected to keep
@@ -140,6 +154,17 @@ for agent-driven investigation.
 - **Loki ruler for log-based alerts** — rejected while there is no
   notification channel; Prometheus alert rules cover the triage-entry-point
   need.
+- **Tempo as a separate compose stack** — rejected for the same reason as
+  the rejected shared-docker-network idea above: it would introduce a
+  second independently-lifecycled stack for no benefit, when Alloy already
+  gives this stack a single ingestion point pattern traces can reuse.
+- **Full OpenTelemetry migration** (metrics/logs also going through OTLP,
+  replacing Prometheus's pull scraping and the existing Loki log pipeline)
+  — rejected; this round is traces only, additive to the existing
+  Prometheus/Loki setup, not a replacement.
+- **Instrumenting Caddy itself in this round** — rejected until the
+  receiving pipeline (Alloy OTLP receiver → Tempo) is confirmed working;
+  see the Tempo bullet above.
 - **Selective masking of known-sensitive query parameters** (e.g. redacting
   only `code`/`state`) instead of dropping the Caddy access-log query string
   outright — rejected because it requires a denylist kept in sync with every
