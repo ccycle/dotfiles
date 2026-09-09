@@ -33,6 +33,7 @@
     ./stylix/darwin.nix
     ./tailscale/darwin.nix
     ./tart/darwin.nix
+    ./token-usage/darwin.nix
     ./zsh/darwin.nix
   ];
 }

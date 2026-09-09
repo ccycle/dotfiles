@@ -1,0 +1,75 @@
+{
+  "title": "Token Usage & Cost",
+  "uid": "token-usage",
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": true,
+  "time": { "from": "now-30d", "to": "now" },
+  "refresh": "1h",
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Approximate spend, last 30d (by tool)",
+      "description": "Sum of per-chat token_usage_cost_usd. approx=\"true\" series (opencode Zen free-tier - real cost is $0) are included here as a rough market-equivalent estimate; see modules/token-usage/design.md.",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 5, "w": 12, "x": 0, "y": 0 },
+      "fieldConfig": { "defaults": { "unit": "currencyUSD" }, "overrides": [] },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (tool) (token_usage_cost_usd)",
+          "legendFormat": "{{tool}}",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Real spend only (approx=\"false\"), last 30d",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 5, "w": 12, "x": 12, "y": 0 },
+      "fieldConfig": { "defaults": { "unit": "currencyUSD" }, "overrides": [] },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (tool) (token_usage_cost_usd{approx=\"false\"})",
+          "legendFormat": "{{tool}}",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "bargauge",
+      "title": "Cost by model, last 30d",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 9, "w": 24, "x": 0, "y": 5 },
+      "fieldConfig": { "defaults": { "unit": "currencyUSD" }, "overrides": [] },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (model, approx) (token_usage_cost_usd)",
+          "legendFormat": "{{model}} (approx={{approx}})",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "table",
+      "title": "Top chats by cost, last 30d",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 14 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "topk(20, token_usage_cost_usd)",
+          "format": "table",
+          "instant": true
+        }
+      ]
+    }
+  ]
+}

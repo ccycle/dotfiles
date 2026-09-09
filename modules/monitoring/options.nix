@@ -197,6 +197,10 @@ in
       };
       script = ''
         mkdir -p ${nodeExporterTextfileDir}
+        # World-writable (same trust model as $MONITORING_DATA_DIR below):
+        # modules/token-usage pushes its .prom file in here over SSH as the
+        # regular user, not root, on a single-user trusted home server.
+        chmod 777 ${nodeExporterTextfileDir}
         exec ${pkgs.prometheus-node-exporter}/bin/node_exporter \
           --web.listen-address=127.0.0.1:9100 \
           --collector.textfile.directory=${nodeExporterTextfileDir}

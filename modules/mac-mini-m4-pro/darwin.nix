@@ -47,6 +47,13 @@
   services.atticd.enable = true;
   services.staticReports.enable = true;
 
+  # This host is both where Claude Code / opencode sessions actually run
+  # (via Herdr worktrees over SSH) and where its own monitoring stack
+  # lives, so the daily push target is this host's own tailnet name -
+  # see modules/token-usage/design.md.
+  services.tokenUsage.enable = true;
+  services.tokenUsage.remoteHost = "mac-mini-m4-pro.internal";
+
   # Enable macOS Remote Login (SSH on port 22)
   system.activationScripts.postActivation.text = ''
     if ! systemsetup -getremotelogin | grep -q "On"; then
