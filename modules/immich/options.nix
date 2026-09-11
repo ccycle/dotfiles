@@ -146,9 +146,12 @@ in
         chmod 700 "$IMMICH_OIDC_CONFIG_DIR"
         chmod 400 "$IMMICH_OIDC_CONFIG_HOST_PATH" "$IMMICH_OIDC_CA_HOST_PATH"
 
+        # --abort-on-container-exit: see modules/forgejo/options.nix for why
+        # self-healing on crash must go through this launchd restart path
+        # rather than compose.yaml's `restart:` (removed there on purpose).
         exec ${pkgs.docker-compose}/bin/docker-compose \
           -f ${composeFile} \
-          up --no-build --force-recreate
+          up --no-build --force-recreate --abort-on-container-exit
       '';
     };
   };

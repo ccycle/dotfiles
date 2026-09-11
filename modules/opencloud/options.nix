@@ -224,9 +224,12 @@ in
 
         mkdir -p "$OPENCLOUD_DATA_DIR" "$OPENCLOUD_CONFIG_DIR" "$OPENCLOUD_USER_FILES_DIR"
 
+        # --abort-on-container-exit: see modules/forgejo/options.nix for why
+        # self-healing on crash must go through this launchd restart path
+        # rather than compose.yaml's `restart:` (removed there on purpose).
         exec ${pkgs.docker-compose}/bin/docker-compose \
           -f ${composeFile} \
-          up --no-build --force-recreate
+          up --no-build --force-recreate --abort-on-container-exit
       '';
     };
   };

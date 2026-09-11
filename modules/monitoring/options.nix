@@ -226,9 +226,17 @@ in
                  "$MONITORING_DATA_DIR/loki"
         chmod -R 777 "$MONITORING_DATA_DIR"
 
+        # --abort-on-container-exit: see modules/forgejo/options.nix for why
+        # self-healing on crash must go through this launchd restart path
+        # rather than compose.yaml's `restart:` (removed there for
+        # prometheus/loki on purpose; grafana/alloy/cadvisor keep theirs
+        # since they don't touch the external volume and aren't part of
+        # the race, but a crash in any of them now restarts the whole
+        # stack too -- an acceptable trade for a single, uniform recovery
+        # path).
         exec ${pkgs.docker-compose}/bin/docker-compose \
           -f ${composeFile} \
-          up --no-build --force-recreate
+          up --no-build --force-recreate --abort-on-container-exit
       '';
     };
   };

@@ -253,9 +253,18 @@ in
 
           mkdir -p "$FORGEJO_DATA_DIR"
 
+          # --abort-on-container-exit: compose.yaml intentionally has no
+          # `restart:` on this container (see its comment) so Docker itself
+          # never restarts it at daemon-startup, racing macOS's external-
+          # disk remount ahead of the waitForMount check above. That means
+          # self-healing after a genuine crash has to come from here
+          # instead: when any container in the stack exits, this exits too,
+          # and launchd's KeepAlive restarts the whole script -- redoing
+          # waitForMount and the CA-cert copy above before compose comes
+          # back up.
           exec ${pkgs.docker-compose}/bin/docker-compose \
             -f ${composeFile} \
-            up --no-build --force-recreate
+            up --no-build --force-recreate --abort-on-container-exit
         '';
       };
 
