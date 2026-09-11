@@ -35,7 +35,10 @@ services:
       - database
     extra_hosts:
       - "${IMMICH_HOST_DOMAIN}:host-gateway"
-    restart: always
+    # No restart policy: see modules/forgejo/compose.yaml for why services
+    # bind-mounting the external volume (${IMMICH_UPLOAD_DIR} here) must
+    # restart only through launchd's waitForMount-gated immich-compose
+    # daemon, not Docker's own restart-on-daemon-startup.
 
   immich-machine-learning:
     image: ghcr.io/immich-app/immich-machine-learning:${IMMICH_VERSION:-release}
@@ -55,7 +58,10 @@ services:
       POSTGRES_DB: immich
     volumes:
       - ${IMMICH_DB_DIR}:/var/lib/postgresql/data
-    restart: always
+    # No restart policy: see modules/forgejo/compose.yaml for why services
+    # bind-mounting the external volume (${IMMICH_DB_DIR} here) must
+    # restart only through launchd's waitForMount-gated immich-compose
+    # daemon, not Docker's own restart-on-daemon-startup.
 
   # Neither bundled image ships a Prometheus exporter (unlike GitLab
   # Omnibus), so availability is instrumented the same way GitLab's is:

@@ -24,4 +24,7 @@ services:
       timeout: 5s
       retries: 3
       start_period: 30s
-    restart: always
+    # No restart policy: see modules/forgejo/compose.yaml for why services
+    # bind-mounting the external volume must restart only through
+    # launchd's waitForMount-gated navidrome-compose daemon, not Docker's
+    # own restart-on-daemon-startup.

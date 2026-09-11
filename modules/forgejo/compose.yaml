@@ -78,7 +78,14 @@ services:
       timeout: 5s
       retries: 3
       start_period: 60s
-    restart: always
+    # No restart policy: this container binds the external volume at
+    # ${FORGEJO_DATA_DIR}. `restart: always` would let Docker recreate it
+    # the moment the daemon comes up, racing macOS's disk remount and
+    # bypassing launchd's waitForMount guard in options.nix -- the exact
+    # sequence that stranded the external disk under a "... 1" mountpoint
+    # name once already. launchd's KeepAlive on the forgejo-compose daemon
+    # (which always runs waitForMount first) is what restarts this
+    # container instead.
 
 volumes:
   forgejo-gitea-data:

@@ -63,4 +63,7 @@ services:
       timeout: 10s
       retries: 5
       start_period: 60s
-    restart: always
+    # No restart policy: see modules/forgejo/compose.yaml for why services
+    # bind-mounting the external volume must restart only through
+    # launchd's waitForMount-gated opencloud-compose daemon, not Docker's
+    # own restart-on-daemon-startup.

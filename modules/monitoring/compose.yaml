@@ -21,7 +21,10 @@ services:
       timeout: 10s
       retries: 5
       start_period: 60s
-    restart: always
+    # No restart policy: see modules/forgejo/compose.yaml for why services
+    # bind-mounting the external volume (${MONITORING_DATA_DIR} here) must
+    # restart only through launchd's waitForMount-gated monitoring-compose
+    # daemon, not Docker's own restart-on-daemon-startup.
 
   grafana:
     image: grafana/grafana:latest
@@ -73,7 +76,10 @@ services:
       - ${LOKI_CONFIG}:/etc/loki/local-config.yaml:ro
     command:
       - "-config.file=/etc/loki/local-config.yaml"
-    restart: always
+    # No restart policy: see modules/forgejo/compose.yaml for why services
+    # bind-mounting the external volume (${MONITORING_DATA_DIR} here) must
+    # restart only through launchd's waitForMount-gated monitoring-compose
+    # daemon, not Docker's own restart-on-daemon-startup.
 
   alloy:
     image: grafana/alloy:latest
