@@ -22,6 +22,7 @@ in
 
     services.immich.uploadDir = mkDefault "${vol}/immich/upload";
     services.immich.dbDir = mkDefault "${vol}/immich/db";
+    services.immich.photoDir = mkDefault "${vol}/photo";
     services.immich.mountPoint = mkIf (hasPrefix "/Volumes/" vol) (mkDefault vol);
   };
 }

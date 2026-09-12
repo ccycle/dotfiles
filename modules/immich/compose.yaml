@@ -28,6 +28,7 @@ services:
       NODE_EXTRA_CA_CERTS: /run/immich/ca.crt
     volumes:
       - ${IMMICH_UPLOAD_DIR}:/usr/src/app/upload
+      - ${IMMICH_PHOTO_DIR}:/mnt/media/photo
       - ${IMMICH_OIDC_CONFIG_HOST_PATH}:/run/immich/oidc-config.yaml:ro
       - ${IMMICH_OIDC_CA_HOST_PATH}:/run/immich/ca.crt:ro
     depends_on:

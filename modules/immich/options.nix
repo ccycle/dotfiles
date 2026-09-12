@@ -22,6 +22,17 @@ in
       description = "Directory for Immich photo upload storage on the host.";
     };
 
+    photoDir = mkOption {
+      type = types.str;
+      default = "/var/lib/immich/photo";
+      description = ''
+        Directory for the photo master library on the host, mounted rw into
+        the container as an Immich external library import path (rw, not
+        ro, so XMP sidecar write-back works — see modules/immich/design.md).
+        Must never overlap with uploadDir.
+      '';
+    };
+
     dbDir = mkOption {
       type = types.str;
       default = "/var/lib/immich/db";
@@ -99,10 +110,11 @@ in
         export IMMICH_DB_PASSWORD=$(cat ${config.sops.secrets.immich_db_password.path})
         export IMMICH_UPLOAD_DIR="${cfg.uploadDir}"
         export IMMICH_DB_DIR="${cfg.dbDir}"
+        export IMMICH_PHOTO_DIR="${cfg.photoDir}"
         export IMMICH_SERVER_URL="https://immich.${config.networking.hostName}.internal"
         export IMMICH_HOST_DOMAIN="immich.${config.networking.hostName}.internal"
 
-        mkdir -p "$IMMICH_UPLOAD_DIR" "$IMMICH_DB_DIR"
+        mkdir -p "$IMMICH_UPLOAD_DIR" "$IMMICH_DB_DIR" "$IMMICH_PHOTO_DIR"
 
         # Immich has no env-var interface for OAuth (only IMMICH_CONFIG_FILE,
         # which loads a full system-config YAML/JSON). Regenerate that file
@@ -134,6 +146,12 @@ in
           clientSecret: "$(cat ${config.sops.secrets.immich_oidc_client_secret.path})"
           autoRegister: true
           storageLabelClaim: preferred_username
+        library:
+          scan:
+            enabled: true
+            cronExpression: "0 3 * * *"
+          watch:
+            enabled: true
         EOF
 
         # Caddy issues *.internal certs from its own local CA, which the
