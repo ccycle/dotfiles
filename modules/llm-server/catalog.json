@@ -54,12 +54,6 @@
       ],
       "extraFlags": ["--repeat-penalty", "1.15", "--repeat-last-n", "256", "--flash-attn", "on"]
     },
-    "mlx-community/Qwen3-Coder-30B-A3B-Instruct-4bit": {
-      "name": "Qwen3-Coder 30B-A3B (MLX)",
-      "contextLength": 262144,
-      "reasoningEffort": "medium",
-      "backend": "mlx"
-    },
     "mlx-community/Qwen3.6-35B-A3B-4bit": {
       "name": "Qwen3.6-35B-A3B (MLX)",
       "contextLength": 131072,
