@@ -9,9 +9,6 @@ visible to OpenCloud.
 
 ## Non-Goals
 
-- Real-time reflection of externally-added files. Files dropped into
-  the host data directory become visible after an OpenCloud restart
-  or a triggered rescan, not instantly.
 - Migrating existing data from the previous storage driver's on-disk
   layout. The two layouts are incompatible, and upstream provides no
   supported migration path between them; any pre-existing data must
@@ -20,15 +17,39 @@ visible to OpenCloud.
 
 ## Why This Structure
 
-User-file storage uses the posix storage driver in its
-non-collaborative sub-mode. Non-collaborative mode discovers
-external filesystem changes via OpenCloud's own scan/assimilation
-step rather than by watching the filesystem for events, so it works
-regardless of how reliably filesystem-change notifications propagate
-into the container.
+User-file storage uses the posix storage driver in its collaborative
+sub-mode (`STORAGE_USERS_POSIX_WATCH_FS=true`), so files placed
+directly into the host directory tree via SMB/Finder are picked up in
+real time through inotify, without waiting for a restart or a manual
+rescan. This was previously rejected in favor of non-collaborative
+mode (see "Fallback" below); it was revisited to make externally
+(SMB/Finder) added files visible without an explicit restart or
+rescan. Validate inotify delivery through the OrbStack bind mount
+before relying on this in production — see "Fallback" below for what
+to do if it doesn't hold up.
 
 System/metadata storage is intentionally left on the decomposed
 driver — only user-file storage was moved to the posix driver.
+
+### Fallback: non-collaborative mode
+
+If inotify events don't reliably propagate through the OrbStack
+bind-mount boundary (unresolved as of this writing — collaborative
+mode requires filesystem-change notifications to cross the
+host/container virtualization layer, which has a history of dropping
+events), revert to non-collaborative mode
+(`STORAGE_USERS_POSIX_WATCH_FS=false`, the previous configuration)
+and fall back to manual assimilation: trigger a rescan, or restart
+the container, after external writes. Do not silently keep
+non-collaborative mode while also relying on dual ingest paths (SMB
+writes and OpenCloud uploads) without documenting the resulting lag
+— that combination is exactly the failure mode collaborative mode
+exists to avoid.
+
+Collaborative mode has independent limitations that apply even with
+reliable notifications: no symlink support, no detection of files
+moved across spaces, and possible tree-size miscalculation under
+bulk edits.
 
 ### Host directory layout
 
@@ -41,10 +62,7 @@ is enforced by a dedicated Docker volume mount for the posix root.
 ${vol}/opencloud/
 ├── user-files/           # STORAGE_USERS_POSIX_ROOT
 │   └── alice/            # STORAGE_USERS_POSIX_PERSONAL_SPACE_PATH_TEMPLATE
-│       ├── Documents/    # UI tree matches disk tree
-│       │   └── report.pdf
-│       └── Photos/
-│           └── vacation.jpg
+│       └── Documents/    # UI tree matches disk tree
 └── data/                 # decomposed/metadata storage
     └── ...
 ```
@@ -65,20 +83,38 @@ limitation. Only personal spaces benefit from the template change.
 
 ## Rejected Alternatives
 
-- **Collaborative mode** (real-time filesystem watching): rejected
-  because this stack runs OpenCloud inside a container on top of a
-  bind-mounted host directory, and that virtualization layer has
-  known unreliable delivery of filesystem-change notifications across
-  the host/container boundary — a collaborative-mode deployment would
-  silently fail to detect some externally-made changes. Collaborative
-  mode also has independent limitations that would apply even with
-  reliable notifications: no symlink support, no detection of files
-  moved across spaces, and possible tree-size miscalculation under
-  bulk edits.
 - **Keeping the previous (decomposed) user-storage driver**: rejected
   because it stores files as opaque, ID-addressed blobs rather than a
   filesystem tree, so files placed directly into the host directory
   outside of OpenCloud would never be recognized.
+- **Distributing the shared music/photo masters (`${vol}/music`,
+  `${vol}/photo`) via OpenCloud share links**, bind-mounting them into
+  OpenCloud's posix tree: rejected after two failed approaches, in
+  favor of Navidrome and Immich each reading their respective
+  directory directly with no OpenCloud involvement (see
+  `modules/navidrome/design.md`, `modules/immich/design.md`).
+  Bind-mounting into a _personal_ space subdirectory (e.g.
+  `<username>/Music`) hit two real failures: Docker auto-creates the
+  mount destination at container start, and if that personal space
+  had never been logged into yet, the pre-existing (xattr-less)
+  directory makes reva's `GenerateSpaceID` permanently fail with
+  "encountered empty space id on disk" on every future login for that
+  user (confirmed against reva's source, reproduced in the isolated
+  e2e stack); separately, the target volume is case-insensitive APFS
+  and the production `ccycle` personal space already had a `music`
+  folder, colliding with a `Music` mount destination. Switching to a
+  dedicated _project_ space avoided both issues, but hit a third,
+  unrelated one: reva does not assimilate a newly bind-mounted
+  subdirectory of a project space by any means tried — not the
+  container's own automatic initial fs scan, not collaborative mode's
+  file watcher (writes under it log as "unhandled event" and are
+  never applied), and not even an explicit `opencloud posixfs scan`
+  targeted at the subdirectory or the whole tree (each left the
+  subdirectory without a single `user.oc.*` xattr, and direct
+  PROPFIND on its path 404s indefinitely) — confirmed empirically in
+  the isolated e2e stack across multiple fresh container recreations.
+  This is a structural limitation of project spaces specifically;
+  personal-space subdirectories do not have it.
 
 ## External OIDC (Pocket ID)
 
