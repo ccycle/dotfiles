@@ -4,7 +4,6 @@ let
   catalogs = [
     (builtins.fromJSON (builtins.readFile ../llm-server/catalog.json))
     (builtins.fromJSON (builtins.readFile ../mtplx/catalog.json))
-    (builtins.fromJSON (builtins.readFile ../mlx-server/catalog.json))
   ];
 
   providerFromCatalog = catalog: {

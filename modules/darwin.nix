@@ -14,7 +14,6 @@
     ./gitlab/darwin.nix
     ./immich/darwin.nix
     ./llm-server/darwin.nix
-    ./mlx-server/darwin.nix
     ./mosh/darwin.nix
     ./opencode-web/darwin.nix
     ./pi-web/darwin.nix

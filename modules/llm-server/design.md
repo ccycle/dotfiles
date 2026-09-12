@@ -3,7 +3,7 @@
 ## Purpose
 
 Declaratively manage local LLM hosting on mac-mini-m4-pro using
-llama-cpp and llama-swap, exposed to tailnet clients via Caddy.
+llama-cpp, mlx-lm, and llama-swap, exposed to tailnet clients via Caddy.
 
 ## Why llama-swap + llama-cpp
 
@@ -83,6 +83,26 @@ connection. HTTP is used by clients that don't trust the internal CA
 (notably opencode/Bun); HTTPS works for clients that do. Tailscale
 WireGuard encryption makes HTTP safe on the tailnet.
 
+## Why mlx-lm Is Also Managed by llama-swap
+
+A standalone `mlx-server` module previously ran `mlx_lm server` as its
+own always-on (`KeepAlive`) launchd agent on a separate port and Caddy
+vhost, permanently resident in memory with no way to unload the model.
+
+llama-swap's `cmd`/`ttl` mechanism is generic process lifecycle
+management, not specific to llama-server: it starts whatever command is
+configured for the requested `model` field and stops it after `ttl`
+seconds of inactivity. Folding mlx-lm's models into the same catalog as
+a second macro (`mlx_server`, keyed by `backend: "mlx"`) gets on-demand
+loading and idle unload for free, from infrastructure this module
+already has, instead of hand-rolling idle-shutdown logic for a second,
+separate service.
+
+mlx models have no `files`/download step: mlx_lm resolves and caches
+Hugging Face Hub repos itself on first load, so `modelEntries` treats
+`files` as optional and skips `downloadScript` for `backend: "mlx"`
+entries.
+
 ## Non-Goals
 
 - **No authentication.** Tailscale ACLs are the access boundary.
@@ -106,6 +126,9 @@ WireGuard encryption makes HTTP safe on the tailnet.
 
 - **LM Studio server** — GUI-managed state, no declarative context
   length. See `modules/lm-studio/design.md`.
+- **Standalone `mlx-server` module** — always-on (`KeepAlive`), no
+  idle-unload, and a separate port/vhost from every other local model.
+  Superseded by folding mlx-lm into this module's llama-swap catalog.
 - **Ollama** — imperative model registry (pull/create/Modelfile).
 - **vLLM** — overkill for single-user serving; no macOS Metal support.
 - **Nix-store GGUF downloads** — 50+ GB fixed-output derivations would
