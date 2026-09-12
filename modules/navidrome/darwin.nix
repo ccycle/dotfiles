@@ -21,7 +21,7 @@ in
     ];
 
     services.navidrome.dataDir = mkDefault "${vol}/navidrome/data";
-    services.navidrome.musicDir = mkDefault "${vol}/navidrome/music";
+    services.navidrome.musicDir = mkDefault "${vol}/music";
     services.navidrome.mountPoint = mkIf (hasPrefix "/Volumes/" vol) (mkDefault vol);
   };
 }
