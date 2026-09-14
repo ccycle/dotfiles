@@ -37,6 +37,85 @@ function check_recipients() {
   echo ""
 }
 
+# Verify every module's declared expected-bins.txt binaries actually exist in
+# a profile's built closure. Package attribute names don't always match their
+# binary name (e.g. `ripgrep` -> `rg`), so this checks concrete binary names
+# rather than trying to derive them from home.packages/environment.systemPackages.
+# home-manager packages (home.packages) and nix-darwin packages
+# (environment.systemPackages) land in different output paths -
+# config.home-manager.users.<user>.home.path/bin and <system>/sw/bin
+# respectively - confirmed empirically; both are checked.
+function check_expected_bins() {
+  local flake_path=$1
+  local config=$2
+  local target=$3
+  shift 3
+  local override_args=("$@")
+
+  # Scope manifest discovery to this flake's own module tree: bootstrap has
+  # a disjoint module tree (bootstrap/modules/) that never imports root
+  # modules/, so checking root manifests against a bootstrap build (or vice
+  # versa) would report false failures for modules that were never in scope.
+  local modules_root
+  if [ "$flake_path" = "." ]; then
+    modules_root="${REPO_ROOT}/modules"
+  else
+    modules_root="${REPO_ROOT}/${flake_path#./}/modules"
+  fi
+
+  local manifests
+  manifests=$(find "${modules_root}" -name "expected-bins.txt" -not -path "*/node_modules/*" -not -path "*/.git/*" 2>/dev/null | sort)
+  if [ -z "$manifests" ]; then
+    return 0
+  fi
+
+  echo "  --- 🔧 Checking expected binaries ---"
+  local bin_dirs=()
+
+  local system_out
+  system_out=$(nix build "$target" --impure --no-link --print-out-paths "${override_args[@]}" 2>/dev/null)
+  [ -n "$system_out" ] && bin_dirs+=("${system_out}/sw/bin")
+
+  local hm_users
+  hm_users=$(nix eval "${flake_path}#darwinConfigurations.${config}.config.home-manager.users" --impure --json --apply builtins.attrNames "${override_args[@]}" 2>/dev/null)
+  for user in $(echo "$hm_users" | jq -r '.[]' 2>/dev/null); do
+    local hm_out
+    hm_out=$(nix build "${flake_path}#darwinConfigurations.${config}.config.home-manager.users.${user}.home.path" --impure --no-link --print-out-paths "${override_args[@]}" 2>/dev/null)
+    [ -n "$hm_out" ] && bin_dirs+=("${hm_out}/bin")
+  done
+
+  if [ "${#bin_dirs[@]}" -eq 0 ]; then
+    echo "  ⚠️  Could not resolve any bin directories for ${config}; skipping."
+    return 0
+  fi
+
+  local failed=0
+  while IFS= read -r manifest; do
+    [ -z "$manifest" ] && continue
+    while IFS= read -r bin; do
+      bin="${bin%%#*}"
+      bin="$(echo "$bin" | xargs)"
+      [ -z "$bin" ] && continue
+      local found=0
+      for dir in "${bin_dirs[@]}"; do
+        if [ -e "${dir}/${bin}" ]; then
+          found=1
+          break
+        fi
+      done
+      if [ "$found" -eq 0 ]; then
+        echo "  ❌ missing expected binary '${bin}' (${manifest#"${REPO_ROOT}/"})"
+        failed=1
+      fi
+    done <"$manifest"
+  done <<<"$manifests"
+
+  if [ "$failed" -eq 0 ]; then
+    echo "  ✅ Expected binaries present."
+  fi
+  return $failed
+}
+
 # Flatten darwinConfigurations into fully-qualified config paths. Entries are
 # either direct darwinSystem results (mac-mini-m4) or per-architecture attrsets
 # (private.<arch>); resolving both here lets every downstream step use the
@@ -133,6 +212,8 @@ function build_dry_run() {
   echo "Target: $target"
   nix build "$target" --impure -L --dry-run "${override_args[@]}"
   echo "✅ $profile dry-run passed."
+
+  check_expected_bins "$flake_path" "$config" "$target" "${override_args[@]}"
 }
 
 # --- Main Execution ---

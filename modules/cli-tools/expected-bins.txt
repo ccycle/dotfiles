@@ -1,0 +1,7 @@
+# Binary names as they land in bin/, not the nixpkgs package attribute names -
+# those often differ (e.g. ripgrep -> rg, yq-go -> yq, p7zip -> 7z).
+rg
+yq
+7z
+jq
+htop

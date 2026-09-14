@@ -26,6 +26,7 @@ Profiles are discovered from the flake: `bootstrap`, `private`, `mac-mini-m4`, `
     - **private**: Builds `.#darwinConfigurations.private.<system>.system`
     - **mac-mini-m4** / **mac-mini-m4-pro**: Builds `.#darwinConfigurations.<profile>.system` (if on aarch64-darwin)
     - **Host awareness:** Machine-local storage (`.local/storage`) is only valid for the current host. Profiles whose declared `networking.hostName` differs from the current host are dry-run against a generated placeholder storage config, so their eval correctness is still validated without failing on missing volume assertions. Host-agnostic profiles (no pinned hostName, e.g. `private`, `bootstrap`) use the real machine config.
+4.  **Expected Binaries:** If any module declares an `expected-bins.txt` (one binary name per line, colocated with the module that adds the package - see `modules/cli-tools/expected-bins.txt` for a reference example), builds that profile's real closure (both `environment.systemPackages`'s `sw/bin` and each home-manager user's `home.path/bin` - a package attribute name doesn't always match its binary name, e.g. `ripgrep` -> `rg`) and confirms every declared binary is actually present. Skipped entirely (no extra build) when no module declares one.
 
 ## When to Use
 
