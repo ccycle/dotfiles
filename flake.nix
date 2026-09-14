@@ -225,6 +225,13 @@
                 export PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS=true
               '';
             };
+            cli-shortcut-snapshot = inputs.nixpkgs.legacyPackages.${system}.mkShell {
+              packages = [
+                # Pulls in ttyd + ffmpeg as its own runtime deps - no need to
+                # list them separately.
+                inputs.nixpkgs.legacyPackages.${system}.vhs
+              ];
+            };
           });
 
           homeManagerModules.default =

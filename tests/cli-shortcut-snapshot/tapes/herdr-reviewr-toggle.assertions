@@ -1,0 +1,10 @@
+# Structural markers that must appear in the last frame.
+# One extended-regex pattern per line. The test passes when ALL match.
+# These catch "the shortcut didn't fire" and "the UI didn't render"
+# without being coupled to the diff content (which changes every commit).
+┌ reviewr
+Changes.*Files.*PR
+\[uncommitted\]
+spaces
+agents
+└─
