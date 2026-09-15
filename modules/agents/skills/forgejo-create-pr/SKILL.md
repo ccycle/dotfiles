@@ -57,3 +57,11 @@ Create a pull request on the Forgejo instance with `fj` (the binary name of the 
 6. **Report the Result**
    - Confirm the PR number from the `created pull request #N` output.
    - Display the title, base, and head.
+
+7. **Monitor CI and Repair Failures**
+   - Watch both CI jobs for this PR's head commit (`Verify / Syntax + Structure + Build` and `Formatter`) via `fj actions -R origin tasks`, matching the row whose commit prefix is the PR's head commit.
+   - CI takes several minutes: use `ScheduleWakeup` to check back rather than a `sleep`-polling loop.
+   - If a job fails, follow the `investigate-forgejo-ci` skill to fetch the log and classify the cause.
+   - Fix only routine causes: formatter diffs (`nix fmt`), stale vendored hashes (`vendorHash` / `npmDepsHash` / `cargoHash`), and Package by Feature structure violations. Verify with the `verify-change` skill (at minimum the build output owning the failure) before pushing.
+   - Push the fix to the same PR branch with a normal push (force-push is rejected on protected branches) and return to monitoring.
+   - Attempt at most 3 repair pushes for one PR. If the cause is unclassifiable or CI is still red after 3 attempts, stop and hand over to the user (or queue a herdr worker), reporting the classification and the failing log excerpt.
