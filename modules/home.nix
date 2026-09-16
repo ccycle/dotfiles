@@ -2,6 +2,7 @@
   imports = [
     ./agent-search/home.nix
     ./agents/home.nix
+    ./antigravity-cli/home.nix
     ./attic/home.nix
     ./build-tools/home.nix
     ./caddy/home.nix
