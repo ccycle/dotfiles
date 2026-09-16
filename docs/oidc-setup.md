@@ -70,7 +70,7 @@ scripts/pocket-id-register-clients.sh --admin-user <管理者ユーザー名> [-
   `CHANGE_ME_fake_client_secret` 等のプレースホルダのままの場合は、
   クライアントを作り直して新しい secret を発行する。
 - **管理者ユーザー**: `--admin-user` で指定したユーザーを
-  `opencloud_admins` グループに追加する（未存在なら作成する）。
+  `opencloud_admins` グループに追加する（存在しない場合は作成する）。
   ユーザーがいずれかのグループに属さないと OpenCloud は 500 を返すため、
   この手順は省略しないこと。
 - **後片付け**: 手動登録時代に残っていた `*_oidc_client_id` の sops キーを

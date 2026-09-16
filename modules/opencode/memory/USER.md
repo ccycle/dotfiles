@@ -4,4 +4,4 @@
 
 - dotfiles owner。日本語でやり取りする。
 - 定型作業の繰り返し指示を嫌い、memoryに定型指示を蓄積したい。
-- worktree (herdr) を使った並行作業が多い。worktree acrossでmemoryを共有する。
+- worktree (herdr) を使った並行作業が多い。worktree 間で memory を共有する。

@@ -2,7 +2,7 @@
 
 ## Why This Exists
 
-`smoke-test-navidrome`（未作成、将来用） would only confirm the container
+`smoke-test-navidrome` (not yet implemented, reserved for future use) would only confirm the container
 is running and the health endpoint responds. It says nothing about whether
 Navidrome can actually scan a music library, serve tracks via the Subsonic
 API, or render its web UI. Those are the parts a build dry-run and a
