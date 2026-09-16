@@ -2,59 +2,58 @@
 
 ## Purpose
 
-OpenWebUIの代わりにopencode webをChat UIとして利用し、
-Obsidian vaultとZoteroの横断検索を提供する。
+Use `opencode web` as the chat UI instead of OpenWebUI to provide cross-sectional search across the Obsidian vault and Zotero library.
 
 ## Why opencode web
 
-- **組み込みWeb UI**: 会話履歴、モデル選択、ツール実行表示が標準装備
-- **組み込みツール**: grep, bash, read等の検索ツールがそのまま利用可能
-- **既存設定の活用**: opencode.json（llama-swap接続設定）をそのまま利用
-- **低コスト**: Python検索ツールの実装が不要
-- **低保守**: 保守対象が大幅に削減（自前Pythonコードなし）
+- **Built-in Web UI**: Conversation history, model selection, and tool execution visualization come out of the box.
+- **Built-in Tools**: Search tools like `grep`, `bash`, and `read` are immediately usable.
+- **Reuse of Existing Configuration**: Leverages existing `opencode.json` (such as llama-swap connection settings) as-is.
+- **Low Cost**: Eliminates the need to implement custom Python search tools.
+- **Low Maintenance**: Significantly reduces the maintenance surface area (no custom Python code).
 
 ## Architecture
 
 ```
-ユーザー → ブラウザ → Caddy → opencode web (launchd) → llama-swap
+User → Browser → Caddy → opencode web (launchd) → llama-swap
                                                      ↓
                                               grep/zot/obsidian CLI
 ```
 
 ## Tools
 
-opencodeの組み込みツールを活用する:
+Leverages opencode's built-in tools:
 
-- `grep` (ripgrep): Obsidian vault内のMarkdownファイル検索
-- `bash`: `zot search`、`open obsidian://`等のコマンド実行
-- `read`: ファイル内容の読み取り
+- `grep` (ripgrep): Search Markdown files within the Obsidian vault.
+- `bash`: Execute commands such as `zot search`, `open obsidian://`, etc.
+- `read`: Read file contents.
 
 ## Agent
 
-`opencode-web`エージェント（`agents/opencode-web.md`）が検索指示を定義する:
+The `opencode-web` agent (`agents/opencode-web.md`) defines search instructions:
 
-- 検索対象パスの指定
-- zotコマンドの使い方
-- 回答スタイル
+- Target paths to search
+- Usage of the `zot` command
+- Response style
 
 ## Non-Goals
 
-- OpenWebUIの構築・運用
-- Python検索ツールの実装
-- Chat UIの自前実装
-- ベクトル検索・埋め込みインデックス
+- Deploying and operating OpenWebUI.
+- Implementing custom Python search tools.
+- Building a custom chat UI from scratch.
+- Vector search or embedding-based indexing.
 
 ## Constraints
 
-- opencode webは単一ユーザー向け（認証はPocketID SSOで対応）
-- 起動時にvaultディレクトリにcdする必要がある
-- llama-swapが起動している必要がある（mac-mini-m4-pro）
-- zotは`--local`モード（`~/.config/zotcli/config.ini`で個人設定）を前提とする。Zotero Web APIのノート検索は先頭1行しかマッチしないが、`--local`モードはZoteroデスクトップ本体の検索エンジン（全文ノートインデックス）を直接叩くため、この制約を受けない。この前提のため`zotero-keepalive` launchdエージェントでZotero.appを常時起動させる（`brewCasks.zotero`はインストールのみで自動起動はしない）。
+- `opencode web` is designed for a single user (authentication handled via Pocket ID SSO).
+- Must `cd` into the vault directory at startup.
+- Requires `llama-swap` to be running (`mac-mini-m4-pro`).
+- Assumes `zot` runs in `--local` mode (configured personally via `~/.config/zotcli/config.ini`). While note search via the Zotero Web API only matches the first line of a note, `--local` mode queries the Zotero desktop app's native search engine (full-text note index) directly, bypassing this limitation. Because of this prerequisite, the `zotero-keepalive` launchd agent keeps `Zotero.app` running continuously (`brewCasks.zotero` only installs the app without auto-starting it).
 
 ## Rejected Alternatives
 
-- **OpenWebUI + Pythonプラグイン**: 実装コストが高い（10-15日）。Python検索ツール3つの実装が必要。
-- **自前Chat UI**: WebSocketラッパーの実装が必要。維持コストが高い。
-- **ベクトル検索**: インデックス更新の管理が複雑。grep + zotで十分と判断。実利用でヒットしなかったケースが出た後も再検討したが、埋め込みインデックスではなくエージェント自身の多角的探索（類義語・関連語での再検索、タイトル一覧の一覧眺め）で対応する方針を維持。
-- **Zoteroノートのダンプ/同期による全文検索**: `--local`モードが既にZoteroデスクトップの全文ノートインデックスを検索するため、別途ダンプ・同期パイプラインは不要と判断。
-- **zot認証モードのNixオプション化**: 個人のZotero認証情報はパスワードに近い扱いであり、`obsidian.vaults`のような宣言的オプションにはせず、手動の`~/.config/zotcli/config.ini`を維持する。
+- **OpenWebUI + Python Plugins**: High implementation cost (10–15 days). Requires writing three custom Python search tools.
+- **Custom Chat UI**: Requires implementing a WebSocket wrapper. High maintenance burden.
+- **Vector Search**: Complex index update management. Deemed that `grep` + `zot` is sufficient. Even after re-evaluating when real-world queries failed to match, we retained the policy of having the agent perform multi-angle exploration (re-searching with synonyms and related terms, inspecting title listings) rather than introducing embedding indices.
+- **Full-Text Search via Zotero Note Dump / Sync**: Since `--local` mode already searches Zotero desktop's full-text note index, an additional dump/sync pipeline was deemed unnecessary.
+- **Nix Option for zot Authentication Mode**: Personal Zotero credentials are treated like passwords; rather than exposing them as declarative options like `obsidian.vaults`, manual configuration in `~/.config/zotcli/config.ini` is preserved.
