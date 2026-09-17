@@ -26,4 +26,21 @@
       RunAtLoad = true;
     };
   };
+
+  # Reload keychain-stored SSH passphrases into Apple's launchd-managed
+  # ssh-agent at GUI login, so non-interactive contexts (agents, GUI apps)
+  # can sign git commits without a passphrase prompt. Interactive SSH
+  # sessions are covered by the zsh fallback in home.nix. Absolute
+  # /usr/bin path because system SSH is used on macOS (see home.nix) and
+  # launchd jobs run with a minimal PATH.
+  launchd.user.agents.ssh-apple-load-keychain = {
+    serviceConfig = {
+      RunAtLoad = true;
+      StandardOutPath = "/var/tmp/ssh-apple-load-keychain.log";
+      StandardErrorPath = "/var/tmp/ssh-apple-load-keychain.log";
+    };
+    script = ''
+      /usr/bin/ssh-add --apple-load-keychain
+    '';
+  };
 }

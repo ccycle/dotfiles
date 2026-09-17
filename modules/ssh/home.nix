@@ -47,8 +47,23 @@
     in
     if pkgs.stdenv.isDarwin then
       ''
-        ${agentSetup}
-        ssh-add --apple-load-keychain > /dev/null 2>&1
+        # Signatures use Apple's launchd-managed ssh-agent (no custom socket,
+        # so every context shares one agent). The key passphrase lives in the
+        # login keychain (one-time `ssh-add --apple-use-keychain` by the user).
+        # GUI shells inherit SSH_AUTH_SOCK from launchd; fresh SSH sessions do
+        # not, so discover Apple's socket here (its path is per-login). Alive
+        # sockets (e.g. a pre-migration custom agent) are left untouched.
+        ssh-add -l >/dev/null 2>&1
+        _SSH_ADD_STATUS=$?
+        if [ $_SSH_ADD_STATUS -ne 0 ]; then
+          if [ $_SSH_ADD_STATUS -eq 2 ]; then
+            _APPLE_SOCK="$(launchctl print "gui/$UID/com.openssh.ssh-agent" 2>/dev/null | grep -m1 'SSH_AUTH_SOCK =>' | awk '{print $NF}')"
+            [ -S "$_APPLE_SOCK" ] && export SSH_AUTH_SOCK="$_APPLE_SOCK"
+            unset _APPLE_SOCK
+          fi
+          ssh-add --apple-load-keychain > /dev/null 2>&1
+        fi
+        unset _SSH_ADD_STATUS
       ''
     else
       ''
