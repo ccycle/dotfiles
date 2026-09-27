@@ -9,6 +9,8 @@
   #
   # Then switch to the full configuration for the host.
   inputs = {
+    apple-container-pkg.flake = false;
+    apple-container-pkg.url = "https://github.com/apple/container/releases/download/1.4.1/container-1.4.1-installer-signed.pkg";
     attic.url = "github:zhaofengli/attic";
     brew-nix.url = "github:BatteredBunny/brew-nix";
     nix-claude-code.url = "github:ryoppippi/nix-claude-code";
@@ -35,6 +37,8 @@
     home-manager.url = "github:nix-community/home-manager/release-26.05";
     hunk.url = "github:modem-dev/hunk";
     hunk.inputs.nixpkgs.follows = "nixpkgs";
+    kiac-release.flake = false;
+    kiac-release.url = "https://github.com/saiyam1814/kiac/releases/download/v0.7.1/kiac_0.7.1_darwin_arm64.tar.gz";
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
     nix-darwin.url = "github:nix-darwin/nix-darwin/nix-darwin-26.05";
     nixpkgs-2211.url = "github:nixos/nixpkgs/22.11";

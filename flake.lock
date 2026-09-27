@@ -32,6 +32,18 @@
         "type": "github"
       }
     },
+    "apple-container-pkg": {
+      "flake": false,
+      "locked": {
+        "narHash": "sha256-tgsTDooQaob9Zj7XT5jlqkKnBlpNxBUNaDdcY30RCdc=",
+        "type": "file",
+        "url": "https://github.com/apple/container/releases/download/1.4.1/container-1.4.1-installer-signed.pkg"
+      },
+      "original": {
+        "type": "file",
+        "url": "https://github.com/apple/container/releases/download/1.4.1/container-1.4.1-installer-signed.pkg"
+      }
+    },
     "attic": {
       "inputs": {
         "crane": "crane",
@@ -1932,6 +1944,19 @@
         "type": "sourcehut"
       }
     },
+    "kiac-release": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1788622334,
+        "narHash": "sha256-TgA+YjN3t9KdKQBzMHXlU/mXfyC9M2rzPVjOpqa+U18=",
+        "type": "tarball",
+        "url": "https://github.com/saiyam1814/kiac/releases/download/v0.7.1/kiac_0.7.1_darwin_arm64.tar.gz"
+      },
+      "original": {
+        "type": "tarball",
+        "url": "https://github.com/saiyam1814/kiac/releases/download/v0.7.1/kiac_0.7.1_darwin_arm64.tar.gz"
+      }
+    },
     "nix-claude-code": {
       "inputs": {
         "nixpkgs": "nixpkgs_7"
@@ -2879,6 +2904,7 @@
     },
     "root": {
       "inputs": {
+        "apple-container-pkg": "apple-container-pkg",
         "attic": "attic",
         "brew-nix": "brew-nix",
         "deploy-rs": "deploy-rs",
@@ -2897,6 +2923,7 @@
         "herdr": "herdr",
         "home-manager": "home-manager_2",
         "hunk": "hunk",
+        "kiac-release": "kiac-release",
         "nix-claude-code": "nix-claude-code",
         "nix-darwin": "nix-darwin_2",
         "nixpkgs": "nixpkgs_8",
