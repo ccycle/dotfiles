@@ -1,1 +1,34 @@
-{}
+{
+  "permissions": {
+    "allow": ["command(*)"],
+    "ask": [
+      "command(rm -rf)",
+      "command(sudo rm)",
+      "command(git reset --hard)",
+      "command(git clean -f)",
+      "command(git branch -D)",
+      "command(git push --force)",
+      "command(git push -f)",
+      "command(gh repo delete)",
+      "command(gh auth logout)",
+      "command(gh secret)",
+      "command(dd)",
+      "command(sudo dd)",
+      "command(diskutil)",
+      "command(sudo diskutil)",
+      "command(truncate)",
+      "command(reboot)",
+      "command(shutdown)",
+      "command(sudo reboot)",
+      "command(sudo shutdown)"
+    ],
+    "deny": [
+      "command(shred)",
+      "command(wipefs)",
+      "command(sudo mkfs)",
+      "command(sudo fdisk)",
+      "command(diskutil eraseDisk)",
+      "command(diskutil eraseVolume)"
+    ]
+  }
+}
