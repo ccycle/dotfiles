@@ -630,6 +630,11 @@ in
         script = ''
           set -euo pipefail
 
+          # Same guard as forgejo-compose above: at RunAtLoad this job can
+          # race macOS's external-disk remount, and mkdir below would then
+          # create a stale placeholder that blocks the real remount.
+          ${optionalString (cfg.mountPoint != "") (waitForMount cfg.mountPoint)}
+
           # dataDir is the host-visible side of the bind mount at container
           # path /data (see compose.yaml), so dump files land here directly
           # without a docker cp step.
