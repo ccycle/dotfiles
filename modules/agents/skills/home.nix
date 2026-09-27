@@ -20,14 +20,16 @@ let
     );
 in
 {
-  # Pi reads ~/.agents/skills; Claude Code reads ~/.claude/skills.
-  home.file = linkSkills ".claude/skills" // linkSkills ".agents/skills";
+  # Pi reads ~/.agents/skills; Claude Code reads ~/.claude/skills; Antigravity
+  # CLI (agy) discovers global customizations under ~/.gemini/config.
+  home.file =
+    linkSkills ".claude/skills" // linkSkills ".agents/skills" // linkSkills ".gemini/config/skills";
 
-  # Guard against a stale whole-directory symlink at ~/.claude/skills or
-  # ~/.agents/skills (see design.md for how this happens and why it
+  # Guard against a stale whole-directory symlink at any skills target
+  # directory (see design.md for how this happens and why it
   # otherwise survives every subsequent activation unnoticed).
   home.activation.removeStaleSkillsContainerSymlink = lib.hm.dag.entryBefore [ "checkLinkTargets" ] ''
-    for dir in "$HOME/.claude/skills" "$HOME/.agents/skills"; do
+    for dir in "$HOME/.claude/skills" "$HOME/.agents/skills" "$HOME/.gemini/config/skills"; do
       if [[ -L "$dir" ]]; then
         rm -f "$dir"
       fi
