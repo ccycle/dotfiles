@@ -99,7 +99,6 @@
       "Bash(readlink*)",
       "Bash(realpath*)",
       "Bash(rev*)",
-      "Bash(sops*)",
       "Bash(stat*)",
       "Bash(sw_vers)",
       "Bash(sw_vers*)",
@@ -143,6 +142,7 @@
       "Bash(gh auth token*)"
     ],
     "ask": [
+      "Bash(bws secret *)",
       "Bash(gh auth login *)",
       "Bash(gh auth logout *)",
       "Bash(gh auth refresh *)",
@@ -159,8 +159,10 @@
       "Bash(git clean -f *)",
       "Bash(git reset --hard *)",
       "Bash(halt *)",
+      "Bash(rbw get *)",
       "Bash(reboot *)",
       "Bash(shutdown *)",
+      "Bash(sops *)",
       "Bash(sudo reboot *)",
       "Bash(sudo shutdown *)",
       "Bash(truncate *)"

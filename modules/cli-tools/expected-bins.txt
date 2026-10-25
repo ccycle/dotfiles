@@ -5,3 +5,4 @@ yq
 7z
 jq
 htop
+bws

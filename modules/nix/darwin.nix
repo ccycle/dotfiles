@@ -17,6 +17,14 @@
     description = "List of access tokens for nix.conf in format 'host=token'";
   };
 
+  # allowUnfreePredicate is a function, so two modules setting it conflict.
+  # Feature modules append package names here instead.
+  options.custom.nix.unfreePackages = lib.mkOption {
+    type = lib.types.listOf lib.types.str;
+    default = [ ];
+    description = "Package names (lib.getName) allowed despite an unfree license";
+  };
+
   config = {
     sops.templates."nix-access-tokens.conf" = {
       content =
@@ -29,6 +37,9 @@
       path = "/etc/nix/nix-access-tokens.conf";
       owner = username;
     };
+
+    nixpkgs.config.allowUnfreePredicate =
+      pkg: builtins.elem (lib.getName pkg) config.custom.nix.unfreePackages;
 
     nix.nixPath = lib.mkForce [ "nixpkgs=${inputs.nixpkgs}" ];
     nix.channel.enable = false;
