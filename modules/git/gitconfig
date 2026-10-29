@@ -29,6 +29,15 @@
     helper = osxkeychain
     helper = oauth -device
 
+# The empty helper resets the list above for this host only, so pushes read the
+# token from rbw instead of the keychain, which SSH sessions cannot write to.
+# Must stay after [credential] to override it.
+# Inline rather than rbw's git-credential-rbw, whose sed script BSD sed rejects.
+[credential "https://forgejo.mac-mini-m4-pro.internal"]
+    helper =
+    username = ccycle
+    helper = "!f() { test \"$1\" = get && echo \"password=$(rbw get forgejo.mac-mini-m4-pro.internal)\"; }; f"
+
 [fetch]
     prune = true
 

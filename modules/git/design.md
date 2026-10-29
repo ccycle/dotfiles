@@ -11,6 +11,13 @@ Device flow displays a URL and a one-time code in the terminal; the user complet
 The `-device` flag avoids the browser-launch requirement that breaks in headless SSH sessions.
 The interactive device-flow step also acts as an intentional human-in-the-loop gate for first-time or expired auth: full-privilege pushes always require a human to have completed authentication at some point, never a bare static token.
 
+### Exception: self-hosted Forgejo
+
+The tailnet-only Forgejo instance authenticates with a static Personal Access Token read from rbw, not OAuth.
+The macOS login keychain cannot be written from SSH sessions, so the keychain-backed path re-prompted for credentials on every push.
+The human-in-the-loop gate moves to unlocking rbw; the token is scoped to `write:repository` and has an expiry, which bounds the cost of it being static.
+This also lets agents push to Forgejo without a prompt while rbw is unlocked.
+
 Dangerous irreversible operations (history rewrite, branch deletion on the default branch) are blocked by GitHub rulesets.
 
 ## Non-Goals
