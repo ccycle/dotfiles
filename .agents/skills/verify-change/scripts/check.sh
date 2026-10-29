@@ -13,7 +13,7 @@ echo "Detected host: $LOCAL_HOST"
 
 function check_syntax() {
   echo "=== 🔍 Checking Nix Syntax ==="
-  find . -name "*.nix" -not -path "*/node_modules/*" -not -path "*/.git/*" -print0 | xargs -0 -n 1 nix-instantiate --parse >/dev/null
+  find . -name "*.nix" -not -path "*/node_modules/*" -not -path "*/.git/*" -print0 | xargs -0 nix-instantiate --parse >/dev/null
   echo "✅ Syntax check passed."
 }
 
