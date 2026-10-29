@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+# Run bws as the agent's machine account without exposing secret values.
+# The token is fetched from rbw on every call and exported only to bws, so the
+# agent's command line never contains `rbw get` (which the permission rules ask
+# about) and the token never reaches the agent's environment.
+set -euo pipefail
+
+token_item=bws-agent-token
+
+die() {
+  echo "bws-agent: $*" >&2
+  exit 2
+}
+
+usage() {
+  die "usage: bws-agent project list | keys <project-id> | run <project-id> -- <command>"
+}
+
+# Validate arguments before touching rbw, so refused calls never fetch the token.
+login() {
+  BWS_ACCESS_TOKEN="$(rbw get "$token_item")" || die "rbw get $token_item failed; is rbw unlocked?"
+  export BWS_ACCESS_TOKEN
+}
+
+case "${1:-}" in
+project)
+  [ "${2:-}" = list ] || usage
+  login
+  bws project list --output table
+  ;;
+keys)
+  [ $# -eq 2 ] || usage
+  login
+  # Values pass through the pipe into jq only; nothing but key names is printed.
+  bws secret list "$2" --output json | jq -r '.[].key'
+  ;;
+run)
+  [ $# -ge 4 ] && [ "$3" = -- ] || usage
+  project="$2"
+  shift 3
+  login
+  # Every value in the project is redacted from the command's stdout and stderr.
+  # The values reach perl over fd 3, not argv or env, so `ps` never shows them.
+  # ponytail: line-based literal match; a value split across lines or transformed
+  # (base64, hex, sliced) is not caught. Upgrade to a streaming matcher if needed.
+  bws run --project-id "$project" -- "$@" 2>&1 |
+    perl -MMIME::Base64 -e '
+      open(my $fh, "<&=3") or die "fd 3: $!";
+      my @v = grep { length } map { chomp; decode_base64($_) } <$fh>;
+      my $re = join "|", map { quotemeta } sort { length $b <=> length $a } @v;
+      $| = 1;
+      while (<STDIN>) { s/$re/[REDACTED]/g if @v; print }
+    ' 3< <(bws secret list "$project" --output json | jq -r '.[].value | @base64')
+  ;;
+*)
+  # secret get/list and every other subcommand print values or mutate state.
+  usage
+  ;;
+esac

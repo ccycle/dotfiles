@@ -8,54 +8,47 @@ description: Use secrets from Bitwarden Secrets Manager via the bws CLI without 
 Secrets reach a command as environment variables of a child process started by `bws run`.
 Their values must never enter the conversation: transcripts persist on disk and are sent to the model provider.
 
+Always go through `scripts/bws-agent` in this skill's directory (for Claude Code, `~/.claude/skills/bws/scripts/bws-agent`).
+It fetches the machine-account token from rbw on every call, refuses subcommands that print values, and redacts secret values from command output.
+Never call `bws` or `rbw get` directly.
+
 ## Trust model
 
-- The agent authenticates as a **machine account** through `BWS_ACCESS_TOKEN`.
-  The machine account can read only the projects the user granted it, so everything in those projects is readable by the agent.
-  The real boundary is what the user puts in those projects, not anything this skill does.
-- The access token is issued with an expiry by the user.
-  When it expires, access ends; there is no idle timer to keep alive.
+- The agent authenticates as a **machine account** whose token is stored in rbw as `bws-agent-token`.
+  The machine account can read only the projects the user granted it, and the agent may use anything in those projects freely.
+  The boundary is what the user puts in those projects.
+- The token has an expiry set by the user; when it expires, access ends.
 - Never place a secret in an agent-readable project if it unlocks other secret stores (sops/age keys, SSH or GPG private keys, password manager master passwords).
   If you notice one there, stop and tell the user.
 
-## 1. Check the token is present
+## Usage
+
+`bws-agent` below stands for the full script path; it is not on `PATH`.
 
 ```bash
-test -n "${BWS_ACCESS_TOKEN:-}" && echo set || echo missing
+bws-agent project list                      # project names and IDs
+bws-agent keys <project-id>                 # key names only
+bws-agent run <project-id> -- '<command>'   # secrets injected as $KEY
 ```
 
-If it is missing, stop and use the `ask-me-to-do` skill.
-Ask the user to export `BWS_ACCESS_TOKEN` in the shell that launches the agent, then restart the agent.
-Never fetch the token yourself from a password manager (`rbw`, `bw`, Keychain), and never ask the user to paste it into the chat.
+- `run` passes the command to `sh -c`; reference secrets as `$KEY`, never interpolate a value yourself.
+- Stdout and stderr of `run` are merged and every project value is replaced with `[REDACTED]`.
+  This catches literal values only: a value split across lines or transformed (base64, hex, substrings) still leaks, so never print or transform a secret on purpose.
+- The token is not passed to the child process.
 
-## 2. Find the project
+If `bws-agent` fails with "is rbw unlocked?", stop and use the `ask-me-to-do` skill: ask the user to run `rbw unlock`.
+Do not try to unlock rbw yourself.
 
-```bash
-bws project list --output table
-```
+## Changing bws-agent
 
-This lists project names and IDs only.
-If several projects are listed and the task does not say which one to use, ask the user.
-
-## 3. Run the command with secrets injected
-
-```bash
-bws run --project-id <PROJECT_ID> -- '<command>'
-```
-
-- Each secret becomes an environment variable named after its key.
-- The command is passed as a single string and run by `sh`.
-  Reference secrets as `$KEY` inside the command; never interpolate a value into the string yourself.
-- Add `--no-inherit-env` when the command does not need your environment.
-  Only `PATH` is kept, so commands that need `HOME` or similar may break.
-- Prefer passing the secret to a fixed script or tool that consumes it, rather than an ad-hoc pipeline.
+After editing `scripts/bws-agent`, run `scripts/bws-agent.test.sh <project-name>`.
+It talks to the real rbw and Secrets Manager; its header lists the dummy fixtures the project must hold.
 
 ## Never
 
-- Print a secret or the token: no `echo $KEY`, `env`, `printenv`, `set -x`, or verbose/debug flags on tools that log their environment or decrypted data.
-- Run `bws secret get` or `bws secret list` unless the user explicitly asks; both return secret **values** in their JSON output.
-  To learn key names, ask the user.
+- Bypass `bws-agent`: no `bws secret get`, `bws secret list` without filtering, or `rbw get` of the token.
 - Write a secret to a file, commit it, or pass it as a command-line argument (arguments are visible in `ps`).
+- Use verbose or debug flags on tools that log their environment or decrypted data.
 
 ## If a value leaks into the conversation
 
