@@ -1,6 +1,6 @@
 ---
 name: reasoning
-description: Structured problem-solving loop for complex, ambiguous, or multi-step tasks, including debugging and root-cause analysis. Use when a task has unclear scope, spans multiple files or systems, requires investigation before action, or when previous attempts have failed. Covers goal clarification, decomposition, evidence gathering, hypothesis testing, and self-verification.
+description: Structured problem-solving loop for complex, ambiguous, or multi-step implementation tasks. Use when a task has unclear scope, spans multiple files or systems, or when previous attempts have failed. Covers goal clarification, decomposition, evidence gathering, hypothesis testing, and self-verification.
 ---
 
 # Reasoning: A Problem-Solving Loop
