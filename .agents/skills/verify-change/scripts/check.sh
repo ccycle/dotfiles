@@ -255,13 +255,23 @@ echo ""
 # 2.5. Sops recipient check against the age key ledger
 check_recipients
 
-# 3. Build dry-run every compatible profile from the root flake
+# 3. Build dry-run every compatible profile (or only the one given as $1)
+PROFILE="${1:-}"
 echo "=== 📋 Discovering profiles in root flake ==="
 ROOT_CONFIGS=$(list_configs ".")
 echo "Found: $ROOT_CONFIGS"
+matched=0
 for config in $ROOT_CONFIGS; do
+  if [ -n "$PROFILE" ] && [ "${config%%.*}" != "$PROFILE" ]; then
+    continue
+  fi
+  matched=1
   build_dry_run "." "$config"
   echo ""
 done
+if [ "$matched" -eq 0 ]; then
+  echo "❌ Unknown profile '${PROFILE}'. Available: ${ROOT_CONFIGS}"
+  exit 1
+fi
 
 echo "🎉 All checks passed! You are safe to commit."
