@@ -45,12 +45,13 @@ function check_recipients() {
 # (environment.systemPackages) land in different output paths -
 # config.home-manager.users.<user>.home.path/bin and <system>/sw/bin
 # respectively - confirmed empirically; both are checked.
+# home.path is part of the system closure, so both are found from the already
+# built system output; a separate `nix build` per user would re-evaluate the
+# whole config (~12s each).
 function check_expected_bins() {
   local flake_path=$1
   local config=$2
-  local target=$3
-  shift 3
-  local override_args=("$@")
+  local system_out=$3
 
   # Scope manifest discovery to this flake's own module tree: bootstrap has
   # a disjoint module tree (bootstrap/modules/) that never imports root
@@ -70,24 +71,11 @@ function check_expected_bins() {
   fi
 
   echo "  --- 🔧 Checking expected binaries ---"
-  local bin_dirs=()
-
-  local system_out
-  system_out=$(nix build "$target" --impure --no-link --print-out-paths "${override_args[@]}" 2>/dev/null)
-  [ -n "$system_out" ] && bin_dirs+=("${system_out}/sw/bin")
-
-  local hm_users
-  hm_users=$(nix eval "${flake_path}#darwinConfigurations.${config}.config.home-manager.users" --impure --json --apply builtins.attrNames "${override_args[@]}" 2>/dev/null)
-  for user in $(echo "$hm_users" | jq -r '.[]' 2>/dev/null); do
-    local hm_out
-    hm_out=$(nix build "${flake_path}#darwinConfigurations.${config}.config.home-manager.users.${user}.home.path" --impure --no-link --print-out-paths "${override_args[@]}" 2>/dev/null)
-    [ -n "$hm_out" ] && bin_dirs+=("${hm_out}/bin")
+  local bin_dirs=("${system_out}/sw/bin")
+  local hm_out
+  for hm_out in $(nix path-info -r "$system_out" | grep -- '-home-manager-path$'); do
+    bin_dirs+=("${hm_out}/bin")
   done
-
-  if [ "${#bin_dirs[@]}" -eq 0 ]; then
-    echo "  ⚠️  Could not resolve any bin directories for ${config}; skipping."
-    return 0
-  fi
 
   local failed=0
   while IFS= read -r manifest; do
@@ -172,7 +160,7 @@ function build_dry_run() {
   local config=$2
   local profile="${config%%.*}"
 
-  echo "=== 🏗️ Build Dry-Run: ${profile} (${flake_path}) ==="
+  echo "=== 🏗️ Build: ${profile} (${flake_path}) ==="
 
   # Skip configs built for another architecture.
   local config_system
@@ -210,10 +198,13 @@ function build_dry_run() {
 
   local target="${flake_path}#darwinConfigurations.${config}.system"
   echo "Target: $target"
-  nix build "$target" --impure -L --dry-run "${override_args[@]}"
-  echo "✅ $profile dry-run passed."
+  # A real build instead of --dry-run: check_expected_bins needs the output,
+  # and one build costs about the same as a dry-run plus a second evaluation.
+  local system_out
+  system_out=$(nix build "$target" --impure -L --no-link --print-out-paths "${override_args[@]}")
+  echo "✅ $profile build passed."
 
-  check_expected_bins "$flake_path" "$config" "$target" "${override_args[@]}"
+  check_expected_bins "$flake_path" "$config" "$system_out"
 }
 
 # --- Main Execution ---
@@ -255,7 +246,7 @@ echo ""
 # 2.5. Sops recipient check against the age key ledger
 check_recipients
 
-# 3. Build dry-run every compatible profile (or only the one given as $1)
+# 3. Build every compatible profile (or only the one given as $1)
 PROFILE="${1:-}"
 echo "=== 📋 Discovering profiles in root flake ==="
 ROOT_CONFIGS=$(list_configs ".")
