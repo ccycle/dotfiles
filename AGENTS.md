@@ -161,8 +161,8 @@ from measurement, never from memory or speculation.
 - Decompose the question into checkable claims, assign each claim a measurement
   command, and run it. If no measurement exists, create one.
 - Report claims in claim / evidence / confidence schema.
-- Before finalizing, invoke the `measure-reviewer` subagent via the task tool,
-  and end your answer with the exact line `MEASURE-REVIEW: approved`.
+- Before finalizing, re-run every cited measurement and fix any claim whose
+  output no longer matches.
 
 ## Legacy Guidelines
 

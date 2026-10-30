@@ -1,6 +1,6 @@
 ---
 name: measure-first
-description: Mandatory workflow for investigation tasks. Use when the user asks to investigate, debug, root-cause, verify, check the cause of, or confirm the current state of a system, service, file, config, or behavior. Requires starting from measurement (creating the measurement if none exists), invoking the measure-reviewer subagent before finalizing, and ending the answer with the MEASURE-REVIEW marker. Do not answer investigation questions from memory or speculation.
+description: Mandatory workflow for investigation tasks. Use when the user asks to investigate, debug, root-cause, verify, check the cause of, or confirm the current state of a system, service, file, config, or behavior. Requires starting from measurement (creating the measurement if none exists) and re-running every cited measurement before finalizing. Do not answer investigation questions from memory or speculation.
 ---
 
 # Measure First: Investigation Workflow
@@ -45,29 +45,20 @@ For each claim:
 
 A claim with no evidence must be deleted or relabeled, never shipped.
 
-## 5. Invoke the measure-reviewer subagent (mandatory)
+## 5. Re-measure before finalizing (mandatory)
 
-Before presenting the final answer, call the `measure-reviewer` subagent via
-the task tool and pass your draft (claims + evidence + measurement commands).
+Before presenting the final answer, re-run every measurement command the draft
+cites, yourself, in the same working directory. A claim survives only if the
+fresh output still reproduces the cited evidence.
 
-- Claude Code: task tool with the `measure-reviewer` agent.
-- opencode: task tool with `subagent_type: "measure-reviewer"`.
+- Output differs: correct the claim and its evidence, or relabel it
+  `unverifiable`.
+- The measurement source is itself unhealthy (a scrape target down, a service
+  not responding): say the evidence is untrustworthy and name a substitute
+  measurement.
 
-The reviewer re-runs the measurements itself and returns APPROVED or a list of
-issues. Do not skip this step for small or obvious tasks.
+Do not skip this step for small or obvious tasks.
 
-## 6. Iterate on issues
-
-Address every issue the reviewer raises (re-measure, correct, or relabel as
-`unverifiable`) and re-invoke the reviewer. If the second review still fails,
-report the reviewer's issues verbatim to the user and stop.
-
-## 7. Finalize with the marker
-
-End the final answer with the exact line:
-
-```
-MEASURE-REVIEW: approved
-```
-
-Keep it exactly as written, on its own line.
+When an independent clean-context review is worth the cost (for example a
+high-impact root-cause claim), start a fresh agent in a separate process (a new
+Herdr pane) with only the draft, instead of an in-session subagent.

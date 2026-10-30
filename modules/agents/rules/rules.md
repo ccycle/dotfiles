@@ -30,9 +30,9 @@ claims, assign each claim a measurement command, and run it — creating the
 measurement if none exists. Report claims in claim / evidence / confidence
 schema.
 
-Before finalizing an investigation answer, invoke the `measure-reviewer`
-subagent (see the `measure-first` skill) and end with the exact line
-`MEASURE-REVIEW: approved`. Never present an unmeasured assertion as fact.
+Before finalizing an investigation answer, re-run every measurement it cites
+and fix any claim whose output no longer matches (see the `measure-first`
+skill). Never present an unmeasured assertion as fact.
 
 ## English-Only for LLM-Facing Instructions
 

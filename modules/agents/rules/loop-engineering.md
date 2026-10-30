@@ -15,7 +15,7 @@ Minimum criteria by task type:
 - Nix changes: `nix flake check` passes (or `/verify-change` skill)
 - Service changes: the relevant smoke-test skill passes
 - All changes: name the specific files created or modified
-- Investigation tasks: every assertion must be backed by a measurement command that was run; the answer must carry the `measure-reviewer` marker (`MEASURE-REVIEW: approved`)
+- Investigation tasks: every assertion must be backed by a measurement command that was run and re-run before finalizing (see the `measure-first` skill)
 - User-visible behavior (env vars, shell config, deployed services, GUI): verify from the user's vantage point — a fresh shell, the running service, the actual URL — not just the code edit. If a step you cannot perform remains (re-login, app restart), say so explicitly instead of reporting done.
 
 Before declaring done, run every verification command from the criteria and report each result with the actual output.

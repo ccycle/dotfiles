@@ -55,9 +55,6 @@ in
   home.file."${config.home.homeDirectory}/.config/opencode/opencode.json".text =
     builtins.toJSON opencodeConfig;
 
-  home.file."${config.home.homeDirectory}/.config/opencode/agents/measure-reviewer.md".source =
-    config.lib.file.mkOutOfStoreSymlink "${config.custom.dotfiles.dir}/.agents/agents/measure-reviewer.md";
-
   home.file."${config.home.homeDirectory}/.config/opencode/memory/MEMORY.md".source =
     config.lib.file.mkOutOfStoreSymlink "${config.custom.dotfiles.dir}/modules/opencode/memory/MEMORY.md";
 
