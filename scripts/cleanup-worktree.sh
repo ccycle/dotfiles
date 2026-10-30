@@ -93,7 +93,17 @@ branch_was_started() {
   [ "$active" -gt 0 ]
 }
 
-# Classification: IN PROGRESS / NEVER STARTED / NOT MERGED / SAFE
+# Return 0 if the active home-manager generation links into this worktree.
+# Out-of-store symlinks resolve to the checkout that ran darwin-rebuild, so removing that checkout would break the live ~/.claude and ~/.config files.
+is_live_config_source() {
+  home_files="$(readlink -f "$HOME/.local/state/home-manager/gcroots/current-home")/home-files"
+  [ -d "$home_files" ] || return 1
+  find "$home_files/" -type l | while read -r link; do
+    case "$(readlink -f "$link")" in "$worktree_repo_root"/*) echo hit && break ;; esac
+  done | grep -q hit
+}
+
+# Classification: IN PROGRESS / NEVER STARTED / NOT MERGED / LIVE CONFIG / SAFE
 status=""
 
 if [ -n "$(git -C "$cwd" status --porcelain 2>/dev/null)" ]; then
@@ -102,6 +112,8 @@ elif ! branch_was_started "$ws_branch"; then
   status="NEVER STARTED (reflog shows only creation)"
 elif ! git -C "$worktree_repo_root" merge-base --is-ancestor "$ws_branch" main 2>/dev/null; then
   status="NOT MERGED (branch is not an ancestor of main)"
+elif is_live_config_source; then
+  status="LIVE CONFIG (home-manager links point here; darwin-rebuild from main first)"
 else
   status="SAFE (started, merged to main, clean)"
 fi

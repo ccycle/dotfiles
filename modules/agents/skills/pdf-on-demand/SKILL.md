@@ -9,13 +9,13 @@ Reading a whole PDF is the single most common way an agent burns its context and
 
 Measured on a 420-page technical book (Japanese, 469k characters, 90 figures):
 
-| Approach | Cost |
-|---|---|
-| Whole-book text in context | ~235k–470k tokens (unusable) |
-| `zot fulltext get <attachment>` | 113,609 chars, **and only 100 of 420 pages indexed** |
-| One page of text (default mode) | ~3.2 KB, ~1.1k tokens |
-| One page as image at 120 dpi | ~1.3k tokens |
-| **Same page cropped to the figure only** | **~280 tokens** |
+| Approach                                 | Cost                                                 |
+| ---------------------------------------- | ---------------------------------------------------- |
+| Whole-book text in context               | ~235k–470k tokens (unusable)                         |
+| `zot fulltext get <attachment>`          | 113,609 chars, **and only 100 of 420 pages indexed** |
+| One page of text (default mode)          | ~3.2 KB, ~1.1k tokens                                |
+| One page as image at 120 dpi             | ~1.3k tokens                                         |
+| **Same page cropped to the figure only** | **~280 tokens**                                      |
 
 Two facts drive the rules below: a page image costs about as much as a page of text, and cropping the region of interest cuts that by roughly 4.5x.
 

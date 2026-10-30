@@ -34,6 +34,16 @@ Before finalizing an investigation answer, re-run every measurement it cites
 and fix any claim whose output no longer matches (see the `measure-first`
 skill). Never present an unmeasured assertion as fact.
 
+## Keep Secret Values Out of Output
+
+Command output lands in the transcript, which persists on disk and is sent to the model provider.
+A secret printed there must be treated as leaked and rotated.
+
+- When verifying a secret, check only that it exists and is non-empty (`grep -c`, `test -n`, or mask it with `sed 's/=.*/=<hidden>/'`).
+- Never pass verbose or debug flags to commands that decrypt or authenticate (`sops -d --verbose`, `GIT_CURL_VERBOSE`, `curl -v` with credentials); they can print plaintext.
+- When a test can fail by printing a secret, hide the actual value in its failure output.
+- If a value does leak, tell the user immediately which secret it was.
+
 ## English-Only for LLM-Facing Instructions
 
 All instructions intended for AI consumption MUST be written in English. This includes:
