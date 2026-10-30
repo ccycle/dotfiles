@@ -40,17 +40,16 @@ run)
   shift 3
   login
   # Every value in the project is redacted from the command's stdout and stderr.
-  # The values reach perl over fd 3, not argv or env, so `ps` never shows them.
+  # The values reach jq over fd 3, not argv or env, so `ps` never shows them.
+  # One-argument split matches literally, so values need no regex escaping;
+  # longest first, so a value containing another is masked whole.
   # ponytail: line-based literal match; a value split across lines or transformed
-  # (base64, hex, sliced) is not caught. Upgrade to a streaming matcher if needed.
+  # (base64, hex, sliced) is not caught, and invalid UTF-8 in the output becomes
+  # U+FFFD. Upgrade to a byte-level streaming matcher if either matters.
   bws run --project-id "$project" -- "$@" 2>&1 |
-    perl -MMIME::Base64 -e '
-      open(my $fh, "<&=3") or die "fd 3: $!";
-      my @v = grep { length } map { chomp; decode_base64($_) } <$fh>;
-      my $re = join "|", map { quotemeta } sort { length $b <=> length $a } @v;
-      $| = 1;
-      while (<STDIN>) { s/$re/[REDACTED]/g if @v; print }
-    ' 3< <(bws secret list "$project" --output json | jq -r '.[].value | @base64')
+    jq -Rr --unbuffered --slurpfile v /dev/fd/3 \
+      'reduce $v[0][] as $s (.; split($s) | join("[REDACTED]"))' \
+      3< <(bws secret list "$project" --output json | jq '[.[].value | select(length > 0)] | sort_by(-length)')
   ;;
 *)
   # secret get/list and every other subcommand print values or mutate state.
