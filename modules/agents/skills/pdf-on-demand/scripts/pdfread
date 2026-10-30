@@ -1,0 +1,107 @@
+#!/usr/bin/env bash
+# Two operations that a plain poppler call cannot do safely on its own: locate
+# pages without dumping the whole book into context, and crop a figure region
+# while reporting what it will cost. Page-range text stays a raw pdftotext call.
+set -euo pipefail
+
+die() {
+  echo "pdfread: $*" >&2
+  exit 2
+}
+
+usage() {
+  cat >&2 <<'EOF'
+usage:
+  pdfread find FILE PATTERN            # page numbers + matching lines only
+  pdfread fig  FILE PAGE X Y W H [DPI] # cropped region as PNG, pixels at DPI
+EOF
+  exit 2
+}
+
+for bin in pdftotext pdftoppm shasum python3; do
+  command -v "$bin" >/dev/null || die "missing dependency: $bin"
+done
+
+cache_dir() {
+  local dir="${TMPDIR:-/tmp}/pdfread"
+  mkdir -p "$dir"
+  echo "$dir"
+}
+
+pdf_id() {
+  shasum -a 1 <<<"$(cd "$(dirname "$1")" && pwd)/$(basename "$1")" | cut -c1-16
+}
+
+need_file() {
+  [[ -f $1 ]] || die "no such file: $1"
+}
+
+# Print pixel dimensions and the ~tokens the image costs an image-capable model
+# (area/750, the rate used by current Anthropic models).
+describe_image() {
+  python3 - "$1" <<'PY'
+import struct, sys
+path = sys.argv[1]
+with open(path, "rb") as fh:
+    head = fh.read(33)
+w, h = struct.unpack(">II", head[16:24])
+print(f"{path} {w}x{h} ~{w * h // 750} tokens")
+PY
+}
+
+cmd=${1:-}
+[[ -n $cmd ]] || usage
+shift
+
+case "$cmd" in
+find)
+  pdf=${1:-}
+  pattern=${2:-}
+  [[ -n $pdf && -n $pattern ]] || usage
+  need_file "$pdf"
+  dump="$(cache_dir)/$(pdf_id "$pdf").txt"
+  if [[ ! -f $dump || $pdf -nt $dump ]]; then
+    pdftotext "$pdf" "$dump" || die "pdftotext failed"
+  fi
+  python3 - "$dump" "$pattern" <<'PY'
+import re, sys
+dump, pattern = sys.argv[1], sys.argv[2]
+pages = open(dump, encoding="utf-8", errors="replace").read().split("\f")
+rx = re.compile(pattern, re.IGNORECASE)
+hits = 0
+for number, page in enumerate(pages, 1):
+    for line in page.splitlines():
+        line = line.strip()
+        if line and rx.search(line):
+            hits += 1
+            if hits <= 40:
+                print(f"p{number}: {line[:110]}")
+            elif hits == 41:
+                print("(truncated at 40 hits; narrow the pattern)")
+print(f"-- {hits} matching lines in {len(pages)} pages", file=sys.stderr)
+PY
+  ;;
+
+fig)
+  pdf=${1:-}
+  page=${2:-}
+  x=${3:-}
+  y=${4:-}
+  w=${5:-}
+  h=${6:-}
+  dpi=${7:-120}
+  [[ -n $pdf && -n $h ]] || usage
+  need_file "$pdf"
+  for value in "$page" "$x" "$y" "$w" "$h" "$dpi"; do
+    [[ $value =~ ^[0-9]+$ ]] || die "numeric arguments required, got: $value"
+  done
+  out="$(cache_dir)/fig-$(pdf_id "$pdf")-$page-$x-$y-$w-$h-${dpi}dpi.png"
+  pdftoppm -f "$page" -l "$page" -r "$dpi" -x "$x" -y "$y" -W "$w" -H "$h" \
+    -png -singlefile "$pdf" "${out%.png}"
+  describe_image "$out"
+  ;;
+
+*)
+  usage
+  ;;
+esac
