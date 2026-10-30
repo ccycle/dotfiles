@@ -157,6 +157,7 @@
       "Bash(gh ssh-key delete *)",
       "Bash(git branch -D *)",
       "Bash(git clean -f *)",
+      "Bash(git credential *)",
       "Bash(git reset --hard *)",
       "Bash(halt *)",
       "Bash(rbw get *)",
