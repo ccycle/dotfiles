@@ -12,7 +12,10 @@ Analyze the current work, create an appropriate branch, and commit only the rele
 ## Workflow
 
 1. **Analyze Changes**
-   - Run `git status` and `git diff` to understand all modified files.
+   - Gather everything in ONE command (each extra tool call re-reads the whole conversation context, which dominates token cost):
+     `git status --short; git branch --show-current; git diff --stat; git diff --stat --cached`
+   - Then read diffs with one more command. If the `--stat` total is small, run `git diff; git diff --cached`. If it is large, diff only the files whose purpose is unclear from their names (`git diff -- <paths>`).
+   - Do not run further investigation commands unless the diff is genuinely ambiguous.
    - Categorize changes by purpose (feature, bugfix, refactor, etc.).
    - **Identify which files are related to the current task** and which are unrelated.
 
@@ -51,11 +54,10 @@ Analyze the current work, create an appropriate branch, and commit only the rele
    - **Do NOT add a `Co-Authored-By` trailer** or any AI attribution to the commit message.
 
 5. **Execute Immediately**
-   - Run the necessary commands sequentially without waiting for approval:
-     1. Create/checkout branch (if needed).
-     2. Stage related files (`git add ...`).
-     3. Commit (`git commit -m ...`).
-     4. **Repeat steps 2-3 for each logical change if multiple commits are needed.**
+   - Run everything in ONE command chained with `&&`, without waiting for approval:
+     `git switch -c <branch> && git add <files A> && git commit -m "<msg A>" && git add <files B> && git commit -m "<msg B>" && git log --oneline -<N>`
+     - Omit `git switch -c` when staying on the current branch.
+     - The trailing `git log` replaces a separate verification call.
    - **Report the result**:
      - Confirm the branch used/created.
      - List the files that were committed in each step.
