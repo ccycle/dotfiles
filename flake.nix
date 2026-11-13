@@ -196,47 +196,53 @@
               caddyModule.caddyConfig;
           });
 
-          devShells = forAllSystems (system: {
-            default = inputs.nixpkgs.legacyPackages.${system}.mkShell {
-              packages = [
-                inputs.nixpkgs.legacyPackages.${system}.nix-update
-              ];
-            };
-            secrets = inputs.nixpkgs.legacyPackages.${system}.mkShell {
-              packages = with inputs.nixpkgs.legacyPackages.${system}; [
-                rbw
-                pinentry_mac
-              ];
-              shellHook = ''
-                # Configure pinentry if not set
-                if ! rbw config show | grep -q "pinentry"; then
-                  rbw config set pinentry "${inputs.nixpkgs.legacyPackages.${system}.pinentry_mac}/bin/pinentry-mac"
-                fi
-                echo "Bitwarden shell ready. Run 'rbw login' to authenticate."
-              '';
-            };
-            e2e = inputs.nixpkgs.legacyPackages.${system}.mkShell {
-              packages = [
-                inputs.nixpkgs.legacyPackages.${system}.nodejs
-                inputs.nixpkgs.legacyPackages.${system}.oauth2-proxy
-                inputs.nixpkgs.legacyPackages.${system}.caddy
-              ];
-              shellHook = ''
-                export PLAYWRIGHT_BROWSERS_PATH=${
-                  inputs.nixpkgs-playwright.legacyPackages.${system}.playwright-driver.browsers
-                }
-                export PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
-                export PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS=true
-              '';
-            };
-            cli-shortcut-snapshot = inputs.nixpkgs.legacyPackages.${system}.mkShell {
-              packages = [
-                # Pulls in ttyd + ffmpeg as its own runtime deps - no need to
-                # list them separately.
-                inputs.nixpkgs.legacyPackages.${system}.vhs
-              ];
-            };
-          });
+          devShells = forAllSystems (
+            system:
+            {
+              default = inputs.nixpkgs.legacyPackages.${system}.mkShell {
+                packages = [
+                  inputs.nixpkgs.legacyPackages.${system}.nix-update
+                ];
+              };
+              e2e = inputs.nixpkgs.legacyPackages.${system}.mkShell {
+                packages = [
+                  inputs.nixpkgs.legacyPackages.${system}.nodejs
+                  inputs.nixpkgs.legacyPackages.${system}.oauth2-proxy
+                  inputs.nixpkgs.legacyPackages.${system}.caddy
+                ];
+                shellHook = ''
+                  export PLAYWRIGHT_BROWSERS_PATH=${
+                    inputs.nixpkgs-playwright.legacyPackages.${system}.playwright-driver.browsers
+                  }
+                  export PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+                  export PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS=true
+                '';
+              };
+              cli-shortcut-snapshot = inputs.nixpkgs.legacyPackages.${system}.mkShell {
+                packages = [
+                  # Pulls in ttyd + ffmpeg as its own runtime deps - no need to
+                  # list them separately.
+                  inputs.nixpkgs.legacyPackages.${system}.vhs
+                ];
+              };
+            }
+            # pinentry_mac is darwin-only; evaluating it on Linux fails CI's flake check.
+            // inputs.nixpkgs.lib.optionalAttrs (builtins.elem system darwinSystems) {
+              secrets = inputs.nixpkgs.legacyPackages.${system}.mkShell {
+                packages = with inputs.nixpkgs.legacyPackages.${system}; [
+                  rbw
+                  pinentry_mac
+                ];
+                shellHook = ''
+                  # Configure pinentry if not set
+                  if ! rbw config show | grep -q "pinentry"; then
+                    rbw config set pinentry "${inputs.nixpkgs.legacyPackages.${system}.pinentry_mac}/bin/pinentry-mac"
+                  fi
+                  echo "Bitwarden shell ready. Run 'rbw login' to authenticate."
+                '';
+              };
+            }
+          );
 
           homeManagerModules.default =
             { ... }:
