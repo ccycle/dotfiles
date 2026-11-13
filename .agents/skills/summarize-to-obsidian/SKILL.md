@@ -1,15 +1,15 @@
 ---
 name: summarize-to-obsidian
-description: Create a result page in the Obsidian vault's AgentDrafts/ summarizing what was implemented for a task, derived from the git diff, with a link back to the source task. Call after merge-to-main and before cleanup-worktrees, from inside the worktree of the merged branch.
+description: Create a result page in the Obsidian vault's AgentDrafts/ summarizing what was implemented for a task, derived from the git diff, with a link back to the source task. Call after the Forgejo PR is opened (or merged) and before cleanup-worktrees, from inside the worktree of the task's branch.
 allowed-tools: Bash, Read, Write
 ---
 
 # Summarize to Obsidian
 
-Create a durable result page for a task whose implementation was just merged.
-Called inside a herdr worktree after `merge-to-main` and before
-`cleanup-worktrees` — the worktree still exists and main contains the merged
-work, but the feature branch has already been deleted.
+Create a durable result page for a task whose implementation is complete.
+Called inside a herdr worktree after the Forgejo PR is opened and before
+`cleanup-worktrees` — the worktree still exists and is still on the feature
+branch.
 
 The source TODO note title is determined automatically from the worktree's
 branch slug via `dispatched.json`. No input is required.
@@ -24,13 +24,13 @@ If this fails, say you are not running inside Herdr and stop.
 
 ## Step 1 — Determine the task title
 
-1. Confirm you are on `main`:
+1. Confirm you are on the feature branch, not `main`:
 
    ```bash
    git branch --show-current
    ```
 
-   If not on `main`, stop — this skill assumes the merge has already completed.
+   If on `main`, stop — this skill runs from the task's worktree.
 
 2. Extract the slug from the current directory:
 
@@ -77,8 +77,8 @@ dangling `[[<title>]]` link, which is intentional by vault convention.
 
 ## Step 4 — Extract the change set
 
-Since `merge-to-main` has not pushed yet (push is left to the user), the
-commits unique to this task live on `origin/main..HEAD`.
+While the PR is open, the commits unique to this task live on
+`origin/main..HEAD`.
 
 ```bash
 git log --oneline origin/main..HEAD

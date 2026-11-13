@@ -48,8 +48,8 @@ card_section() {
 }
 
 # Classification for a branch whose worktree is gone: MERGED, NEVER_STARTED,
-# or NOT_MERGED. merge-to-main only ever deletes a branch via `git branch -d`,
-# which refuses on unmerged branches, so a missing branch means it was merged.
+# or NOT_MERGED. cleanup-worktrees only removes a worktree (and its branch)
+# after the PR merged, so a missing branch means it was merged.
 classify_branch() {
   local branch="$1"
   if ! git show-ref --verify --quiet "refs/heads/$branch"; then

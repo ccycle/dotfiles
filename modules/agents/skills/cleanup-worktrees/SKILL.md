@@ -15,9 +15,20 @@ merged to main.
 Call this after the branch has been merged to main, while sitting inside
 that worktree's session. It deletes the worktree you are in — nothing else.
 
+A Forgejo merge does not update local `main`, and the cleanup script
+classifies against local `main`. Update it first:
+
+```bash
+git fetch origin
+git worktree list --porcelain | awk '/^worktree/{p=$2} /^branch refs\/heads\/(main|master)$/{print p}'
+```
+
+- If that prints a path (`MAIN_WORKTREE`): `git -C <MAIN_WORKTREE> pull --ff-only origin main`
+- If it prints nothing: `git fetch origin main:main`
+
 This replaces automatic deletion: no git hook removes worktrees, and
-`/merge-to-main` does not remove them on your behalf. Cleanup is always
-explicit and interactive.
+`/merge-and-cleanup` opens the PR without removing them on your behalf.
+Cleanup is always explicit and interactive.
 
 ## Backend detection
 

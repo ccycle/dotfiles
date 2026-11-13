@@ -1,15 +1,18 @@
 ---
 name: merge-and-cleanup
-description: Merge the current branch into main, create an Obsidian summary, and remove the worktree. A three-step end-of-task workflow.
+description: Open a Forgejo PR for the current branch, create an Obsidian summary, and remove the worktree after the PR is merged. An end-of-task workflow.
 allowed-tools: Bash, Read, Write
 ---
 
 # Merge and Cleanup
 
-End-of-task workflow that combines three steps into one: merge the
-current feature branch into main (fast-forward only), write an Obsidian
-result page, and remove the herdr worktree. Run from inside the worktree
-whose task is complete.
+End-of-task workflow that opens a Forgejo PR for the current feature
+branch, writes an Obsidian result page, and removes the herdr worktree
+once the PR has been merged. Run from inside the worktree whose task is
+complete.
+
+Integration happens through Forgejo PRs, not a local fast-forward merge.
+Never merge the branch into local `main` yourself.
 
 ## Prerequisites
 
@@ -19,66 +22,21 @@ test "${HERDR_ENV:-}" = "1"
 
 If this fails, say you are not running inside Herdr and stop.
 
-## Step 1 — Merge to Main
+## Step 1 — Open a Forgejo PR
 
 ### 1.1 Pre-flight Check
 
 Run `git branch --show-current` to identify the current branch. Record
 it as `FEATURE_BRANCH`. If on `main` or `master`, warn the user and
-abort — there is nothing to merge.
+abort — there is nothing to open a PR for.
 
-Run `git status` to check for uncommitted changes. If unstaged or staged
-changes exist, run `git stash` to save them and record that a stash was
-made.
+Do not touch local `main` and do not run `git merge`. The PR is merged on
+Forgejo, not in this checkout.
 
-### 1.2 Detect worktree layout
+### 1.2 Create the PR
 
-Run `git worktree list --porcelain` and look for an entry whose branch
-is `refs/heads/main` (or `refs/heads/master`):
-
-```bash
-git worktree list --porcelain | awk '/^worktree/{p=$2} /^branch refs\/heads\/(main|master)$/{print p}'
-```
-
-If no such entry is found, use the **Plain flow** (step 1.3).
-If found, record its path as `MAIN_WORKTREE` and use the **Worktree
-flow** (step 1.4).
-
-### 1.3 Plain flow
-
-1. `git fetch origin`
-2. `git checkout main` (fall back to `master`)
-3. `git pull origin main`
-4. `git checkout <FEATURE_BRANCH>`
-5. `git rebase main` — if conflicts, follow Conflict resolution below
-6. `git checkout main`
-7. `git merge --ff-only <FEATURE_BRANCH>`
-8. `git branch -d <FEATURE_BRANCH>`
-
-### 1.4 Worktree flow
-
-1. `git -C <MAIN_WORKTREE> status --porcelain` — abort if tracked files
-   have local modifications
-2. `git -C <MAIN_WORKTREE> pull origin main`
-3. From current worktree: `git rebase main` — if conflicts, follow
-   Conflict resolution below
-4. `git -C <MAIN_WORKTREE> merge --ff-only <FEATURE_BRANCH>`
-5. Skip `git branch -d` — cleanup removes the branch with the worktree
-
-### Conflict resolution
-
-If `git rebase main` reports conflicts:
-
-1. Before resolving, understand main's changes: `git log -p -n 3 main -- <file>`
-2. Preserve BOTH sides of the conflict
-3. Read each conflicted file, resolve markers, `git add <file>`
-4. `git rebase --continue`
-5. If too complex, ask the user
-
-### 1.5 Restore stash and report
-
-If changes were stashed, run `git stash pop`. Show `git log --oneline -5`
-on main and remind the user that main is ahead of origin.
+Follow the `forgejo-create-pr` skill (push the branch, then
+`fj pr create`). Record the resulting PR number as `PR_NUMBER`.
 
 ---
 
@@ -86,8 +44,8 @@ on main and remind the user that main is ahead of origin.
 
 ### 2.1 Determine the task title
 
-Confirm you are on `main` (you should be after the merge). Extract the
-slug from the current directory:
+Confirm you are on `FEATURE_BRANCH`, not `main`. Extract the slug from
+the current directory:
 
 ```bash
 pwd | sed 's|.*/\.herdr/worktrees/dotfiles/||'
@@ -139,7 +97,30 @@ Report the path and brief summary.
 
 ---
 
-## Step 3 — Cleanup Worktree
+## Step 3 — Cleanup Worktree (after the PR is merged)
+
+Check whether the PR is merged:
+
+```bash
+fj pr -R origin status <PR_NUMBER>
+```
+
+If it is still open, stop here and tell the user: merge the PR on
+Forgejo, then run `/cleanup-worktrees` from this worktree. If it is
+merged, continue.
+
+### 3.0 Update local main
+
+The cleanup script compares the branch against local `main`, which a
+Forgejo merge does not update. Update it before classifying:
+
+```bash
+git fetch origin
+git worktree list --porcelain | awk '/^worktree/{p=$2} /^branch refs\/heads\/(main|master)$/{print p}'
+```
+
+- If that prints a path (`MAIN_WORKTREE`): `git -C <MAIN_WORKTREE> pull --ff-only origin main`
+- If it prints nothing: `git fetch origin main:main`
 
 ### 3.1 Classify
 
@@ -175,6 +156,7 @@ Only after an explicit yes:
 
 ## Rules
 
+- Never merge the PR yourself — the user merges it on Forgejo.
 - Only remove the worktree you are currently in — never another.
 - Never use `--force` to override a non-SAFE classification.
 - After removal the working directory no longer exists; make removal the

@@ -72,15 +72,15 @@ handles that.
 
 ## Flags
 
-**`--merge`**: When passed, add instruction to use `/merge-to-main` skill at
-the end to rebase and merge the branch into main.
+**`--pr`**: When passed, add instruction to use `/merge-and-cleanup` skill at
+the end to open a Forgejo PR for the branch.
 
 ```
 ...
-Then use the /merge-to-main skill to rebase and merge the branch into main.
+Then use the /merge-and-cleanup skill to open a Forgejo PR for the branch.
 ```
 
-Only instruct worktree agent to `/merge-to-main` if explicitly requested by
+Only instruct worktree agent to `/merge-and-cleanup` if explicitly requested by
 user in task.
 
 ## Workflow

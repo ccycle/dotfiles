@@ -105,11 +105,11 @@ herdr agent read auth-module --source recent-unwrapped --lines 200
 herdr agent prompt auth-module "fix the failing tests" --wait --timeout 600000
 ```
 
-**Merge & cleanup:**
+**Open PR & summarize:**
 
 ```bash
-# Tell agent to merge its own branch
-herdr agent prompt auth-module "/merge-to-main" --wait --timeout 120000
+# Tell agent to open a Forgejo PR for its own branch
+herdr agent prompt auth-module "/merge-and-cleanup" --wait --timeout 600000
 ```
 
 ## Workflow Patterns
@@ -127,8 +127,8 @@ Spawn multiple agents, wait for all, review, merge:
 #    herdr: herdr agent wait <name> --timeout 7200000
 # 5. Review results
 #    herdr: herdr agent read <name> --source recent-unwrapped --lines 50
-# 6. Merge successful agents (one at a time, wait between each)
-#    herdr: herdr agent prompt <name> "/merge-to-main" --wait --timeout 120000
+# 6. Open PRs for successful agents (one at a time, wait between each)
+#    herdr: herdr agent prompt <name> "/merge-and-cleanup" --wait --timeout 600000
 # 7. Send follow-up if needed
 ```
 
@@ -138,9 +138,10 @@ Spawn multiple agents, wait for all, review, merge:
    self-contained with full context. Agents cannot see your conversation.
 2. **Spawn agents in background** so you stay in your own session.
 3. **Always confirm agents started** before waiting for completion.
-4. **Capture and review output** before merging. Do not blindly merge.
-5. **Merge one at a time** by sending `/merge-to-main` to each agent sequentially. Wait
-   for each merge to complete before starting the next to avoid conflicts.
+4. **Capture and review output** before opening a PR. Do not blindly open PRs.
+5. **Open one PR at a time** by sending `/merge-and-cleanup` to each agent
+   sequentially. Wait for each PR to be created before starting the next.
+   Never merge the PRs yourself — leave review and merging to the user.
 6. **Use timeouts** to avoid waiting forever. Handle timeout exits gracefully.
 7. **Prompt files should use relative paths** (each worktree has its own root).
 8. You are a coordinator, not an implementer. Never edit source files directly.
