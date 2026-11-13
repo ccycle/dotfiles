@@ -16,6 +16,20 @@
     };
     syntaxHighlighting.enable = true;
     autosuggestion.enable = true;
+    # macOS /etc/zprofile runs path_helper after nix-darwin's PATH setup in
+    # /etc/zshenv, which moves /etc/paths entries (/usr/bin etc.) ahead of the
+    # Nix profiles. Restore Nix precedence in login shells so pkgs.git wins
+    # over /usr/bin/git.
+    profileExtra = ''
+      typeset -U path
+      path=(
+        $HOME/.nix-profile/bin
+        ${config.home.profileDirectory}/bin
+        /run/current-system/sw/bin
+        /nix/var/nix/profiles/default/bin
+        $path
+      )
+    '';
     completionInit = ''
       # compinit must be called before bashcompinit for both completion systems to work.
       # https://stackoverflow.com/questions/67136714/how-to-properly-call-compinit-and-bashcompinit-in-zsh
