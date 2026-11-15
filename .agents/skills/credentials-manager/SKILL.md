@@ -37,13 +37,13 @@ This will output the `sops.templates` and `nix.extraOptions` configuration to be
 
 All paths below are relative to the repository root.
 
-| Script                                                                 | Purpose                                                                                                                              |
-| ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `.agents/skills/credentials-manager/scripts/sops-with-rbw`             | Run any sops command with the age key fetched by rbw (`SOPS_AGE_KEY_CMD`), keeping the plaintext key out of the process environment. |
-| [verify-rbw-integration.sh](scripts/verify-rbw-integration.sh)           | Verify rbw + sops wiring (rbw installed, unlocked, key item reachable).                                                              |
-| [check-recipients.sh](scripts/check-recipients.sh)                     | Compare every `secrets*.yaml` recipient list against [modules/sops/age-keys.nix](../../../modules/sops/age-keys.nix) (no decryption needed).                             |
-| [generate-sops-yaml.sh](scripts/generate-sops-yaml.sh)                 | Regenerate the committed `.sops.yaml` from [modules/sops/age-keys.nix](../../../modules/sops/age-keys.nix).                                                              |
-| [secret-rotate.sh](scripts/secret-rotate.sh)                           | Rotate one secrets file: edit -> recipient check -> commit -> darwin-rebuild.                                                        |
+| Script                                                         | Purpose                                                                                                                                      |
+| -------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `.agents/skills/credentials-manager/scripts/sops-with-rbw`     | Run any sops command with the age key fetched by rbw (`SOPS_AGE_KEY_CMD`), keeping the plaintext key out of the process environment.         |
+| [verify-rbw-integration.sh](scripts/verify-rbw-integration.sh) | Verify rbw + sops wiring (rbw installed, unlocked, key item reachable).                                                                      |
+| [check-recipients.sh](scripts/check-recipients.sh)             | Compare every `secrets*.yaml` recipient list against [modules/sops/age-keys.nix](../../../modules/sops/age-keys.nix) (no decryption needed). |
+| [generate-sops-yaml.sh](scripts/generate-sops-yaml.sh)         | Regenerate the committed `.sops.yaml` from [modules/sops/age-keys.nix](../../../modules/sops/age-keys.nix).                                  |
+| [secret-rotate.sh](scripts/secret-rotate.sh)                   | Rotate one secrets file: edit -> recipient check -> commit -> darwin-rebuild.                                                                |
 
 ## Policies
 
