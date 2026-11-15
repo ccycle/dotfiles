@@ -264,7 +264,7 @@
       "**Primary use of Claude Code**: personal infrastructure-as-code / dotfiles management (Nix flakes, nix-darwin, home-manager) for a personal macOS + homelab setup",
       "**Trusted repo**: `/Users/mfuruki/repositories/github.com/ccycle/dotfiles` and its remotes `github.com/ccycle/dotfiles` and `forgejo.mac-mini-m4-pro.internal/ccycle/dotfiles.git`",
       "**Org-specific CLIs**: None configured — project-specific tools observed: `herdr`, `fj` (Forgejo CLI), `nix`/`nix-instantiate`, `orbctl`, `rbw`, `kanban`/`board`/`state_file` (project scripting)",
-      "routine under this repo's `scripts/` prefix: frequently-invoked local automation (`scripts` seen 9× in transcripts)"
+      "routine under this repo's skill scripts (`.agents/skills/*/scripts/`): frequently-invoked local automation"
     ]
   }
 }

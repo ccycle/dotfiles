@@ -46,12 +46,12 @@ vm-verify`'s approach) is impossible for this specific case: Apple
 
 So: each git worktree gets its own docker-compose project (named
 `opencloud-e2e-test-<basename of worktree repo root>`, mirroring
-`vm-verify`'s own VM-naming convention in [scripts/cleanup-worktree.sh](../../scripts/cleanup-worktree.sh)),
+`vm-verify`'s own VM-naming convention in [scripts/cleanup-worktree.sh](../../modules/agents/skills/cleanup-worktrees/scripts/cleanup-worktree.sh)),
 its own dynamically-chosen ports, and its own state directory
 (`tests/e2e/.state/`, gitignored, inside the worktree checkout itself —
 deleting the worktree deletes this state for free; only the running
 containers need explicit teardown, handled by `cmd_teardown` in
-[scripts/stack.sh](scripts/stack.sh) wired into [scripts/cleanup-worktree.sh](../../scripts/cleanup-worktree.sh)).
+[scripts/stack.sh](scripts/stack.sh) wired into [scripts/cleanup-worktree.sh](../../modules/agents/skills/cleanup-worktrees/scripts/cleanup-worktree.sh)).
 
 ## Why Every Access Goes Through a Dedicated Test Caddy
 

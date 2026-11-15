@@ -21,17 +21,20 @@ explicit, interactive action — nothing removes a worktree automatically.
 
 Two layers work together:
 
-1. **Git hooks (event-driven)** keep the history linear locally:
-   - `pre-commit` — blocks direct commits on main.
-   - `pre-merge-commit` — blocks non-fast-forward merges into main.
+1. **Git hooks (event-driven)** keep the history linear locally (`hooks/` at
+   the repo root, installed with `just install-git-hooks`):
+   - `reference-transaction` — rejects any update of local `main` that would
+     leave it different from `refs/remotes/origin/main`, covering direct
+     commits, merges, rebases, cherry-picks, and `branch -f`. main is
+     integrated only through Forgejo PRs.
    - `pre-push` — ensures local main is an ancestor of origin/main.
    - There is deliberately **no `post-merge` hook**: cleanup is never
      automatic (see Rejected Alternatives).
 
 2. **On-demand cleanup (agent-driven, interactive)** handles worktree
    removal:
-   - `cleanup-worktree.sh` — classifies and removes **the current worktree**
-     from inside its session. The sole entry point.
+   - [scripts/cleanup-worktree.sh](scripts/cleanup-worktree.sh) — classifies and removes **the current
+     worktree** from inside its session. The sole entry point.
    - `/cleanup-worktrees` skill — wraps the script in an interactive flow:
      classify → report → confirm → remove. It is the only way a worktree
      is removed.

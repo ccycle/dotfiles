@@ -1,6 +1,6 @@
 // Tailscale ACL policy — default-deny, grant access per role.
 //
-// Apply with: scripts/tailscale-acl-apply.sh (see the tailscale-acl-apply skill).
+// Apply with: .agents/skills/tailscale-acl-apply/scripts/tailscale-acl-apply.sh (see the tailscale-acl-apply skill).
 // See modules/tailscale/design.md for the zero-trust roadmap.
 {
   // --- Tag ownership ---

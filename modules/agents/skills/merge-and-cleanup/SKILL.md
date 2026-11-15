@@ -124,10 +124,13 @@ git worktree list --porcelain | awk '/^worktree/{p=$2} /^branch refs\/heads\/(ma
 
 ### 3.1 Classify
 
-Run the cleanup script from the repo root of the current worktree:
+Run the cleanup script that ships with the `cleanup-worktrees` skill
+(`modules/agents/skills/cleanup-worktrees/scripts/cleanup-worktree.sh` in the
+dotfiles repo, `~/.claude/skills/cleanup-worktrees/scripts/cleanup-worktree.sh`
+when deployed):
 
 ```bash
-./scripts/cleanup-worktree.sh --dry-run
+scripts/cleanup-worktree.sh --dry-run
 ```
 
 Interpret the output:
@@ -149,7 +152,7 @@ This worktree (<branch>) is merged to main. Remove it? [y/N]
 Only after an explicit yes:
 
 ```bash
-./scripts/cleanup-worktree.sh --force
+scripts/cleanup-worktree.sh --force
 ```
 
 ---

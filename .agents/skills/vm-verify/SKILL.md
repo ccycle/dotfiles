@@ -58,10 +58,11 @@ is suspected to be corrupted).
    not the Determinate Nix installer, whose daemon nix-darwin refuses to
    activate alongside since this repo's nix-darwin manages Nix itself) —
    skipped if a reused VM already has it from a previous run.
-4. Runs `scripts/darwin-rebuild.sh private` inside the VM. This lets the existing
+4. Runs `.agents/skills/darwin-rebuild/scripts/darwin-rebuild.sh private` inside the VM. This lets the existing
    `.local/dotfiles/flake.nix` auto-creation logic
-   (`scripts/darwin-rebuild.sh:88-104`) run unmodified, wiring
-   `custom.dotfiles.dir` to the VM-local copy of the worktree.
+   ([scripts/ensure-local.sh](../setup-local-storage/scripts/ensure-local.sh), which that script
+   calls) run unmodified, wiring `custom.dotfiles.dir` to the VM-local copy of the
+   worktree.
 5. Verifies that the key `mkOutOfStoreSymlink` targets (Claude skills/settings/
    hooks, ai-rules files, herdr config, direnv) resolve into the VM's copy of the
    worktree, not somewhere stale or broken.
@@ -81,7 +82,7 @@ is suspected to be corrupted).
   and only fetch/build what changed.
 - Each worktree accumulates its own VM disk image on the host, so disk usage
   grows with the number of worktrees ever verified. Nothing prunes these
-  automatically outside of [scripts/cleanup-worktree.sh](../../../scripts/cleanup-worktree.sh) deleting the VM when
+  automatically outside of [scripts/cleanup-worktree.sh](../../../modules/agents/skills/cleanup-worktrees/scripts/cleanup-worktree.sh) deleting the VM when
   the worktree itself is removed (see that script).
 
 ## Out of Scope

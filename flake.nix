@@ -5,7 +5,7 @@
   # profile first to provision access tokens and base settings without
   # triggering service/package builds:
   #
-  #   ./scripts/darwin-rebuild.sh bootstrap
+  #   .agents/skills/darwin-rebuild/scripts/darwin-rebuild.sh bootstrap
   #
   # Then switch to the full configuration for the host.
   inputs = {

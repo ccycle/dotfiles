@@ -7,7 +7,7 @@
 # Allowed recipients per file = (keys of hosts matched by the first path
 # rule) + transitionKeys; anything outside that set is a drift violation.
 set -euo pipefail
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+REPO_ROOT="$(git -C "$(dirname "${BASH_SOURCE[0]}")" rev-parse --show-toplevel)"
 cd "${REPO_ROOT}"
 
 LEDGER="$(nix eval --json --impure --expr 'import ./modules/sops/age-keys.nix')"
@@ -39,7 +39,7 @@ for file in "${FILES[@]}"; do
     echo "❌ ${file}: recipient drift"
     echo "   actual:   $(echo "$actual" | tr '\n' ' ')"
     echo "   expected: $(echo "$expected" | tr '\n' ' ')"
-    echo "   → run scripts/sops/generate-sops-yaml.sh, then 'sops updatekeys -y ${file}'"
+    echo "   → run .agents/skills/credentials-manager/scripts/generate-sops-yaml.sh, then 'sops updatekeys -y ${file}'"
     fail=1
   else
     echo "✅ ${file}"

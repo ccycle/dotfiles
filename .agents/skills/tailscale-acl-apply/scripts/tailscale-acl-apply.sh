@@ -6,13 +6,13 @@
 # for the full picture, including one-time bootstrap prerequisites.
 #
 # Usage:
-#   scripts/tailscale-acl-apply.sh          # init + fmt/validate + plan only
-#   scripts/tailscale-acl-apply.sh --apply   # ...then `tofu apply` (which
+#   .agents/skills/tailscale-acl-apply/scripts/tailscale-acl-apply.sh          # init + fmt/validate + plan only
+#   .agents/skills/tailscale-acl-apply/scripts/tailscale-acl-apply.sh --apply   # ...then `tofu apply` (which
 #                                             # shows the plan again and
 #                                             # requires typing "yes")
 set -euo pipefail
 
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+REPO_ROOT="$(git -C "$(dirname "${BASH_SOURCE[0]}")" rev-parse --show-toplevel)"
 TF_DIR="${REPO_ROOT}/modules/tailscale/terraform"
 SECRETS_FILE="${REPO_ROOT}/modules/tailscale/secrets.yaml"
 
@@ -36,7 +36,7 @@ case "${1:-}" in
   ;;
 esac
 
-secrets_json="$("${REPO_ROOT}/scripts/sops/sops-with-rbw" -d --output-type json "${SECRETS_FILE}")"
+secrets_json="$("${REPO_ROOT}/.agents/skills/credentials-manager/scripts/sops-with-rbw" -d --output-type json "${SECRETS_FILE}")"
 TAILSCALE_OAUTH_CLIENT_ID="$(jq -r '.tailscale_tf_oauth_client_id // empty' <<<"${secrets_json}")"
 TAILSCALE_OAUTH_CLIENT_SECRET="$(jq -r '.tailscale_tf_oauth_client_secret // empty' <<<"${secrets_json}")"
 TAILSCALE_TAILNET="$(jq -r '.tailscale_tailnet // empty' <<<"${secrets_json}")"

@@ -4,7 +4,7 @@
 # oidcGroups) against the live Pocket ID admin API on the current host.
 #
 # Usage:
-#   scripts/pocket-id-register-clients.sh [--admin-user <username>] [--dry-run]
+#   .agents/skills/pocket-id-register-clients/scripts/pocket-id-register-clients.sh [--admin-user <username>] [--dry-run]
 #
 # Must be run on a target host (mac-mini-m4 or mac-mini-m4-pro) from a
 # checkout of the dotfiles repo, by a user who holds that host's sops age
@@ -37,7 +37,7 @@
 # are scoped to the clients/groups/users this script owns.
 set -euo pipefail
 
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+REPO_ROOT="$(git -C "$(dirname "${BASH_SOURCE[0]}")" rev-parse --show-toplevel)"
 cd "${REPO_ROOT}"
 
 NIX="nix --extra-experimental-features nix-command --extra-experimental-features flakes"
@@ -94,7 +94,7 @@ esac
 
 # Worktrees lack the gitignored .local/ state; restore it and wire the
 # same flake overrides darwin-rebuild.sh uses so nix eval can succeed.
-"${REPO_ROOT}/scripts/ensure-local.sh"
+"${REPO_ROOT}/.agents/skills/setup-local-storage/scripts/ensure-local.sh"
 
 eval_args=()
 for m in storage obsidian-vault; do

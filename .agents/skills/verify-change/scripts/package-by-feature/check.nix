@@ -5,7 +5,7 @@
 #
 # Usage (from the repo root):
 #   nix eval --json --impure \
-#     --expr 'import ./scripts/package-by-feature/check.nix { repoRoot = ./.; }'
+#     --expr 'import ./.agents/skills/verify-change/scripts/package-by-feature/check.nix { repoRoot = ./.; }'
 #
 # Evaluates to { ok, count, violations = [ { rule, file, message } ... ]; }.
 #

@@ -17,7 +17,7 @@ in
     assertions = [
       {
         assertion = vol != "";
-        message = "custom.storage.volumes.llm-server must be set. Run: scripts/setup-local-storage.sh llm-server=~/Library/Caches/llama.cpp";
+        message = "custom.storage.volumes.llm-server must be set. Run: .agents/skills/setup-local-storage/scripts/setup-local-storage.sh llm-server=~/Library/Caches/llama.cpp";
       }
     ];
 

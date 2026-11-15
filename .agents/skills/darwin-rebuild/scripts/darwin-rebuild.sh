@@ -3,7 +3,12 @@ set -eu
 
 NIX="nix --extra-experimental-features nix-command --extra-experimental-features flakes"
 
-repo_root="$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)"
+repo_root="$(git -C "$(dirname -- "$0")" rev-parse --show-toplevel 2>/dev/null || true)"
+if [ -z "${repo_root}" ]; then
+  # Not a git checkout (vm-verify copies the tree without .git): fall back to
+  # the fixed depth, .agents/skills/darwin-rebuild/scripts/<this file>.
+  repo_root="$(CDPATH='' cd -- "$(dirname -- "$0")/../../../.." && pwd)"
+fi
 arch="$(${NIX} eval --impure --raw --expr 'builtins.currentSystem')"
 
 # Discover available profiles from the main flake's darwinConfigurations.
@@ -63,7 +68,7 @@ overrides=""
 # Ensure machine-local .local state for this checkout (restores
 # storage/obsidian-vault from the main checkout and syncs dotfiles.dir to this
 # checkout), then wire the overrides for whatever now exists.
-"${repo_root}/scripts/ensure-local.sh"
+"${repo_root}/.agents/skills/setup-local-storage/scripts/ensure-local.sh"
 
 for m in storage obsidian-vault; do
   if [ -d "${repo_root}/.local/${m}" ]; then

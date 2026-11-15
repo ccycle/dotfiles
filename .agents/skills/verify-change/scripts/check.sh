@@ -21,11 +21,11 @@ function check_structure() {
   echo "=== 📦 Checking Package by Feature structure ==="
   local report
   report=$(nix eval --json --impure \
-    --expr 'import ./scripts/package-by-feature/check.nix { repoRoot = ./.; }')
+    --expr 'import ./.agents/skills/verify-change/scripts/package-by-feature/check.nix { repoRoot = ./.; }')
   if [ "$(echo "$report" | jq -r '.ok')" != "true" ]; then
     echo "$report" | jq -r '.violations[] | "❌ [\(.rule)] \(.file): \(.message)"'
     echo "Structure check failed ($(echo "$report" | jq -r '.count') violation(s))."
-    echo "Rules are declared in scripts/package-by-feature/rules.nix."
+    echo "Rules are declared in .agents/skills/verify-change/scripts/package-by-feature/rules.nix."
     return 1
   fi
   echo "✅ Structure check passed."
@@ -39,7 +39,7 @@ function check_md_links() {
 
 function check_recipients() {
   echo "=== 🔐 Checking sops recipient drift against age key ledger ==="
-  "${REPO_ROOT}/scripts/sops/check-recipients.sh"
+  "${REPO_ROOT}/.agents/skills/credentials-manager/scripts/check-recipients.sh"
   echo ""
 }
 
@@ -238,7 +238,7 @@ fi
 # checkout's files instead of main's.
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../.." && pwd)"
 echo "=== 📂 Ensuring machine-local .local state ==="
-"${REPO_ROOT}/scripts/ensure-local.sh"
+"${REPO_ROOT}/.agents/skills/setup-local-storage/scripts/ensure-local.sh"
 echo ""
 
 # 1. Syntax check

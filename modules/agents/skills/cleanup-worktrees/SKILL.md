@@ -44,10 +44,14 @@ test "${HERDR_ENV:-}" = "1"
 
 ### 1. Classify the current worktree
 
-Run the cleanup script from the repo root of the current worktree:
+Run the script that ships with this skill — it is
+`scripts/cleanup-worktree.sh` next to this SKILL.md, i.e.
+`modules/agents/skills/cleanup-worktrees/scripts/cleanup-worktree.sh` in the
+dotfiles repo and `~/.claude/skills/cleanup-worktrees/scripts/cleanup-worktree.sh`
+when deployed:
 
 ```bash
-./scripts/cleanup-worktree.sh --dry-run
+scripts/cleanup-worktree.sh --dry-run
 ```
 
 The script prints `<branch>\t<status>\t<path>` and exits non-zero when the
@@ -74,8 +78,18 @@ and stop. Do not attempt removal.
 If the classification is SAFE, remove it without confirmation:
 
 ```bash
-./scripts/cleanup-worktree.sh --force
+scripts/cleanup-worktree.sh --force
 ```
+
+## Other Scripts In This Skill
+
+- `scripts/cleanup-merged-worktrees.sh` — inspect (and optionally remove)
+  every merged worktree at once, for out-of-band merges. Not tied to the
+  current directory.
+- `scripts/detect-stale-worktrees.sh` — report abandoned worktrees (no diff
+  from main, or no activity for N days, no running agent).
+- `design.md` — why cleanup is interactive, classification rules, and the
+  git hooks that keep main linear.
 
 ## Rules
 

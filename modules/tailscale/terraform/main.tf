@@ -1,6 +1,6 @@
 # Provider auth comes from environment variables, never from literals here
 # (TAILSCALE_OAUTH_CLIENT_ID / TAILSCALE_OAUTH_CLIENT_SECRET / TAILSCALE_TAILNET),
-# set by scripts/tailscale-acl-apply.sh from sops. See ../secrets.yaml and
+# set by .agents/skills/tailscale-acl-apply/scripts/tailscale-acl-apply.sh from sops. See ../secrets.yaml and
 # .agents/skills/tailscale-acl-apply/SKILL.md for the credential bootstrap.
 provider "tailscale" {}
 

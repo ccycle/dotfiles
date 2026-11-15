@@ -76,7 +76,7 @@ if [ "$is_linked" != "true" ]; then
 fi
 
 # Locate the repository root from the worktree itself
-repo_root=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)
+repo_root=$(git -C "$(dirname -- "$0")" rev-parse --show-toplevel 2>/dev/null || true)
 # Prefer the actual repo root of the current worktree
 worktree_repo_root=$(git -C "$cwd" rev-parse --show-toplevel 2>/dev/null || echo "$repo_root")
 

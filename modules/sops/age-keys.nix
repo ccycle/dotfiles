@@ -1,6 +1,6 @@
 # Single source of truth for per-machine age keys and their recipient
 # mapping. The committed .sops.yaml is generated from this file by
-# scripts/sops/generate-sops-yaml.sh; scripts/sops/check-recipients.sh
+# .agents/skills/credentials-manager/scripts/generate-sops-yaml.sh; .agents/skills/credentials-manager/scripts/check-recipients.sh
 # verifies that every secrets file's actual recipients match the rules
 # declared here (enforced by the verify-change skill).
 #

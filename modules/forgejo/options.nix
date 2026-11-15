@@ -145,7 +145,7 @@ in
   config = mkIf cfg.enable (mkMerge [
     {
       # Confidential OIDC client registered on Pocket ID. The client secret
-      # is captured by scripts/pocket-id-register-clients.sh; the client ID
+      # is captured by .agents/skills/pocket-id-register-clients/scripts/pocket-id-register-clients.sh; the client ID
       # is fixed (plaintext) and matches FORGEJO_OIDC_CLIENT_ID below.
       services.pocket-id.oidcClients = [
         {

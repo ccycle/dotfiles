@@ -35,7 +35,7 @@ in
 
     # OIDC clients and user groups registered on this Pocket ID instance.
     # Each service module declares the clients and groups it needs here;
-    # scripts/pocket-id-register-clients.sh reconciles these against the
+    # .agents/skills/pocket-id-register-clients/scripts/pocket-id-register-clients.sh reconciles these against the
     # live Pocket ID via its admin API (see that script and
     # docs/oidc-setup.md). Single source of truth is this option tree.
     oidcClients = mkOption {
@@ -93,7 +93,7 @@ in
                 Confidential clients only: repo-relative path to the sops
                 secrets file holding the client secret (e.g.
                 modules/forgejo/secrets.yaml). Written by
-                scripts/pocket-id-register-clients.sh.
+                .agents/skills/pocket-id-register-clients/scripts/pocket-id-register-clients.sh.
               '';
             };
 
@@ -140,7 +140,7 @@ in
             adminGroup = mkOption {
               type = types.bool;
               default = false;
-              description = "If true, the user passed to scripts/pocket-id-register-clients.sh --admin-user is added to this group.";
+              description = "If true, the user passed to .agents/skills/pocket-id-register-clients/scripts/pocket-id-register-clients.sh --admin-user is added to this group.";
             };
           };
         }

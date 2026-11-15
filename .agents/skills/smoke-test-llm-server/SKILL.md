@@ -1,6 +1,6 @@
 ---
 name: smoke-test-llm-server
-description: Run smoke tests to verify the llama-swap LLM server is running and accessible via Caddy reverse proxy after deployment.
+description: Verify the llama-swap LLM server is running and accessible via the Caddy reverse proxy, and benchmark its tokens/sec. Use after deployment or when debugging LLM server health, reachability, or throughput.
 ---
 
 # LLM Server Smoke Test
@@ -20,6 +20,12 @@ Run from the repository root:
 1. **llama-swap Health**: Curls `/health` on `127.0.0.1:8880` to confirm llama-swap is running.
 2. **llama-swap Models**: Curls `/v1/models` on `127.0.0.1:8880` to list available models.
 3. **Caddy Reverse Proxy (HTTP)**: Verifies HTTP access through Caddy at `http://llm.<hostname>.internal/v1/models`.
+
+## Throughput Benchmark (optional)
+
+[mtplx-bench.py](scripts/mtplx-bench.py) measures
+tokens/sec against a fixed prompt (`--base`, `--n`, `--max-tokens`). Use it to
+compare model or server-config changes; it is not a pass/fail smoke test.
 
 ## When to Use
 

@@ -23,7 +23,7 @@ Every task follows: **Plan → Implement → Verify → Report**. State completi
 
 To ensure maintainability and clear dependency trees, we follow a strict **Package by Feature** aggregation pattern. For full conventions, see `.agents/skills/nix-module/references/conventions.md`.
 
-These rules are enforced mechanically: `scripts/package-by-feature/check.nix` validates the module trees against the declarative rule set in `scripts/package-by-feature/rules.nix` (run automatically by the verify-change skill). Intentional exceptions (disabled modules, generated code) belong in `rules.nix`, not in the checker.
+These rules are enforced mechanically: `.agents/skills/verify-change/scripts/package-by-feature/check.nix` validates the module trees against the declarative rule set in `.agents/skills/verify-change/scripts/package-by-feature/rules.nix` (run automatically by the verify-change skill). Intentional exceptions (disabled modules, generated code) belong in `rules.nix`, not in the checker.
 
 **Rules:**
 
@@ -119,7 +119,7 @@ Age private keys are managed via rbw (Rust Bitwarden CLI) to eliminate plaintext
 1. Install rbw: `nix-env -iA nixpkgs.rbw` or via home-manager
 2. Configure rbw: `rbw config set email your@email.com`
 3. Add age key to rbw: `rbw add dotfiles-age-key-$(hostname -s)`
-4. Verify integration: `scripts/sops/verify-rbw-integration.sh`
+4. Verify integration: `.agents/skills/credentials-manager/scripts/verify-rbw-integration.sh`
 
 ### Usage
 
@@ -127,13 +127,13 @@ Use `sops-with-rbw` wrapper script instead of plain `sops`:
 
 ```bash
 # Decrypt a secrets file
-scripts/sops/sops-with-rbw -d modules/attic/secrets.yaml
+.agents/skills/credentials-manager/scripts/sops-with-rbw -d modules/attic/secrets.yaml
 
 # Edit a secrets file
-scripts/sops/sops-with-rbw edit modules/attic/secrets.yaml
+.agents/skills/credentials-manager/scripts/sops-with-rbw edit modules/attic/secrets.yaml
 
 # Encrypt a secrets file
-scripts/sops/sops-with-rbw -e modules/attic/secrets.yaml
+.agents/skills/credentials-manager/scripts/sops-with-rbw -e modules/attic/secrets.yaml
 ```
 
 ### Security Properties
@@ -149,7 +149,7 @@ scripts/sops/sops-with-rbw -e modules/attic/secrets.yaml
 Run the verification script to ensure rbw integration works:
 
 ```bash
-scripts/sops/verify-rbw-integration.sh
+.agents/skills/credentials-manager/scripts/verify-rbw-integration.sh
 ```
 
 ### Troubleshooting

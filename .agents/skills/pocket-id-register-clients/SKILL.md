@@ -1,6 +1,6 @@
 ---
 name: pocket-id-register-clients
-description: Register OIDC clients and user groups on the production Pocket ID instance by running scripts/pocket-id-register-clients.sh on the target host. Use when adding or updating an SSO client (OpenCloud, Forgejo, Immich, Grafana), the opencloud_role groups, or the admin user's group membership. Must be run on the target host itself, never from a random machine.
+description: Register OIDC clients and user groups on the production Pocket ID instance by running this skill's script on the target host. Use when adding or updating an SSO client (OpenCloud, Forgejo, Immich, Grafana), the opencloud_role groups, or the admin user's group membership. Must be run on the target host itself, never from a random machine.
 ---
 
 # Pocket ID OIDC Client / Group Registration
@@ -51,14 +51,14 @@ declaration (and leaves stale `*_oidc_client_id` sops keys behind).
    live objects is then not checked).
 3. **Apply** on the target host:
    ```bash
-   scripts/pocket-id-register-clients.sh --admin-user <username>
+   .agents/skills/pocket-id-register-clients/scripts/pocket-id-register-clients.sh --admin-user <username>
    ```
    `--admin-user` adds the named user to every group flagged `adminGroup`
    (e.g. `opencloud_admins`). OpenCloud returns 500 for users in no group,
    so pass it at least once. Repeat the script after every config change;
    it is idempotent.
 4. **Commit the sops writes** the script made (`git diff` → commit), then
-   `scripts/darwin-rebuild.sh <profile>`.
+   `.agents/skills/darwin-rebuild/scripts/darwin-rebuild.sh <profile>`.
 
 ## What The Script Does
 

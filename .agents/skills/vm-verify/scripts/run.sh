@@ -43,13 +43,13 @@ fi
 
 if ! command -v tart >/dev/null 2>&1; then
   echo "tart not found. It's declared in modules/tart/darwin.nix; run:" >&2
-  echo "  scripts/darwin-rebuild.sh private" >&2
+  echo "  .agents/skills/darwin-rebuild/scripts/darwin-rebuild.sh private" >&2
   exit 1
 fi
 
 if ! command -v sshpass >/dev/null 2>&1; then
   echo "sshpass not found. It's declared in modules/tart/darwin.nix; run:" >&2
-  echo "  scripts/darwin-rebuild.sh private" >&2
+  echo "  .agents/skills/darwin-rebuild/scripts/darwin-rebuild.sh private" >&2
   exit 1
 fi
 
@@ -124,7 +124,7 @@ set +u # /etc/profile (via /etc/bashrc) references \$PS1, unset in a non-interac
 . /etc/profile
 set -u
 cd ~/${REMOTE_DIR}
-scripts/darwin-rebuild.sh private
+.agents/skills/darwin-rebuild/scripts/darwin-rebuild.sh private
 REMOTE
   pass "darwin-rebuild switch (private) succeeded in VM"
 else

@@ -1,11 +1,11 @@
 ---
 name: darwin-rebuild
-description: Apply Darwin system configuration by running scripts/darwin-rebuild.sh with the appropriate profile. Use this after modifying Nix configuration files and passing verify-change checks.
+description: Apply Darwin system configuration by running the darwin-rebuild skill's script with the appropriate profile. Use this after modifying Nix configuration files and passing verify-change checks.
 ---
 
 # Darwin Rebuild
 
-This skill applies the nix-darwin system configuration to the local machine using [scripts/darwin-rebuild.sh](../../../scripts/darwin-rebuild.sh).
+This skill applies the nix-darwin system configuration to the local machine using [scripts/darwin-rebuild.sh](scripts/darwin-rebuild.sh).
 
 ## Profile Selection Policy
 
@@ -18,7 +18,7 @@ When invoking this skill, determine the profile automatically:
 ## Usage
 
 ```bash
-scripts/darwin-rebuild.sh <profile>
+.agents/skills/darwin-rebuild/scripts/darwin-rebuild.sh <profile>
 ```
 
 ## Profiles
@@ -52,5 +52,5 @@ profile=$(hostname)
 .agents/skills/verify-change/scripts/check.sh "$profile"
 
 # 3. Apply the configuration
-scripts/darwin-rebuild.sh "$profile"
+.agents/skills/darwin-rebuild/scripts/darwin-rebuild.sh "$profile"
 ```

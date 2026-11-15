@@ -17,20 +17,4 @@ update-gwq:
 
 # Install repo-local git hooks (run once after cloning)
 install-git-hooks:
-    git config core.hooksPath scripts/git-hooks
-
-# Inspect herdr worktrees whose branches are already merged to main
-cleanup-worktrees-dry-run:
-    ./scripts/cleanup-merged-worktrees.sh --dry-run
-
-# Classify and remove the CURRENT worktree (interactive, safe-only)
-cleanup-worktree:
-    ./scripts/cleanup-worktree.sh
-
-# Classify the current worktree without removing
-cleanup-worktree-dry-run:
-    ./scripts/cleanup-worktree.sh --dry-run
-
-# Preview stale worktrees (no diff from main / old + no activity)
-stale-worktrees:
-    ./scripts/detect-stale-worktrees.sh
+    git config core.hooksPath hooks

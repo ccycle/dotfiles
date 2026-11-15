@@ -7,7 +7,7 @@ Declarative macOS system and home configuration using Nix flakes, nix-darwin, an
 1. Install Nix:
 
    ```sh
-   sh scripts/install-nix.sh
+   sh .agents/skills/bootstrap-machine/scripts/install-nix.sh
    ```
 
 2. If the first build fails around CA certificates, symlink the bundled cert as a one-time workaround:
@@ -19,7 +19,7 @@ Declarative macOS system and home configuration using Nix flakes, nix-darwin, an
 3. Log in to Bitwarden and place the sops-nix age key:
 
    ```sh
-   ./scripts/login-rbw-shell.sh
+   .agents/skills/bootstrap-machine/scripts/login-rbw-shell.sh
    mkdir -p ~/.config/sops/age
    rbw get "<age key item name>" > ~/.config/sops/age/keys.txt
    ```
@@ -27,7 +27,7 @@ Declarative macOS system and home configuration using Nix flakes, nix-darwin, an
 4. Switch to the `bootstrap` profile (config-only base: shared settings, no host services). This provisions credentials without triggering service/package builds:
 
    ```sh
-   ./scripts/darwin-rebuild.sh bootstrap
+   .agents/skills/darwin-rebuild/scripts/darwin-rebuild.sh bootstrap
    ```
 
 5. Switch to the full configuration for this host:
@@ -44,4 +44,4 @@ A small number of GUI apps are installed manually rather than managed declarativ
 
 ## Common tasks
 
-Run `just --list` for the full list of recipes (rebuild, worktree cleanup, git hooks install, etc.).
+Run `just --list` for the full list of recipes (rebuild, git hooks install, flake updates, etc.).

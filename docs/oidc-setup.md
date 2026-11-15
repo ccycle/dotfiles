@@ -1,7 +1,7 @@
 # Pocket ID OIDC セットアップ手順
 
 Pocket ID を IdP として各 self-hosted サービスへ SSO を組み込む手順。
-OIDC クライアントとグループの登録は [scripts/pocket-id-register-clients.sh](../scripts/pocket-id-register-clients.sh)
+OIDC クライアントとグループの登録は [scripts/pocket-id-register-clients.sh](../.agents/skills/pocket-id-register-clients/scripts/pocket-id-register-clients.sh)
 で自動化されており、手動操作は Pocket ID の初期セットアップと管理 API
 キーの作成のみ。クライアント定義は Nix 設定が唯一の情報源である。
 
@@ -50,7 +50,7 @@ sops set modules/pocket-id/secrets-<host>.yaml '["pocket_id_admin_api_key"]' '"<
 ## 3. 登録スクリプトの実行
 
 ```sh
-scripts/pocket-id-register-clients.sh --admin-user <管理者ユーザー名> [--dry-run]
+.agents/skills/pocket-id-register-clients/scripts/pocket-id-register-clients.sh --admin-user <管理者ユーザー名> [--dry-run]
 ```
 
 このスクリプトは宣言型設定
@@ -91,7 +91,7 @@ sops に書き込まれた変更をコミットしてから適用する。
 
 ```sh
 git add -A && git commit -m "Register OIDC clients on Pocket ID"
-scripts/darwin-rebuild.sh <profile>
+.agents/skills/darwin-rebuild/scripts/darwin-rebuild.sh <profile>
 ```
 
 ## 5. Prometheus basicauth の設定

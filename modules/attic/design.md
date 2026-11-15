@@ -6,7 +6,7 @@
 job.** The build (`nix build .#darwinConfigurations....system`) and the
 cache push are two independent concerns: a push failure means the CI
 machine's local Attic cache didn't get warmed, not that the
-configuration is broken. [scripts/darwin-rebuild.sh](../../scripts/darwin-rebuild.sh) already treats
+configuration is broken. [scripts/darwin-rebuild.sh](../../.agents/skills/darwin-rebuild/scripts/darwin-rebuild.sh) already treats
 `attic push` failure as a warning rather than a fatal error for exactly
 this reason; the CI workflow step is aligned to the same pattern.
 
@@ -35,7 +35,7 @@ false leads:
   readable with `sqlite3 "file:...?mode=ro&immutable=1"` since it has
   no WAL sidecar and is world-readable) found no stuck `object`/`nar`/
   `chunk` rows for this path - ruling out server-side leftover
-  corruption (the kind [scripts/attic-cleanup-orphans.sh](../../scripts/attic-cleanup-orphans.sh) fixes), but
+  corruption (the kind [scripts/attic-cleanup-orphans.sh](../../.agents/skills/attic-credentials/scripts/attic-cleanup-orphans.sh) fixes), but
   not ruling out _client-side_ (local store) corruption.
 - Raising `chunking.min-size`/`avg-size`/`max-size` from Attic's
   upstream defaults (16K/64K/256K) to 256K/1M/4M, on the theory that
@@ -92,6 +92,6 @@ version-specific. The delete-the-dependency-first workaround above is
 the durable mitigation, not a Nix version bump.
 
 The CI push step was still made non-fatal (matching
-[scripts/darwin-rebuild.sh](../../scripts/darwin-rebuild.sh)'s existing pattern) so a future one-off
+[scripts/darwin-rebuild.sh](../../.agents/skills/darwin-rebuild/scripts/darwin-rebuild.sh)'s existing pattern) so a future one-off
 cache push failure - for whatever reason - doesn't block merges; this
 particular failure just happened to have an actual fixable root cause.

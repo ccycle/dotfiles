@@ -16,7 +16,7 @@ in
     assertions = [
       {
         assertion = vol != "";
-        message = "custom.storage.volumes.gitlab must be set. Run: scripts/setup-local-storage.sh gitlab=/Volumes/<YOUR_DRIVE>";
+        message = "custom.storage.volumes.gitlab must be set. Run: .agents/skills/setup-local-storage/scripts/setup-local-storage.sh gitlab=/Volumes/<YOUR_DRIVE>";
       }
     ];
 

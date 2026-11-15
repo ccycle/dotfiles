@@ -95,7 +95,7 @@ oauth2-proxy runs as a native launchd daemon on `127.0.0.1:4180`
 `forward_auth`s every non-`/oauth2/*` path to it. The client is a
 confidential OIDC client `reports` registered via
 `services.pocket-id.oidcClients`, secret captured into sops by
-[scripts/pocket-id-register-clients.sh](../../scripts/pocket-id-register-clients.sh); no `allowedGroups`, so any
+[scripts/pocket-id-register-clients.sh](../../.agents/skills/pocket-id-register-clients/scripts/pocket-id-register-clients.sh); no `allowedGroups`, so any
 authenticated user may browse. The gate failing (401, e.g. while
 oauth2-proxy is down) is accepted — reports is a browse-when-you-need-it
 service, and launchd `KeepAlive` restarts the proxy — and OAuth callback

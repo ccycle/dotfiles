@@ -60,7 +60,7 @@ in
 
   config = mkIf cfg.enable {
     # Role-mapping groups and OIDC clients on Pocket ID. Reconcile via
-    # scripts/pocket-id-register-clients.sh; see modules/pocket-id/options.nix.
+    # .agents/skills/pocket-id-register-clients/scripts/pocket-id-register-clients.sh; see modules/pocket-id/options.nix.
     services.pocket-id.oidcGroups = [
       {
         name = "opencloud_admins";

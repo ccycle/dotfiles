@@ -1,7 +1,10 @@
 #!/bin/sh
 set -eu
 
-repo_root="$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)"
+repo_root="$(git -C "$(dirname -- "$0")" rev-parse --show-toplevel 2>/dev/null || true)"
+if [ -z "${repo_root}" ]; then
+  repo_root="$(CDPATH='' cd -- "$(dirname -- "$0")/../../../.." && pwd)"
+fi
 target_dir="${repo_root}/.local/storage"
 target_file="${target_dir}/flake.nix"
 

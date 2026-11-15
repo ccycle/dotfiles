@@ -39,7 +39,7 @@ jobs:
       # This runner IS mac-mini-m4-pro, but a CI checkout has no real
       # attached volumes to point custom.storage.volumes at - unlike a real
       # deployment of this host, which always has .local/storage from
-      # scripts/setup-local-storage.sh. Writing this placeholder here,
+      # .agents/skills/setup-local-storage/scripts/setup-local-storage.sh. Writing this placeholder here,
       # explicitly, keeps check.sh's own logic untouched (it already treats
       # a present .local/storage as "the current host's real machine state"
       # for every other caller) rather than having it guess when a fallback

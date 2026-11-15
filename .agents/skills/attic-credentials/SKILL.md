@@ -1,6 +1,6 @@
 ---
 name: attic-credentials
-description: Manage Attic JWT secret, CI token, smoke-test token, and per-client push tokens. Initializes the atticd JWT signing key, generates operator tokens via atticadm, and handles rotation with sops encryption.
+description: Manage Attic JWT secret, CI token, smoke-test token, and per-client push tokens. Initializes the atticd JWT signing key, generates operator tokens via atticadm, rotates them with sops encryption, and cleans up orphan chunks left behind by the atticd garbage collector.
 ---
 
 # Attic Credentials
@@ -74,6 +74,17 @@ sops 暗号化して [modules/attic/secrets.yaml](../../../modules/attic/secrets
    有効のままなので、単体の入れ替えで十分か・`atticd-jwt-secret` ごと再生成して
    全トークンを無効化する必要があるかをスクリプトの出力が案内する
 
+### `attic-cleanup-orphans.sh` — 孤児 chunk の削除
+
+```bash
+sudo .agents/skills/attic-credentials/scripts/attic-cleanup-orphans.sh --dry-run
+sudo .agents/skills/attic-credentials/scripts/attic-cleanup-orphans.sh
+```
+
+atticd の GC が `Deleted` 状態のまま削除に失敗した chunk (典型的には cache
+破棄後) を、atticd を止めずにファイルと DB 行の両方から除去する。GC は
+`Valid` の chunk しか再試行しないため、これらは放置すると永久に残る。
+
 ## ワークフロー
 
 ### 初回セットアップ
@@ -91,7 +102,7 @@ sops 暗号化して [modules/attic/secrets.yaml](../../../modules/attic/secrets
 2. `generate-token.sh client <machine>` を実行し、出力された `attic login` コマンドを
    対象マシンで実行する
 3. 以降、対象マシンでの `darwin-rebuild switch` 実行時に自動で push される
-   ([scripts/darwin-rebuild.sh](../../../scripts/darwin-rebuild.sh) 参照)
+   ([scripts/darwin-rebuild.sh](../darwin-rebuild/scripts/darwin-rebuild.sh) 参照)
 
 ### トークンローテーション
 

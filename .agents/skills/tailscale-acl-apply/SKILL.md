@@ -1,6 +1,6 @@
 ---
 name: tailscale-acl-apply
-description: Review and apply the Tailscale ACL policy (modules/tailscale/policy.hujson) via OpenTofu, using scripts/tailscale-acl-apply.sh. Use when changing the ACL policy file, or when asked to apply/sync Tailscale ACLs.
+description: Review and apply the Tailscale ACL policy (modules/tailscale/policy.hujson) via OpenTofu, using the tailscale-acl-apply skill's script. Use when changing the ACL policy file, or when asked to apply/sync Tailscale ACLs.
 ---
 
 # Tailscale ACL Apply
@@ -47,16 +47,16 @@ tofu init
 tofu import tailscale_acl.this acl
 ```
 
-Then run [scripts/tailscale-acl-apply.sh](../../../scripts/tailscale-acl-apply.sh) (no `--apply`) and confirm the
+Then run [scripts/tailscale-acl-apply.sh](scripts/tailscale-acl-apply.sh) (no `--apply`) and confirm the
 plan shows no diff (or only a cosmetic/comment diff) against the live
 policy before treating this as adopted.
 
 ## Normal Workflow
 
 1. Edit `modules/tailscale/policy.hujson`.
-2. [scripts/tailscale-acl-apply.sh](../../../scripts/tailscale-acl-apply.sh) — runs `tofu init`, `tofu fmt -check`,
+2. [scripts/tailscale-acl-apply.sh](scripts/tailscale-acl-apply.sh) — runs `tofu init`, `tofu fmt -check`,
    `tofu validate`, and `tofu plan`. Read the plan output.
-3. If the diff is what you expect: `scripts/tailscale-acl-apply.sh --apply`
+3. If the diff is what you expect: `.agents/skills/tailscale-acl-apply/scripts/tailscale-acl-apply.sh --apply`
    — this re-shows the plan and requires typing `yes` at the OpenTofu
    prompt (still no unattended apply; see design.md's rationale).
 4. Commit the changed `policy.hujson` (and `.terraform.lock.hcl` if it

@@ -20,7 +20,12 @@
 
 set -eu
 
-repo_root="$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)"
+repo_root="$(git -C "$(dirname -- "$0")" rev-parse --show-toplevel 2>/dev/null || true)"
+if [ -z "${repo_root}" ]; then
+  # Not a git checkout (vm-verify copies the tree without .git): fall back to
+  # the fixed depth, .agents/skills/setup-local-storage/scripts/<this file>.
+  repo_root="$(CDPATH='' cd -- "$(dirname -- "$0")/../../../.." && pwd)"
+fi
 
 check_mode=false
 case "${1:-}" in
@@ -86,8 +91,8 @@ for m in storage obsidian-vault; do
     fi
   else
     case "$m" in
-    storage) warn "missing .local/storage/ everywhere. Run: scripts/setup-local-storage.sh <service>=/Volumes/<YOUR_DRIVE>" ;;
-    obsidian-vault) warn "missing .local/obsidian-vault/ everywhere. Run: scripts/setup-obsidian-vault.sh /path/to/your/vault" ;;
+    storage) warn "missing .local/storage/ everywhere. Run: .agents/skills/setup-local-storage/scripts/setup-local-storage.sh <service>=/Volumes/<YOUR_DRIVE>" ;;
+    obsidian-vault) warn "missing .local/obsidian-vault/ everywhere. Create .local/obsidian-vault/flake.nix setting obsidian.vaults to your vault path" ;;
     esac
     need_change
   fi

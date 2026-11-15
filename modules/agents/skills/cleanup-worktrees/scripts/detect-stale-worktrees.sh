@@ -78,7 +78,7 @@ branch_was_started() {
   [ "$active" -gt 0 ]
 }
 
-repo_root=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)
+repo_root=$(git -C "$(dirname -- "$0")" rev-parse --show-toplevel)
 now_ts=$(date +%s)
 threshold_ts=$((now_ts - threshold_days * 86400))
 

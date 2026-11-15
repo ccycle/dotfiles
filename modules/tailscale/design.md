@@ -24,7 +24,7 @@ is explicitly excluded.
   single entry point.
 - The policy file is checked into this repo for review and versioning,
   and applied via OpenTofu (`modules/tailscale/terraform/`,
-  [scripts/tailscale-acl-apply.sh](../../scripts/tailscale-acl-apply.sh) — see the `tailscale-acl-apply`
+  [scripts/tailscale-acl-apply.sh](../../.agents/skills/tailscale-acl-apply/scripts/tailscale-acl-apply.sh) — see the `tailscale-acl-apply`
   skill). Apply is still a deliberate human step: `tofu plan` first,
   `tofu apply` second, never unattended/CI-driven.
 

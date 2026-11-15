@@ -11,8 +11,8 @@
 # normal queries, so no live upload/GC path touches these files.
 #
 # Usage:
-#   sudo scripts/attic-cleanup-orphans.sh          # delete files + purge rows
-#   sudo scripts/attic-cleanup-orphans.sh --dry-run # list files, delete nothing
+#   sudo .agents/skills/attic-credentials/scripts/attic-cleanup-orphans.sh          # delete files + purge rows
+#   sudo .agents/skills/attic-credentials/scripts/attic-cleanup-orphans.sh --dry-run # list files, delete nothing
 set -eu
 
 DB="${ATTIC_DB:-/var/lib/atticd/server.db}"

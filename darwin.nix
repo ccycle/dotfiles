@@ -19,7 +19,7 @@
   config = lib.mkMerge [
     {
       # username = "" only when modules/user/default-config's placeholder is
-      # used - normally unreachable, since scripts/ensure-local.sh always writes
+      # used - normally unreachable, since .agents/skills/setup-local-storage/scripts/ensure-local.sh always writes
       # a real .local/user before check.sh or darwin-rebuild.sh evaluate this
       # flake. Guarding users.users and system.primaryUser behind mkIf ensures
       # the assertion fires first with a clean error message instead of the
@@ -28,7 +28,7 @@
       assertions = [
         {
           assertion = username != "";
-          message = "username is not set (modules/user/default-config's placeholder was used). Run scripts/ensure-local.sh - or scripts/darwin-rebuild.sh / .agents/skills/verify-change/scripts/check.sh, which call it automatically - to generate .local/user/flake.nix.";
+          message = "username is not set (modules/user/default-config's placeholder was used). Run .agents/skills/setup-local-storage/scripts/ensure-local.sh - or .agents/skills/darwin-rebuild/scripts/darwin-rebuild.sh / .agents/skills/verify-change/scripts/check.sh, which call it automatically - to generate .local/user/flake.nix.";
         }
       ];
     }

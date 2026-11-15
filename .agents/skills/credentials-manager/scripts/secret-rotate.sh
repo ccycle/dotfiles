@@ -6,11 +6,12 @@
 #
 #   1. Opens the file in $EDITOR via sops (re-encrypts on save).
 #   2. Verifies recipient integrity against modules/sops/age-keys.nix
-#      via scripts/sops/check-recipients.sh (fails loudly if the edit
-#      broke the declared key rules).
+#      via .agents/skills/credentials-manager/scripts/check-recipients.sh
+#      (fails loudly if the edit broke the declared key rules).
 #   3. Commits the change with a structured message.
-#   4. Runs scripts/darwin-rebuild.sh for the chosen profile so the new
-#      value reaches /run/secrets and consuming services restart.
+#   4. Runs .agents/skills/darwin-rebuild/scripts/darwin-rebuild.sh for the
+#      chosen profile so the new value reaches /run/secrets and consuming
+#      services restart.
 #
 # Security notes:
 #   - Decrypted content is never echoed; only git diff --stat metadata
@@ -19,14 +20,14 @@
 #     clean beforehand, unless --allow-dirty is passed).
 #
 # Usage:
-#   scripts/secret-rotate.sh --key <key> --value <val> [--profile <name>]
+#   .agents/skills/credentials-manager/scripts/secret-rotate.sh --key <key> --value <val> [--profile <name>]
 #                            [--no-rebuild] <path/to/secrets.yaml>
-#   scripts/secret-rotate.sh [--profile <name>] [--message <msg>]
+#   .agents/skills/credentials-manager/scripts/secret-rotate.sh [--profile <name>] [--message <msg>]
 #                            [--no-rebuild] [--allow-dirty]
 #                            <path/to/secrets.yaml>
 set -euo pipefail
 
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+REPO_ROOT="$(git -C "$(dirname "${BASH_SOURCE[0]}")" rev-parse --show-toplevel)"
 cd "${REPO_ROOT}"
 
 NIX="nix --extra-experimental-features nix-command --extra-experimental-features flakes"
@@ -143,8 +144,8 @@ fi
 
 # --- Sanity check BEFORE opening the editor ---
 echo "==> Pre-edit recipient check: ${file}"
-"${REPO_ROOT}/scripts/sops/check-recipients.sh" >/dev/null ||
-  die "recipient check failed before edit; fix key rules first (see scripts/sops/)"
+"${REPO_ROOT}/.agents/skills/credentials-manager/scripts/check-recipients.sh" >/dev/null ||
+  die "recipient check failed before edit; fix key rules first (see modules/sops/age-keys.nix)"
 
 # --- Edit phase ---
 before_hash="$(git hash-object -- "${file}")"
@@ -180,7 +181,7 @@ fi
 
 # --- Post-edit verification ---
 echo "==> Post-edit recipient check (all secrets files)..."
-"${REPO_ROOT}/scripts/sops/check-recipients.sh" ||
+"${REPO_ROOT}/.agents/skills/credentials-manager/scripts/check-recipients.sh" ||
   die "edit broke recipient rules; NOT committing. Inspect 'git diff ${file}' and revert if needed."
 
 echo "==> Change summary (metadata only):"
@@ -204,7 +205,7 @@ if [ "${no_rebuild}" -eq 1 ]; then
   exit 0
 fi
 
-# Discover available profiles exactly like scripts/darwin-rebuild.sh does.
+# Discover available profiles exactly like the darwin-rebuild skill's script does.
 all_configs="$(${NIX} eval "${REPO_ROOT}#darwinConfigurations" --apply '
   configs:
   let
@@ -257,4 +258,4 @@ if [ -z "${profile}" ]; then
 fi
 
 echo "==> Rebuilding profile: ${profile}"
-exec "${REPO_ROOT}/scripts/darwin-rebuild.sh" "${profile}"
+exec "${REPO_ROOT}/.agents/skills/darwin-rebuild/scripts/darwin-rebuild.sh" "${profile}"

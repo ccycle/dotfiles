@@ -46,7 +46,7 @@ in
 
     # Confidential OIDC client registered on Pocket ID. The client ID is
     # fixed (plaintext) and matches oauth2-proxy's --client-id below; the
-    # secret is captured by scripts/pocket-id-register-clients.sh into this
+    # secret is captured by .agents/skills/pocket-id-register-clients/scripts/pocket-id-register-clients.sh into this
     # module's per-host secrets file, then read by oauth2-proxy at startup.
     # No allowedGroups: any authenticated Pocket ID user may view reports.
     services.pocket-id.oidcClients = [

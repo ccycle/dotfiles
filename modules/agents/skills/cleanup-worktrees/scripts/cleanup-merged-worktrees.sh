@@ -63,7 +63,7 @@ command -v jq >/dev/null 2>&1 || {
   exit 1
 }
 
-repo_root=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)
+repo_root=$(git -C "$(dirname -- "$0")" rev-parse --show-toplevel)
 
 tmpfile=$(mktemp)
 trap 'rm -f "$tmpfile"' EXIT
