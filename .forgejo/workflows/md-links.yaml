@@ -1,0 +1,23 @@
+name: Markdown links
+
+on:
+  push:
+    branches:
+      - "**"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  md-links:
+    name: References
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Deliberately unconditional: the check is a grep over tracked *.md and
+      # costs about a second, so a changed-path gate would only add the risk of
+      # a required check that never reports (see verify.yaml's gate comment).
+      - name: Check markdown file references
+        run: .agents/skills/verify-change/scripts/check-md-links.sh

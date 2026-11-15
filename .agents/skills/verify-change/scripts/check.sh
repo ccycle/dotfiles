@@ -31,6 +31,12 @@ function check_structure() {
   echo "✅ Structure check passed."
 }
 
+function check_md_links() {
+  echo "=== 🔗 Checking markdown file references ==="
+  "${REPO_ROOT}/.agents/skills/verify-change/scripts/check-md-links.sh"
+  echo ""
+}
+
 function check_recipients() {
   echo "=== 🔐 Checking sops recipient drift against age key ledger ==="
   "${REPO_ROOT}/scripts/sops/check-recipients.sh"
@@ -243,7 +249,10 @@ echo ""
 check_structure
 echo ""
 
-# 2.5. Sops recipient check against the age key ledger
+# 2.5. Markdown file references (links, not inline code; no broken targets)
+check_md_links
+
+# 2.6. Sops recipient check against the age key ledger
 check_recipients
 
 # 3. Build every compatible profile (or only the one given as $1)

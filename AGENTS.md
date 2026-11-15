@@ -94,6 +94,22 @@ configFile = pkgs.writeText "config.yaml" ''
 logoSvg = pkgs.writeText "logo.svg" (builtins.readFile ./logo.svg);
 ```
 
+## Markdown File References
+
+Refer to files in this repository with relative markdown links, never as inline code, so editors and review UIs can navigate them and broken targets stay detectable. A bare file name (`home.nix`) may stay inline code when it names a file to create rather than one specific file; the checker only requires links for path-style references.
+
+```markdown
+# Good
+
+See [the nix-module conventions](.agents/skills/nix-module/references/conventions.md).
+
+# Bad
+
+See `.agents/skills/nix-module/references/conventions.md`.
+```
+
+The rule and its scope (docs, `design.md`, skill files) live in `.agents/skills/verify-change/scripts/check-md-links.sh`, which also rejects relative links whose target does not exist. It runs in CI and inside the verify-change suite.
+
 ## Age Key Management with rbw
 
 Age private keys are managed via rbw (Rust Bitwarden CLI) to eliminate plaintext key storage on disk.
