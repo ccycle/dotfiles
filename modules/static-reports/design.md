@@ -16,7 +16,7 @@ re-discovered:
 
 - **`tailscale serve --https=443`** doesn't work on this host: production
   Caddy already owns `<TAILSCALE_IP>:443` via `default_bind` in
-  `modules/caddy/darwin.nix`. Caddy holds the actual OS socket, so
+  [modules/caddy/darwin.nix](../caddy/darwin.nix). Caddy holds the actual OS socket, so
   `tailscale serve`'s own HTTPS listener never receives traffic for it —
   connections complete a TCP handshake but fail TLS, because Caddy
   receives the ClientHello, doesn't recognize the `.ts.net` SNI among its
@@ -34,10 +34,10 @@ show-report --host <tailscale-ip>`) is blocked at the network layer
   enough), so it's a fine one-off but not something worth building
   tooling around.
 - **A per-worktree dedicated Caddy process** (the approach
-  `tests/e2e/scripts/stack.sh` uses for the isolated OpenCloud/pocket-id
+  [tests/e2e/scripts/stack.sh](../../tests/e2e/scripts/stack.sh) uses for the isolated OpenCloud/pocket-id
   stack) doesn't generalize here: it exists specifically to give pocket-id
   a single stable WebAuthn origin reachable both locally and remotely
-  (see `tests/e2e/design.md`), and it runs on a **dynamic** port every
+  (see [tests/e2e/design.md](../../tests/e2e/design.md)), and it runs on a **dynamic** port every
   time — which the ACL blocks from other devices just as much as any
   other arbitrary port. That design was never actually about generic
   "reach this over the tailnet" access; it happened to be local-reachable
@@ -95,7 +95,7 @@ oauth2-proxy runs as a native launchd daemon on `127.0.0.1:4180`
 `forward_auth`s every non-`/oauth2/*` path to it. The client is a
 confidential OIDC client `reports` registered via
 `services.pocket-id.oidcClients`, secret captured into sops by
-`scripts/pocket-id-register-clients.sh`; no `allowedGroups`, so any
+[scripts/pocket-id-register-clients.sh](../../scripts/pocket-id-register-clients.sh); no `allowedGroups`, so any
 authenticated user may browse. The gate failing (401, e.g. while
 oauth2-proxy is down) is accepted — reports is a browse-when-you-need-it
 service, and launchd `KeepAlive` restarts the proxy — and OAuth callback

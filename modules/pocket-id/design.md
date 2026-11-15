@@ -3,7 +3,7 @@
 ## Purpose
 
 Provide the passkey-only OIDC identity provider for the zero-trust
-Phase 2 roadmap (see `modules/tailscale/design.md`). Pocket ID issues
+Phase 2 roadmap (see [modules/tailscale/design.md](../tailscale/design.md)). Pocket ID issues
 OIDC tokens backed by WebAuthn/passkey authentication, replacing each
 service's own local-account login with a single passkey-gated sign-in.
 
@@ -62,7 +62,7 @@ compose example recommends.** See Constraints below.
 ## Rejected Alternatives
 
 - **tsidp** (Tailscale's own OIDC IdP), the original Phase-2 candidate
-  named in `modules/tailscale/design.md`. Rejected for two reasons:
+  named in [modules/tailscale/design.md](../tailscale/design.md). Rejected for two reasons:
   it authenticates based on tailnet device identity, not WebAuthn/
   passkeys, so it doesn't satisfy the passkey requirement regardless
   of its maturity; and its own README states it is "experimental,

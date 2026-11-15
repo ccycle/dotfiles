@@ -13,7 +13,7 @@ for agent-driven investigation.
   is queryable via the Prometheus API and visible in Grafana, and there is
   still no notification channel (Slack, email, ...) of any kind. The "no
   Alertmanager" half of this non-goal is scoped down, not lifted: one
-  Alertmanager instance now exists (`modules/monitoring/alertmanager.yml`),
+  Alertmanager instance now exists ([modules/monitoring/alertmanager.yml](alertmanager.yml)),
   but its only receiver is a local webhook that wakes
   `modules/llm-server/self-healing`'s daemon — see that module's design.md
   for the full detection-latency rationale. Adding a real notification
@@ -68,7 +68,7 @@ for agent-driven investigation.
   breakdown.
 - **Grafana's SQLite database lives on a Docker named volume, not the host
   bind mount Prometheus and Loki use.** Same underlying issue as
-  `modules/pocket-id/design.md` and `modules/forgejo/design.md`: SQLite
+  [modules/pocket-id/design.md](../pocket-id/design.md) and [modules/forgejo/design.md](../forgejo/design.md): SQLite
   crashes with `SQLITE_BUSY`/`SQLITE_IOERR_SHMLOCK` on OrbStack's virtiofs
   host bind mounts as soon as a second process opens the live DB, and a
   named volume avoids this by living on VM-internal storage. Unlike
@@ -98,7 +98,7 @@ for agent-driven investigation.
   Alloy change was needed unlike GitLab).
 - **Caddy access logs and metrics are configured globally, not per service
   module.** Following the same rationale as Tailscale's `default_bind` (see
-  `modules/tailscale/design.md`), one global directive applies uniformly to
+  [modules/tailscale/design.md](../tailscale/design.md)), one global directive applies uniformly to
   every proxied vhost without coupling each service module to logging or
   metrics config.
 - **Caddy access logs never record the query string**, not even with

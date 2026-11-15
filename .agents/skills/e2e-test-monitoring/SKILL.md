@@ -9,8 +9,8 @@ Drives Prometheus's real `/api/v1/targets` and `/api/v1/query`, Grafana's
 real local-admin login and dashboard API, a real browser render of a
 Grafana dashboard, and Loki's real `/loki/api/v1/query_range` - all
 against an isolated stack that deliberately still scrapes the _real_
-host via `host-gateway`, using the real `modules/monitoring/prometheus.yml`
-(mounted unmodified). See `tests/e2e-monitoring/design.md` for the full
+host via `host-gateway`, using the real [modules/monitoring/prometheus.yml](../../../modules/monitoring/prometheus.yml)
+(mounted unmodified). See [tests/e2e-monitoring/design.md](../../../tests/e2e-monitoring/design.md) for the full
 rationale, including why target _health_ is never asserted (only that
 every configured job was discovered) and why this suite uses local auth
 instead of OIDC.
@@ -54,7 +54,7 @@ Run from anywhere inside the repository (any worktree):
 
 ## When to Use
 
-- After changing `modules/monitoring/prometheus.yml`,
+- After changing [modules/monitoring/prometheus.yml](../../../modules/monitoring/prometheus.yml),
   `loki-config.yml`, `alloy-config.alloy`, or any Grafana provisioning/
   dashboard JSON, to confirm the real config still loads and works -
   something a build dry-run structurally cannot verify.

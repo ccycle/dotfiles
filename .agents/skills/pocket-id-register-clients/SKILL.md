@@ -7,7 +7,7 @@ description: Register OIDC clients and user groups on the production Pocket ID i
 
 The production Pocket ID instance (`https://auth.<host>.internal`) is
 reconciled by an idempotent script against the declaration in
-`modules/pocket-id/options.nix` (`services.pocket-id.oidcClients` /
+[modules/pocket-id/options.nix](../../../modules/pocket-id/options.nix) (`services.pocket-id.oidcClients` /
 `oidcGroups`). Service modules own their client/group declarations; this
 skill runs the script that turns them into live Pocket ID state.
 
@@ -40,10 +40,10 @@ declaration (and leaves stale `*_oidc_client_id` sops keys behind).
 
 1. **Edit the declaration** (if the goal is a new/changed client or group),
    not the live Pocket ID. Client definitions belong in the owning service
-   module, e.g. `modules/opencloud/options.nix`,
-   `modules/forgejo/options.nix`, `modules/immich/options.nix`,
-   `modules/monitoring/options.nix`. Groups and the option schemas live in
-   `modules/pocket-id/options.nix`. See that file for the option fields
+   module, e.g. [modules/opencloud/options.nix](../../../modules/opencloud/options.nix),
+   [modules/forgejo/options.nix](../../../modules/forgejo/options.nix), [modules/immich/options.nix](../../../modules/immich/options.nix),
+   [modules/monitoring/options.nix](../../../modules/monitoring/options.nix). Groups and the option schemas live in
+   [modules/pocket-id/options.nix](../../../modules/pocket-id/options.nix). See that file for the option fields
    (`name`, `clientId`, `isPublic`, `pkceEnabled`, `callbackURLs`,
    `logoutCallbackURLs`, `allowedGroups`, and for confidential clients
    `secretFile`/`secretKey`).
@@ -88,4 +88,4 @@ declaration (and leaves stale `*_oidc_client_id` sops keys behind).
   hosts).
 - Client IDs are fixed strings on purpose (mandatory for OpenCloud
   desktop/mobile; harmless otherwise because a client ID is not a secret —
-  see `docs/oidc-setup.md`).
+  see [docs/oidc-setup.md](../../../docs/oidc-setup.md)).

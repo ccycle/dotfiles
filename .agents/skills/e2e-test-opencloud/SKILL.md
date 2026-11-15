@@ -15,7 +15,7 @@ build check or a health-endpoint smoke test structurally cannot exercise.
 This never touches the real `services.pocket-id` / `services.opencloud`
 instances. It brings up a separate, isolated docker-compose stack (same
 images and env wiring as production), fronted by its own dedicated Caddy
-process, scoped to the current git worktree. See `tests/e2e/design.md`
+process, scoped to the current git worktree. See [tests/e2e/design.md](../../../tests/e2e/design.md)
 for the full rationale.
 
 ## Usage
@@ -36,7 +36,7 @@ below from a different device.
 Pocket ID has no way to create its first admin account or register a
 passkey without a real browser and authenticator — this is a Pocket ID
 constraint, not something this suite works around (matches production;
-see `modules/pocket-id/design.md`). The first `run.sh` in a given
+see [modules/pocket-id/design.md](../../../modules/pocket-id/design.md)). The first `run.sh` in a given
 worktree will print a URL and pause, asking you to:
 
 1. Open the printed `/setup` URL (locally, or from any other tailnet
@@ -52,7 +52,7 @@ though the containers themselves stop between runs.
 
 The first run also needs `sudo` once, to copy production's internal CA
 root cert+key so the test Caddy's certificates are already trusted (see
-`tests/e2e/design.md`).
+[tests/e2e/design.md](../../../tests/e2e/design.md)).
 
 ## What It Does
 
@@ -72,7 +72,7 @@ root cert+key so the test Caddy's certificates are already trusted (see
    been applied via `darwin-rebuild switch`, it's browsable at
    `https://reports.<hostname>.internal/<branch-slug>/opencloud/` from
    any device on the tailnet after a Pocket ID passkey login (see
-   `modules/static-reports/design.md` for
+   [modules/static-reports/design.md](../../../modules/static-reports/design.md) for
    why this is the only way to get an ad-hoc report reachable from
    another device without an ACL change — `tailscale serve` and
    arbitrary ports
@@ -93,10 +93,10 @@ root cert+key so the test Caddy's certificates are already trusted (see
   without also wiping `tests/e2e/.state/opencloud/`** — doing so once
   during this suite's own development left OpenCloud holding orphaned
   internal state and made the personal space stop appearing (see
-  `tests/e2e/design.md`'s debugging note). The test code itself never
+  [tests/e2e/design.md](../../../tests/e2e/design.md)'s debugging note). The test code itself never
   does this — identity is stable, not disposable — so this only matters
   if manually poking at pocket-id's state while debugging.
 - `sudo` is needed once per worktree, to copy production's internal CA
   root cert+key (read-only reuse of its identity, never a live-shared
-  process — see `tests/e2e/design.md`).
+  process — see [tests/e2e/design.md](../../../tests/e2e/design.md)).
 - Docker/OrbStack must be running.

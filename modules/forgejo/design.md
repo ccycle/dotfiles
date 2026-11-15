@@ -11,7 +11,7 @@ existing host bind mount — it's large, and it isn't SQLite, so
 virtiofs is fine for it. The SQLite portion is overridden by a second,
 more specific named-volume mount nested inside the same tree, moving
 only the DB onto VM-internal storage. This is the same underlying fix
-as `modules/pocket-id/design.md` (host bind mounts on OrbStack are
+as [modules/pocket-id/design.md](../pocket-id/design.md) (host bind mounts on OrbStack are
 served over virtiofs, and SQLite crashes with `SQLITE_BUSY` /
 `SQLITE_IOERR_SHMLOCK` there as soon as a second process opens the
 live DB), applied as a split rather than a full swap, since unlike

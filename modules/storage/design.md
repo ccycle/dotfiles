@@ -29,7 +29,7 @@ service should force a conscious choice of where its data goes.
 
 Each service still has a `mountPoint` option (used by `waitForMount` to
 block launchd startup until an external volume is actually mounted — see
-`utils/waitForMount.nix`). Rather than asking the user to set `volumes.X`
+[utils/waitForMount.nix](../../utils/waitForMount.nix)). Rather than asking the user to set `volumes.X`
 and `mountPoint.X` separately (and keep them in sync), each service's
 `darwin.nix` derives `mountPoint` from its own volume path, using
 `hasPrefix "/Volumes/" vol` as an external-volume heuristic:
@@ -46,7 +46,7 @@ definition from this module when there's no volume to wait for.
 
 ## Why the Missing-Volume Check Is a Warning, Not an Assertion
 
-`utils/warnIfVolumeMissing.nix` wraps each service's `vol` and prints an
+[utils/warnIfVolumeMissing.nix](../../utils/warnIfVolumeMissing.nix) wraps each service's `vol` and prints an
 eval-time warning (via `lib.warn`, visible directly in `darwin-rebuild
 switch` output) if the path doesn't exist — without failing the build.
 

@@ -29,7 +29,7 @@ atticd の JWT secret 初期化、操作用トークンの生成・ローテー�
 
 以下の処理を順に実行:
 
-1. `atticd-jwt-secret` が未作成なら生成し、sops 暗号化して `modules/attic/secrets.yaml` に書き込む
+1. `atticd-jwt-secret` が未作成なら生成し、sops 暗号化して [modules/attic/secrets.yaml](../../../modules/attic/secrets.yaml) に書き込む
 2. SSH 越しに `darwin-rebuild switch` を実行し atticd を起動
 3. `attic cache info dotfiles` の終了コードでキャッシュ有無を判定し、無ければ `attic cache create` (idempotent)
 4. `attic cache info dotfiles` を実行し公開鍵を表示
@@ -51,13 +51,13 @@ atticd ホスト自身でこれらのスクリプトを実行した場合は SSH
 ```
 
 `atticadm make-token --sub <sub> --push dotfiles --validity 10y` をサーバ上で実行し、
-sops 暗号化して `modules/attic/secrets.yaml` に書き込む。発行されるトークンは常に `dotfiles`
+sops 暗号化して [modules/attic/secrets.yaml](../../../modules/attic/secrets.yaml) に書き込む。発行されるトークンは常に `dotfiles`
 への push 権限のみで、pull/create-cache/destroy-cache 等は付与しない
 (cache は Public のため読み出しにトークンは不要)。
 
 - `ci`: sub は `ci`。plain text を stdout に出力 (Forgejo UI 貼り付け用)
 - `smoke`: sub は `smoke`。`smoke-test-attic` スキルの push→read 往復検証専用。
-  `modules/attic/home.nix` の sops secret 経由で全ホストに配布されるため、手動コピー不要
+  [modules/attic/home.nix](../../../modules/attic/home.nix) の sops secret 経由で全ホストに配布されるため、手動コピー不要
 - `client <machine>`: sub は `<machine>`。生成後、そのマシンで実行する
   `attic login` コマンドを stdout に出力する
 
@@ -69,7 +69,7 @@ sops 暗号化して `modules/attic/secrets.yaml` に書き込む。発行され
 .agents/skills/attic-credentials/scripts/rotate-token.sh client <machine>
 ```
 
-1. 同じ sub で新しいトークンを生成し sops 暗号化 (`modules/attic/secrets.yaml` の該当キーを上書き)
+1. 同じ sub で新しいトークンを生成し sops 暗号化 ([modules/attic/secrets.yaml](../../../modules/attic/secrets.yaml) の該当キーを上書き)
 2. JWT はステートレスなため個別失効はできない。旧トークンは 10 年の有効期限まで技術的には
    有効のままなので、単体の入れ替えで十分か・`atticd-jwt-secret` ごと再生成して
    全トークンを無効化する必要があるかをスクリプトの出力が案内する
@@ -91,7 +91,7 @@ sops 暗号化して `modules/attic/secrets.yaml` に書き込む。発行され
 2. `generate-token.sh client <machine>` を実行し、出力された `attic login` コマンドを
    対象マシンで実行する
 3. 以降、対象マシンでの `darwin-rebuild switch` 実行時に自動で push される
-   (`scripts/darwin-rebuild.sh` 参照)
+   ([scripts/darwin-rebuild.sh](../../../scripts/darwin-rebuild.sh) 参照)
 
 ### トークンローテーション
 

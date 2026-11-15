@@ -83,6 +83,6 @@ is `obsidian-to-herdr-worktree`'s job, not this skill's.
    state against existing worktree state.
 2. Never apply a `CONFIRM` move without an explicit answer from the user,
    per card.
-3. The reconcile logic lives in `scripts/reconcile.sh`, shared with
+3. The reconcile logic lives in [scripts/reconcile.sh](scripts/reconcile.sh), shared with
    `obsidian-to-herdr-worktree`'s Step 1 — do not duplicate its logic
    inline in either `SKILL.md`; both call the one script.

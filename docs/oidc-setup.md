@@ -1,7 +1,7 @@
 # Pocket ID OIDC セットアップ手順
 
 Pocket ID を IdP として各 self-hosted サービスへ SSO を組み込む手順。
-OIDC クライアントとグループの登録は `scripts/pocket-id-register-clients.sh`
+OIDC クライアントとグループの登録は [scripts/pocket-id-register-clients.sh](../scripts/pocket-id-register-clients.sh)
 で自動化されており、手動操作は Pocket ID の初期セットアップと管理 API
 キーの作成のみ。クライアント定義は Nix 設定が唯一の情報源である。
 
@@ -55,7 +55,7 @@ scripts/pocket-id-register-clients.sh --admin-user <管理者ユーザー名> [-
 
 このスクリプトは宣言型設定
 （`services.pocket-id.oidcClients` / `oidcGroups`、各サービスのモジュールが
-`modules/pocket-id/options.nix` のオプションに宣言）を Pocket ID 管理 API
+[modules/pocket-id/options.nix](../modules/pocket-id/options.nix) のオプションに宣言）を Pocket ID 管理 API
 と同期する。処理内容は以下の通り。
 
 - **グループ**: 4 つの OpenCloud グループを作成し、`opencloud_role` claim
@@ -103,7 +103,7 @@ Prometheus は OIDC 非対応のため、Caddy の basicauth を使う。
 nix run nixpkgs#caddy -- hash-password --plaintext <PASSWORD>
 ```
 
-ハッシュを host profile (`modules/mac-mini-m4-pro/darwin.nix` など) の
+ハッシュを host profile ([modules/mac-mini-m4-pro/darwin.nix](../modules/mac-mini-m4-pro/darwin.nix) など) の
 `services.monitoring.prometheusAuthHash` に設定する。
 
 ## 6. 動作確認
@@ -122,7 +122,7 @@ nix run nixpkgs#caddy -- hash-password --plaintext <PASSWORD>
 - **OrbStack で `/run/secrets/` の bind mount が使えない**: OrbStack の Linux VM は
   `/run/` を共有しないため、Pocket ID の encryption key は launchd スクリプトで
   `/tmp/pocket_id_encryption_key` にコピーしてから mount している
-  (`modules/pocket-id/options.nix`)。chmod 444 にしないとコンテナ内から
+  ([modules/pocket-id/options.nix](../modules/pocket-id/options.nix))。chmod 444 にしないとコンテナ内から
   読めない。
 - **client secret を変更したら**各サービスの launchd を再起動する
   (`sudo launchctl kickstart -k system/org.nixos.<service>-compose`)。

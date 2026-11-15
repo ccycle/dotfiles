@@ -28,12 +28,12 @@ full decision tree.
   `modules/self-healing/`.** Package-by-feature places a child under the
   parent it depends on; self-healing's only hard dependency is the local
   LLM API, so it is `modules/llm-server/self-healing/`, imported
-  unconditionally by `modules/llm-server/darwin.nix` and gated by its own
+  unconditionally by [modules/llm-server/darwin.nix](../darwin.nix) and gated by its own
   `services.selfHealing.enable`.
 - **The Grafana dashboard (`self-healing.json`) lives in
   `modules/monitoring/grafana/dashboards/`, not in this module's own
   directory.** Grafana's dashboard provisioning mounts a single directory
-  (`GRAFANA_DASHBOARDS_DIR`, see `modules/monitoring/options.nix` and
+  (`GRAFANA_DASHBOARDS_DIR`, see [modules/monitoring/options.nix](../../monitoring/options.nix) and
   `compose.yaml`) — every other service's dashboard (`immich-health.json`,
   `gitlab-health.json`, ...) already lives there regardless of which
   module owns the service, so this follows that existing precedent rather
@@ -69,7 +69,7 @@ full decision tree.
   poll.** `modules/monitoring`'s "no Alertmanager" non-goal is scoped down
   — not lifted — specifically to allow one Alertmanager instance whose
   only receiver is a webhook to `self-healing-webhook`'s local listener
-  (see `modules/monitoring/design.md`); no notification channel exists.
+  (see [modules/monitoring/design.md](../../monitoring/design.md)); no notification channel exists.
   The webhook payload itself is never parsed for alert detail — the daemon
   already re-queries Prometheus's `/api/v1/alerts` for the full current
   firing set on every run, so the webhook only needs to serve as a "poll
@@ -81,7 +81,7 @@ full decision tree.
   (`launchd.user.agents`), not root daemons — a change from this module's
   original shape.** The new `propose-fix-pr` action needs this user's own
   opencode config (`~/.config/opencode/opencode.json`, already pointed at
-  the local llamaswap provider by `modules/opencode/home.nix`) and git/fj
+  the local llamaswap provider by [modules/opencode/home.nix](../../opencode/home.nix)) and git/fj
   credentials for pushing a branch and opening a PR — both only resolve
   correctly in that user's own home directory context, not root's.
   `docker-compose` itself needs no elevated privilege under OrbStack
@@ -155,7 +155,7 @@ full decision tree.
   differentiate it by alert `severity`) if this proves too slow in
   practice.
 - **Model cold start.** `llm-server` loads a model on first request
-  (up to ~1 minute for a large GGUF, see `modules/llm-server/design.md`);
+  (up to ~1 minute for a large GGUF, see [modules/llm-server/design.md](../design.md));
   the LLM call uses a 240s timeout to absorb this.
   Cost the same call pays as with `auto-remediate` mode.
 - **Thinking-model output isn't guaranteed to be pure JSON.** The
@@ -168,7 +168,7 @@ full decision tree.
   used elsewhere in this repo's design docs applies here too.
 - **`docker-compose` (the Nix-packaged v1 CLI), not `docker compose`.**
   Matches every other launchd-daemon-driven compose invocation in this
-  repo (e.g. `modules/monitoring/options.nix`), since the daemon's PATH
+  repo (e.g. [modules/monitoring/options.nix](../../monitoring/options.nix)), since the daemon's PATH
   doesn't otherwise include OrbStack's `docker compose` plugin.
 
 ## Rejected Alternatives
@@ -197,7 +197,7 @@ full decision tree.
   once a day.
 - **Short-interval polling, or a persistent monitoring loop, as the
   detection mechanism instead of Alertmanager** — rejected; see
-  `modules/monitoring/design.md`'s equivalent rejection. A webhook only
+  [modules/monitoring/design.md](../../monitoring/design.md)'s equivalent rejection. A webhook only
   fires on an actual state transition, unlike a poll loop that has to
   guess an interval short enough to matter yet cheap enough to run
   constantly.

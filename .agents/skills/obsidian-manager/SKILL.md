@@ -13,7 +13,7 @@ The agent never decides what enters the permanent note graph — the user review
 ## Prerequisites
 
 - The vault is plain Markdown; access it directly with Read/Grep/Glob. No CLI or running Obsidian app is required.
-- **Read `references/note-conventions.md` before drafting anything.** Every draft must follow it.
+- **Read [references/note-conventions.md](references/note-conventions.md) before drafting anything.** Every draft must follow it.
 
 ## Output policy (trust boundary)
 

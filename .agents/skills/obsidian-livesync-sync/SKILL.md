@@ -54,7 +54,7 @@ cat "$HOME/Obsidian/zettelkasten/<note-name>.md"
 
 ## Files
 
-| Path              | Purpose                |
-| ----------------- | ---------------------- |
-| `SKILL.md`        | This file              |
-| `scripts/sync.sh` | Script to trigger sync |
+| Path                               | Purpose                |
+| ---------------------------------- | ---------------------- |
+| `SKILL.md`                         | This file              |
+| [scripts/sync.sh](scripts/sync.sh) | Script to trigger sync |

@@ -33,14 +33,14 @@ for not depending on any external service or exposing anything beyond the existi
 Tools like nix-casks/brew-nix-alternative projects statically convert Homebrew Cask definitions into pure
 Nix derivations without running the Cask's real installer logic. AltServer registers a Network Extension
 and needs to run as a GUI menu-bar app — exactly the kind of Cask where a skipped `postflight` step would
-fail silently. This repo already depends on brew-nix (`modules/brew-nix/darwin.nix`) for other Casks, and
+fail silently. This repo already depends on brew-nix ([modules/brew-nix/darwin.nix](../brew-nix/darwin.nix)) for other Casks, and
 brew-nix bootstraps a real Homebrew install via Nix rather than reimplementing the installer, so it's
 used here too for reliability.
 
 ## Why a Per-User LaunchAgent, Not a System Daemon
 
 AltServer is a menu-bar GUI app and needs WindowServer access, which `launchd.daemons.*` (running as
-root) cannot provide — same reasoning already applied in `modules/desktoppr/darwin.nix`. It runs as
+root) cannot provide — same reasoning already applied in [modules/desktoppr/darwin.nix](../desktoppr/darwin.nix). It runs as
 `launchd.user.agents.altserver` instead.
 
 ## Why There's No Apple ID Secret in This Module

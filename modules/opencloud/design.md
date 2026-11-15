@@ -92,7 +92,7 @@ limitation. Only personal spaces benefit from the template change.
   OpenCloud's posix tree: rejected after two failed approaches, in
   favor of Navidrome and Immich each reading their respective
   directory directly with no OpenCloud involvement (see
-  `modules/navidrome/design.md`, `modules/immich/design.md`).
+  [modules/navidrome/design.md](../navidrome/design.md), [modules/immich/design.md](../immich/design.md)).
   Bind-mounting into a _personal_ space subdirectory (e.g.
   `<username>/Music`) hit two real failures: Docker auto-creates the
   mount destination at container start, and if that personal space
@@ -149,7 +149,7 @@ client keeps Pocket ID's generated UUID.
 | `opencloud_guests`      | `opencloud_role: opencloudGuest`      | user-light             |
 
 Role mapping uses the oidc driver with `PROXY_ROLE_ASSIGNMENT_OIDC_CLAIM`
-set to `opencloud_role` (see `modules/opencloud/options.nix`). Every user
+set to `opencloud_role` (see [modules/opencloud/options.nix](options.nix)). Every user
 must belong to at least one of these groups, and each OIDC client must
 have them under Allowed Groups, or login is denied (`access_denied`) or
 fails with 500 (no role claim). Add the admin user to `opencloud_admins`

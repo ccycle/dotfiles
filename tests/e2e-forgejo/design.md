@@ -2,8 +2,8 @@
 
 ## Why This Exists
 
-`modules/forgejo/options.nix`'s CI-runner, branch-protection, and backup
-automation (see `modules/forgejo/design.md`) drives the real Forgejo
+[modules/forgejo/options.nix](../../modules/forgejo/options.nix)'s CI-runner, branch-protection, and backup
+automation (see [modules/forgejo/design.md](../../modules/forgejo/design.md)) drives the real Forgejo
 server binary, the real `forgejo-runner` binary, and the real Forgejo
 API - none of which `nix build`/`nix flake check` can exercise, since
 those only prove the Nix evaluates and the derivations build. This suite
@@ -57,9 +57,9 @@ its Docker daemon - `docker ps` from inside a worktree can see, and by
 default `docker compose -p forgejo ...` would attach to and mutate, the
 real running Forgejo container, its SQLite DB, and the real
 `ccycle/dotfiles` repo's branch protection. This suite never does that:
-`scripts/stack.sh` brings up a second, disposable container under a
+[scripts/stack.sh](scripts/stack.sh) brings up a second, disposable container under a
 project name derived from the worktree directory
-(`forgejo-e2e-test-<worktree>`), and `fixtures/forgejo.override.yaml`
+(`forgejo-e2e-test-<worktree>`), and [fixtures/forgejo.override.yaml](fixtures/forgejo.override.yaml)
 repoints both the host ports and the SQLite named volume so the two
 stacks cannot collide even if run side by side.
 
@@ -75,7 +75,7 @@ sufficient.
 - **`ports:` needs the `!override` YAML tag.** Docker Compose merges
   sequences from multiple `-f` files by concatenation, not replacement.
   Without `!override`, the test stack's port list gets _appended_ to
-  `modules/forgejo/compose.yaml`'s `127.0.0.1:3000`/`127.0.0.1:2223` -
+  [modules/forgejo/compose.yaml](../../modules/forgejo/compose.yaml)'s `127.0.0.1:3000`/`127.0.0.1:2223` -
   still binding those, and colliding with the real production container
   the moment it exists. Discovered by running this suite: it errored
   with a real port-in-use failure the first time.
@@ -83,7 +83,7 @@ sufficient.
 - **`FORGEJO__security__INSTALL_LOCK=true` is required.** Production's
   data volume has this set to `true` only because someone went through
   Forgejo's interactive setup wizard by hand once (see
-  `modules/forgejo/design.md` / `docs/oidc-setup.md`); that state then
+  [modules/forgejo/design.md](../../modules/forgejo/design.md) / [docs/oidc-setup.md](../../docs/oidc-setup.md)); that state then
   persisted in the named volume, not in any committed config. A fresh
   test volume starts with `INSTALL_LOCK=false`, and every state-mutating
   `forgejo`/`forgejo-cli` command fatally refuses to run in that state -
@@ -94,14 +94,14 @@ sufficient.
 
 ## What It Does
 
-1. `scripts/run.sh` brings up the isolated stack (`scripts/stack.sh up`),
+1. [scripts/run.sh](scripts/run.sh) brings up the isolated stack (`scripts/stack.sh up`),
    waits for `/api/healthz`, and exports the compose file paths, state
    dir, and stack env for the spec to pick up.
-2. `specs/forgejo.spec.ts` runs as a single Playwright test, its steps in
+2. [specs/forgejo.spec.ts](specs/forgejo.spec.ts) runs as a single Playwright test, its steps in
    order:
    - Creates a local admin user + API token via `forgejo admin user
 create`/`generate-access-token` (`-u git` - see
-     `modules/forgejo/design.md` on why exec defaults to root otherwise).
+     [modules/forgejo/design.md](../../modules/forgejo/design.md) on why exec defaults to root otherwise).
    - Creates a test repo via `request.post` (traced), pushes a minimal
      `.forgejo/workflows/e2e.yaml` (`runs-on: macos-latest`) via `git`.
    - Registers a runner the same way `forgejo-runner-bootstrap` does
@@ -111,18 +111,18 @@ generate-config`, `yq` patches the connection in), starts
    - Pushes the workflow commit, polls the commit-status API (traced)
      until the runner reports a result, and logs the real context string
      observed - this is the value that must match `branchProtections.*.
-statusCheckContexts` in `modules/mac-mini-m4-pro/darwin.nix`.
+statusCheckContexts` in [modules/mac-mini-m4-pro/darwin.nix](../../modules/mac-mini-m4-pro/darwin.nix).
    - Applies branch protection via the same API call (traced)
      `forgejo-branch-protection-bootstrap` uses, with the just-observed
      context, then reads it back (traced) and asserts the fields stuck.
    - Confirms a force-push to that now-protected branch is rejected
      (there is no separate "block force push" field - protection alone
-     blocks it, see `modules/forgejo/design.md`).
+     blocks it, see [modules/forgejo/design.md](../../modules/forgejo/design.md)).
    - Runs the exact `forgejo dump` invocation the backup job uses,
      asserts the file appears on the host side of the bind mount.
    - Tests the retention-pruning one-liner in isolation against seeded
      fake generations (no server involved).
-3. `scripts/run.sh` publishes `test-results/html/` (Playwright's own HTML
+3. [scripts/run.sh](scripts/run.sh) publishes `test-results/html/` (Playwright's own HTML
    reporter, trace.zip included) to `modules/static-reports`'s
    `dataDir/<branch-slug>/forgejo/` - browsable at
    `https://reports.<hostname>.internal/<branch-slug>/forgejo/` once that

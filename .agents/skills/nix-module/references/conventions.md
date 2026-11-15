@@ -90,7 +90,7 @@ Host-specific configurations live in `modules/<hostname>/darwin.nix`. These file
    }
    ```
 
-3. `modules/darwin.nix` imports the feature unconditionally.
+3. [modules/darwin.nix](../../../../modules/darwin.nix) imports the feature unconditionally.
 4. The host module enables it:
 
    ```nix
@@ -114,6 +114,6 @@ Directories that group related packages by category (e.g., `cli-tools`, `languag
 
 ## 8. Darwin-Only Home Config via sharedModules
 
-When a home-manager module should only apply on darwin (e.g., brew cask installations), inject it via `home-manager.sharedModules` in the feature's `darwin.nix` rather than importing it from the global `modules/home.nix`.
+When a home-manager module should only apply on darwin (e.g., brew cask installations), inject it via `home-manager.sharedModules` in the feature's `darwin.nix` rather than importing it from the global [modules/home.nix](../../../../modules/home.nix).
 
-**Precedent:** `modules/docker/orbstack/darwin.nix` injects `orbstack/home.nix` via `home-manager.sharedModules`.
+**Precedent:** [modules/docker/orbstack/darwin.nix](../../../../modules/docker/orbstack/darwin.nix) injects `orbstack/home.nix` via `home-manager.sharedModules`.

@@ -8,11 +8,11 @@ through the actual UI reaches the host filesystem, or whether Immich's
 background jobs actually generate a thumbnail for it. Those are the
 parts a build dry-run and a health check structurally cannot verify, and
 the parts most likely to silently break from a storage/compose config
-change (see `modules/immich/compose.yaml`'s upload volume mount).
+change (see [modules/immich/compose.yaml](../../modules/immich/compose.yaml)'s upload volume mount).
 
 ## Why Local Auth, Not OIDC/Passkey
 
-`modules/immich/compose.yaml` configures Pocket ID as an OIDC provider
+[modules/immich/compose.yaml](../../modules/immich/compose.yaml) configures Pocket ID as an OIDC provider
 alongside local auth - both are available in production. This suite
 deliberately exercises only local auth
 (`POST /api/auth/admin-sign-up` / `POST /api/auth/login`), leaving
@@ -20,19 +20,19 @@ OIDC/passkey coverage concentrated in `tests/e2e`'s OpenCloud suite:
 
 - The passkey/WebAuthn ceremony, pocket-id session handling, and OIDC
   consent-screen edge cases are already exercised thoroughly there (see
-  `tests/e2e/design.md`) - duplicating that machinery per service buys
+  [tests/e2e/design.md](../e2e/design.md)) - duplicating that machinery per service buys
   nothing new, only more surface area to keep in sync with pocket-id
   changes.
 - Immich's own admin bootstrap (`admin-sign-up`) requires no external
   IdP at all, unlike OpenCloud's auto-provisioned OIDC users - it's the
   simpler, more direct path to a working authenticated session.
 - The isolated stack skips the dedicated test-Caddy + WebAuthn-origin
-  machinery `tests/e2e/scripts/stack.sh` needs for pocket-id entirely -
+  machinery [tests/e2e/scripts/stack.sh](../e2e/scripts/stack.sh) needs for pocket-id entirely -
   local auth over plain HTTP on a loopback port is enough.
 
 ## Why Isolated, Not the Real Instance
 
-Same reasoning as `tests/e2e-forgejo/design.md`'s "Why Isolated": a
+Same reasoning as [tests/e2e-forgejo/design.md](../e2e-forgejo/design.md)'s "Why Isolated": a
 herdr worktree checked out on `mac-mini-m4-pro` shares its Docker daemon
 with the real `services.immich` instance. Each worktree gets its own
 docker-compose project (`immich-e2e-test-<worktree>`), its own throwaway
@@ -42,10 +42,10 @@ own upload/db directories under `tests/e2e-immich/.state/` - never
 
 The `model_cache` named volume and the `immich-machine-learning`/`redis`/
 `database` services carry no explicit `name:` in
-`modules/immich/compose.yaml`, so Docker Compose already namespaces them
+[modules/immich/compose.yaml](../../modules/immich/compose.yaml), so Docker Compose already namespaces them
 by project name - only the services that hardcode host ports
 (`immich-server`, `postgres-exporter`, `redis-exporter`) need the
-`!override` treatment in `fixtures/immich.override.yaml` (see that
+`!override` treatment in [fixtures/immich.override.yaml](fixtures/immich.override.yaml) (see that
 file's own comment for why `!override` specifically, not plain
 concatenation).
 
@@ -53,7 +53,7 @@ concatenation).
 
 1. `scripts/stack.sh up` brings up the isolated stack and waits for
    `/api/server/ping`.
-2. `specs/immich.spec.ts` runs two Playwright tests in order
+2. [specs/immich.spec.ts](specs/immich.spec.ts) runs two Playwright tests in order
    (`workers: 1`, so declaration order is deterministic):
    - Signs up the first admin via the API, logs in through the real
      browser UI, and asserts the authenticated app is reached (handling
@@ -68,7 +68,7 @@ concatenation).
      host `IMMICH_UPLOAD_DIR`, and that its `thumbhash` becomes
      non-null within a short poll window - the actual thumbnail-job
      completing, not just the upload finishing.
-3. `scripts/run.sh` publishes `test-results/html/` (trace: 'on') to
+3. [scripts/run.sh](scripts/run.sh) publishes `test-results/html/` (trace: 'on') to
    `modules/static-reports`'s `dataDir/<branch-slug>/immich/`, same
    mechanism `e2e-test-forgejo`/`e2e-test-opencloud` use.
 4. Tears the stack (containers + volumes + data dirs) all the way down
@@ -92,7 +92,7 @@ concatenation).
   deliberately clicks the empty-timeline's own
   "Click to upload your first photo" button instead of either navbar
   one, sidestepping the ambiguity rather than disambiguating it (same
-  category of issue `tests/e2e/lib/pocket-id-auth.ts` documents for
+  category of issue [tests/e2e/lib/pocket-id-auth.ts](../e2e/lib/pocket-id-auth.ts) documents for
   pocket-id's own "Add Passkey" button, different fix).
 - **A "new version available" nag dialog appears on first page load**
   (onboarding and the first `/photos` visit both hit it) whenever the

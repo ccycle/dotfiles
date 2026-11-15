@@ -6,7 +6,7 @@ description: Verify darwin-rebuild switch (private profile) and dotfiles symlink
 # VM-Based darwin-rebuild Verification
 
 `darwin-rebuild switch` mutates the single shared `$HOME` on the host machine: the
-`custom.dotfiles.dir` option (see `modules/dotfiles/home.nix`) bakes the invoking
+`custom.dotfiles.dir` option (see [modules/dotfiles/home.nix](../../../modules/dotfiles/home.nix)) bakes the invoking
 `repo_root` into every `mkOutOfStoreSymlink` target (Claude skills/settings/hooks,
 ai-rules files, herdr config, direnv). Running it directly from a git worktree
 repoints those symlinks away from the main checkout and corrupts the host's real
@@ -24,7 +24,7 @@ same worktree, so only the first run pays the full clone + Nix install cost.
 - Apple Silicon Mac (Tart requires an Apple Silicon host to run macOS guests).
 - [Tart](https://tart.run/) and `sshpass` (used to authenticate against the
   default `admin`/`admin` credentials on Cirrus Labs' base image). Both are
-  declared in `modules/tart/darwin.nix` and installed automatically by
+  declared in [modules/tart/darwin.nix](../../../modules/tart/darwin.nix) and installed automatically by
   `darwin-rebuild switch` for the `private` profile — no manual `brew install`
   needed. `tart` is packaged in nixpkgs under a Fair Source license (`unfree`),
   allowed via a predicate scoped to just that package.
@@ -81,7 +81,7 @@ is suspected to be corrupted).
   and only fetch/build what changed.
 - Each worktree accumulates its own VM disk image on the host, so disk usage
   grows with the number of worktrees ever verified. Nothing prunes these
-  automatically outside of `scripts/cleanup-worktree.sh` deleting the VM when
+  automatically outside of [scripts/cleanup-worktree.sh](../../../scripts/cleanup-worktree.sh) deleting the VM when
   the worktree itself is removed (see that script).
 
 ## Out of Scope

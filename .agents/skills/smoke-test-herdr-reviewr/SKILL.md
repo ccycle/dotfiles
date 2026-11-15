@@ -5,7 +5,7 @@ description: Run smoke tests to verify the herdr-reviewr plugin is installed, co
 
 # herdr-reviewr Smoke Test
 
-Verifies that the `persiyanov.reviewr` plugin (declared in `modules/herdr/home.nix`) is installed
+Verifies that the `persiyanov.reviewr` plugin (declared in [modules/herdr/home.nix](../../../modules/herdr/home.nix)) is installed
 in the running herdr server, its config symlinks resolve into the repo, and it actually opens a
 pane when invoked — driven entirely through herdr's own socket API (`herdr pane` / `herdr
 workspace` / `herdr plugin`), the same primitives herdr uses to control panes for AI agents.
@@ -29,7 +29,7 @@ Requires `jq`.
    - `~/.config/herdr/config.toml` is a symlink and defines the `persiyanov.reviewr.toggle`
      keybinding.
    - `~/.config/herdr/plugins/config/persiyanov.reviewr/config.toml` is a symlink into
-     `modules/herdr/reviewr-config.toml`.
+     [modules/herdr/reviewr-config.toml](../../../modules/herdr/reviewr-config.toml).
 4. **Live Plugin Invocation**: creates a disposable scratch workspace (`herdr workspace create`),
    invokes `herdr plugin action invoke open --plugin persiyanov.reviewr`, and confirms a new pane
    appeared via `herdr pane list --workspace <id>`. The scratch workspace is closed on exit

@@ -11,7 +11,7 @@ uploaded photo actually lands on the host filesystem, and Immich actually
 generates a thumbnail for it (not just that the UI shows an upload
 animation). `nix build`/`nix flake check` and `smoke-test-immich`
 (container/health-endpoint only) can't verify any of this. See
-`tests/e2e-immich/design.md` for the full rationale, including why this
+[tests/e2e-immich/design.md](../../../tests/e2e-immich/design.md) for the full rationale, including why this
 suite deliberately uses local auth instead of OIDC/passkey.
 
 This never touches the real `services.immich` instance on
@@ -57,7 +57,7 @@ Run from anywhere inside the repository (any worktree):
 
 ## When to Use
 
-- After changing `modules/immich/compose.yaml` or `options.nix`'s
+- After changing [modules/immich/compose.yaml](../../../modules/immich/compose.yaml) or `options.nix`'s
   storage/upload configuration, to confirm uploaded photos still land on
   the host filesystem and thumbnails still generate - something a build
   dry-run structurally cannot verify.

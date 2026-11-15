@@ -6,7 +6,7 @@ description: Validate whether k8s actually solves the six container-management p
 # K8s Testbed Validation (Immich-shaped, OrbStack K3s)
 
 Runs six verification scenarios against the throwaway k8s testbed in
-`~/k8s-lab` (mirroring `modules/immich/compose.yaml`) to decide whether
+`~/k8s-lab` (mirroring [modules/immich/compose.yaml](../../../modules/immich/compose.yaml)) to decide whether
 k8s actually solves the operational pain points from the
 kubernetes-on-homeserver note — not just whether it _configures_ them.
 Every scenario asserts on a real k8s mechanism actually working
@@ -28,7 +28,7 @@ Run from anywhere inside the repository (any worktree):
 ```
 
 Prerequisites: OrbStack running, `k8s.enable` set (declaratively via
-`modules/docker/orbstack/home.nix`), `~/k8s-lab` checked out.
+[modules/docker/orbstack/home.nix](../../../modules/docker/orbstack/home.nix)), `~/k8s-lab` checked out.
 
 ## What It Does
 

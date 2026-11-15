@@ -15,7 +15,7 @@ tape files. Two modes:
 - **default** (visual): records a `.webm` video and publishes it for human
   review.
 
-See `tests/cli-shortcut-snapshot/design.md` for the full rationale,
+See [tests/cli-shortcut-snapshot/design.md](../../../tests/cli-shortcut-snapshot/design.md) for the full rationale,
 including why the target CLI must be launched as its own foreground process.
 
 ## Usage
@@ -56,6 +56,6 @@ Defaults to `tests/cli-shortcut-snapshot/tapes/herdr-reviewr-toggle.tape`.
 - For herdr, the tape must launch `herdr --session $SESSION_NAME` as its
   own foreground process. Remote control (`herdr pane send-keys`/
   `terminal attach`) does not reach herdr's keybinding router.
-- `scripts/run.sh` strips `HERDR_*` env vars before invoking VHS to
+- [scripts/run.sh](scripts/run.sh) strips `HERDR_*` env vars before invoking VHS to
   bypass herdr's nested-herdr guard — safe because the recording always
   uses a disposable, isolated named session.

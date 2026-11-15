@@ -8,10 +8,10 @@ description: Add or update an npm-managed CLI tool in modules/nodejs/node-tools 
 ## Overview
 
 CLI tools written in Node.js/npm that aren't packaged in nixpkgs are declared in
-`modules/nodejs/node-tools/package.json` and built by
-`modules/nodejs/node-tools/drv.nix` via `pkgs.importNpmLock` + `pkgs.buildNpmPackage`.
+[modules/nodejs/node-tools/package.json](../../../modules/nodejs/node-tools/package.json) and built by
+[modules/nodejs/node-tools/drv.nix](../../../modules/nodejs/node-tools/drv.nix) via `pkgs.importNpmLock` + `pkgs.buildNpmPackage`.
 This builds directly from `package-lock.json` — no node2nix, no manual hash pinning.
-`modules/nodejs/home.nix` installs the resulting derivation as a single package
+[modules/nodejs/home.nix](../../../modules/nodejs/home.nix) installs the resulting derivation as a single package
 (`callPackage ./node-tools/drv.nix { }`); every binary under its `node_modules/.bin`
 is exposed automatically.
 
@@ -19,7 +19,7 @@ is exposed automatically.
 
 ### Add a new package
 
-1. Add the dependency to `modules/nodejs/node-tools/package.json` under
+1. Add the dependency to [modules/nodejs/node-tools/package.json](../../../modules/nodejs/node-tools/package.json) under
    `dependencies`. Use `"latest"` for tools that should always track the newest
    release, or a semver range for tools pinned to a specific line.
 2. Regenerate `package-lock.json` **without** creating `node_modules`:

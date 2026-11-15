@@ -33,7 +33,7 @@ take up to an hour to appear.
   ingest path for uploads through OpenCloud itself): rejected after
   hitting real defects in OpenCloud's handling of externally-mounted
   directories (both a personal-space and a project-space variant were
-  tried) — see `modules/opencloud/design.md`'s "Rejected
+  tried) — see [modules/opencloud/design.md](../opencloud/design.md)'s "Rejected
   Alternatives" for the specifics. Navidrome reading `${vol}/music`
   directly, with no OpenCloud involvement, was unaffected by any of
   this and needed no changes.

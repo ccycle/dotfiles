@@ -7,7 +7,7 @@ description: Refresh a stale `vendorHash` on a buildGoModule package (gcx, gwq) 
 
 ## Overview
 
-`modules/grafana/drv.nix` (gcx) and `modules/git/gwq/drv.nix` (gwq) build Go
+[modules/grafana/drv.nix](../../../modules/grafana/drv.nix) (gcx) and [modules/git/gwq/drv.nix](../../../modules/git/gwq/drv.nix) (gwq) build Go
 CLIs straight from an upstream flake input (`inputs.gcx`, `inputs.gwq`, both
 `flake = false`) via `buildGoModule`. Unlike this repo's npm packages
 (`importNpmLock` reads per-package hashes straight from `package-lock.json`)
@@ -29,7 +29,7 @@ matches the current input's `go.mod`/`go.sum`):
 ## Workflow
 
 `nix-update` is already part of this repo's toolchain
-(`modules/nix/home.nix`, `flake.nix`'s `devShells.default`) and refreshes
+([modules/nix/home.nix](../../../modules/nix/home.nix), `flake.nix`'s `devShells.default`) and refreshes
 `vendorHash` correctly for this exact package shape — a flake output whose
 `src` is passed in externally via `callPackage`, not declared inline.
 
@@ -62,7 +62,7 @@ Note: `verify-change`'s build dry-run does **not** catch a stale
 `vendorHash` by itself — `nix build --dry-run` never reaches the build
 phase where vendoring is checked. That's what this skill's `--build` step
 is for. The full real-build safety net for this class of breakage is the
-CI "Build and push to Attic" step in `.forgejo/workflows/verify.yaml`.
+CI "Build and push to Attic" step in [.forgejo/workflows/verify.yaml](../../../.forgejo/workflows/verify.yaml).
 
 ## Do not
 

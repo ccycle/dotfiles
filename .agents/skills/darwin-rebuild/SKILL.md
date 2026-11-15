@@ -5,7 +5,7 @@ description: Apply Darwin system configuration by running scripts/darwin-rebuild
 
 # Darwin Rebuild
 
-This skill applies the nix-darwin system configuration to the local machine using `scripts/darwin-rebuild.sh`.
+This skill applies the nix-darwin system configuration to the local machine using [scripts/darwin-rebuild.sh](../../../scripts/darwin-rebuild.sh).
 
 ## Profile Selection Policy
 

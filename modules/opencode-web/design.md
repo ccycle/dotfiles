@@ -30,7 +30,7 @@ Leverages opencode's built-in tools:
 
 ## Agent
 
-The `opencode-web` agent (`agents/opencode-web.md`) defines search instructions:
+The `opencode-web` agent ([agents/opencode-web.md](agents/opencode-web.md)) defines search instructions:
 
 - Target paths to search
 - Usage of the `zot` command

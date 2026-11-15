@@ -55,7 +55,7 @@ third-party monitoring project.
   node-exporter's `--collector.textfile.directory` only reads local files;
   there is no push-metrics endpoint to hit instead. The remote
   `node-exporter-textfile` directory is `chmod 777` (see
-  `modules/monitoring/options.nix`) so the unprivileged SSH user can write
+  [modules/monitoring/options.nix](../monitoring/options.nix)) so the unprivileged SSH user can write
   into it, the same trust tradeoff already made for `$MONITORING_DATA_DIR`
   on a single-user, tailnet-only home server.
 - **`remoteHost` defaults to nothing and must be set per-host**
@@ -73,7 +73,7 @@ third-party monitoring project.
 - **A third-party opencode monitoring dashboard/exporter** - rejected;
   reading opencode's own SQLite `session` table directly is simpler than
   standing up another tool, and this repo already has direct-SQLite-read
-  precedent (`modules/attic/attic-exporter.py`).
+  precedent ([modules/attic/attic-exporter.py](../attic/attic-exporter.py)).
 - **Recomputing opencode's cost from raw tokens instead of reading
   `session.cost`** - rejected; opencode already computes this correctly
   (including whatever provider-specific pricing it knows about), so

@@ -10,7 +10,7 @@ through real HTTP requests and Playwright browser checks, asserting on
 real outcomes: the web UI loads, Subsonic API responds, and uploaded
 music files appear in the library after scanning. `nix build`/`nix flake check`
 and `smoke-test-navidrome` (container/health-endpoint only) can't verify
-any of this. See `tests/e2e-navidrome/design.md` for the full rationale.
+any of this. See [tests/e2e-navidrome/design.md](../../../tests/e2e-navidrome/design.md) for the full rationale.
 
 This never touches the real `services.navidrome` instance on
 `mac-mini-m4-pro` or its data. It brings up a separate, isolated
@@ -45,7 +45,7 @@ Run from anywhere inside the repository (any worktree):
 
 ## When to Use
 
-- After changing `modules/navidrome/compose.yaml` or `options.nix`'s
+- After changing [modules/navidrome/compose.yaml](../../../modules/navidrome/compose.yaml) or `options.nix`'s
   storage/music configuration, to confirm music files still scan
   correctly — something a build dry-run structurally cannot verify.
 - After upgrading the pinned Navidrome image version, to catch API/UI

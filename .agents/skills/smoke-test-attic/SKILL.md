@@ -15,7 +15,7 @@ daemon.
 
 ## Prerequisites
 
-- A `smoke` role Attic token deployed via sops/home-manager (`modules/attic/home.nix`), readable at
+- A `smoke` role Attic token deployed via sops/home-manager ([modules/attic/home.nix](../../../modules/attic/home.nix)), readable at
   `~/.config/sops-nix/secrets/attic-smoke-token`. Generate one with
   `.agents/skills/attic-credentials/scripts/generate-token.sh smoke` if it doesn't exist yet.
 - The Caddy internal CA trusted in this Mac's **System keychain** (not just `/etc/nix/ca-bundle.crt`):

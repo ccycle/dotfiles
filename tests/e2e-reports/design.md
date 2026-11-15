@@ -6,9 +6,9 @@ Browser-driven E2E coverage for the static-reports auth gate
 (`modules/static-reports`): the full chain from "anonymous browser hits
 `reports.<hostname>.internal`" through oauth2-proxy's forward_auth,
 Pocket ID's passkey-only login, consent, and back to a served static file.
-Reuses the passkey-ceremony machinery from `tests/e2e/lib/pocket-id-auth.ts`
+Reuses the passkey-ceremony machinery from [tests/e2e/lib/pocket-id-auth.ts](../e2e/lib/pocket-id-auth.ts)
 (the same helper the OpenCloud suite uses — it was written to be reusable
-for any pocket-id-fronted service; see `tests/e2e/design.md`).
+for any pocket-id-fronted service; see [tests/e2e/design.md](../e2e/design.md)).
 
 This is the first test suite for a **Caddy L7 gate** rather than an app
 with native OIDC: everything else in the repo (OpenCloud, Immich, Forgejo,
@@ -31,11 +31,11 @@ end.
 ## Why an Isolated Per-Worktree Stack (Same Reasoning as tests/e2e)
 
 Pocket ID's WebAuthn `RPOrigins` is fixed to its `APP_URL` at startup
-(verified in `modules/pocket-id` and `tests/e2e/design.md`), and the whole
+(verified in `modules/pocket-id` and [tests/e2e/design.md](../e2e/design.md)), and the whole
 point is a _browser-visible_ redirect chain through a real IdP. That can
 only be exercised against a live Pocket ID, so the suite gets its own
 per-worktree one, exactly like the OpenCloud suite — same container
-(`modules/pocket-id/compose.yaml` + a volume-name override so it never
+([modules/pocket-id/compose.yaml](../../modules/pocket-id/compose.yaml) + a volume-name override so it never
 mounts the production volume), same dedicated test Caddy fronting both
 pocket-id and the reports vhost on one origin reachable locally and from
 the tailnet, same one-time manual admin-API-key bootstrap per worktree.
@@ -43,7 +43,7 @@ the tailnet, same one-time manual admin-API-key bootstrap per worktree.
 ## Why oauth2-proxy, Mirrored From Production
 
 The production gate is oauth2-proxy + Caddy `forward_auth`
-(`modules/static-reports/options.nix`). Testing a different mechanism
+([modules/static-reports/options.nix](../../modules/static-reports/options.nix)). Testing a different mechanism
 (e.g. testing the browse-only path and hand-waving the auth) would prove
 nothing about the real deployment. So the test Caddy's reports vhost is a
 line-for-line miniature of the production Caddyfile block — `/oauth2/*`
@@ -76,7 +76,7 @@ OpenCloud suite.
 
 - **Never delete the pocket-id test user out-of-band** without also
   wiping `tests/e2e-reports/.state/` — same coupling rule as
-  `tests/e2e/design.md` (stable identity + fresh passkey per run).
+  [tests/e2e/design.md](../e2e/design.md) (stable identity + fresh passkey per run).
 - **The CA-copy step needs `sudo` once per worktree** (`ensure_test_ca`,
   reads `/var/lib/caddy/...`), and the native oauth2-proxy process trusts
   the test Caddy's certs only because the copied root is already in the

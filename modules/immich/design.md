@@ -30,7 +30,7 @@ be the same path as, or nested inside, `uploadDir` (`${vol}/immich/upload`,
 mounted at `/usr/src/app/upload`). Upstream explicitly prohibits an
 external library import path overlapping `UPLOAD_LOCATION` — Immich's
 own upload/thumbnail management assumes exclusive ownership of that
-tree. `modules/immich/darwin.nix` derives both paths from the same
+tree. [modules/immich/darwin.nix](darwin.nix) derives both paths from the same
 `vol`, but as sibling directories (`immich/upload/` vs `photo/`), so
 this can't regress by accident as long as neither default is edited
 independently of the other.
@@ -42,7 +42,7 @@ into the generated system-config file (the same file used for OIDC,
 `IMMICH_CONFIG_FILE`) alongside `library.scan.enabled: true` with a
 daily `cronExpression`. Automatic library watching is upstream-labeled
 experimental, and (like OpenCloud's collaborative posix mode, see
-`modules/opencloud/design.md`) depends on inotify events crossing the
+[modules/opencloud/design.md](../opencloud/design.md)) depends on inotify events crossing the
 OrbStack container/host boundary reliably — validate this before
 depending on watch-only visibility. The daily cron scan is the
 fallback that makes visibility eventually-consistent even if watch
@@ -68,7 +68,7 @@ path this module mounts `photoDir` to.
   (bind-mounting it into OpenCloud's posix tree): rejected after
   hitting real defects in OpenCloud's handling of externally-mounted
   directories (both a personal-space and a project-space variant were
-  tried) — see `modules/opencloud/design.md`'s "Rejected
+  tried) — see [modules/opencloud/design.md](../opencloud/design.md)'s "Rejected
   Alternatives" for the specifics. Immich reading `${vol}/photo`
   directly, with no OpenCloud involvement, was unaffected by any of
   this and needed no changes.

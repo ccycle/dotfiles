@@ -24,7 +24,7 @@ is explicitly excluded.
   single entry point.
 - The policy file is checked into this repo for review and versioning,
   and applied via OpenTofu (`modules/tailscale/terraform/`,
-  `scripts/tailscale-acl-apply.sh` — see the `tailscale-acl-apply`
+  [scripts/tailscale-acl-apply.sh](../../scripts/tailscale-acl-apply.sh) — see the `tailscale-acl-apply`
   skill). Apply is still a deliberate human step: `tofu plan` first,
   `tofu apply` second, never unattended/CI-driven.
 
@@ -38,7 +38,7 @@ is explicitly excluded.
   authenticates by tailnet device identity rather than WebAuthn/
   passkeys, so it doesn't meet the passkey requirement regardless of
   maturity, and its own README states it is experimental and not
-  intended for production. See `modules/pocket-id/design.md` for the
+  intended for production. See [modules/pocket-id/design.md](../pocket-id/design.md) for the
   full rejection rationale and Pocket ID's own security posture
   (it has a nontrivial CVE history in core OIDC flows — all patched,
   but the module pins to a specific version rather than floating).
@@ -77,7 +77,7 @@ is explicitly excluded.
 ### Phase 3 — audit (in progress)
 
 - Caddy access logs and metrics — design captured in
-  `modules/monitoring/design.md`, which lifts its prior "no Caddy
+  [modules/monitoring/design.md](../monitoring/design.md), which lifts its prior "no Caddy
   metrics or access logs" non-goal for this work (blackbox/synthetic
   probing remains out of scope there).
 - Device posture checks (Tailscale paid feature, evaluate when needed).

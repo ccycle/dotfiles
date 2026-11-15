@@ -12,7 +12,7 @@ passkey-only login, then back to a served static file. The gate is
 exercised as deployed — a test Caddy vhost that is a line-for-line
 miniature of the production forward_auth Caddyfile block, a natively run
 oauth2-proxy (pinned `devShells.e2e`), and a per-worktree Pocket ID
-container. See `tests/e2e-reports/design.md` for the full rationale,
+container. See [tests/e2e-reports/design.md](../../../tests/e2e-reports/design.md) for the full rationale,
 including why this suite exists when OpenCloud/Immich/Forgejo/Grafana do
 their own in-app OIDC (a `file_server` can't — hence the Caddy-level gate
 that this suite proves).
@@ -56,12 +56,12 @@ Run from anywhere inside the repository (any worktree):
 
 ## When to Use
 
-- After changing `modules/static-reports/options.nix` (Caddyfile block,
+- After changing [modules/static-reports/options.nix](../../../modules/static-reports/options.nix) (Caddyfile block,
   oauth2-proxy flags, launchd service, newsyslog), to confirm the real
   gate still behaves — a build dry-run structurally cannot verify a
   redirect chain.
 - After changing `modules/pocket-id` or the passkey flow in
-  `tests/e2e/lib/pocket-id-auth.ts`, since this suite exercises the same
+  [tests/e2e/lib/pocket-id-auth.ts](../../../tests/e2e/lib/pocket-id-auth.ts), since this suite exercises the same
   helper against a fresh Pocket ID instance.
 
 ## Known Constraints

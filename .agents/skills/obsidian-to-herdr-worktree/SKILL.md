@@ -79,7 +79,7 @@ board="$HOME/Obsidian/zettelkasten/Kanban (dotfiles).md"
    worktree → `In progress`; a worktree removed after its branch merged to
    main → `Done`), and reports the ambiguous cases for you to ask about. It
    is the same script the standalone `kanban-sync` skill uses — see
-   `.agents/skills/kanban-sync/SKILL.md` for the full output contract:
+   [.agents/skills/kanban-sync/SKILL.md](../kanban-sync/SKILL.md) for the full output contract:
 
    ```bash
    .agents/skills/kanban-sync/scripts/reconcile.sh "$board" "$state_file"
@@ -309,7 +309,7 @@ changes propagate to other devices (Obsidian mobile, other desktops):
 2. Never let a worker write to the Obsidian vault or any other file — the
    conclusion lives only in its own chat. The only vault writes this skill
    itself makes are the Kanban column moves from Step 1's reconcile and
-   Step 7's direct In-progress move, applied via `scripts/move-card.sh`
+   Step 7's direct In-progress move, applied via [scripts/move-card.sh](scripts/move-card.sh)
    (Step 1's `AUTO` and `BACKFILL` cases and all of Step 7 apply without
    asking; Step 1's `CONFIRM` cases still require an explicit per-card
    answer). The dispatch-state file lives outside the vault at

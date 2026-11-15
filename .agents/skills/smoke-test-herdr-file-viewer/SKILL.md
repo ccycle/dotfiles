@@ -5,7 +5,7 @@ description: Run smoke tests to verify the herdr-file-viewer plugin is installed
 
 # herdr-file-viewer Smoke Test
 
-Verifies that the `herdr-file-viewer` plugin (declared in `modules/herdr/home.nix`) is installed in
+Verifies that the `herdr-file-viewer` plugin (declared in [modules/herdr/home.nix](../../../modules/herdr/home.nix)) is installed in
 the running herdr server, its keybindings resolve from the repo-managed `config.toml`, and it
 actually opens a pane when invoked — driven entirely through herdr's own socket API (`herdr pane` /
 `herdr workspace` / `herdr plugin`), the same primitives herdr uses to control panes for AI agents.

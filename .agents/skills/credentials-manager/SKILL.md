@@ -5,7 +5,7 @@ description: Manage Nix access tokens and secrets using sops-nix. Automates the 
 
 # Credentials Manager
 
-This skill helps you manage secrets and access tokens in the dotfiles, following the security policies defined in `references/policy.md`.
+This skill helps you manage secrets and access tokens in the dotfiles, following the security policies defined in [references/policy.md](references/policy.md).
 
 ## Features
 
@@ -37,4 +37,4 @@ This will output the `sops.templates` and `nix.extraOptions` configuration to be
 
 - **Separate Files:** Work credentials must be stored in separate files (e.g., `nix-access-tokens-work.conf`) to avoid conflicts.
 - **Sops Encryption:** All secrets must be encrypted using `sops`.
-- **Reference:** See `references/policy.md` for the detailed security policy.
+- **Reference:** See [references/policy.md](references/policy.md) for the detailed security policy.

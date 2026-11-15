@@ -30,7 +30,7 @@ llama-cpp's `--ctx-size` CLI flag, every parameter that matters
 
 - `options.nix` (darwin eval): generates the llama-swap config.yaml,
   the launchd agent script (with download logic), and the Caddy vhost.
-- `modules/opencode/home.nix` (home eval): generates opencode.json
+- [modules/opencode/home.nix](../opencode/home.nix) (home eval): generates opencode.json
   with provider and model entries derived from the same catalog.
 
 A shared `.nix` file would be flagged as `flat-submodule` by the
@@ -125,7 +125,7 @@ entries.
 ## Rejected Alternatives
 
 - **LM Studio server** — GUI-managed state, no declarative context
-  length. See `modules/lm-studio/design.md`.
+  length. See [modules/lm-studio/design.md](../lm-studio/design.md).
 - **Standalone `mlx-server` module** — always-on (`KeepAlive`), no
   idle-unload, and a separate port/vhost from every other local model.
   Superseded by folding mlx-lm into this module's llama-swap catalog.

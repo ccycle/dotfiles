@@ -12,7 +12,7 @@ Exposed to repo agents via the committed symlink `.claude/skills -> ../.agents/s
 
 Repo-agnostic skills useful on any machine or repository: git workflows, herdr/obsidian tooling, research and reasoning loops, coaching. None of them reference this repository's internals.
 
-Deployed to `~/.claude/skills` and `~/.agents/skills` by `modules/agents/skills/home.nix`.
+Deployed to `~/.claude/skills` and `~/.agents/skills` by [modules/agents/skills/home.nix](../../modules/agents/skills/home.nix).
 
 ## Placement criteria
 

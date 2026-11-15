@@ -29,24 +29,24 @@ Production Navidrome authenticates via Caddy's forward_auth → PocketID
 
 ## Why Isolated, Not the Real Instance
 
-Same reasoning as `tests/e2e-immich/design.md`: a herdr worktree checked
+Same reasoning as [tests/e2e-immich/design.md](../e2e-immich/design.md): a herdr worktree checked
 out on `mac-mini-m4-pro` shares its Docker daemon with the real
 `services.navidrome` instance. Each worktree gets its own docker-compose
 project (`navidrome-e2e-test-<worktree>`), its own throwaway host port,
 and its own data/music directories under `tests/e2e-navidrome/.state/`.
 
-The `navidrome` container in `modules/navidrome/compose.yaml` binds
+The `navidrome` container in [modules/navidrome/compose.yaml](../../modules/navidrome/compose.yaml) binds
 `127.0.0.1:4533:4533`. A plain `docker compose -p <other-project>` still
 binds that same host port regardless of project name — it would collide
 with the real production container. The override in
-`fixtures/navidrome.override.yaml` replaces it with a dynamically
+[fixtures/navidrome.override.yaml](fixtures/navidrome.override.yaml) replaces it with a dynamically
 assigned port.
 
 ## What It Does
 
 1. `scripts/stack.sh up` brings up the isolated Navidrome stack (without
    extauth) and waits for `/health`.
-2. `specs/navidrome.spec.ts` runs three Playwright tests:
+2. [specs/navidrome.spec.ts](specs/navidrome.spec.ts) runs three Playwright tests:
    - **Web UI loads**: navigates to the web UI and asserts the login form
      is visible (unauthenticated state).
    - **Subsonic API ping**: calls `GET /rest/ping` with no auth and
@@ -56,7 +56,7 @@ assigned port.
      music directory, triggers a scan via the Navidrome API, then asserts
      the Subsonic `getArtists`/`getAlbumList` endpoints return the
      scanned content.
-3. `scripts/run.sh` publishes the Playwright HTML report (trace: 'on') to
+3. [scripts/run.sh](scripts/run.sh) publishes the Playwright HTML report (trace: 'on') to
    `modules/static-reports`'s `dataDir/<branch-slug>/navidrome/`.
 4. Tears the stack (containers + volumes + data dirs) down every run.
 
