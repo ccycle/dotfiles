@@ -24,13 +24,26 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../.." && pwd)"
 cd "${REPO_ROOT}"
 
-PATH_SPAN_RE='`[A-Za-z0-9_.@+/-]*/[A-Za-z0-9_.@+/-]+\.(md|nix|sh|py|ts|tsx|ya?ml|json|toml)`'
-LINK_RE='\]\([^)]+\)'
-# Inline-code and link syntax only occurs in prose; a fenced block toggles off
-# everything between its opening and closing fence.
-PROSE_AWK='
+export PATH_SPAN_RE='`[A-Za-z0-9_.@+/-]*/[A-Za-z0-9_.@+/-]+\.(md|nix|sh|py|ts|tsx|ya?ml|json|toml)`'
+export LINK_RE='\]\([^)]+\)'
+# One awk pass extracts every candidate from every file: spawning grep per line
+# took ~50s. Inline-code and link syntax only occurs in prose; a fenced block
+# toggles off everything between its opening and closing fence. Matches are
+# split on whitespace, mirroring the word splitting of the former
+# `for x in $(grep -o ...)` loop. Output: file TAB line TAB rule TAB piece.
+# The regexes come in through ENVIRON because awk -v would eat backslashes.
+EXTRACT_AWK='
+  function emit(rule, re,    s, n, i, parts) {
+    s = $0
+    while (match(s, re)) {
+      n = split(substr(s, RSTART, RLENGTH), parts, /[ \t]+/)
+      for (i = 1; i <= n; i++) if (parts[i] != "") print FILENAME "\t" FNR "\t" rule "\t" parts[i]
+      s = substr(s, RSTART + RLENGTH)
+    }
+  }
+  FNR == 1 { fence = 0 }
   /^[[:space:]]*(```|~~~)/ { fence = !fence; next }
-  !fence { print NR "\t" $0 }
+  !fence { emit("A", ENVIRON["PATH_SPAN_RE"]); emit("B", ENVIRON["LINK_RE"]) }
 '
 
 files=()
@@ -90,36 +103,35 @@ report() {
   violations=$((violations + 1))
 }
 
+existing=()
 for file in "${files[@]}"; do
-  [ -f "$file" ] || continue
-  while IFS=$'\t' read -r line text; do
-    # --- Rule A -------------------------------------------------------------
-    for span in $(printf '%s' "$text" | grep -oE "$PATH_SPAN_RE" || true); do
-      ref="${span//\`/}"
-      if target=$(resolve "$file" "$ref"); then
-        report "$file:$line: inline code reference - use [$ref]($target)"
-      fi
-    done
-
-    # --- Rule B -------------------------------------------------------------
-    for link in $(printf '%s' "$text" | grep -oE "$LINK_RE" || true); do
-      target="${link#*](}"
-      target="${target%)}"
-      case "$target" in \#* | '') continue ;; esac
-      case "$target" in
-      *://* | //* | mailto:* | tel:* | data:*) continue ;;
-      esac
-      target="${target#<}"
-      target="${target%>}"
-      target="${target%%#*}"
-      target="${target//%20/ }"
-      case "$target" in '') continue ;; esac
-      if [ ! -e "$(dirname "$file")/$target" ] && [ ! -e "$target" ]; then
-        report "$file:$line: broken link - $target does not exist"
-      fi
-    done
-  done < <(awk "$PROSE_AWK" "$file")
+  [ -f "$file" ] && existing+=("$file")
 done
+
+while IFS=$'\t' read -r file line rule piece; do
+  if [ "$rule" = A ]; then
+    ref="${piece//\`/}"
+    if target=$(resolve "$file" "$ref"); then
+      report "$file:$line: inline code reference - use [$ref]($target)"
+    fi
+    continue
+  fi
+
+  target="${piece#*](}"
+  target="${target%)}"
+  case "$target" in \#* | '') continue ;; esac
+  case "$target" in
+  *://* | //* | mailto:* | tel:* | data:*) continue ;;
+  esac
+  target="${target#<}"
+  target="${target%>}"
+  target="${target%%#*}"
+  target="${target//%20/ }"
+  case "$target" in '') continue ;; esac
+  if [ ! -e "$(dirname "$file")/$target" ] && [ ! -e "$target" ]; then
+    report "$file:$line: broken link - $target does not exist"
+  fi
+done < <([ "${#existing[@]}" -eq 0 ] || awk "$EXTRACT_AWK" "${existing[@]}")
 
 if [ "$violations" -gt 0 ]; then
   echo "Markdown link check failed: ${violations} violation(s)." >&2
