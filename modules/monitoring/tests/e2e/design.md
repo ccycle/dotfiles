@@ -11,10 +11,10 @@ dry-run and a container-status check structurally cannot verify.
 
 ## Why Real Scrape Targets, Not Fake Ones
 
-Unlike every other suite in `tests/e2e-*` (which stand up fully
+Unlike every other e2e suite (which stand up fully
 synthetic, isolated data), this one deliberately keeps Prometheus
 scraping the _real_ host via `host-gateway` and the _real_
-[modules/monitoring/prometheus.yml](../../modules/monitoring/prometheus.yml) (mounted unmodified, same as
+[modules/monitoring/prometheus.yml](../../prometheus.yml) (mounted unmodified, same as
 production - see [scripts/stack.sh](scripts/stack.sh)'s `derive_env`). The alternative -
 standing up dummy scrape targets - would only prove Prometheus can
 scrape _something_, not that the repo's actual scrape config is
@@ -30,7 +30,7 @@ running) is asserted as actually `up`.
 
 ## Why Local Auth, Not OIDC
 
-Same reasoning as [modules/immich/tests/e2e/design.md](../../modules/immich/tests/e2e/design.md): Grafana's
+Same reasoning as [modules/immich/tests/e2e/design.md](../../../immich/tests/e2e/design.md): Grafana's
 `GF_AUTH_GENERIC_OAUTH_*` config points at Pocket ID in production, but
 [fixtures/monitoring.override.yaml](fixtures/monitoring.override.yaml) disables it entirely
 (`GF_AUTH_GENERIC_OAUTH_ENABLED=false`) for this stack. OIDC/passkey
@@ -50,11 +50,11 @@ from `/api/dashboards/uid/...`; it just fails to render.
 
 ## Why Isolated, Not the Real Instance
 
-Same reasoning as [modules/forgejo/tests/e2e/design.md](../../modules/forgejo/tests/e2e/design.md)'s "Why Isolated":
-[modules/monitoring/compose.yaml](../../modules/monitoring/compose.yaml) hardcodes host ports (9090, 3200,
+Same reasoning as [modules/forgejo/tests/e2e/design.md](../../../forgejo/tests/e2e/design.md)'s "Why Isolated":
+[modules/monitoring/compose.yaml](../../compose.yaml) hardcodes host ports (9090, 3200,
 3100, 8090) and a fixed `grafana-data` volume name (SQLite - kept as a
 named volume rather than a bind mount for the same reason
-[tests/e2e/design.md](../e2e/design.md) documents for pocket-id: SQLite crashes under
+[tests/e2e/design.md](../../../../tests/e2e/design.md) documents for pocket-id: SQLite crashes under
 concurrent access on virtiofs bind mounts). [fixtures/monitoring.override.yaml](fixtures/monitoring.override.yaml)
 replaces all of these with per-worktree, per-run values via `!override`
 so this stack can never collide with (or corrupt) the real one -

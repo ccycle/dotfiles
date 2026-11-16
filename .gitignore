@@ -11,9 +11,9 @@ modules/forgejo/tests/e2e/test-results/
 modules/immich/tests/e2e/.env
 modules/immich/tests/e2e/.state/
 modules/immich/tests/e2e/test-results/
-tests/e2e-monitoring/.env
-tests/e2e-monitoring/.state/
-tests/e2e-monitoring/test-results/
+modules/monitoring/tests/e2e/.env
+modules/monitoring/tests/e2e/.state/
+modules/monitoring/tests/e2e/test-results/
 tests/e2e-navidrome/.env
 tests/e2e-navidrome/.state/
 tests/e2e-navidrome/test-results/

@@ -1,5 +1,5 @@
 # Layered on top of modules/monitoring/compose.yaml only for the isolated
-# e2e stack (never for production). See tests/e2e-monitoring/design.md.
+# e2e stack (never for production). See modules/monitoring/tests/e2e/design.md.
 #
 # modules/monitoring/compose.yaml hardcodes host ports for prometheus
 # (9090), grafana (3200), loki (3100), and cadvisor (8090), plus a fixed

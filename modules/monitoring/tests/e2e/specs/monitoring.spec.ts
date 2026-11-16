@@ -1,7 +1,7 @@
 // E2E test for the monitoring stack (modules/monitoring): Prometheus,
 // Grafana, and Loki. Deliberately scrapes the *real* host via
 // host-gateway using the real modules/monitoring/prometheus.yml (see
-// tests/e2e-monitoring/design.md) rather than faking scrape targets -
+// modules/monitoring/tests/e2e/design.md) rather than faking scrape targets -
 // the whole point is verifying the repo's actual scrape config works
 // against real endpoints, not a synthetic stand-in.
 //
@@ -21,7 +21,7 @@ const GRAFANA_ADMIN_PASSWORD = requireEnv("GRAFANA_ADMIN_PASSWORD");
 function requireEnv(name: string): string {
   const value = process.env[name];
   if (!value) {
-    throw new Error(`${name} must be set (see tests/e2e-monitoring/scripts/stack.sh)`);
+    throw new Error(`${name} must be set (see modules/monitoring/tests/e2e/scripts/stack.sh)`);
   }
   return value;
 }

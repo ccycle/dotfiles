@@ -6,7 +6,7 @@
 tests/e2e/.env
 modules/forgejo/tests/e2e/.env
 modules/immich/tests/e2e/.env
-tests/e2e-monitoring/.env
+modules/monitoring/tests/e2e/.env
 tests/e2e-reports/.env
 
 # Local editor/tool settings

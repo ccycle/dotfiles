@@ -1,8 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
 
 // URLs/ports come from the isolated per-worktree stack, resolved by
-// tests/e2e-monitoring/scripts/stack.sh and exported before
-// `playwright test` runs. See tests/e2e-monitoring/design.md for why
+// modules/monitoring/tests/e2e/scripts/stack.sh and exported before
+// `playwright test` runs. See modules/monitoring/tests/e2e/design.md for why
 // this stack is per-worktree yet deliberately still scrapes the real
 // host via host-gateway rather than faking scrape targets too.
 //

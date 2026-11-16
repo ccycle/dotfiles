@@ -10,7 +10,7 @@ real local-admin login and dashboard API, a real browser render of a
 Grafana dashboard, and Loki's real `/loki/api/v1/query_range` - all
 against an isolated stack that deliberately still scrapes the _real_
 host via `host-gateway`, using the real [modules/monitoring/prometheus.yml](../../../modules/monitoring/prometheus.yml)
-(mounted unmodified). See [tests/e2e-monitoring/design.md](../../../tests/e2e-monitoring/design.md) for the full
+(mounted unmodified). See [modules/monitoring/tests/e2e/design.md](../../../modules/monitoring/tests/e2e/design.md) for the full
 rationale, including why target _health_ is never asserted (only that
 every configured job was discovered) and why this suite uses local auth
 instead of OIDC.
