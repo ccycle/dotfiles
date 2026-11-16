@@ -1,5 +1,5 @@
 # Layered on top of modules/pocket-id/compose.yaml only for the isolated
-# e2e stack (never for production). See tests/e2e/design.md.
+# e2e stack (never for production). See modules/opencloud/tests/e2e/design.md.
 #
 # modules/pocket-id/compose.yaml pins its data volume to the literal name
 # "pocket-id-data" (so production's launchd-managed stack always finds the

@@ -1,7 +1,7 @@
 import type { Page } from "@playwright/test";
 
 // Shared passkey-authentication helper for any pocket-id-fronted service
-// under test (currently only OpenCloud; see tests/e2e/design.md for why
+// under test (currently only OpenCloud; see modules/opencloud/tests/e2e/design.md for why
 // this is split out as a reusable module rather than inlined into
 // specs/opencloud.spec.ts).
 //
@@ -18,7 +18,7 @@ export interface PocketIdAdmin {
 }
 
 // The test Caddy's cert chains to a copy of production's internal CA
-// (see tests/e2e/scripts/stack.sh's ensure_test_ca) that this Node
+// (see modules/opencloud/tests/e2e/scripts/stack.sh's ensure_test_ca) that this Node
 // process has no reason to have imported into its own trust store — same
 // reasoning as playwright.config.ts's ignoreHTTPSErrors, just for the
 // plain Node fetch() calls this admin-API helper makes outside the
@@ -70,7 +70,7 @@ async function findUserByUsername(
 // (STORAGE_USERS_POSIX_PERSONAL_SPACE_PATH_TEMPLATE — see
 // modules/opencloud/design.md). Deleting and recreating the pocket-id
 // user each run gives it a fresh `sub` every time while OpenCloud's own
-// data persists across runs (tests/e2e/design.md), which left OpenCloud
+// data persists across runs (modules/opencloud/tests/e2e/design.md), which left OpenCloud
 // pointing at a stale identity for that directory and broke write
 // permissions on the second run — confirmed empirically (first run after
 // a clean OpenCloud data dir passed, the very next run failed with the
@@ -214,7 +214,7 @@ export async function revokeOwnClientAuthorization(
 // user, replace its passkey with a fresh one for this run's virtual
 // authenticator, and return a no-op teardown (kept for interface
 // symmetry / a natural place to hang future per-run cleanup — see
-// tests/e2e/design.md on why the user itself is stable rather than
+// modules/opencloud/tests/e2e/design.md on why the user itself is stable rather than
 // disposable-per-run).
 export async function provisionTestUser(
   page: Page,

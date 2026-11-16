@@ -2,9 +2,9 @@ node_modules/
 .local/
 settings.local.json
 result
-tests/e2e/.env
-tests/e2e/.state/
-tests/e2e/test-results/
+modules/opencloud/tests/e2e/.env
+modules/opencloud/tests/e2e/.state/
+modules/opencloud/tests/e2e/test-results/
 modules/forgejo/tests/e2e/.env
 modules/forgejo/tests/e2e/.state/
 modules/forgejo/tests/e2e/test-results/

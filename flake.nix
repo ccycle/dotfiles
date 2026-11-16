@@ -51,9 +51,9 @@
     nixpkgs-2605.url = "github:NixOS/nixpkgs/26.05";
     # Pinned independently of the main `nixpkgs` input so bumping it (to
     # keep playwright-driver's bundled Chromium in lockstep with
-    # tests/e2e/package.json's @playwright/test version) never needs to
+    # modules/opencloud/tests/e2e/package.json's @playwright/test version) never needs to
     # wait on, or ride along with, an unrelated main nixpkgs bump.
-    # See tests/e2e/design.md.
+    # See modules/opencloud/tests/e2e/design.md.
     nixpkgs-playwright.url = "github:nixos/nixpkgs/26.05";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     nixpkgs.url = "github:nixos/nixpkgs/26.05";

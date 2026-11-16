@@ -17,7 +17,7 @@ Production Navidrome authenticates via Caddy's forward_auth → PocketID
 
 - Setting up a real Caddy + PocketID forward_auth chain in the test stack
   would require the full `*.internal` TLS CA, WebAuthn origin, and
-  passkey ceremony machinery — the same complexity `tests/e2e`'s OpenCloud
+  passkey ceremony machinery — the same complexity `modules/opencloud/tests/e2e`'s OpenCloud
   suite already covers thoroughly.
 - Navidrome's own local auth (username/password) is sufficient to exercise
   the core flows this suite targets: library scanning, Subsonic API, and

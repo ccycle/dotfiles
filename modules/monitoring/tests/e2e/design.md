@@ -34,7 +34,7 @@ Same reasoning as [modules/immich/tests/e2e/design.md](../../../immich/tests/e2e
 `GF_AUTH_GENERIC_OAUTH_*` config points at Pocket ID in production, but
 [fixtures/monitoring.override.yaml](fixtures/monitoring.override.yaml) disables it entirely
 (`GF_AUTH_GENERIC_OAUTH_ENABLED=false`) for this stack. OIDC/passkey
-coverage stays concentrated in `tests/e2e`'s OpenCloud suite; Grafana's
+coverage stays concentrated in `modules/opencloud/tests/e2e`'s OpenCloud suite; Grafana's
 own `GF_SECURITY_ADMIN_USER`/`PASSWORD` env vars already give it a real,
 independently-testable local admin account with no external IdP needed.
 
@@ -54,7 +54,7 @@ Same reasoning as [modules/forgejo/tests/e2e/design.md](../../../forgejo/tests/e
 [modules/monitoring/compose.yaml](../../compose.yaml) hardcodes host ports (9090, 3200,
 3100, 8090) and a fixed `grafana-data` volume name (SQLite - kept as a
 named volume rather than a bind mount for the same reason
-[tests/e2e/design.md](../../../../tests/e2e/design.md) documents for pocket-id: SQLite crashes under
+[modules/opencloud/tests/e2e/design.md](../../../opencloud/tests/e2e/design.md) documents for pocket-id: SQLite crashes under
 concurrent access on virtiofs bind mounts). [fixtures/monitoring.override.yaml](fixtures/monitoring.override.yaml)
 replaces all of these with per-worktree, per-run values via `!override`
 so this stack can never collide with (or corrupt) the real one -
@@ -103,7 +103,7 @@ project.
   Real Scrape Targets" above), not a suite bug.
 - **`GF_AUTH_GENERIC_OAUTH_ENABLED=false` in the override** means this
   suite can never catch a regression in the actual Pocket ID OIDC wiring
-  for Grafana - that's `tests/e2e`'s OpenCloud suite's job for the OIDC
+  for Grafana - that's `modules/opencloud/tests/e2e`'s OpenCloud suite's job for the OIDC
   mechanism generally, not something duplicated per service (see "Why
   Local Auth" above).
 - **Grafana's own bundled app-plugin catalog intermittently logs

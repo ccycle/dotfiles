@@ -13,7 +13,7 @@ export default defineConfig({
   outputDir: "test-results/artifacts",
   use: {
     baseURL: process.env.IMMICH_SERVER_URL,
-    // Always on, not 'retain-on-failure' (matches tests/e2e and
+    // Always on, not 'retain-on-failure' (matches modules/opencloud/tests/e2e and
     // modules/forgejo/tests/e2e): worth inspecting the upload/thumbnail flow in
     // trace viewer even on a passing run, not just to debug failures.
     trace: "on",

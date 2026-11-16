@@ -1,5 +1,5 @@
 // E2E test for Immich (modules/immich), local-auth only - OIDC/passkey
-// coverage is deliberately concentrated in tests/e2e's OpenCloud suite
+// coverage is deliberately concentrated in modules/opencloud/tests/e2e's OpenCloud suite
 // instead (see modules/immich/tests/e2e/design.md), so this exercises Immich's
 // own POST /api/auth/admin-sign-up + POST /api/auth/login directly.
 //

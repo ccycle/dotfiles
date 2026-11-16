@@ -34,10 +34,10 @@ show-report --host <tailscale-ip>`) is blocked at the network layer
   enough), so it's a fine one-off but not something worth building
   tooling around.
 - **A per-worktree dedicated Caddy process** (the approach
-  [tests/e2e/scripts/stack.sh](../../tests/e2e/scripts/stack.sh) uses for the isolated OpenCloud/pocket-id
+  [modules/opencloud/tests/e2e/scripts/stack.sh](../opencloud/tests/e2e/scripts/stack.sh) uses for the isolated OpenCloud/pocket-id
   stack) doesn't generalize here: it exists specifically to give pocket-id
   a single stable WebAuthn origin reachable both locally and remotely
-  (see [tests/e2e/design.md](../../tests/e2e/design.md)), and it runs on a **dynamic** port every
+  (see [modules/opencloud/tests/e2e/design.md](../opencloud/tests/e2e/design.md)), and it runs on a **dynamic** port every
   time — which the ACL blocks from other devices just as much as any
   other arbitrary port. That design was never actually about generic
   "reach this over the tailnet" access; it happened to be local-reachable
@@ -59,7 +59,7 @@ fixed subdirectory. Kept generic instead (`file_server browse` over
 `dataDir`, arbitrary subdirectories) because the actual problem —
 "I made some static HTML/files somewhere in this repo's tooling and want
 to glance at them from my phone" — isn't specific to Playwright or to
-`tests/e2e/`, and the marginal cost of genericity here is zero (no extra
+`modules/opencloud/tests/e2e/`, and the marginal cost of genericity here is zero (no extra
 config surface beyond a directory).
 
 ## Why Pocket ID Auth (and Why It's a Caddy-Level Gate)

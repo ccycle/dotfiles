@@ -3,7 +3,7 @@
 # AND is gitignored. See: herdr plugin install untalfranfernandez/herdr-worktreeinclude
 
 # E2E test environment overrides
-tests/e2e/.env
+modules/opencloud/tests/e2e/.env
 modules/forgejo/tests/e2e/.env
 modules/immich/tests/e2e/.env
 modules/monitoring/tests/e2e/.env

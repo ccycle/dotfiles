@@ -61,7 +61,7 @@ test("authenticated user can browse and read report files", async ({ page }) => 
     // consent state persists across runs — see modules/static-reports/tests/e2e/design.md
     // and pocket-id-auth.ts's revokeOwnClientAuthorization), so the
     // consent screen loginViaPasskey() expects is always there,
-    // deterministically — same pattern as tests/e2e/specs/opencloud.spec.ts.
+    // deterministically — same pattern as modules/opencloud/tests/e2e/specs/opencloud.spec.ts.
     await revokeOwnClientAuthorization(page, POCKET_ID_URL, REPORTS_OIDC_CLIENT_ID);
 
     await page.goto(REPORTS_URL);

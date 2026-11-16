@@ -21,7 +21,7 @@ _while building this suite_) that `forgejo-cli` calls must run as
 ## Why Playwright, With No Browser
 
 The suite is built on `@playwright/test` even though nothing here opens
-a browser (unlike `tests/e2e`'s OpenCloud/Pocket-ID suite, which drives a
+a browser (unlike `modules/opencloud/tests/e2e`'s OpenCloud/Pocket-ID suite, which drives a
 real passkey login). Two things justified pulling in a browser-testing
 framework for a suite with no browser:
 
@@ -64,7 +64,7 @@ repoints both the host ports and the SQLite named volume so the two
 stacks cannot collide even if run side by side.
 
 No Caddy front door and no OIDC are needed here (unlike
-`tests/e2e/`'s OpenCloud/Pocket-ID suite) - none of the automation under
+`modules/opencloud/tests/e2e/`'s OpenCloud/Pocket-ID suite) - none of the automation under
 test authenticates through a browser; it all goes through the Forgejo
 API/CLI directly over plain HTTP on a loopback port, so a local admin
 user created via `forgejo admin user create` inside the container is
@@ -135,7 +135,7 @@ statusCheckContexts` in [modules/mac-mini-m4-pro/darwin.nix](../../../mac-mini-m
    worktree on a host without that module enabled doesn't fail the run
    over it.
 4. Tears the container and its volume down (`scripts/stack.sh teardown`),
-   so every run starts from a clean instance. Unlike `tests/e2e`'s
+   so every run starts from a clean instance. Unlike `modules/opencloud/tests/e2e`'s
    OpenCloud suite, nothing here needs an expensive one-time manual
    bootstrap worth preserving between runs - leftover state would
    instead just make the next run's `admin user create` fail on a
@@ -155,6 +155,6 @@ statusCheckContexts` in [modules/mac-mini-m4-pro/darwin.nix](../../../mac-mini-m
   repo's pinned input) but hasn't caused an issue in practice, since
   neither binary's CLI surface used here is version-sensitive.
 - `npx playwright test` runs inside `nix develop <repo>#e2e` (the same
-  devshell `tests/e2e` uses) for Node + the pre-fetched Playwright
+  devshell `modules/opencloud/tests/e2e` uses) for Node + the pre-fetched Playwright
   Chromium bundle - unused here (no browser project is configured), but
   reusing the existing shell avoided adding a second one just for Node.

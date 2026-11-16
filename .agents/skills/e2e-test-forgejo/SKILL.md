@@ -62,7 +62,7 @@ Run from anywhere inside the repository (any worktree):
 7. Runs the exact `forgejo dump` invocation the backup job uses, and
    tests the retention-pruning logic against seeded fake generations.
 8. Tears the container and its volume down, so every run starts from a
-   clean instance (unlike `tests/e2e`'s OpenCloud suite, nothing here
+   clean instance (unlike `modules/opencloud/tests/e2e`'s OpenCloud suite, nothing here
    needs an expensive one-time manual bootstrap worth preserving between
    runs - see [modules/forgejo/tests/e2e/design.md](../../../modules/forgejo/tests/e2e/design.md)).
 9. Publishes Playwright's own HTML report (step tree, timing, and the

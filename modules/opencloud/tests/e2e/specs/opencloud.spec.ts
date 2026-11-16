@@ -7,10 +7,10 @@ import {
   loginViaPasskey,
   revokeOwnClientAuthorization,
   type PocketIdAdmin,
-} from "../../../modules/pocket-id/tests/lib/pocket-id-auth";
+} from "../../../../pocket-id/tests/lib/pocket-id-auth";
 
-// Env vars are set by tests/e2e/scripts/stack.sh before invoking
-// `playwright test`; see tests/e2e/design.md for the isolated per-worktree
+// Env vars are set by modules/opencloud/tests/e2e/scripts/stack.sh before invoking
+// `playwright test`; see modules/opencloud/tests/e2e/design.md for the isolated per-worktree
 // stack this test runs against (never production).
 const POCKET_ID_URL = requireEnv("POCKET_ID_URL");
 const POCKET_ID_API_KEY = requireEnv("POCKET_ID_API_KEY");
@@ -26,7 +26,7 @@ const USER_DIR = join(USER_FILES_DIR, TEST_USERNAME);
 function requireEnv(name: string): string {
   const value = process.env[name];
   if (!value) {
-    throw new Error(`${name} must be set (see tests/e2e/scripts/stack.sh)`);
+    throw new Error(`${name} must be set (see modules/opencloud/tests/e2e/scripts/stack.sh)`);
   }
   return value;
 }
@@ -181,7 +181,7 @@ function escapeRegExp(value: string): string {
 // Needed because the post-login redirect doesn't reliably land on the
 // personal space's own file listing — observed landing on the general
 // "Spaces > Projects" overview instead, inconsistently across
-// otherwise-identical runs (see tests/e2e/design.md's "Known Gap"
+// otherwise-identical runs (see modules/opencloud/tests/e2e/design.md's "Known Gap"
 // section for the fuller history, including that this was chased down
 // to a genuine orphaned-Caddy-process bug in scripts/stack.sh, now
 // fixed — this Graph-API-based navigation is kept regardless since it's

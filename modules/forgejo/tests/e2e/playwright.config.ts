@@ -4,7 +4,7 @@ import { defineConfig } from "@playwright/test";
 // modules/forgejo/tests/e2e/scripts/stack.sh and exported before `playwright test`
 // runs. See modules/forgejo/tests/e2e/design.md.
 //
-// No `projects`/browser `devices` entry: unlike tests/e2e's OpenCloud
+// No `projects`/browser `devices` entry: unlike modules/opencloud/tests/e2e's OpenCloud
 // suite, nothing here drives a browser - every check goes through
 // Playwright's `request` fixture (plain HTTP, no page) or shells out to
 // the real forgejo/forgejo-runner/git/docker CLIs. Configuring a browser
@@ -19,7 +19,7 @@ export default defineConfig({
   outputDir: "test-results/artifacts",
   use: {
     baseURL: process.env.FORGEJO_EXTERNAL_URL,
-    // Always on, not 'retain-on-failure' (tests/e2e's default): the point
+    // Always on, not 'retain-on-failure' (modules/opencloud/tests/e2e's default): the point
     // of this suite is partly to make the exact Forgejo API calls
     // (request/response bodies - e.g. the observed status-check context
     // string) inspectable in trace viewer even on a passing run, not just

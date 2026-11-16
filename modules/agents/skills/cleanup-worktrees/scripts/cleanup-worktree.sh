@@ -150,10 +150,10 @@ fi
 # Tear down the worktree's isolated e2e test stack (.agents/skills/
 # e2e-test-opencloud), if any, so its containers/network don't linger
 # after the worktree directory disappears. The stack's own data lives
-# inside the worktree checkout (tests/e2e/.state/) and is removed along
+# inside the worktree checkout (modules/opencloud/tests/e2e/.state/) and is removed along
 # with it; only the running containers/process need explicit teardown.
-if [ -x "$worktree_repo_root/tests/e2e/scripts/stack.sh" ]; then
-  "$worktree_repo_root/tests/e2e/scripts/stack.sh" teardown >/dev/null 2>&1 || true
+if [ -x "$worktree_repo_root/modules/opencloud/tests/e2e/scripts/stack.sh" ]; then
+  "$worktree_repo_root/modules/opencloud/tests/e2e/scripts/stack.sh" teardown >/dev/null 2>&1 || true
 fi
 
 # Remove this branch's published e2e reports (modules/static-reports),

@@ -16,18 +16,18 @@ change (see [modules/immich/compose.yaml](../../compose.yaml)'s upload volume mo
 alongside local auth - both are available in production. This suite
 deliberately exercises only local auth
 (`POST /api/auth/admin-sign-up` / `POST /api/auth/login`), leaving
-OIDC/passkey coverage concentrated in `tests/e2e`'s OpenCloud suite:
+OIDC/passkey coverage concentrated in `modules/opencloud/tests/e2e`'s OpenCloud suite:
 
 - The passkey/WebAuthn ceremony, pocket-id session handling, and OIDC
   consent-screen edge cases are already exercised thoroughly there (see
-  [tests/e2e/design.md](../../../../tests/e2e/design.md)) - duplicating that machinery per service buys
+  [modules/opencloud/tests/e2e/design.md](../../../opencloud/tests/e2e/design.md)) - duplicating that machinery per service buys
   nothing new, only more surface area to keep in sync with pocket-id
   changes.
 - Immich's own admin bootstrap (`admin-sign-up`) requires no external
   IdP at all, unlike OpenCloud's auto-provisioned OIDC users - it's the
   simpler, more direct path to a working authenticated session.
 - The isolated stack skips the dedicated test-Caddy + WebAuthn-origin
-  machinery [tests/e2e/scripts/stack.sh](../../../../tests/e2e/scripts/stack.sh) needs for pocket-id entirely -
+  machinery [modules/opencloud/tests/e2e/scripts/stack.sh](../../../opencloud/tests/e2e/scripts/stack.sh) needs for pocket-id entirely -
   local auth over plain HTTP on a loopback port is enough.
 
 ## Why Isolated, Not the Real Instance
@@ -72,7 +72,7 @@ concatenation).
    `modules/static-reports`'s `dataDir/<branch-slug>/immich/`, same
    mechanism `e2e-test-forgejo`/`e2e-test-opencloud` use.
 4. Tears the stack (containers + volumes + data dirs) all the way down
-   every run - unlike `tests/e2e`'s OpenCloud suite, nothing here needs
+   every run - unlike `modules/opencloud/tests/e2e`'s OpenCloud suite, nothing here needs
    an expensive one-time manual bootstrap worth preserving between runs,
    and `admin-sign-up` can only ever succeed against a fresh database
    anyway, so persisting state would only make the next run fail.

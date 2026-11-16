@@ -48,7 +48,7 @@ cleanup() {
     find "$REPORTS_BASE_DIR" -mindepth 1 -maxdepth 1 -type d -empty -exec rmdir {} + 2>/dev/null || true
   fi
   # teardown, not down: nothing here needs an expensive one-time manual
-  # bootstrap worth preserving between runs (unlike tests/e2e's OpenCloud
+  # bootstrap worth preserving between runs (unlike modules/opencloud/tests/e2e's OpenCloud
   # suite) - leftover state would instead just make the next run's
   # `admin user create` fail on a duplicate user. See design.md.
   "$STACK" teardown

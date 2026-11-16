@@ -33,7 +33,7 @@ jobs:
       # must be read-only though: `nix fmt` rewrites files in place and this
       # build has no --check/--fail-on-change flag that keeps them untouched,
       # so gate on the resulting diff instead of the exit code alone. See
-      # tests/e2e/design.md for why CI integration was deferred until now.
+      # modules/opencloud/tests/e2e/design.md for why CI integration was deferred until now.
       - name: Run formatter
         run: |
           nix fmt

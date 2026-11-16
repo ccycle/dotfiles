@@ -1,8 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
 
 // baseURL/ports come from the isolated per-worktree stack, resolved by
-// tests/e2e/scripts/stack.sh and exported before `playwright test` runs.
-// See tests/e2e/design.md for why this stack is per-worktree and always
+// modules/opencloud/tests/e2e/scripts/stack.sh and exported before `playwright test` runs.
+// See modules/opencloud/tests/e2e/design.md for why this stack is per-worktree and always
 // fronted by a dedicated test Caddy (tls internal) rather than reached
 // directly on a loopback port.
 export default defineConfig({

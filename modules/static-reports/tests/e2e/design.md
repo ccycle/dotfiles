@@ -8,7 +8,7 @@ Browser-driven E2E coverage for the static-reports auth gate
 Pocket ID's passkey-only login, consent, and back to a served static file.
 Reuses the passkey-ceremony machinery from [modules/pocket-id/tests/lib/pocket-id-auth.ts](../../../pocket-id/tests/lib/pocket-id-auth.ts)
 (the same helper the OpenCloud suite uses — it was written to be reusable
-for any pocket-id-fronted service; see [tests/e2e/design.md](../../../../tests/e2e/design.md)).
+for any pocket-id-fronted service; see [modules/opencloud/tests/e2e/design.md](../../../opencloud/tests/e2e/design.md)).
 
 This is the first test suite for a **Caddy L7 gate** rather than an app
 with native OIDC: everything else in the repo (OpenCloud, Immich, Forgejo,
@@ -28,10 +28,10 @@ end.
   part is covered by every sibling suite's run.sh and is orthogonal to
   the auth question.
 
-## Why an Isolated Per-Worktree Stack (Same Reasoning as tests/e2e)
+## Why an Isolated Per-Worktree Stack (Same Reasoning as modules/opencloud/tests/e2e)
 
 Pocket ID's WebAuthn `RPOrigins` is fixed to its `APP_URL` at startup
-(verified in `modules/pocket-id` and [tests/e2e/design.md](../../../../tests/e2e/design.md)), and the whole
+(verified in `modules/pocket-id` and [modules/opencloud/tests/e2e/design.md](../../../opencloud/tests/e2e/design.md)), and the whole
 point is a _browser-visible_ redirect chain through a real IdP. That can
 only be exercised against a live Pocket ID, so the suite gets its own
 per-worktree one, exactly like the OpenCloud suite — same container
@@ -76,7 +76,7 @@ OpenCloud suite.
 
 - **Never delete the pocket-id test user out-of-band** without also
   wiping `modules/static-reports/tests/e2e/.state/` — same coupling rule as
-  [tests/e2e/design.md](../../../../tests/e2e/design.md) (stable identity + fresh passkey per run).
+  [modules/opencloud/tests/e2e/design.md](../../../opencloud/tests/e2e/design.md) (stable identity + fresh passkey per run).
 - **The CA-copy step needs `sudo` once per worktree** (`ensure_test_ca`,
   reads `/var/lib/caddy/...`), and the native oauth2-proxy process trusts
   the test Caddy's certs only because the copied root is already in the

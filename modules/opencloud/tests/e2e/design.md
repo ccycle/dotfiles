@@ -8,12 +8,12 @@ full passkey login ceremony (something a Nix build check or a
 health-endpoint smoke test structurally cannot exercise — it requires a
 real browser, a real (virtual) WebAuthn authenticator, and a real OIDC
 redirect round trip) and OpenCloud's posix-driver promise that the host
-filesystem tree mirrors the UI ([modules/opencloud/design.md](../../modules/opencloud/design.md)).
+filesystem tree mirrors the UI ([modules/opencloud/design.md](../../design.md)).
 
 ## Non-Goals
 
 - Services beyond OpenCloud (Immich, Grafana, Forgejo, GitLab) — the
-  passkey-auth helper ([modules/pocket-id/tests/lib/pocket-id-auth.ts](../../modules/pocket-id/tests/lib/pocket-id-auth.ts)) is written to be reusable
+  passkey-auth helper ([modules/pocket-id/tests/lib/pocket-id-auth.ts](../../../pocket-id/tests/lib/pocket-id-auth.ts)) is written to be reusable
   for them, but no spec exists yet.
 - CI integration. GitHub Actions' `ubuntu-latest` runner has no Docker
   access to the real stack and can't run this. A self-hosted Forgejo
@@ -46,12 +46,12 @@ vm-verify`'s approach) is impossible for this specific case: Apple
 
 So: each git worktree gets its own docker-compose project (named
 `opencloud-e2e-test-<basename of worktree repo root>`, mirroring
-`vm-verify`'s own VM-naming convention in [scripts/cleanup-worktree.sh](../../modules/agents/skills/cleanup-worktrees/scripts/cleanup-worktree.sh)),
+`vm-verify`'s own VM-naming convention in [scripts/cleanup-worktree.sh](../../../agents/skills/cleanup-worktrees/scripts/cleanup-worktree.sh)),
 its own dynamically-chosen ports, and its own state directory
-(`tests/e2e/.state/`, gitignored, inside the worktree checkout itself —
+(`modules/opencloud/tests/e2e/.state/`, gitignored, inside the worktree checkout itself —
 deleting the worktree deletes this state for free; only the running
 containers need explicit teardown, handled by `cmd_teardown` in
-[scripts/stack.sh](scripts/stack.sh) wired into [scripts/cleanup-worktree.sh](../../modules/agents/skills/cleanup-worktrees/scripts/cleanup-worktree.sh)).
+[scripts/stack.sh](scripts/stack.sh) wired into [scripts/cleanup-worktree.sh](../../../agents/skills/cleanup-worktrees/scripts/cleanup-worktree.sh)).
 
 ## Why Every Access Goes Through a Dedicated Test Caddy
 
@@ -83,7 +83,7 @@ ever _one_ origin, reachable both ways at once; local Playwright runs and
 a human on another tailnet device hit the identical URL. `tls internal`
 mints certs from a copy of production's internal CA (see below), so both
 paths get an already-trusted cert with no extra client-side trust step.
-DNS needs no new configuration: [modules/dnsmasq/darwin.nix](../../modules/dnsmasq/darwin.nix)'s
+DNS needs no new configuration: [modules/dnsmasq/darwin.nix](../../../dnsmasq/darwin.nix)'s
 `--address=/.${domain}/$TAILSCALE_IP` is already a wildcard for the whole
 `<hostname>.internal` zone, so it resolves the new per-worktree vhosts
 too, from this machine and from every other tailnet device — no
@@ -98,12 +98,12 @@ from inside its own container for server-side token/discovery validation
 `host.docker.internal`). Since the issuer string must match verbatim
 between what the browser is redirected to and what the server validates
 (`iss` claim), both resolutions need the same hostname:port string
-pointing at different IPs. [tests/e2e/fixtures/opencloud.override.yaml](fixtures/opencloud.override.yaml)
+pointing at different IPs. [modules/opencloud/tests/e2e/fixtures/opencloud.override.yaml](fixtures/opencloud.override.yaml)
 adds `extra_hosts: <vhost>:host-gateway` entries (Docker's host-gateway
 alias, confirmed to reach loopback-bound host ports, which a
 Tailscale-IP-bound port is at least as reachable through) to the
 OpenCloud container _only_ for this e2e stack — layered on top of the
-shared [modules/opencloud/compose.yaml](../../modules/opencloud/compose.yaml) via an extra `-f`, never
+shared [modules/opencloud/compose.yaml](../../compose.yaml) via an extra `-f`, never
 modifying that file's behavior for production.
 
 Playwright's browser context sets `ignoreHTTPSErrors: true`
@@ -121,7 +121,7 @@ to scope down. In practice this broke on the _second_ run against the
 same worktree: OpenCloud tracks identity by pocket-id's `sub` internally,
 but templates its on-disk personal-space directory from the _username_
 (`STORAGE_USERS_POSIX_PERSONAL_SPACE_PATH_TEMPLATE`, see
-[modules/opencloud/design.md](../../modules/opencloud/design.md)). Deleting and recreating the pocket-id
+[modules/opencloud/design.md](../../design.md)). Deleting and recreating the pocket-id
 user every run gives it a fresh `sub` each time while OpenCloud's own
 data intentionally persists across runs (see above) — so after the first
 run, OpenCloud was left holding write permissions for a now-deleted
@@ -133,7 +133,7 @@ this way.
 
 The fix: the pocket-id user (`e2e-test-runner`) is now found-or-created
 once and reused indefinitely — `findOrCreateUser` in
-[modules/pocket-id/tests/lib/pocket-id-auth.ts](../../modules/pocket-id/tests/lib/pocket-id-auth.ts) looks it up by username before creating it, so
+[modules/pocket-id/tests/lib/pocket-id-auth.ts](../../../pocket-id/tests/lib/pocket-id-auth.ts) looks it up by username before creating it, so
 its `sub` never changes for a given worktree, matching what OpenCloud's
 identity model expects. What _is_ still replaced every run is just the
 passkey credential itself (`clearPasskeys` deletes all of the user's
@@ -158,19 +158,19 @@ session that can register a passkey" is a one-time login-code link
 
 Pocket ID has no API path to create an admin account or register its
 first passkey — by design, matching production
-([modules/pocket-id/design.md](../../modules/pocket-id/design.md)). [scripts/stack.sh](scripts/stack.sh)'s `bootstrap_if_needed`
+([modules/pocket-id/design.md](../../../pocket-id/design.md)). [scripts/stack.sh](scripts/stack.sh)'s `bootstrap_if_needed`
 prompts once per worktree for a browser-created admin API key, then
 automates everything downstream via that key (group creation, custom
 claim, OIDC client registration, allowed-groups). Because Pocket ID's
 data directory is a host bind mount that survives `docker compose down`
 (only `teardown`/`down -v` removes it), this manual step never repeats
-for the same worktree — `up` detects a persisted API key in `tests/e2e/
+for the same worktree — `up` detects a persisted API key in `modules/opencloud/tests/e2e/
 .env` and skips straight to starting containers.
 
 ## Why a Separate Test-Only Caddy Process, Not Production Caddy
 
 Production Caddy's admin API is disabled (`admin off` in
-[modules/caddy/darwin.nix](../../modules/caddy/darwin.nix)), so there is no cheap way to hand it a new
+[modules/caddy/darwin.nix](../../../caddy/darwin.nix)), so there is no cheap way to hand it a new
 vhost at runtime — the only way to apply new config is a full daemon
 restart, which drops every production vhost (OpenCloud, Immich, Forgejo,
 Grafana, Pocket ID) for however long that takes. [scripts/stack.sh](scripts/stack.sh)
@@ -216,7 +216,7 @@ disabled). Ruled out along the way:
 
 - **Not a missing NATS backend.** `STORAGE_USERS_ID_CACHE_STORE=
 nats-js-kv` (required for the posix driver) looked at first like it
-  needed an external NATS server that [modules/opencloud/compose.yaml](../../modules/opencloud/compose.yaml)
+  needed an external NATS server that [modules/opencloud/compose.yaml](../../compose.yaml)
   never provisions. Checked against OpenCloud's own
   `services/nats/README.md`: `nats-js-kv` is the _embedded, self-contained_
   default registry — no external server needed. This was a dead end.
@@ -226,7 +226,7 @@ nats-js-kv` (required for the posix driver) looked at first like it
   also wiping OpenCloud's own data directory left OpenCloud holding
   orphaned internal state tied to a `sub` that no longer existed. A fully
   clean pairing (`stack.sh teardown` + wiping
-  `tests/e2e/.state/opencloud/` + a fresh pocket-id user) consistently
+  `modules/opencloud/tests/e2e/.state/opencloud/` + a fresh pocket-id user) consistently
   returned the personal drive correctly and immediately, with no retry
   needed. Confirmed by running the actual test suite four consecutive
   times afterward with zero manual intervention between runs — pass
@@ -235,7 +235,7 @@ nats-js-kv` (required for the posix driver) looked at first like it
 In other words, this was never a gap in OpenCloud's provisioning or in
 this suite's design — it was an artifact of ad-hoc manual state resets
 during debugging that the actual code path (`findOrCreateUser` in
-[modules/pocket-id/tests/lib/pocket-id-auth.ts](../../modules/pocket-id/tests/lib/pocket-id-auth.ts), which never deletes the pocket-id user) doesn't
+[modules/pocket-id/tests/lib/pocket-id-auth.ts](../../../pocket-id/tests/lib/pocket-id-auth.ts), which never deletes the pocket-id user) doesn't
 do. The lesson generalizes: pocket-id identity and OpenCloud's own data
 must be reset _together_, never independently — see "Why a Stable,
 Fixed-Name Test User" above for why they're coupled at all.
@@ -274,11 +274,11 @@ space id on disk")`.
   `sub`), so every future login for the same never-deleted test user
   hits the exact same broken lookup — reproduced identically across 4
   separate `run.sh` invocations, including after deleting only
-  `tests/e2e/.state/opencloud/data` (OpenCloud's own metadata volume is
+  `modules/opencloud/tests/e2e/.state/opencloud/data` (OpenCloud's own metadata volume is
   a bind mount, not a Docker volume, so neither `stack.sh down` nor
   `teardown`'s `compose down -v` ever clears it either way).
 - **Fix, confirmed by direct measurement:** deleting both
-  `tests/e2e/.state/opencloud/data` and `.../user-files` together (so
+  `modules/opencloud/tests/e2e/.state/opencloud/data` and `.../user-files` together (so
   the directory genuinely doesn't exist, hitting `IsNotExist`) and
   removing the `beforeEach`'s `mkdirSync` entirely made both tests pass
   in ~14s each, twice in a row (a fresh-worktree first run and a normal
@@ -321,7 +321,7 @@ repeatedly (including back-to-back with no gap) rather than just once:
   the "New" button's readiness have all passed repeatedly across many
   runs.
 - **Never delete the pocket-id test user out-of-band without also
-  wiping `tests/e2e/.state/opencloud/`** — see the debugging note above.
+  wiping `modules/opencloud/tests/e2e/.state/opencloud/`** — see the debugging note above.
   The test code itself never does this (identity is stable, see "Why a
   Stable, Fixed-Name Test User"), so this only matters if manually
   poking at state while debugging.
@@ -342,7 +342,7 @@ repeatedly (including back-to-back with no gap) rather than just once:
   OpenCloud's Caddy-fronted URL. If a persisted port is later taken by
   something else, `stack.sh` fails loudly rather than silently re-picking
   (which would desync the registered callback URLs); deleting
-  `tests/e2e/.env` forces a full re-bootstrap.
+  `modules/opencloud/tests/e2e/.env` forces a full re-bootstrap.
 - **Whether a container can reach a Tailscale-IP-bound host port via
   `host-gateway` the same way it reaches a loopback-bound one is inferred
   from the loopback case, not independently verified** — both go through

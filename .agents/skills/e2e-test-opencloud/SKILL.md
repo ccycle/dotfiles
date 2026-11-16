@@ -15,7 +15,7 @@ build check or a health-endpoint smoke test structurally cannot exercise.
 This never touches the real `services.pocket-id` / `services.opencloud`
 instances. It brings up a separate, isolated docker-compose stack (same
 images and env wiring as production), fronted by its own dedicated Caddy
-process, scoped to the current git worktree. See [tests/e2e/design.md](../../../tests/e2e/design.md)
+process, scoped to the current git worktree. See [modules/opencloud/tests/e2e/design.md](../../../modules/opencloud/tests/e2e/design.md)
 for the full rationale.
 
 ## Usage
@@ -47,12 +47,12 @@ worktree will print a URL and pause, asking you to:
 
 Everything else (OIDC client, user group, role claim) is then automated.
 This only happens once per worktree — the isolated stack's data
-directory (`tests/e2e/.state/`, gitignored) persists across runs even
+directory (`modules/opencloud/tests/e2e/.state/`, gitignored) persists across runs even
 though the containers themselves stop between runs.
 
 The first run also needs `sudo` once, to copy production's internal CA
 root cert+key so the test Caddy's certificates are already trusted (see
-[tests/e2e/design.md](../../../tests/e2e/design.md)).
+[modules/opencloud/tests/e2e/design.md](../../../modules/opencloud/tests/e2e/design.md)).
 
 ## What It Does
 
@@ -90,13 +90,13 @@ root cert+key so the test Caddy's certificates are already trusted (see
 ## Known Constraints
 
 - **Never delete the pocket-id test user out-of-band (e.g. via `curl`)
-  without also wiping `tests/e2e/.state/opencloud/`** — doing so once
+  without also wiping `modules/opencloud/tests/e2e/.state/opencloud/`** — doing so once
   during this suite's own development left OpenCloud holding orphaned
   internal state and made the personal space stop appearing (see
-  [tests/e2e/design.md](../../../tests/e2e/design.md)'s debugging note). The test code itself never
+  [modules/opencloud/tests/e2e/design.md](../../../modules/opencloud/tests/e2e/design.md)'s debugging note). The test code itself never
   does this — identity is stable, not disposable — so this only matters
   if manually poking at pocket-id's state while debugging.
 - `sudo` is needed once per worktree, to copy production's internal CA
   root cert+key (read-only reuse of its identity, never a live-shared
-  process — see [tests/e2e/design.md](../../../tests/e2e/design.md)).
+  process — see [modules/opencloud/tests/e2e/design.md](../../../modules/opencloud/tests/e2e/design.md)).
 - Docker/OrbStack must be running.
