@@ -41,7 +41,7 @@ with lib;
 
     model = mkOption {
       type = types.str;
-      default = "ornith-ai/Ornith-1.5-35B-A3B-GGUF";
+      default = "ornith-1.5:35b-mlx";
       description = "Model ID from modules/llm-server/catalog.json used for remediation decisions.";
     };
 
@@ -60,7 +60,7 @@ with lib;
 
     fixModel = mkOption {
       type = types.str;
-      default = "llamaswap/qwen/qwen3.6-35b-a3b";
+      default = "ollama/qwen3.6:35b-mlx";
       description = "opencode model (provider/id) used to draft a propose-fix-pr change. A local model, matching this module's no-external-dependency design.";
     };
 

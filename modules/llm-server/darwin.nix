@@ -17,13 +17,13 @@ in
     assertions = [
       {
         assertion = vol != "";
-        message = "custom.storage.volumes.llm-server must be set. Run: .agents/skills/setup-local-storage/scripts/setup-local-storage.sh llm-server=~/Library/Caches/llama.cpp";
+        message = "custom.storage.volumes.llm-server must be set. Run: .agents/skills/setup-local-storage/scripts/setup-local-storage.sh llm-server=~/.ollama/models";
       }
     ];
 
-    # No subpath appended: vol points directly at llama.cpp's own default
-    # model cache location, matching upstream convention instead of
-    # inventing a new directory layout.
+    # No subpath appended: vol points directly at Ollama's own default
+    # model store (~/.ollama/models), matching upstream convention instead
+    # of inventing a new directory layout.
     services.llm-server.modelsDir = mkDefault vol;
     services.llm-server.mountPoint = mkIf (hasPrefix "/Volumes/" vol) (mkDefault vol);
   };

@@ -1,11 +1,11 @@
 ---
 name: smoke-test-llm-server
-description: Verify the llama-swap LLM server is running and accessible via the Caddy reverse proxy, and benchmark its tokens/sec. Use after deployment or when debugging LLM server health, reachability, or throughput.
+description: Verify the Ollama LLM server is running and accessible via the Caddy reverse proxy, and benchmark its tokens/sec. Use after deployment or when debugging LLM server health, reachability, or throughput.
 ---
 
 # LLM Server Smoke Test
 
-Verifies that the llama-swap server is running and reachable through the Caddy HTTP reverse proxy. The LLM server is only enabled on `mac-mini-m4-pro`.
+Verifies that the Ollama server is running and reachable through the Caddy HTTP reverse proxy. The LLM server is only enabled on `mac-mini-m4-pro`.
 
 ## Usage
 
@@ -17,8 +17,8 @@ Run from the repository root:
 
 ## Checks Performed
 
-1. **llama-swap Health**: Curls `/health` on `127.0.0.1:8880` to confirm llama-swap is running.
-2. **llama-swap Models**: Curls `/v1/models` on `127.0.0.1:8880` to list available models.
+1. **Ollama Health**: Curls `/api/version` on `127.0.0.1:11434` to confirm Ollama is running.
+2. **Ollama Models**: Curls `/v1/models` on `127.0.0.1:11434` to list available models.
 3. **Caddy Reverse Proxy (HTTP)**: Verifies HTTP access through Caddy at `http://llm.<hostname>.internal/v1/models`.
 
 ## Throughput Benchmark (optional)
@@ -31,4 +31,4 @@ compare model or server-config changes; it is not a pass/fail smoke test.
 
 - After `darwin-rebuild switch` to verify the LLM server deployed correctly.
 - When debugging LLM API connectivity from tailnet clients.
-- Note: First run after deploy may take a while as GGUF models are downloaded.
+- Note: First run after deploy may take a while as catalog models are pulled; progress is in `/var/tmp/llm-server-models.log`.

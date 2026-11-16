@@ -21,7 +21,7 @@ let
   # that user (see the launchd.user.agents note below), so its normal
   # installed tools are already the right ones: opencode's config
   # (~/.config/opencode/opencode.json, see modules/opencode/home.nix)
-  # already points at the local llamaswap provider, and git/fj already
+  # already points at the local ollama provider, and git/fj already
   # have this user's own Forgejo credentials.
   userBin = "/etc/profiles/per-user/mfuruki/bin";
   sharedPath = "${userBin}:${pkgs.curl}/bin:${pkgs.jq}/bin:${pkgs.docker-compose}/bin:${pkgs.coreutils}/bin:${pkgs.git}/bin:$PATH";

@@ -2,7 +2,6 @@
   config,
   lib,
   pkgs,
-  pkgs-2605,
   ...
 }:
 
@@ -12,123 +11,53 @@ let
   cfg = config.services.llm-server;
   catalog = builtins.fromJSON (builtins.readFile ./catalog.json);
   waitForMount = import ../../utils/waitForMount.nix;
+  ollama = import ./drv.nix { inherit pkgs lib; };
 
-  # nixpkgs builds python3Packages.mlx with MLX_BUILD_METAL=false: the `metal`
-  # shader compiler is closed-source and can't run inside the Nix sandbox, so
-  # nixpkgs's mlx is CPU-only (see pkgs/development/python-modules/mlx/default.nix).
-  # Apple's own PyPI release CI builds real Metal-enabled wheels instead, so we
-  # substitute those prebuilt wheels for the `mlx` package rather than building
-  # from source. mlx-lm and other dependents pick this up automatically since
-  # the override happens at the python package-set fixpoint.
-  # Apple splits the PyPI release across two wheels sharing one `mlx/`
-  # namespace: `mlx` ships the frontend (core.*.so, pure-Python nn/optimizers),
-  # `mlx-metal` ships the compiled backend (libmlx.dylib, the precompiled
-  # mlx.metallib shader library). A plain `pip install mlx` unpacks both into
-  # the same site-packages/mlx directory. Two separate Nix derivations would
-  # each get their own store path, so core.so's `@rpath/libmlx.dylib` lookup
-  # (relative to its own directory) would never find the backend's dylib.
-  # We therefore unpack both wheels into a single derivation's output.
-  mlxWheelVersion = "0.31.2";
-  mlxMetalWheel = pkgs.fetchurl {
-    url = "https://files.pythonhosted.org/packages/4f/5d/4c690d5b93c30ba002656c37363159d978705bf8eb801b8481840fb942c2/mlx_metal-${mlxWheelVersion}-py3-none-macosx_15_0_arm64.whl";
-    hash = "sha256-6dTl/ObKEKh6DjiFl/mVGa1ZTQnmdHCLUxK9i9T1mX0=";
-  };
-  metalPython = pkgs.python3.override {
-    packageOverrides = pyFinal: pyPrev: {
-      mlx = pyFinal.buildPythonPackage {
-        pname = "mlx";
-        version = mlxWheelVersion;
-        format = "wheel";
-        src = pkgs.fetchurl {
-          url = "https://files.pythonhosted.org/packages/dd/14/e9cd18b51f9e1dbcb060eec0fafc2d2428c8e1eacd9b0a02d7c5ce75b661/mlx-${mlxWheelVersion}-cp313-cp313-macosx_15_0_arm64.whl";
-          hash = "sha256-NLAXHNnrXEP92CCR9hNdbMxaBlNjpKPmj6xk+05T03w=";
-        };
-        nativeBuildInputs = [ pkgs.unzip ];
-        postInstall = ''
-          unzip -o ${mlxMetalWheel} 'mlx/lib/*' -d $out/${pyFinal.python.sitePackages}
-        '';
-        doCheck = false;
-        # The wheel's own metadata lists mlx-metal as a dependency; since we
-        # merge its files in directly rather than keeping it as a separate
-        # propagated package, nixpkgs's own dependency-presence check would
-        # otherwise fail even though the files are actually present.
-        dontCheckRuntimeDeps = true;
-        meta.platforms = lib.platforms.darwin;
-      };
-    };
-  };
-  mlxEnv = metalPython.withPackages (
-    ps: with ps; [
-      mlx-lm
-      mlx
-    ]
-  );
+  # Ollama has one server-wide context length; per-model values in the
+  # catalog only cap what clients ask for, so the server must hold the
+  # largest of them.
+  contextLength = foldl' max 0 (mapAttrsToList (_: m: m.contextLength) catalog.models);
 
-  modelEntries = mapAttrsToList (id: m: {
-    inherit id;
-    inherit (m) contextLength;
-    extraFlags = m.extraFlags or [ ];
-    backend = m.backend or "llama-cpp";
-    files = m.files or [ ];
-    filename = if (m.files or [ ]) != [ ] then baseNameOf (builtins.head m.files).url else null;
-  }) catalog.models;
-
-  llamaSwapConfig = {
-    healthCheckTimeout = 300;
-    macros = {
-      llama_server = "${pkgs-2605.llama-cpp}/bin/llama-server --host 127.0.0.1 --port \${PORT} --jinja -ngl 99";
-      mlx_server = "${mlxEnv}/bin/python3 -m mlx_lm server --host 127.0.0.1 --port \${PORT}";
-    };
-    models = listToAttrs (
-      map (
-        m:
-        nameValuePair m.id {
-          cmd =
-            if m.backend == "mlx" then
-              "\${mlx_server} --model ${m.id}"
-            else
-              "\${llama_server} -m ${cfg.modelsDir}/${m.filename} --ctx-size ${toString m.contextLength}"
-              + optionalString (m.extraFlags != [ ]) " ${concatStringsSep " " m.extraFlags}";
-          ttl = cfg.ttl;
-        }
-      ) modelEntries
-    );
-  };
-
-  configYaml = (pkgs.formats.yaml { }).generate "llama-swap-config.yaml" llamaSwapConfig;
-
-  downloadScript = concatMapStringsSep "\n" (
-    m:
-    concatMapStringsSep "\n" (
-      f:
+  # Registry models are a plain `ollama pull`. Models with a `source` are
+  # bf16 MLX safetensors repos on Hugging Face that have no Ollama registry
+  # build: they are downloaded to a scratch dir inside modelsDir (the only
+  # place guaranteed to have room for a ~70 GB bf16 checkpoint) and
+  # quantized locally by `ollama create`, then the scratch copy is dropped.
+  provisionModel =
+    id: m:
+    if m ? source then
       let
-        filename = baseNameOf f.url;
+        repo = m.source.huggingface;
+        scratch = "${cfg.modelsDir}/.hf-import/${replaceStrings [ "/" ] [ "--" ] repo}";
       in
       ''
-        if [ ! -f "${cfg.modelsDir}/${filename}" ]; then
-          echo "Downloading ${filename}..."
-          ${pkgs.curl}/bin/curl -fL --retry 5 -o "${cfg.modelsDir}/${filename}.part" "${f.url}"
-          ${optionalString (f.sha256 != "") ''
-            echo "${f.sha256}  ${cfg.modelsDir}/${filename}.part" | shasum -a 256 -c - || {
-              echo "SHA256 mismatch for ${filename}"
-              rm -f "${cfg.modelsDir}/${filename}.part"
-              exit 1
-            }
-          ''}
-          mv "${cfg.modelsDir}/${filename}.part" "${cfg.modelsDir}/${filename}"
-          echo "Downloaded ${filename}"
+        if ! ollama show ${escapeShellArg id} >/dev/null 2>&1; then
+          echo "Importing ${repo} as ${id}..."
+          mkdir -p "${scratch}"
+          ${pkgs.curl}/bin/curl -fsSL "https://huggingface.co/api/models/${repo}" \
+            | ${pkgs.jq}/bin/jq -r '.siblings[].rfilename' \
+            | while read -r f; do
+                mkdir -p "${scratch}/$(dirname "$f")"
+                ${pkgs.curl}/bin/curl -fL --retry 5 -C - -o "${scratch}/$f" \
+                  "https://huggingface.co/${repo}/resolve/main/$f"
+              done
+          printf 'FROM %s\n' "${scratch}" > "${scratch}/Modelfile"
+          ollama create ${escapeShellArg id} -q ${m.source.quantize} -f "${scratch}/Modelfile"
+          rm -rf "${scratch}"
         fi
       ''
-    ) m.files
-  ) modelEntries;
+    else
+      ''
+        ollama show ${escapeShellArg id} >/dev/null 2>&1 || ollama pull ${escapeShellArg id}
+      '';
 in
 {
   options.services.llm-server = {
-    enable = mkEnableOption "LLM server (llama-swap + llama-cpp + mlx-lm)";
+    enable = mkEnableOption "LLM server (Ollama with its MLX runner)";
 
     port = mkOption {
       type = types.port;
-      default = 8880;
+      default = 11434;
     };
 
     modelsDir = mkOption {
@@ -144,10 +73,14 @@ in
     ttl = mkOption {
       type = types.int;
       default = 3600;
+      description = "Seconds an idle model stays loaded (OLLAMA_KEEP_ALIVE).";
     };
   };
 
   config = mkIf cfg.enable {
+    # The CLI talks to 127.0.0.1:11434 unless OLLAMA_HOST says otherwise.
+    environment.systemPackages = [ ollama ];
+
     services.caddy.portalEntries = [
       {
         name = "LLM Server";
@@ -158,6 +91,8 @@ in
       }
     ];
 
+    # Ollama's DNS-rebinding guard accepts *.internal Host headers, so the
+    # vhost name passes through unchanged.
     environment.etc."caddy/sites/llm-server.caddy".text = ''
       http://llm.${config.networking.hostName}.internal, https://llm.${config.networking.hostName}.internal {
         import internal_tls
@@ -177,11 +112,37 @@ in
 
         mkdir -p "${cfg.modelsDir}"
 
-        ${downloadScript}
+        export OLLAMA_HOST=127.0.0.1:${toString cfg.port}
+        export OLLAMA_MODELS="${cfg.modelsDir}"
+        export OLLAMA_CONTEXT_LENGTH=${toString contextLength}
+        export OLLAMA_KEEP_ALIVE=${toString cfg.ttl}s
+        export OLLAMA_MAX_LOADED_MODELS=1
+        export OLLAMA_NO_CLOUD=1
+        exec ${ollama}/bin/ollama serve
+      '';
+    };
 
-        exec ${pkgs.llama-swap}/bin/llama-swap \
-          --config ${configYaml} \
-          --listen 127.0.0.1:${toString cfg.port}
+    # Separate one-shot agent so a multi-hour first download never holds up
+    # (or gets killed with) the server itself. Exiting non-zero makes
+    # launchd retry; a clean exit means every catalog model is present.
+    launchd.user.agents.llm-server-models = {
+      serviceConfig = {
+        KeepAlive.SuccessfulExit = false;
+        RunAtLoad = true;
+        StandardOutPath = "/var/tmp/llm-server-models.log";
+        StandardErrorPath = "/var/tmp/llm-server-models.log";
+      };
+      path = [
+        ollama
+        pkgs.coreutils
+      ];
+      script = ''
+        set -euo pipefail
+        export OLLAMA_HOST=127.0.0.1:${toString cfg.port}
+        until ${pkgs.curl}/bin/curl -sf "http://$OLLAMA_HOST/api/version" >/dev/null; do sleep 5; done
+
+        ${concatStringsSep "\n" (mapAttrsToList provisionModel catalog.models)}
+        echo "All catalog models present."
       '';
     };
   };

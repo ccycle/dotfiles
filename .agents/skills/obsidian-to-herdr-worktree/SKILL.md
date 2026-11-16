@@ -1,6 +1,6 @@
 ---
 name: obsidian-to-herdr-worktree
-description: Dispatch Obsidian TODO/idea notes (named via $ARGUMENTS, or picked autonomously by the AI if omitted) to parallel herdr worktrees for implementation-plan discussion only (no code changes). Self-throttles against already-running workers from prior invocations and skips notes still in flight, so repeated invocations drain the backlog gradually instead of piling load on the machine. Each worker is spawned via a priority/fallback chain (opencode mimo-v2.5-free by default, then the pi coding agent on llamaswap's ornith-1.5-35b if mimo hits a rate limit) and keeps its conclusion in the chat for live 壁打ち with the human via `herdr agent attach` — the worker's conclusion is never written back to the vault, and the only vault writes are the Kanban moves described below. On each run it also reconciles the `Kanban (dotfiles)` board with the worktree state, via the shared script also used by the standalone `kanban-sync` skill: deterministic moves (Todo → In progress for a live worktree; → Done for a worktree removed after its branch merged to main) apply automatically, while ambiguous moves (a removed worktree whose branch was never started or never merged) still require explicit per-card user confirmation. Use when the user wants to turn the Todo-status cards on the `Kanban (dotfiles)` board into parallel design discussions without touching code or Obsidian.
+description: Dispatch Obsidian TODO/idea notes (named via $ARGUMENTS, or picked autonomously by the AI if omitted) to parallel herdr worktrees for implementation-plan discussion only (no code changes). Self-throttles against already-running workers from prior invocations and skips notes still in flight, so repeated invocations drain the backlog gradually instead of piling load on the machine. Each worker is spawned via a priority/fallback chain (opencode mimo-v2.5-free by default, then the pi coding agent on Ollama's ornith-1.5:35b-mlx if mimo hits a rate limit) and keeps its conclusion in the chat for live 壁打ち with the human via `herdr agent attach` — the worker's conclusion is never written back to the vault, and the only vault writes are the Kanban moves described below. On each run it also reconciles the `Kanban (dotfiles)` board with the worktree state, via the shared script also used by the standalone `kanban-sync` skill: deterministic moves (Todo → In progress for a live worktree; → Done for a worktree removed after its branch merged to main) apply automatically, while ambiguous moves (a removed worktree whose branch was never started or never merged) still require explicit per-card user confirmation. Use when the user wants to turn the Todo-status cards on the `Kanban (dotfiles)` board into parallel design discussions without touching code or Obsidian.
 disable-model-invocation: true
 allowed-tools: Bash, Read
 ---
@@ -9,7 +9,7 @@ allowed-tools: Bash, Read
 
 Turn Obsidian TODO notes into parallel, isolated design discussions.
 The worker is spawned via a priority/fallback chain (Step 4): opencode mimo-v2.5-free by
-default, falling back to the pi coding agent on llamaswap's ornith-1.5-35b if
+default, falling back to the pi coding agent on Ollama's ornith-1.5:35b-mlx if
 mimo hits a rate limit. The agent's conclusion stays in the chat, for the
 human to 壁打ち with directly by attaching to the pane — it is not written back
 into the Obsidian vault. Grilling starts immediately at dispatch: right after
@@ -177,10 +177,10 @@ opencode/mimo-v2.5-free`, a free-tier model hosted through opencode
    `--dangerously-skip-permissions`, which bypasses permission checks entirely
    rather than applying the auto-mode classifier. This is the default
    destination for every note.
-2. **pi coding agent on llamaswap ornith (rate-limit fallback)** — `--kind pi
--- --model llamaswap/ornith-ai/Ornith-1.5-35B-A3B-GGUF --print`, the pi coding agent using
-   llamaswap's locally-hosted `llamaswap/ornith-ai/Ornith-1.5-35B-A3B-GGUF`. Use the fully-qualified
-   `llamaswap/ornith-ai/Ornith-1.5-35B-A3B-GGUF` ID — a bare model ID resolves to a
+2. **pi coding agent on Ollama ornith (rate-limit fallback)** — `--kind pi
+-- --model ollama/ornith-1.5:35b-mlx --print`, the pi coding agent using
+   Ollama's locally-hosted `ollama/ornith-1.5:35b-mlx`. Use the fully-qualified
+   `ollama/ornith-1.5:35b-mlx` ID — a bare model ID resolves to a
    different provider and fails for lack of an API key. Use this only when tier 1 fails specifically because of a rate limit
    (e.g. mimo is over its free-tier quota) — it is a fallback, not a
    preference, and is not used on ordinary start failures of other kinds.
@@ -203,9 +203,9 @@ out=$(herdr agent start <slug> --kind opencode --pane "$pane_id" -- --auto --mod
 if [ $? -eq 0 ]; then
   backend="opencode/mimo-v2.5-free"
 elif printf '%s' "$out" | grep -qi -E "rate.?limit|quota|429|too many requests"; then
-  # mimo failed specifically due to a rate limit — fall back to pi on llamaswap ornith
-  if herdr agent start <slug> --kind pi --pane "$pane_id" -- --model llamaswap/ornith-ai/Ornith-1.5-35B-A3B-GGUF --print; then
-    backend="pi/llamaswap/ornith-ai/Ornith-1.5-35B-A3B-GGUF"
+  # mimo failed specifically due to a rate limit — fall back to pi on Ollama ornith
+  if herdr agent start <slug> --kind pi --pane "$pane_id" -- --model ollama/ornith-1.5:35b-mlx --print; then
+    backend="pi/ollama/ornith-1.5:35b-mlx"
   else
     backend=""
   fi
@@ -214,7 +214,7 @@ else
 fi
 ```
 
-The pi-on-llamaswap-ornith fallback (tier 2) is used only when the mimo
+The pi-on-Ollama-ornith fallback (tier 2) is used only when the mimo
 attempt (tier 1) fails because of a rate limit — inspect the failure output
 for rate-limit signals (e.g. `rate limit`, `quota`, `429`, `too many
 requests`) before falling back. Do not fall back to pi on ordinary start
@@ -273,7 +273,7 @@ jq --arg slug "<slug>" --arg title "<title>" --arg branch "<slug>" \
 ```
 
 Then tell the user which slugs/branches/worktrees were created, which backend
-tier each one actually started on (opencode mimo-v2.5-free vs. the pi-on-llamaswap
+tier each one actually started on (opencode mimo-v2.5-free vs. the pi-on-Ollama
 ornith fallback —
 per Step 5 this can differ note to note), which notes were dropped because
 both tiers failed to start, how many slots were skipped due to prior
@@ -324,7 +324,7 @@ changes propagate to other devices (Obsidian mobile, other desktops):
    cases and Step 7's In-progress move are deterministic and apply without
    asking.
 5. Every worker is spawned through the same fixed priority chain (Step 4:
-   opencode mimo-v2.5-free → pi on llamaswap ornith) — the _chain_ is uniform across
+   opencode mimo-v2.5-free → pi on Ollama ornith) — the _chain_ is uniform across
    notes, but which tier actually ends up running is not, since it depends on
    tier availability at spawn time. Never skip a tier or reorder the chain per
    note.

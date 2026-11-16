@@ -16,7 +16,7 @@ show_usage() {
   echo ""
   echo "Examples:"
   echo "  $(basename -- "$0") forgejo=/Volumes/WD_BLACK immich=/Volumes/WD_BLACK"
-  echo "  $(basename -- "$0") llm-server=~/Library/Caches/llama.cpp"
+  echo "  $(basename -- "$0") llm-server=~/.ollama/models"
 }
 
 if [ $# -eq 0 ] || [ "$1" = "--help" ] || [ "$1" = "-h" ]; then

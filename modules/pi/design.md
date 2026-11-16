@@ -20,15 +20,15 @@ The `~/.pi/agent/AGENTS.md` symlink (in [modules/agents/rules/home.nix](../agent
 
 ## models.json — Pointing pi at the Local Server
 
-`~/.pi/agent/models.json` declares a single custom provider (`llamaswap`, id and URL from [modules/llm-server/catalog.json](../llm-server/catalog.json), the same single source of truth [modules/opencode/home.nix](../opencode/home.nix) consumes) with the catalog's model list. This is the one declarative pi config file that is safe to own: unlike `settings.json` it holds no interactive state.
+`~/.pi/agent/models.json` declares a single custom provider (`ollama`, id and URL from [modules/llm-server/catalog.json](../llm-server/catalog.json), the same single source of truth [modules/opencode/home.nix](../opencode/home.nix) consumes) with the catalog's model list. This is the one declarative pi config file that is safe to own: unlike `settings.json` it holds no interactive state.
 
-The provider is a custom `openai-completions` entry rather than pi's built-in `llama.cpp` provider. The built-in one targets a real llama.cpp _router_ server (`--models-dir`, `/llama` load/unload, `--no-models-autoload`); llama-swap is not a router — it hot-swaps `llama-server` processes per request and has no router control endpoints. An explicit OpenAI-compatible provider with a fixed model list is the deterministic path, and mirrors how opencode already calls the same server.
+The provider is a custom `openai-completions` entry (pi has no built-in Ollama provider). An explicit OpenAI-compatible provider with a fixed model list is the deterministic path, and mirrors how opencode already calls the same server.
 
-`compat` mirrors the flags pi's built-in llama.cpp provider sets (`src/extensions/llama/provider.ts`): `supportsStore`/`supportsDeveloperRole`/`supportsReasoningEffort`/`supportsStrictMode` false, `supportsUsageInStreaming` true, `maxTokensField: "max_tokens"`. llama-swap forwards the request body unchanged to the spawned `llama-server`, so the same server constraints apply. `apiKey: "none"` is a dummy: llama-swap does not authenticate, but pi treats models as available only when the provider has an API key configured.
+`apiKey: "none"` is a dummy: Ollama does not authenticate, but pi treats models as available only when the provider has an API key configured.
 
-Models flagged `"thinking": true` in the catalog get `reasoning: true` plus `compat.thinkingFormat: "qwen-chat-template"` with `chatTemplateKwargs` (`enable_thinking` bound to pi's thinking level via `$var`/`thinking.enabled`, `preserve_thinking: true`) — the pi-documented way to drive thinking on a local Qwen chat template. Without the flag (Gemma models), no reasoning is enabled and the request is a plain system-role chat call.
+Models flagged `"thinking": true` in the catalog get `reasoning: true`, and pi drives thinking with its default `reasoning_effort` format, which Ollama honors (`none` disables thinking). Under the previous llama-swap backend this needed per-model `chat_template_kwargs`; Ollama applies the chat template itself, so no per-model template knobs remain. Without the flag (Gemma models), no reasoning is enabled and the request is a plain system-role chat call.
 
-Verified end-to-end against the live server (via `PI_CODING_AGENT_DIR` against a scratch dir): `pi --list-models` shows all catalog models with thinking correctly flagged, and `pi -p` print-mode requests reach llama-swap and return Qwen 3.6 output with `--thinking high`.
+Verified end-to-end against the live Ollama server through the Caddy vhost: `pi --list-models` shows all catalog models with thinking correctly flagged, the model ID's colon (`ollama/ornith-1.5:35b-mlx`) parses correctly, and `pi -p` returns output from both the default model and `ollama/qwen3.6:35b-mlx --thinking high`.
 
 ## DeepSeek via the Native `opencode` Provider
 
@@ -58,7 +58,6 @@ The `packages` list is committed in the same file. `pi install`-added packages s
 - **`pnpm add --global` from a `home.activation` step** (mirroring `modules/herdr`'s imperative-installer pattern): worked and was implemented first, but was abandoned once `pi.nix` was found. It traded away Nix's hermeticity and Cachix caching, required network access on every `darwin-rebuild switch`, and needed an explicit `--ignore-scripts` decision to avoid running arbitrary install scripts with full user permissions outside any sandbox.
 - **`node2nix`**: forbidden repository-wide — removed from nixpkgs and unmaintained.
 - **`programs.pi.coding-agent.rules`**: works (verified: builds and injects the intended content via `--append-system-prompt`), but was rejected in favor of the plain `home.packages` + symlink approach above, to keep `pi` consistent with how every other agent's rules file is managed in this repo.
-- **Built-in `llama.cpp` provider** (via `LLAMA_BASE_URL`/`/login llama.cpp`): targets a llama.cpp router server whose `/llama` model-loading control flow llama-swap cannot serve; see above.
 - **`opencode-cli` bridge** (`opencode-pi` extension): shells out to `opencode run` and bridges pi tool calls via `<pi_tool_call>` text markers. Reachable its without any account (reusing the local opencode CLI's anonymous access to free models), but the text-marker convention is model-fragile — DeepSeek free models emit native opencode `tool_use` events instead, which the bridge hard-errors on, so tool calls failed. Superseded by the native `opencode` provider once a zen API key is available; see "DeepSeek via the Native `opencode` Provider".
 
 ## Constraints

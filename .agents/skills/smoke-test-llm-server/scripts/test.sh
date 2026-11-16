@@ -3,7 +3,7 @@ set -euo pipefail
 
 # --- Configuration ---
 HOSTNAME=$(hostname)
-PORT=8880
+PORT=11434
 FAILED=0
 
 # --- Helpers ---
@@ -23,17 +23,17 @@ check_http() {
   fi
 }
 
-# --- 1. llama-swap Health ---
-echo "=== llama-swap Health ==="
+# --- 1. Ollama Health ---
+echo "=== Ollama Health ==="
 
-check_http "llama-swap health" "http://127.0.0.1:${PORT}/health"
+check_http "Ollama version" "http://127.0.0.1:${PORT}/api/version"
 
 echo ""
 
-# --- 2. llama-swap Models ---
-echo "=== llama-swap Models ==="
+# --- 2. Ollama Models ---
+echo "=== Ollama Models ==="
 
-check_http "llama-swap models" "http://127.0.0.1:${PORT}/v1/models"
+check_http "Ollama models" "http://127.0.0.1:${PORT}/v1/models"
 
 echo ""
 

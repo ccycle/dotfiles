@@ -1,7 +1,7 @@
 {
   "lastChangelogVersion": "0.84.2",
-  "defaultProvider": "llamaswap",
-  "defaultModel": "ornith-ai/Ornith-1.5-35B-A3B-GGUF",
+  "defaultProvider": "ollama",
+  "defaultModel": "ornith-1.5:35b-mlx",
   "defaultThinkingLevel": "medium",
   "enableSkillCommands": true,
   "packages": [

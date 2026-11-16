@@ -81,7 +81,7 @@ full decision tree.
   (`launchd.user.agents`), not root daemons — a change from this module's
   original shape.** The new `propose-fix-pr` action needs this user's own
   opencode config (`~/.config/opencode/opencode.json`, already pointed at
-  the local llamaswap provider by [modules/opencode/home.nix](../../opencode/home.nix)) and git/fj
+  the local ollama provider by [modules/opencode/home.nix](../../opencode/home.nix)) and git/fj
   credentials for pushing a branch and opening a PR — both only resolve
   correctly in that user's own home directory context, not root's.
   `docker-compose` itself needs no elevated privilege under OrbStack
@@ -95,7 +95,7 @@ full decision tree.
   "verification" is human review + CI, not `verify_alert_cleared`, since a
   draft PR by definition hasn't changed anything live yet.
 - **`propose-fix-pr` reuses `opencode run --auto` against a local model**
-  (`fixModel`, default `llamaswap/qwen/qwen3.6-35b-a3b` — already present
+  (`fixModel`, default `ollama/qwen3.6:35b-mlx` — already present
   in this repo's model catalog) to actually draft the change, not the
   small judgment LLM that only ever returns one fixed-schema decision.
   Drafting a real, scoped code change needs genuine coding ability the
@@ -155,11 +155,11 @@ full decision tree.
   differentiate it by alert `severity`) if this proves too slow in
   practice.
 - **Model cold start.** `llm-server` loads a model on first request
-  (up to ~1 minute for a large GGUF, see [modules/llm-server/design.md](../design.md));
+  (tens of seconds for a large model, see [modules/llm-server/design.md](../design.md));
   the LLM call uses a 240s timeout to absorb this.
   Cost the same call pays as with `auto-remediate` mode.
 - **Thinking-model output isn't guaranteed to be pure JSON.** The
-  configured model (`ornith-ai/Ornith-1.5-35B-A3B-GGUF`) has
+  configured model (`ornith-1.5:35b-mlx`) has
   `thinking: true`; its response may include reasoning text before the
   JSON object. The script takes the last `{...}` match in the response
   rather than parsing the whole content as JSON, and treats any parse

@@ -9,19 +9,19 @@
 let
   catalog = builtins.fromJSON (builtins.readFile ../llm-server/catalog.json);
 
-  # Mirror the compat flags pi's built-in llama.cpp provider sets
-  # (src/extensions/llama/provider.ts): llama-swap forwards the request body
-  # unchanged to llama-server, so the same server constraints apply.
-  llamaCppCompat = {
+  # Ollama's OpenAI-compatible endpoint takes `reasoning_effort` (including
+  # "none" to turn thinking off), which is pi's default thinkingFormat, so
+  # thinking needs no per-model chat-template kwargs.
+  ollamaCompat = {
     supportsStore = false;
     supportsDeveloperRole = false;
-    supportsReasoningEffort = false;
+    supportsReasoningEffort = true;
     supportsUsageInStreaming = true;
     supportsStrictMode = false;
     maxTokensField = "max_tokens";
   };
 
-  # apiKey is a dummy: llama-swap does not authenticate, but pi only lists
+  # apiKey is a dummy: Ollama does not authenticate, but pi only lists
   # models whose provider has an API key configured.
   modelsJson = {
     providers.${catalog.provider.id} = {
@@ -29,36 +29,21 @@ let
       baseUrl = catalog.provider.baseURL;
       api = "openai-completions";
       apiKey = "none";
-      compat = llamaCppCompat;
-      models = lib.mapAttrsToList (
-        id: m:
-        {
-          inherit id;
-          name = m.name;
-          reasoning = m.thinking or false;
-          contextWindow = m.contextLength;
-          maxTokens = m.contextLength;
-          input = [ "text" ];
-          cost = {
-            input = 0;
-            output = 0;
-            cacheRead = 0;
-            cacheWrite = 0;
-          };
-        }
-        // (lib.optionalAttrs (m.thinking or false) {
-          compat.thinkingFormat = "qwen-chat-template";
-          compat.chatTemplateKwargs = {
-            enable_thinking = {
-              "$var" = "thinking.enabled";
-            };
-            preserve_thinking = true;
-          }
-          // (lib.optionalAttrs (m ? reasoningEffort) {
-            reasoning_effort = m.reasoningEffort;
-          });
-        })
-      ) catalog.models;
+      compat = ollamaCompat;
+      models = lib.mapAttrsToList (id: m: {
+        inherit id;
+        name = m.name;
+        reasoning = m.thinking or false;
+        contextWindow = m.contextLength;
+        maxTokens = m.contextLength;
+        input = [ "text" ];
+        cost = {
+          input = 0;
+          output = 0;
+          cacheRead = 0;
+          cacheWrite = 0;
+        };
+      }) catalog.models;
     };
   };
 in
@@ -81,7 +66,7 @@ in
     '')
   ];
 
-  # Point pi at the self-hosted llama-swap server. See design.md for why
+  # Point pi at the self-hosted Ollama server. See design.md for why
   # models.json is the one declarative pi config file that's safe to own.
   home.file."${config.home.homeDirectory}/.pi/agent/models.json".text = builtins.toJSON modelsJson;
 
