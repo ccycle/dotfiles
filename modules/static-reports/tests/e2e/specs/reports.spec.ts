@@ -4,11 +4,11 @@ import {
   loginViaPasskey,
   revokeOwnClientAuthorization,
   type PocketIdAdmin,
-} from "../../../modules/pocket-id/tests/lib/pocket-id-auth";
+} from "../../../../pocket-id/tests/lib/pocket-id-auth";
 
-// Env vars are set by tests/e2e-reports/scripts/stack.sh into .env and
+// Env vars are set by modules/static-reports/tests/e2e/scripts/stack.sh into .env and
 // sourced by scripts/run.sh before `playwright test`; see
-// tests/e2e-reports/design.md for the isolated per-worktree stack this
+// modules/static-reports/tests/e2e/design.md for the isolated per-worktree stack this
 // test runs against (never production).
 const REPORTS_URL = requireEnv("REPORTS_URL");
 const POCKET_ID_URL = requireEnv("POCKET_ID_URL");
@@ -23,7 +23,7 @@ const HELLO_FILE = "e2e-hello.txt";
 function requireEnv(name: string): string {
   const value = process.env[name];
   if (!value) {
-    throw new Error(`${name} must be set (see tests/e2e-reports/scripts/stack.sh)`);
+    throw new Error(`${name} must be set (see modules/static-reports/tests/e2e/scripts/stack.sh)`);
   }
   return value;
 }
@@ -58,7 +58,7 @@ test("authenticated user can browse and read report files", async ({ page }) => 
 
   try {
     // Revoke any authorization a prior run left behind (pocket-id's
-    // consent state persists across runs — see tests/e2e-reports/design.md
+    // consent state persists across runs — see modules/static-reports/tests/e2e/design.md
     // and pocket-id-auth.ts's revokeOwnClientAuthorization), so the
     // consent screen loginViaPasskey() expects is always there,
     // deterministically — same pattern as tests/e2e/specs/opencloud.spec.ts.

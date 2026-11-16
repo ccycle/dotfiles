@@ -12,7 +12,7 @@ passkey-only login, then back to a served static file. The gate is
 exercised as deployed — a test Caddy vhost that is a line-for-line
 miniature of the production forward_auth Caddyfile block, a natively run
 oauth2-proxy (pinned `devShells.e2e`), and a per-worktree Pocket ID
-container. See [tests/e2e-reports/design.md](../../../tests/e2e-reports/design.md) for the full rationale,
+container. See [modules/static-reports/tests/e2e/design.md](../../../modules/static-reports/tests/e2e/design.md) for the full rationale,
 including why this suite exists when OpenCloud/Immich/Forgejo/Grafana do
 their own in-app OIDC (a `file_server` can't — hence the Caddy-level gate
 that this suite proves).

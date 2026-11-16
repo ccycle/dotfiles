@@ -17,9 +17,9 @@ modules/monitoring/tests/e2e/test-results/
 modules/navidrome/tests/e2e/.env
 modules/navidrome/tests/e2e/.state/
 modules/navidrome/tests/e2e/test-results/
-tests/e2e-reports/.env
-tests/e2e-reports/.state/
-tests/e2e-reports/test-results/
+modules/static-reports/tests/e2e/.env
+modules/static-reports/tests/e2e/.state/
+modules/static-reports/tests/e2e/test-results/
 
 
 # OpenTofu local state and provider cache — never commit (may contain

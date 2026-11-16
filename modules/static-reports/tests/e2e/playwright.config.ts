@@ -1,9 +1,9 @@
 import { defineConfig, devices } from "@playwright/test";
 
 // baseURL/ports come from the isolated per-worktree stack, resolved by
-// tests/e2e-reports/scripts/stack.sh and exported into .env before
+// modules/static-reports/tests/e2e/scripts/stack.sh and exported into .env before
 // `playwright test` runs (sourced by scripts/run.sh). See
-// tests/e2e-reports/design.md for why this stack is per-worktree and
+// modules/static-reports/tests/e2e/design.md for why this stack is per-worktree and
 // fronted by a dedicated test Caddy (tls internal) that replicates the
 // production reports vhost's forward_auth gate.
 export default defineConfig({
