@@ -14,9 +14,9 @@ modules/immich/tests/e2e/test-results/
 modules/monitoring/tests/e2e/.env
 modules/monitoring/tests/e2e/.state/
 modules/monitoring/tests/e2e/test-results/
-tests/e2e-navidrome/.env
-tests/e2e-navidrome/.state/
-tests/e2e-navidrome/test-results/
+modules/navidrome/tests/e2e/.env
+modules/navidrome/tests/e2e/.state/
+modules/navidrome/tests/e2e/test-results/
 tests/e2e-reports/.env
 tests/e2e-reports/.state/
 tests/e2e-reports/test-results/

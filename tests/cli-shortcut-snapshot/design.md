@@ -101,7 +101,7 @@ its own terminal lifecycle.
 
 ## Publishing (.webm mode)
 
-Same pattern as [tests/e2e-navidrome/scripts/run.sh](../e2e-navidrome/scripts/run.sh): copies `.webm` +
+Same pattern as [modules/navidrome/tests/e2e/scripts/run.sh](../../modules/navidrome/tests/e2e/scripts/run.sh): copies `.webm` +
 `player.html` into `modules/static-reports`'s
 `dataDir/<branch-slug>/cli-shortcut-snapshot/<tape-name>/`, prunes entries
 older than 14 days, `trap cleanup EXIT`.

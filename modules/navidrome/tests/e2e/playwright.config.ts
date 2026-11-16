@@ -1,8 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
 
 // baseURL/ports come from the isolated per-worktree stack, resolved by
-// tests/e2e-navidrome/scripts/stack.sh and exported before `playwright test`
-// runs. See tests/e2e-navidrome/design.md for why this stack is per-worktree
+// modules/navidrome/tests/e2e/scripts/stack.sh and exported before `playwright test`
+// runs. See modules/navidrome/tests/e2e/design.md for why this stack is per-worktree
 // and never touches modules/navidrome's real instance or data.
 export default defineConfig({
   testDir: "./specs",

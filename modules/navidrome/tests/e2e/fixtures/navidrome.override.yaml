@@ -1,5 +1,5 @@
 # Layered on top of modules/navidrome/compose.yaml only for the isolated
-# e2e stack (never for production). See tests/e2e-navidrome/design.md.
+# e2e stack (never for production). See modules/navidrome/tests/e2e/design.md.
 #
 # modules/navidrome/compose.yaml hardcodes the host port as
 # 127.0.0.1:${NAVIDROME_PORT}:4533. A plain `docker compose -p <other-project>`

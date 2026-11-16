@@ -29,13 +29,13 @@ Production Navidrome authenticates via Caddy's forward_auth → PocketID
 
 ## Why Isolated, Not the Real Instance
 
-Same reasoning as [modules/immich/tests/e2e/design.md](../../modules/immich/tests/e2e/design.md): a herdr worktree checked
+Same reasoning as [modules/immich/tests/e2e/design.md](../../../immich/tests/e2e/design.md): a herdr worktree checked
 out on `mac-mini-m4-pro` shares its Docker daemon with the real
 `services.navidrome` instance. Each worktree gets its own docker-compose
 project (`navidrome-e2e-test-<worktree>`), its own throwaway host port,
-and its own data/music directories under `tests/e2e-navidrome/.state/`.
+and its own data/music directories under `modules/navidrome/tests/e2e/.state/`.
 
-The `navidrome` container in [modules/navidrome/compose.yaml](../../modules/navidrome/compose.yaml) binds
+The `navidrome` container in [modules/navidrome/compose.yaml](../../compose.yaml) binds
 `127.0.0.1:4533:4533`. A plain `docker compose -p <other-project>` still
 binds that same host port regardless of project name — it would collide
 with the real production container. The override in

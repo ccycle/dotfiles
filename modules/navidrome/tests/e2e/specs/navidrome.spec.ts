@@ -1,7 +1,7 @@
 // E2E test for Navidrome (modules/navidrome) — web UI, Subsonic API,
 // and music library scanning. Runs against an isolated per-worktree
 // stack (never modules/navidrome's real instance or data — see
-// tests/e2e-navidrome/design.md).
+// modules/navidrome/tests/e2e/design.md).
 //
 // ND_EXTAUTH is disabled in the test stack (see design.md), so no
 // Caddy forward_auth / PocketID chain is exercised here.
@@ -18,7 +18,7 @@ const TEST_PASS = "e2e-test-pass";
 function requireEnv(name: string): string {
   const value = process.env[name];
   if (!value) {
-    throw new Error(`${name} must be set (see tests/e2e-navidrome/scripts/stack.sh)`);
+    throw new Error(`${name} must be set (see modules/navidrome/tests/e2e/scripts/stack.sh)`);
   }
   return value;
 }
