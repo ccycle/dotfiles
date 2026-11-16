@@ -69,7 +69,9 @@ let
       let
         p = "${rel}/${name}";
       in
-      if entries.${name} == "directory" then
+      if entries.${name} == "directory" && elem name rules.skipDirNames then
+        [ ]
+      else if entries.${name} == "directory" then
         [
           {
             path = p;

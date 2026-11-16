@@ -24,6 +24,15 @@
     "config.nix" # build-time config derivation helper (e.g. caddy config.nix)
   ];
 
+  # Directory names never descended into: untracked runtime output of
+  # co-located tests (npm deps, container data that may be unreadable to the
+  # user, Playwright reports). Walking them is slow and can abort the eval.
+  skipDirNames = [
+    "node_modules"
+    ".state"
+    "test-results"
+  ];
+
   # Paths (repo-relative) fully exempt from every check.
   exemptPaths = [
     "modules/storage/default-config" # standalone flake used as --override-input stub
