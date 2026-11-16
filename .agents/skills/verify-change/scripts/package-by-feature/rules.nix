@@ -45,6 +45,16 @@
     "utils"
   ];
 
+  # Module-internal paths that other features consume via ../ even though
+  # they are not children (conventions.md §3 dependency rule exceptions).
+  # The owner keeps the file; listing it here makes the coupling explicit,
+  # and test selection treats a change under it as affecting every feature.
+  sharedPaths = [
+    "modules/llm-server/catalog.json" # model catalog read by opencode and pi
+    "modules/mtplx/catalog.json" # model catalog read by opencode
+    "modules/nodejs/node-tools" # npm lockfile reused by opencode-web and pi-web
+  ];
+
   # Host profile modules: imported directly by flake.nix, so their parent
   # aggregator does not import them, and they may only set option values —
   # never import sibling features.

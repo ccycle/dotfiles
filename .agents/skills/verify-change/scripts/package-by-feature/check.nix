@@ -11,7 +11,9 @@
 #
 # References are extracted lexically: comment-stripped lines are scanned for
 # relative path literals ending in .nix, so commented-out imports are ignored
-# and no Nix evaluation of the modules themselves takes place.
+# and no Nix evaluation of the modules themselves takes place. The
+# cross-hierarchy rule additionally scans for every ../ path, since consuming a
+# sibling's data file or directory is as much a dependency as importing it.
 {
   repoRoot,
   rules ? import ./rules.nix,
@@ -97,6 +99,10 @@ let
   stripComment = line: elemAt (split "#" line) 0;
   refRegex = "(\\.\\.?/[A-Za-z0-9_@+./-]*\\.nix)";
   refsInLine = line: map (m: elemAt m 0) (filter isList (split refRegex line));
+  # The leading boundary keeps "../" inside URLs and longer paths
+  # (e.g. "cmd/../models") from matching.
+  parentRefRegex = "(^|[^A-Za-z0-9_@+./-])(\\.\\./[A-Za-z0-9_@+./-]*)";
+  parentRefsInLine = line: map (m: elemAt m 1) (filter isList (split parentRefRegex line));
 
   splitSlash = s: filter (c: isString c && c != "" && c != ".") (split "/" s);
 
@@ -118,15 +124,19 @@ let
     in
     if comps == null then null else concatStringsSep "/" comps;
 
-  refsByFile = listToAttrs (
-    map (p: {
-      name = p;
-      value = map (r: {
-        raw = r;
-        resolved = resolve (dirOf p) r;
-      }) (concatMap (l: refsInLine (stripComment l)) (lines (readFile (abs p))));
-    }) nixFilePaths
-  );
+  refsByFileWith =
+    extract:
+    listToAttrs (
+      map (p: {
+        name = p;
+        value = map (r: {
+          raw = r;
+          resolved = resolve (dirOf p) r;
+        }) (concatMap (l: extract (stripComment l)) (lines (readFile (abs p))));
+      }) nixFilePaths
+    );
+  refsByFile = refsByFileWith refsInLine;
+  parentRefsByFile = refsByFileWith parentRefsInLine;
 
   refsOf = p: refsByFile.${p} or [ ];
   resolvedRefsOf = p: filter (r: r != null) (map (r: r.resolved) (refsOf p));
@@ -227,24 +237,27 @@ let
   ) nixFilePaths;
 
   # --- rule: cross-hierarchy-import (conventions.md §3) ---
-  # ../-references may only target crossHierarchyAllowed directories.
+  # ../-references (to any file or directory) may only target
+  # crossHierarchyAllowed directories or declared sharedPaths.
 
   crossHierarchyImport = concatMap (
     p:
     concatMap (
       r:
       let
-        allowed = any' (a: r.resolved == a || hasPrefix (a + "/") r.resolved) rules.crossHierarchyAllowed;
+        allowed = any' (a: r.resolved == a || hasPrefix (a + "/") r.resolved) (
+          rules.crossHierarchyAllowed ++ rules.sharedPaths
+        );
       in
       if !hasPrefix "../" r.raw || r.resolved == null || allowed then
         [ ]
       else
         [
           (mkV "cross-hierarchy-import" p
-            "reference ${r.raw} crosses feature hierarchies; only ${toString rules.crossHierarchyAllowed} may be referenced with ../ (conventions.md §3)"
+            "reference ${r.raw} crosses feature hierarchies; move the dependency under this feature or declare ${toString r.resolved} in sharedPaths (conventions.md §3)"
           )
         ]
-    ) (refsOf p)
+    ) (parentRefsByFile.${p} or [ ])
   ) nixFilePaths;
 
   # --- rule: platform-mismatch (conventions.md §2, §8) ---

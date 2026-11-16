@@ -35,6 +35,7 @@ modules/
 
 - The `home.nix` and `darwin.nix` in a parent directory must import all corresponding configuration files (`home.nix` or `darwin.nix`) present in its subdirectories.
 - **No Cross-Hierarchy Imports:** Do not import files from other top-level directories (e.g. `../bootstrap/modules/git/home.nix`), with the exception of utilities (e.g. `../utils/...`).
+- **Shared data is declared, not implicit:** Reading a sibling feature's data file or directory via `../` (e.g. a model catalog) is a dependency too. When moving it under the consumer would break ownership, declare the path in `sharedPaths` in [rules.nix](../../verify-change/scripts/package-by-feature/rules.nix) instead.
 - **Option-based coupling is allowed:** A module may read options defined in another feature (e.g. `custom.syncHomeFiles` consumed by `zsh`). Direct import of another feature's files is not.
 - **Directory hierarchy must reflect dependency relationships:** If module A depends on module B (A imports or consumes B), then B must be a child (subdirectory) of A, not a sibling or parent. The directory tree should mirror the dependency graph — a child directory is a dependency of its parent. Example: `gh` (GitHub CLI) is a tool within the `github` feature, so it lives at `git/github/gh/home.nix`, not at `git/gh/home.nix`.
 
