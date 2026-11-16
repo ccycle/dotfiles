@@ -29,6 +29,16 @@ Profiles are discovered from the flake: `bootstrap`, `private`, `mac-mini-m4`, `
 4.  **Expected Binaries:** If any module declares an `expected-bins.txt` (one binary name per line, colocated with the module that adds the package - see `modules/cli-tools/expected-bins.txt` for a reference example), checks that profile's built closure (both `environment.systemPackages`'s `sw/bin` and each home-manager user's `home.path/bin` - a package attribute name doesn't always match its binary name, e.g. `ripgrep` -> `rg`) and confirms every declared binary is actually present. Skipped entirely when no module declares one.
 5.  **Markdown References:** Checks that markdown prose refers to repository paths as relative links rather than inline code, and that every relative link target exists.
 
+## Affected Test Suites
+
+Test suites co-located with their feature (`modules/<feature>/tests/<name>/`) are not part of `check.sh`; they need Docker and minutes per run. List the ones the current change affects, or run them with `--run`:
+
+```bash
+.agents/skills/verify-change/scripts/select-tests.sh [--run] [base-ref]
+```
+
+The selection rule is documented in [select-tests.sh](scripts/select-tests.sh) itself.
+
 ## When to Use
 
 - **ALWAYS** run this skill after modifying any `.nix` file.
