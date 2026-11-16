@@ -1,8 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
 
 // baseURL/ports come from the isolated per-worktree stack, resolved by
-// tests/e2e-immich/scripts/stack.sh and exported before `playwright test`
-// runs. See tests/e2e-immich/design.md for why this stack is per-worktree
+// modules/immich/tests/e2e/scripts/stack.sh and exported before `playwright test`
+// runs. See modules/immich/tests/e2e/design.md for why this stack is per-worktree
 // and never touches modules/immich's real instance or data.
 export default defineConfig({
   testDir: "./specs",

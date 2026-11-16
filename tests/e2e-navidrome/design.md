@@ -29,7 +29,7 @@ Production Navidrome authenticates via Caddy's forward_auth → PocketID
 
 ## Why Isolated, Not the Real Instance
 
-Same reasoning as [tests/e2e-immich/design.md](../e2e-immich/design.md): a herdr worktree checked
+Same reasoning as [modules/immich/tests/e2e/design.md](../../modules/immich/tests/e2e/design.md): a herdr worktree checked
 out on `mac-mini-m4-pro` shares its Docker daemon with the real
 `services.navidrome` instance. Each worktree gets its own docker-compose
 project (`navidrome-e2e-test-<worktree>`), its own throwaway host port,

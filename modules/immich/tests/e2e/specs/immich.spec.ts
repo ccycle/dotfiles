@@ -1,10 +1,10 @@
 // E2E test for Immich (modules/immich), local-auth only - OIDC/passkey
 // coverage is deliberately concentrated in tests/e2e's OpenCloud suite
-// instead (see tests/e2e-immich/design.md), so this exercises Immich's
+// instead (see modules/immich/tests/e2e/design.md), so this exercises Immich's
 // own POST /api/auth/admin-sign-up + POST /api/auth/login directly.
 //
 // Runs against an isolated per-worktree stack (never modules/immich's
-// real instance or data - see tests/e2e-immich/design.md).
+// real instance or data - see modules/immich/tests/e2e/design.md).
 import { test, expect, type APIRequestContext, type Page } from "@playwright/test";
 import { existsSync, mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -27,7 +27,7 @@ const ADMIN_NAME = "E2E Admin";
 function requireEnv(name: string): string {
   const value = process.env[name];
   if (!value) {
-    throw new Error(`${name} must be set (see tests/e2e-immich/scripts/stack.sh)`);
+    throw new Error(`${name} must be set (see modules/immich/tests/e2e/scripts/stack.sh)`);
   }
   return value;
 }

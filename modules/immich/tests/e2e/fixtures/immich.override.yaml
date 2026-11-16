@@ -1,5 +1,5 @@
 # Layered on top of modules/immich/compose.yaml only for the isolated
-# e2e stack (never for production). See tests/e2e-immich/design.md.
+# e2e stack (never for production). See modules/immich/tests/e2e/design.md.
 #
 # modules/immich/compose.yaml hardcodes host ports for immich-server
 # (2283, 8091, 8092) and the two exporters (9188, 9122). A plain

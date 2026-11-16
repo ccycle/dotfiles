@@ -30,7 +30,7 @@ running) is asserted as actually `up`.
 
 ## Why Local Auth, Not OIDC
 
-Same reasoning as [tests/e2e-immich/design.md](../e2e-immich/design.md): Grafana's
+Same reasoning as [modules/immich/tests/e2e/design.md](../../modules/immich/tests/e2e/design.md): Grafana's
 `GF_AUTH_GENERIC_OAUTH_*` config points at Pocket ID in production, but
 [fixtures/monitoring.override.yaml](fixtures/monitoring.override.yaml) disables it entirely
 (`GF_AUTH_GENERIC_OAUTH_ENABLED=false`) for this stack. OIDC/passkey

@@ -5,7 +5,7 @@
 # E2E test environment overrides
 tests/e2e/.env
 modules/forgejo/tests/e2e/.env
-tests/e2e-immich/.env
+modules/immich/tests/e2e/.env
 tests/e2e-monitoring/.env
 tests/e2e-reports/.env
 
