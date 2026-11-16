@@ -63,7 +63,7 @@ rebuild without a manual re-registration step.
 `docker compose exec` without `-u` attaches as root, and any
 state-mutating `forgejo`/`forgejo-cli` subcommand (as opposed to
 `--help`) fatally refuses to run as root at startup
-(`MustInstalled()`'s root check) - confirmed by `tests/e2e-forgejo`
+(`MustInstalled()`'s root check) - confirmed by [the E2E suite](tests/e2e/design.md)
 hitting exactly this before `-u git` was added. The existing
 `forgejo dump` call in the backup job already had this right; the two
 `forgejo-cli` calls here didn't, and would have crashed the exec (not
@@ -71,7 +71,7 @@ the server itself) on every real deployment.
 
 **Branch protection has no "block force push" field to set.** The
 Forgejo/Gitea branch-protection API (verified against the
-`forgejo-sdk` Go struct, and confirmed empirically by `tests/e2e-forgejo`
+`forgejo-sdk` Go struct, and confirmed empirically by [the E2E suite](tests/e2e/design.md)
 
 - a force-push to a branch with only `enable_push`/`enable_status_check`
   set is in fact rejected) has no `enable_force_push`/`block_force_push`
@@ -83,7 +83,7 @@ Forgejo/Gitea branch-protection API (verified against the
 **`statusCheckContexts` has no default.** Per this repo's "no default
 fallbacks for critical configuration" convention: the config value is
 per-repo and per-workflow, so there's no single correct default to fall
-back to, and `tests/e2e-forgejo` empirically confirmed the format is
+back to, and [the E2E suite](tests/e2e/design.md) empirically confirmed the format is
 `"<workflow name> / <job id> (<event>)"` (observed `"E2E / verify
 (push)"` for a workflow named "E2E" with job id "verify"). Each new
 `branchProtections` entry still needs its own value filled in by hand

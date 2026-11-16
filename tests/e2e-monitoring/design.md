@@ -41,7 +41,7 @@ independently-testable local admin account with no external IdP needed.
 ## Why A Browser Project For An Otherwise API-Only Suite
 
 Four of this suite's five tests use only Playwright's `request` fixture
-(same style as `tests/e2e-forgejo`). The fifth logs into Grafana through
+(same style as `modules/forgejo/tests/e2e`). The fifth logs into Grafana through
 the real browser UI and opens a real dashboard, asserting zero
 console/page errors during render - this is the one thing an API call
 can't verify: that the dashboard JSON itself is well-formed enough for
@@ -50,7 +50,7 @@ from `/api/dashboards/uid/...`; it just fails to render.
 
 ## Why Isolated, Not the Real Instance
 
-Same reasoning as [tests/e2e-forgejo/design.md](../e2e-forgejo/design.md)'s "Why Isolated":
+Same reasoning as [modules/forgejo/tests/e2e/design.md](../../modules/forgejo/tests/e2e/design.md)'s "Why Isolated":
 [modules/monitoring/compose.yaml](../../modules/monitoring/compose.yaml) hardcodes host ports (9090, 3200,
 3100, 8090) and a fixed `grafana-data` volume name (SQLite - kept as a
 named volume rather than a bind mount for the same reason

@@ -1,8 +1,8 @@
 import { defineConfig } from "@playwright/test";
 
 // baseURL/paths come from the isolated per-worktree stack, resolved by
-// tests/e2e-forgejo/scripts/stack.sh and exported before `playwright test`
-// runs. See tests/e2e-forgejo/design.md.
+// modules/forgejo/tests/e2e/scripts/stack.sh and exported before `playwright test`
+// runs. See modules/forgejo/tests/e2e/design.md.
 //
 // No `projects`/browser `devices` entry: unlike tests/e2e's OpenCloud
 // suite, nothing here drives a browser - every check goes through

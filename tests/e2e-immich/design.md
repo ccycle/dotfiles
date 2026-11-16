@@ -32,7 +32,7 @@ OIDC/passkey coverage concentrated in `tests/e2e`'s OpenCloud suite:
 
 ## Why Isolated, Not the Real Instance
 
-Same reasoning as [tests/e2e-forgejo/design.md](../e2e-forgejo/design.md)'s "Why Isolated": a
+Same reasoning as [modules/forgejo/tests/e2e/design.md](../../modules/forgejo/tests/e2e/design.md)'s "Why Isolated": a
 herdr worktree checked out on `mac-mini-m4-pro` shares its Docker daemon
 with the real `services.immich` instance. Each worktree gets its own
 docker-compose project (`immich-e2e-test-<worktree>`), its own throwaway

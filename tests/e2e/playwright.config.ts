@@ -18,7 +18,7 @@ export default defineConfig({
     // (see stack.sh's ensure_test_ca), which this Node/Playwright process
     // has no reason to have imported into its own trust store.
     ignoreHTTPSErrors: true,
-    // Always on, not 'retain-on-failure': matches tests/e2e-forgejo's
+    // Always on, not 'retain-on-failure': matches modules/forgejo/tests/e2e's
     // config for the same reason — this suite's own OIDC/consent flow
     // (passkey ceremony, pocket-id redirects, upload) is worth inspecting
     // in trace viewer even on a passing run, not just to debug failures.

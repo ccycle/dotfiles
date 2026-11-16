@@ -1,5 +1,5 @@
 # Layered on top of modules/forgejo/compose.yaml only for the isolated
-# e2e stack (never for production). See tests/e2e-forgejo/design.md.
+# e2e stack (never for production). See modules/forgejo/tests/e2e/design.md.
 #
 # modules/forgejo/compose.yaml hardcodes both host ports (127.0.0.1:3000,
 # 127.0.0.1:2223) and the SQLite named volume's Docker-level name

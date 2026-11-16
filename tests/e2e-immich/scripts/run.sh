@@ -30,7 +30,7 @@ fi
 cleanup() {
   # Publish whatever report exists (pass or fail) before tearing the
   # stack down, so a failure is still inspectable afterward - same
-  # pattern as tests/e2e-forgejo/scripts/run.sh.
+  # pattern as modules/forgejo/tests/e2e/scripts/run.sh.
   if [ -d "$E2E_DIR/test-results/html" ] && mkdir -p "$REPORTS_DIR" 2>/dev/null; then
     rm -rf "${REPORTS_DIR:?}"/*
     cp -r "$E2E_DIR/test-results/html/." "$REPORTS_DIR/"

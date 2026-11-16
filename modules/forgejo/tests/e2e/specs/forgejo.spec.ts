@@ -3,7 +3,7 @@
 // Forgejo server binary and forgejo-runner binary the same way the
 // launchd bootstrap jobs do, against an isolated per-worktree stack
 // (never modules/forgejo's real instance or data - see
-// tests/e2e-forgejo/design.md).
+// modules/forgejo/tests/e2e/design.md).
 //
 // Only the Forgejo REST API calls go through Playwright's `request`
 // fixture - that's the part `trace: 'on'` (playwright.config.ts) makes

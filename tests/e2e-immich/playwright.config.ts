@@ -14,7 +14,7 @@ export default defineConfig({
   use: {
     baseURL: process.env.IMMICH_SERVER_URL,
     // Always on, not 'retain-on-failure' (matches tests/e2e and
-    // tests/e2e-forgejo): worth inspecting the upload/thumbnail flow in
+    // modules/forgejo/tests/e2e): worth inspecting the upload/thumbnail flow in
     // trace viewer even on a passing run, not just to debug failures.
     trace: "on",
     screenshot: "only-on-failure",

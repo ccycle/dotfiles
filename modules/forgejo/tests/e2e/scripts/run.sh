@@ -2,12 +2,12 @@
 # Orchestrates the Forgejo E2E suite: brings up the isolated stack
 # (scripts/stack.sh), runs the Playwright spec against it, publishes the
 # HTML+trace report, then tears the stack down. See
-# tests/e2e-forgejo/design.md for the full rationale.
+# modules/forgejo/tests/e2e/design.md for the full rationale.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 E2E_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-REPO_ROOT="$(cd "$E2E_DIR/../.." && pwd)"
+REPO_ROOT="$(git -C "$E2E_DIR" rev-parse --show-toplevel)"
 STACK="$SCRIPT_DIR/stack.sh"
 ENV_FILE="$E2E_DIR/.env"
 BRANCH_SLUG="$(git -C "$REPO_ROOT" rev-parse --abbrev-ref HEAD | tr '/' '-')"

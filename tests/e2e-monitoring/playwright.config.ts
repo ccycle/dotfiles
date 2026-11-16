@@ -6,7 +6,7 @@ import { defineConfig, devices } from "@playwright/test";
 // this stack is per-worktree yet deliberately still scrapes the real
 // host via host-gateway rather than faking scrape targets too.
 //
-// Unlike tests/e2e-forgejo (API-only, no `projects`), this suite needs a
+// Unlike modules/forgejo/tests/e2e (API-only, no `projects`), this suite needs a
 // browser project for the one lightweight Grafana dashboard-render check
 // (see specs/monitoring.spec.ts) alongside its otherwise request-fixture-
 // only checks.
