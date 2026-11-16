@@ -29,7 +29,7 @@ third-party monitoring project.
   (`providerID: "opencode"`, id suffix `-free`) has real cost 0 by design,
   but the raw token volume is still meaningful to see priced at a
   rough real-world equivalent. Self-hosted local-inference sessions
-  (`llamaswap`/`mtplx`/`mlx-server` providers, confirmed present in the same
+  (`ollama`/`llamaswap`/`mtplx`/`mlx-server` providers; `llamaswap` and the others were confirmed present in the same
   table) are left uncosted entirely - they run on the user's own hardware,
   so no market price applies, and pricing them would misrepresent local
   compute as a cloud spend.

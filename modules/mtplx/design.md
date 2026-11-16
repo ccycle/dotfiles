@@ -4,9 +4,8 @@
 
 Serve MLX-format models with speculative decoding (native-MTP Qwen
 checkpoints, or Gemma checkpoints paired with an external drafter) on
-Apple Silicon via MTPLX, a third-party runtime that llama.cpp/llama-swap
-cannot run. Exposes an OpenAI-compatible endpoint to opencode, alongside
-the existing `llm-server` (llama-swap/GGUF) module.
+Apple Silicon via MTPLX, a third-party runtime that Ollama cannot run. Exposes an OpenAI-compatible endpoint to opencode, alongside
+the existing `llm-server` (Ollama) module.
 
 ## Non-Goals
 
@@ -24,15 +23,13 @@ the existing `llm-server` (llama-swap/GGUF) module.
 
 ## Why a Separate Module From `llm-server`
 
-`llm-server` runs llama-swap, which spawns and swaps `llama-server`
-subprocesses per request — every model it serves goes through the same
-GGUF/llama.cpp code path, and its design explicitly rejects holding more
+`llm-server` runs Ollama, which serves only models in its own registry
+through its own runners, and its design explicitly rejects holding more
 than one model resident at once. MTPLX is architecturally a different
 kind of service: a single always-on OpenAI-compatible daemon with its own
-internal model/session management, not a subprocess llama-swap can spawn
-per-request the way it spawns `llama-server -m <file>`. Folding it into
-`llm-server` would mean stretching that module's config schema (GGUF file
-URLs, llama.cpp CLI flags) to cover a fundamentally different runtime.
+internal model/session management that Ollama cannot host. Folding it
+into `llm-server` would mean stretching that module's catalog schema
+(Ollama model names) to cover a fundamentally different runtime.
 Keeping it a sibling module keeps both config schemas honest and lets each
 service's process-lifecycle model (swap-on-demand vs. always-on) stay
 independent.
@@ -132,7 +129,7 @@ completions, and any client issuing one self-contained prompt per request
 rather than an evolving multi-turn session.
 
 Opencode and other agent-style clients default to `llm-server`
-(llama-swap/GGUF) instead, because agentic prefill-reuse expectations are
+(Ollama) instead, because agentic prefill-reuse expectations are
 exactly what the cache gap breaks — every agent turn would otherwise
 re-pay the full-context prefill cost that `llm-server`'s cache avoids.
 This routing lives in `opencode`'s generated config as a workload-level
@@ -158,12 +155,13 @@ penalty on every turn.
   imperative, external-state dependency with no precedent in this repo,
   for no benefit over the install script — the tap's own formula reduces
   to the same `pip install` the script already does.
-- **Folding MTPLX into `llm-server`'s `catalog.json`/llama-swap config.**
+- **Folding MTPLX into `llm-server`'s `catalog.json`.**
   See "Why a Separate Module" above.
-- **Running the model under llama-swap's process-spawn model.** MTPLX
-  does take a `--model` flag, so this was technically possible, but the
-  chosen design runs MTPLX as a standalone always-on service instead,
-  keeping its lifecycle independent of llama-swap's swap-on-demand model.
+- **Running the model under llama-swap's process-spawn model** (when
+  `llm-server` still used llama-swap). MTPLX does take a `--model` flag,
+  so this was technically possible, but the chosen design runs MTPLX as
+  a standalone always-on service instead, keeping its lifecycle
+  independent of `llm-server`'s swap-on-demand model.
 
 ## Alternative Model Variants
 

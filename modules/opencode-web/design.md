@@ -8,14 +8,14 @@ Use `opencode web` as the chat UI instead of OpenWebUI to provide cross-sectiona
 
 - **Built-in Web UI**: Conversation history, model selection, and tool execution visualization come out of the box.
 - **Built-in Tools**: Search tools like `grep`, `bash`, and `read` are immediately usable.
-- **Reuse of Existing Configuration**: Leverages existing `opencode.json` (such as llama-swap connection settings) as-is.
+- **Reuse of Existing Configuration**: Leverages existing `opencode.json` (such as the local Ollama provider settings) as-is.
 - **Low Cost**: Eliminates the need to implement custom Python search tools.
 - **Low Maintenance**: Significantly reduces the maintenance surface area (no custom Python code).
 
 ## Architecture
 
 ```
-User → Browser → Caddy → opencode web (launchd) → llama-swap
+User → Browser → Caddy → opencode web (launchd) → Ollama (llm-server)
                                                      ↓
                                               grep/zot/obsidian CLI
 ```
@@ -47,7 +47,7 @@ The `opencode-web` agent ([agents/opencode-web.md](agents/opencode-web.md)) defi
 
 - `opencode web` is designed for a single user (authentication handled via Pocket ID SSO).
 - Must `cd` into the vault directory at startup.
-- Requires `llama-swap` to be running (`mac-mini-m4-pro`).
+- Requires `llm-server` (Ollama) to be running (`mac-mini-m4-pro`).
 - Assumes `zot` runs in `--local` mode (configured personally via `~/.config/zotcli/config.ini`). While note search via the Zotero Web API only matches the first line of a note, `--local` mode queries the Zotero desktop app's native search engine (full-text note index) directly, bypassing this limitation. Because of this prerequisite, the `zotero-keepalive` launchd agent keeps `Zotero.app` running continuously (`brewCasks.zotero` only installs the app without auto-starting it).
 
 ## Rejected Alternatives

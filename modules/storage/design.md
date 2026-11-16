@@ -11,7 +11,7 @@ without hardcoding a path in tracked Nix files. The actual value comes from
 An earlier version exposed one `custom.storage.volumeRoot` used by every
 service. That broke down once a service needed a different placement than
 the rest — e.g. llm-server's model cache belongs on the internal disk
-(`~/Library/Caches/llama.cpp`, matching llama.cpp's own default) while
+(`~/.ollama/models`, matching Ollama's own default) while
 forgejo/immich/gitlab/monitoring/opencloud share an external volume. Moving
 to `custom.storage.volumes` (an attrset keyed by service name) lets each
 service opt into its own path independently.

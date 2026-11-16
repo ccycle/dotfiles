@@ -4,7 +4,7 @@
 
 Install LM Studio as a GUI application for interactive model
 exploration and testing. LM Studio is not used for serving — that role
-has moved to `modules/llm-server` (llama-swap + llama-cpp).
+has moved to `modules/llm-server` (Ollama).
 
 ## Why Keep the Cask
 

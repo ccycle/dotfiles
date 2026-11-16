@@ -12,7 +12,7 @@ spend (session.cost) is used as-is. Zen free-tier sessions (provider
 "opencode", model id ending "-free") have real cost 0; those additionally
 get an approximate market-equivalent cost from the price table, labeled
 approx="true" so it's never mistaken for real spend. Self-hosted local
-inference (llamaswap/mtplx/mlx-server providers) has no meaningful market
+inference (ollama/llamaswap/mtplx/mlx-server providers) has no meaningful market
 price and is skipped for cost - only its token volume is reported.
 
 Only chats active within RETENTION_DAYS are emitted, so the per-chat
@@ -172,7 +172,7 @@ def main():
                 cost_lines.append(
                     f'token_usage_cost_usd{{tool="opencode",session="{session_label}",model="{model_label}",approx="true"}} {approx:.6f}'
                 )
-        # Other zero-cost sessions (self-hosted llamaswap/mtplx/mlx-server
+        # Other zero-cost sessions (self-hosted ollama/llamaswap/mtplx/mlx-server
         # providers) have no meaningful market price - cost intentionally
         # omitted, token volume above still counts them.
 
