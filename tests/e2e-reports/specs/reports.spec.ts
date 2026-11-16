@@ -4,7 +4,7 @@ import {
   loginViaPasskey,
   revokeOwnClientAuthorization,
   type PocketIdAdmin,
-} from "../../e2e/lib/pocket-id-auth";
+} from "../../../modules/pocket-id/tests/lib/pocket-id-auth";
 
 // Env vars are set by tests/e2e-reports/scripts/stack.sh into .env and
 // sourced by scripts/run.sh before `playwright test`; see

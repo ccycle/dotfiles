@@ -13,7 +13,7 @@ filesystem tree mirrors the UI ([modules/opencloud/design.md](../../modules/open
 ## Non-Goals
 
 - Services beyond OpenCloud (Immich, Grafana, Forgejo, GitLab) — the
-  passkey-auth helper ([lib/pocket-id-auth.ts](lib/pocket-id-auth.ts)) is written to be reusable
+  passkey-auth helper ([modules/pocket-id/tests/lib/pocket-id-auth.ts](../../modules/pocket-id/tests/lib/pocket-id-auth.ts)) is written to be reusable
   for them, but no spec exists yet.
 - CI integration. GitHub Actions' `ubuntu-latest` runner has no Docker
   access to the real stack and can't run this. A self-hosted Forgejo
@@ -133,7 +133,7 @@ this way.
 
 The fix: the pocket-id user (`e2e-test-runner`) is now found-or-created
 once and reused indefinitely — `findOrCreateUser` in
-[lib/pocket-id-auth.ts](lib/pocket-id-auth.ts) looks it up by username before creating it, so
+[modules/pocket-id/tests/lib/pocket-id-auth.ts](../../modules/pocket-id/tests/lib/pocket-id-auth.ts) looks it up by username before creating it, so
 its `sub` never changes for a given worktree, matching what OpenCloud's
 identity model expects. What _is_ still replaced every run is just the
 passkey credential itself (`clearPasskeys` deletes all of the user's
@@ -235,7 +235,7 @@ nats-js-kv` (required for the posix driver) looked at first like it
 In other words, this was never a gap in OpenCloud's provisioning or in
 this suite's design — it was an artifact of ad-hoc manual state resets
 during debugging that the actual code path (`findOrCreateUser` in
-[lib/pocket-id-auth.ts](lib/pocket-id-auth.ts), which never deletes the pocket-id user) doesn't
+[modules/pocket-id/tests/lib/pocket-id-auth.ts](../../modules/pocket-id/tests/lib/pocket-id-auth.ts), which never deletes the pocket-id user) doesn't
 do. The lesson generalizes: pocket-id identity and OpenCloud's own data
 must be reset _together_, never independently — see "Why a Stable,
 Fixed-Name Test User" above for why they're coupled at all.

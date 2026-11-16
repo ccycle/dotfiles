@@ -6,7 +6,7 @@ Browser-driven E2E coverage for the static-reports auth gate
 (`modules/static-reports`): the full chain from "anonymous browser hits
 `reports.<hostname>.internal`" through oauth2-proxy's forward_auth,
 Pocket ID's passkey-only login, consent, and back to a served static file.
-Reuses the passkey-ceremony machinery from [tests/e2e/lib/pocket-id-auth.ts](../e2e/lib/pocket-id-auth.ts)
+Reuses the passkey-ceremony machinery from [modules/pocket-id/tests/lib/pocket-id-auth.ts](../../modules/pocket-id/tests/lib/pocket-id-auth.ts)
 (the same helper the OpenCloud suite uses — it was written to be reusable
 for any pocket-id-fronted service; see [tests/e2e/design.md](../e2e/design.md)).
 

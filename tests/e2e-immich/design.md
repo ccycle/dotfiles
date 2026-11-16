@@ -92,7 +92,7 @@ concatenation).
   deliberately clicks the empty-timeline's own
   "Click to upload your first photo" button instead of either navbar
   one, sidestepping the ambiguity rather than disambiguating it (same
-  category of issue [tests/e2e/lib/pocket-id-auth.ts](../e2e/lib/pocket-id-auth.ts) documents for
+  category of issue [modules/pocket-id/tests/lib/pocket-id-auth.ts](../../modules/pocket-id/tests/lib/pocket-id-auth.ts) documents for
   pocket-id's own "Add Passkey" button, different fix).
 - **A "new version available" nag dialog appears on first page load**
   (onboarding and the first `/photos` visit both hit it) whenever the

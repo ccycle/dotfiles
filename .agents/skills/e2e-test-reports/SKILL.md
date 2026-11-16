@@ -61,7 +61,7 @@ Run from anywhere inside the repository (any worktree):
   gate still behaves — a build dry-run structurally cannot verify a
   redirect chain.
 - After changing `modules/pocket-id` or the passkey flow in
-  [tests/e2e/lib/pocket-id-auth.ts](../../../tests/e2e/lib/pocket-id-auth.ts), since this suite exercises the same
+  [modules/pocket-id/tests/lib/pocket-id-auth.ts](../../../modules/pocket-id/tests/lib/pocket-id-auth.ts), since this suite exercises the same
   helper against a fresh Pocket ID instance.
 
 ## Known Constraints

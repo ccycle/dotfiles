@@ -62,6 +62,7 @@
     "modules/llm-server/catalog.json" # model catalog read by opencode and pi
     "modules/mtplx/catalog.json" # model catalog read by opencode
     "modules/nodejs/node-tools" # npm lockfile reused by opencode-web and pi-web
+    "modules/pocket-id/tests/lib" # passkey login helper imported by every pocket-id-fronted e2e suite
   ];
 
   # Host profile modules: imported directly by flake.nix, so their parent

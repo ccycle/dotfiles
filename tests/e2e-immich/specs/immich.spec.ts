@@ -44,7 +44,7 @@ async function signUpAdmin(request: APIRequestContext): Promise<void> {
 // behind Immich's latest release - unrelated to anything under test, but
 // it blocks every other interaction on the page (including file uploads)
 // until dismissed. isVisible() alone would race a not-yet-rendered
-// dialog (see tests/e2e/lib/pocket-id-auth.ts's own note on this), so
+// dialog (see modules/pocket-id/tests/lib/pocket-id-auth.ts's own note on this), so
 // wait for it properly and only treat a real timeout as "never showed up".
 async function dismissVersionNagIfPresent(page: Page): Promise<void> {
   try {
