@@ -60,6 +60,7 @@ FORGEJO_TEST_SSH_PORT=${FORGEJO_TEST_SSH_PORT}
 FORGEJO_TEST_VOLUME_NAME=${FORGEJO_TEST_VOLUME_NAME}
 FORGEJO_DATA_DIR=${FORGEJO_DATA_DIR}
 FORGEJO_EXTERNAL_URL=${FORGEJO_EXTERNAL_URL}
+FORGEJO_CADDY_CA_CERT=${FORGEJO_CADDY_CA_CERT}
 FORGEJO_OIDC_CLIENT_ID=unused-in-e2e-stack
 FORGEJO_OIDC_CLIENT_SECRET=unused-in-e2e-stack
 FORGEJO_OIDC_DISCOVERY_URL=http://127.0.0.1:${FORGEJO_TEST_WEB_PORT}/.well-known/openid-configuration
@@ -74,12 +75,17 @@ derive_env() {
   FORGEJO_DATA_DIR="$STATE_DIR/data"
   FORGEJO_EXTERNAL_URL="http://127.0.0.1:${FORGEJO_TEST_WEB_PORT}"
   export FORGEJO_TEST_WEB_PORT FORGEJO_TEST_SSH_PORT FORGEJO_TEST_VOLUME_NAME
-  export FORGEJO_DATA_DIR FORGEJO_EXTERNAL_URL
+  # compose.yaml bind-mounts Caddy's internal CA for OIDC against Pocket ID.
+  # This stack has neither, so mount an empty file - the same state
+  # production's start script falls back to when the CA is missing.
+  FORGEJO_CADDY_CA_CERT="$STATE_DIR/caddy-ca.crt"
+  export FORGEJO_DATA_DIR FORGEJO_EXTERNAL_URL FORGEJO_CADDY_CA_CERT
   export FORGEJO_OIDC_CLIENT_ID="unused-in-e2e-stack"
   export FORGEJO_OIDC_CLIENT_SECRET="unused-in-e2e-stack"
   export FORGEJO_OIDC_DISCOVERY_URL="http://127.0.0.1:${FORGEJO_TEST_WEB_PORT}/.well-known/openid-configuration"
   write_env_file
   mkdir -p "$FORGEJO_DATA_DIR"
+  touch "$FORGEJO_CADDY_CA_CERT"
 }
 
 wait_healthy() {
