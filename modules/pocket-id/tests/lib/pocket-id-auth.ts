@@ -17,9 +17,8 @@ export interface PocketIdAdmin {
   apiKey: string;
 }
 
-// The test Caddy's cert chains to a copy of production's internal CA
-// (see modules/opencloud/tests/e2e/scripts/stack.sh's ensure_test_ca) that this Node
-// process has no reason to have imported into its own trust store — same
+// The test Caddy's cert chains to its own per-worktree CA
+// (tls internal in each suite's scripts/stack.sh), trusted by nothing — same
 // reasoning as playwright.config.ts's ignoreHTTPSErrors, just for the
 // plain Node fetch() calls this admin-API helper makes outside the
 // browser. Only ever talks to this worktree's own isolated test

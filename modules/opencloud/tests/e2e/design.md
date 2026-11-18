@@ -81,8 +81,7 @@ Caddy's own `default_bind {$TAILSCALE_IP} 127.0.0.1` pattern. `APP_URL`
 is set to this Caddy-fronted HTTPS URL from the start, so there is only
 ever _one_ origin, reachable both ways at once; local Playwright runs and
 a human on another tailnet device hit the identical URL. `tls internal`
-mints certs from a copy of production's internal CA (see below), so both
-paths get an already-trusted cert with no extra client-side trust step.
+mints certs from a per-worktree CA the test Caddy owns (see below).
 DNS needs no new configuration: [modules/dnsmasq/darwin.nix](../../../dnsmasq/darwin.nix)'s
 `--address=/.${domain}/$TAILSCALE_IP` is already a wildcard for the whole
 `<hostname>.internal` zone, so it resolves the new per-worktree vhosts
@@ -107,9 +106,14 @@ shared [modules/opencloud/compose.yaml](../../compose.yaml) via an extra `-f`, n
 modifying that file's behavior for production.
 
 Playwright's browser context sets `ignoreHTTPSErrors: true`
-(`playwright.config.ts`) rather than importing the copied CA into a trust
-store, since it only needs the ceremony to succeed, not a
-warning-free UI.
+(`playwright.config.ts`) instead of trusting that CA. Chromium is commonly
+said to refuse WebAuthn on pages with certificate errors, but measured
+against Playwright 1.59's Chromium (both the headless shell and the full
+binary) a `navigator.credentials.create()` with the CDP virtual
+authenticator succeeds on such a page. The alternative,
+`--ignore-certificate-errors-spki-list`, also works, but only with the
+_intermediate_'s SPKI: Chromium matches against the chain the server
+sends, which excludes the root, and Caddy rotates the intermediate.
 
 ## Why a Stable, Fixed-Name Test User With a Disposable Passkey
 
@@ -191,10 +195,20 @@ restart, which drops every production vhost (OpenCloud, Immich, Forgejo,
 Grafana, Pocket ID) for however long that takes. [scripts/stack.sh](scripts/stack.sh)
 instead runs its own `caddy run` process per worktree, entirely separate
 from the production launchd daemon, started and stopped alongside the
-docker containers. It copies (not live-shares) production's internal CA
-root cert+key once per worktree so the resulting certificates are already
-trusted by any client that already trusts that CA, without two Caddy
-processes ever touching the same live PKI storage concurrently.
+docker containers.
+
+Its `tls internal` CA lives in the test Caddy's own storage under
+`.state`, generated on first start (`skip_install_trust` keeps Caddy from
+trying to install it with sudo). An earlier version copied production's
+CA root cert _and private key_ out of root-owned
+`/var/lib/caddy/caddy/pki/` with sudo, so test certs were trusted like
+production's. That required a password on every fresh worktree and put a
+copy of production's signing key in every worktree. The trade-off: a
+browser on another tailnet device now sees a certificate warning for the
+test stack. The automated clients do not need trust: Playwright ignores
+certificate errors (see above), the OpenCloud container already runs
+with `OC_INSECURE=true`, and the Pocket ID container makes no calls to
+the test vhosts.
 
 An SSH-tunnel-only alternative (no new process, no CA copying, browser
 reaches a forwarded `localhost` port) was considered for remote access
@@ -340,10 +354,11 @@ repeatedly (including back-to-back with no gap) rather than just once:
   The test code itself never does this (identity is stable, see "Why a
   Stable, Fixed-Name Test User"), so this only matters if manually
   poking at state while debugging.
-- **The CA-copy step needs `sudo`** once per worktree (to read
-  `/var/lib/caddy/caddy/pki/authorities/local/`, root-owned) — every
-  `stack.sh up` needs this, not just remote access, since it's also how
-  the local Caddy front door gets a trusted cert.
+- **Nothing in the stack needs `sudo` or a human.** Keep it that way:
+  production's PKI and System keychain are out of bounds for this suite.
+- **The test stack's certificate is untrusted** by every browser except
+  the suite's own Playwright context — expect a warning when inspecting
+  it from another tailnet device.
 - **Every worktree's stack is reachable from the tailnet while its
   containers are running** (not opt-in) — this is a deliberate
   simplification once a Caddy front door was needed anyway for the

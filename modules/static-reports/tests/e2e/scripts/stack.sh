@@ -33,8 +33,8 @@ CADDYFILE="$STATE_DIR/test-Caddyfile"
 CADDY_LOG_FILE="$STATE_DIR/test-caddy.log"
 OAUTH2_PROXY_PID_FILE="$STATE_DIR/oauth2-proxy.pid"
 OAUTH2_PROXY_LOG_FILE="$STATE_DIR/oauth2-proxy.log"
-PROD_CA_DIR="/var/lib/caddy/caddy/pki/authorities/local"
-TEST_CA_DIR="$CADDY_DATA_DIR/caddy/pki/authorities/local"
+# Per-worktree CA that the test Caddy's tls internal creates on first start.
+TEST_CA_ROOT="$CADDY_DATA_DIR/caddy/pki/authorities/local/root.crt"
 
 # Files the gate protects; the spec asserts this one is visible and readable
 # after login.
@@ -159,26 +159,15 @@ check_ports_available() {
   done
 }
 
-# Copies (not live-shares) production Caddy's internal CA root cert+key so
-# the test Caddy's tls-internal-issued leaf certs chain to a root already
-# trusted by every client that already trusts production's CA — including
-# the native oauth2-proxy process (Go reads the macOS System keychain).
-ensure_test_ca() {
-  mkdir -p "$TEST_CA_DIR"
-  if [ ! -f "$TEST_CA_DIR/root.crt" ]; then
-    log "copying production's internal CA identity (needs sudo to read /var/lib/caddy)..."
-    sudo cp "$PROD_CA_DIR/root.crt" "$PROD_CA_DIR/root.key" "$TEST_CA_DIR/"
-    sudo chown "$(id -u):$(id -g)" "$TEST_CA_DIR/root.crt" "$TEST_CA_DIR/root.key"
-  fi
-}
-
 start_caddy() {
   stop_caddy
-  ensure_test_ca
 
   cat >"$CADDYFILE" <<EOF
 {
   admin off
+  # tls internal mints a per-worktree CA under CADDY_DATA_DIR; installing it
+  # into the system trust store would prompt for sudo.
+  skip_install_trust
   auto_https disable_redirects
 }
 
@@ -250,15 +239,19 @@ start_oauth2_proxy() {
   stop_oauth2_proxy
   [ -n "${REPORTS_OIDC_CLIENT_SECRET:-}" ] || die "start_oauth2_proxy: missing REPORTS_OIDC_CLIENT_SECRET (run bootstrap first)"
   [ -n "${REPORTS_OIDC_CLIENT_ID:-}" ] || die "start_oauth2_proxy: missing REPORTS_OIDC_CLIENT_ID"
+  [ -f "$TEST_CA_ROOT" ] || die "start_oauth2_proxy: test Caddy has not created its CA root at $TEST_CA_ROOT"
 
   # This Pocket ID deployment has no SMTP configured, so every account's
   # emailVerified is permanently false; oauth2-proxy would otherwise
   # reject every login with "email in id_token isn't verified" (see
   # modules/static-reports/options.nix, commit 23aa8ec).
+  # --provider-ca-file: Go on macOS verifies against the system keychain and
+  # ignores SSL_CERT_FILE, so the per-worktree CA must be named explicitly.
   (
     exec nohup nix develop "$REPO_ROOT#e2e" -c oauth2-proxy \
       --provider=oidc \
       --oidc-issuer-url="${POCKET_ID_APP_URL}" \
+      --provider-ca-file="${TEST_CA_ROOT}" \
       --client-id="${REPORTS_OIDC_CLIENT_ID}" \
       --client-secret="${REPORTS_OIDC_CLIENT_SECRET}" \
       --redirect-url="${REPORTS_URL}/oauth2/callback" \

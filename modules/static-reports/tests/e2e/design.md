@@ -38,7 +38,8 @@ per-worktree one, exactly like the OpenCloud suite — same container
 ([modules/pocket-id/compose.yaml](../../../pocket-id/compose.yaml) + a volume-name override so it never
 mounts the production volume), same dedicated test Caddy fronting both
 pocket-id and the reports vhost on one origin reachable locally and from
-the tailnet, same one-time manual admin-API-key bootstrap per worktree.
+the tailnet, same unattended `STATIC_API_KEY` bootstrap and per-worktree
+test-Caddy CA (both explained in [modules/opencloud/tests/e2e/design.md](../../../opencloud/tests/e2e/design.md)).
 
 ## Why oauth2-proxy, Mirrored From Production
 
@@ -55,9 +56,14 @@ loopback-only, like the production launchd daemon.
 oauth2-proxy needs a _confidential_ client with a generated secret, so the
 bootstrap order differs from the OpenCloud suite: `bootstrap_if_needed`
 creates the client and captures its secret into `.env` **before**
-`start_oauth2_proxy` runs (the proxy can't start without the secret). The
-bootstrap itself needs the admin API key once per worktree, same as the
-OpenCloud suite.
+`start_oauth2_proxy` runs (the proxy can't start without the secret).
+
+oauth2-proxy is the one automated client that must actually _trust_ the
+per-worktree CA, since it validates Pocket ID's issuer over TLS. It runs
+natively on macOS, where Go verifies through the system keychain and
+ignores `SSL_CERT_FILE`, and the keychain cannot be changed without
+sudo or a GUI prompt. `--provider-ca-file` pointing at the test Caddy's
+root is the sudo-free way to trust it.
 
 ## Why Three Tests, Not One
 
@@ -77,11 +83,9 @@ OpenCloud suite.
 - **Never delete the pocket-id test user out-of-band** without also
   wiping `modules/static-reports/tests/e2e/.state/` — same coupling rule as
   [modules/opencloud/tests/e2e/design.md](../../../opencloud/tests/e2e/design.md) (stable identity + fresh passkey per run).
-- **The CA-copy step needs `sudo` once per worktree** (`ensure_test_ca`,
-  reads `/var/lib/caddy/...`), and the native oauth2-proxy process trusts
-  the test Caddy's certs only because the copied root is already in the
-  macOS System keychain (Go reads the system store) — same trust the
-  production proxy relies on.
+- **No step needs `sudo` or a human**, and production's PKI is never
+  read. The cost is a certificate warning when a browser on another
+  tailnet device opens the test stack.
 - **Ports are persisted, not re-picked** — the registered OIDC client's
   callback URL bakes in the reports vhost URL, so re-picking ports would
   desync it; deleting `modules/static-reports/tests/e2e/.env` forces a full re-bootstrap.

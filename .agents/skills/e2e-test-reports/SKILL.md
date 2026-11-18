@@ -67,13 +67,13 @@ Run from anywhere inside the repository (any worktree):
 ## Known Constraints
 
 - Docker must be running.
-- First run in a given worktree does `npm install` (Playwright + its test
-  runner) and one manual browser setup step (admin account + API key);
-  the API key is stored in the worktree's gitignored `.env`.
-- `ensure_test_ca` copies production Caddy's internal CA root once per
-  worktree — that one step needs `sudo` (reads `/var/lib/caddy/...`). The
-  native oauth2-proxy only trusts the test Caddy because that root is
-  already in the macOS System keychain.
+- Runs unattended (no `sudo`, no browser setup, stdin may be closed).
+  First run in a given worktree does `npm install` (Playwright + its test
+  runner); the generated API key is stored in the worktree's gitignored
+  `.env`.
+- The test Caddy signs with its own per-worktree CA; oauth2-proxy trusts
+  it via `--provider-ca-file`, and a browser on another tailnet device
+  will show a certificate warning.
 - Ports are persisted in `.env`, not re-picked (the OIDC client's callback
   URL bakes in the reports vhost URL); deleting `.env` forces a full
   re-bootstrap.

@@ -33,8 +33,6 @@ CADDY_DATA_DIR="$STATE_DIR/test-caddy-data"
 CADDY_PID_FILE="$STATE_DIR/test-caddy.pid"
 CADDYFILE="$STATE_DIR/test-Caddyfile"
 CADDY_LOG_FILE="$STATE_DIR/test-caddy.log"
-PROD_CA_DIR="/var/lib/caddy/caddy/pki/authorities/local"
-TEST_CA_DIR="$CADDY_DATA_DIR/caddy/pki/authorities/local"
 
 log() { echo "[e2e-stack] $*" >&2; }
 die() {
@@ -105,12 +103,12 @@ derive_env() {
   : "${OPENCLOUD_HOST_PORT:=$(find_free_port)}"
   : "${OPENCLOUD_DEBUG_HOST_PORT:=$(find_free_port)}"
   : "${CADDY_POCKET_ID_PORT:=$(find_free_port)}"
+  : "${CADDY_OPENCLOUD_PORT:=$(find_free_port)}"
+  : "${OPENCLOUD_ADMIN_PASSWORD:=$(openssl rand -base64 24)}"
   # Handed to the test Pocket ID as STATIC_API_KEY
   # (fixtures/pocket-id.override.yaml), which authenticates as a synthetic
   # admin, so no human ever creates an admin or pastes a key.
   : "${POCKET_ID_API_KEY:=$(openssl rand -hex 32)}"
-  : "${CADDY_OPENCLOUD_PORT:=$(find_free_port)}"
-  : "${OPENCLOUD_ADMIN_PASSWORD:=$(openssl rand -base64 24)}"
   write_env_file
 
   mkdir -p "$STATE_DIR/pocket-id/data" \
@@ -172,24 +170,10 @@ check_ports_available() {
   done
 }
 
-# Copies (not live-shares) production Caddy's internal CA root cert+key so
-# the test Caddy's tls-internal-issued leaf certs chain to a root already
-# trusted by every client that already trusts production's CA. Needs sudo
-# once per worktree (root-owned source directory).
-ensure_test_ca() {
-  mkdir -p "$TEST_CA_DIR"
-  if [ ! -f "$TEST_CA_DIR/root.crt" ]; then
-    log "copying production's internal CA identity (needs sudo to read /var/lib/caddy)..."
-    sudo cp "$PROD_CA_DIR/root.crt" "$PROD_CA_DIR/root.key" "$TEST_CA_DIR/"
-    sudo chown "$(id -u):$(id -g)" "$TEST_CA_DIR/root.crt" "$TEST_CA_DIR/root.key"
-  fi
-}
-
 # Starts the per-worktree Caddy front door for both services, bound to
 # both loopback (for local Playwright runs) and the Tailscale IP (so the
 # same origin is reachable from other tailnet devices for manual
-# verification or to redo the bootstrap ceremony away from a screen-share
-# session) — see modules/opencloud/tests/e2e/design.md on why this replaced a
+# verification, behind a certificate warning) — see modules/opencloud/tests/e2e/design.md on why this replaced a
 # localhost-only design (pocket-id's WebAuthn RPOrigins is fixed to
 # POCKET_ID_APP_URL at startup and must match the browser's origin
 # exactly, so "local" and "remote" access must be the *same* origin, not
@@ -201,11 +185,13 @@ start_caddy() {
   # since nothing stopped whatever was already running before starting a
   # new one.
   stop_caddy
-  ensure_test_ca
 
   cat >"$CADDYFILE" <<EOF
 {
   admin off
+  # tls internal mints a per-worktree CA under CADDY_DATA_DIR; installing it
+  # into the system trust store would prompt for sudo.
+  skip_install_trust
   # Only the explicit HTTPS ports below are needed; without this, Caddy's
   # auto_https also tries to bind :80 for HTTP->HTTPS redirects, which
   # fails with permission denied for a non-root process.

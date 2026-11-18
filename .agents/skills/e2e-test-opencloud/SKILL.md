@@ -26,33 +26,13 @@ Run from anywhere inside the repository (any worktree):
 .agents/skills/e2e-test-opencloud/scripts/run.sh
 ```
 
+It runs unattended: no `sudo`, no browser setup, no pasted key, so it
+works with stdin closed.
+
 While running, both services are also reachable over HTTPS from other
-devices on the tailnet (same URLs the script prints) — useful for manual
-visual verification, or for completing the one-time passkey bootstrap
-below from a different device.
-
-## First Run In A New Worktree
-
-Pocket ID has no way to create its first admin account or register a
-passkey without a real browser and authenticator — this is a Pocket ID
-constraint, not something this suite works around (matches production;
-see [modules/pocket-id/design.md](../../../modules/pocket-id/design.md)). The first `run.sh` in a given
-worktree will print a URL and pause, asking you to:
-
-1. Open the printed `/setup` URL (locally, or from any other tailnet
-   device — same URL either way) and create the admin account + register
-   a passkey with a real authenticator.
-2. Create an API key under Settings → Admin → API Keys and paste it back
-   into the terminal.
-
-Everything else (OIDC client, user group, role claim) is then automated.
-This only happens once per worktree — the isolated stack's data
-directory (`modules/opencloud/tests/e2e/.state/`, gitignored) persists across runs even
-though the containers themselves stop between runs.
-
-The first run also needs `sudo` once, to copy production's internal CA
-root cert+key so the test Caddy's certificates are already trusted (see
-[modules/opencloud/tests/e2e/design.md](../../../modules/opencloud/tests/e2e/design.md)).
+devices on the tailnet (same URLs the script prints) for manual visual
+verification. Expect a certificate warning there: the test Caddy signs
+with its own per-worktree CA, which nothing outside the suite trusts.
 
 ## What It Does
 
@@ -98,7 +78,4 @@ root cert+key so the test Caddy's certificates are already trusted (see
   [modules/opencloud/tests/e2e/design.md](../../../modules/opencloud/tests/e2e/design.md)'s debugging note). The test code itself never
   does this — identity is stable, not disposable — so this only matters
   if manually poking at pocket-id's state while debugging.
-- `sudo` is needed once per worktree, to copy production's internal CA
-  root cert+key (read-only reuse of its identity, never a live-shared
-  process — see [modules/opencloud/tests/e2e/design.md](../../../modules/opencloud/tests/e2e/design.md)).
 - Docker/OrbStack must be running.

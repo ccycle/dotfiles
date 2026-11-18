@@ -14,9 +14,9 @@ export default defineConfig({
   outputDir: "test-results/artifacts",
   use: {
     baseURL: process.env.OPENCLOUD_URL ?? "https://localhost:9200",
-    // The test Caddy's certs chain to a copy of production's internal CA
-    // (see stack.sh's ensure_test_ca), which this Node/Playwright process
-    // has no reason to have imported into its own trust store.
+    // The test Caddy's certs chain to its own per-worktree CA, trusted by
+    // nothing. Measured: Chromium (headless shell and full) still completes
+    // a WebAuthn ceremony with this alone, so no trust-store import is needed.
     ignoreHTTPSErrors: true,
     // Always on, not 'retain-on-failure': matches modules/forgejo/tests/e2e's
     // config for the same reason — this suite's own OIDC/consent flow
