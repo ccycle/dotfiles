@@ -147,14 +147,16 @@ if command -v tart >/dev/null 2>&1; then
   tart delete "$vm_name" >/dev/null 2>&1 || true
 fi
 
-# Tear down the worktree's isolated e2e test stack (.agents/skills/
-# e2e-test-opencloud), if any, so its containers/network don't linger
-# after the worktree directory disappears. The stack's own data lives
-# inside the worktree checkout (modules/opencloud/tests/e2e/.state/) and is removed along
-# with it; only the running containers/process need explicit teardown.
-if [ -x "$worktree_repo_root/modules/opencloud/tests/e2e/scripts/stack.sh" ]; then
-  "$worktree_repo_root/modules/opencloud/tests/e2e/scripts/stack.sh" teardown >/dev/null 2>&1 || true
-fi
+# Tear down every co-located e2e test stack (modules/*/tests/*/scripts/
+# stack.sh), so containers, networks and named volumes don't linger after
+# the worktree directory disappears. Suites that keep a one-time passkey
+# bootstrap (OpenCloud, reports) only `down` after each run, so their
+# volumes survive until this point. Bind-mounted data lives under each
+# suite's .state/ inside the checkout and is removed along with it.
+for stack in "$worktree_repo_root"/modules/*/tests/*/scripts/stack.sh; do
+  [ -x "$stack" ] || continue
+  "$stack" teardown >/dev/null 2>&1 || true
+done
 
 # Remove this branch's published e2e reports (modules/static-reports),
 # keyed the same way the e2e run.sh scripts publish them: branch name with
