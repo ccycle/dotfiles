@@ -130,7 +130,7 @@ derive_env() {
 
   export POCKET_ID_APP_URL="https://${POCKET_ID_VHOST}:${CADDY_POCKET_ID_PORT}"
   export POCKET_ID_DATA_DIR="$STATE_DIR/pocket-id/data"
-  export POCKET_ID_ENCRYPTION_KEY_FILE="$ENCRYPTION_KEY_FILE"
+  export POCKET_ID_KEY_FILE="$ENCRYPTION_KEY_FILE"
   export POCKET_ID_VOLUME_NAME="${PROJECT_NAME}-pocket-id-data"
 
   export OPENCLOUD_DATA_DIR="$STATE_DIR/opencloud/data"
