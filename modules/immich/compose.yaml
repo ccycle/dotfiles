@@ -31,9 +31,14 @@ services:
       - ${IMMICH_PHOTO_DIR}:/mnt/media/photo
       - ${IMMICH_OIDC_CONFIG_HOST_PATH}:/run/immich/oidc-config.yaml:ro
       - ${IMMICH_OIDC_CA_HOST_PATH}:/run/immich/ca.crt:ro
+    # The server exits on its first failed Postgres connection and has no
+    # restart policy, so wait for the image's own healthcheck instead of
+    # mere container start.
     depends_on:
-      - redis
-      - database
+      redis:
+        condition: service_started
+      database:
+        condition: service_healthy
     extra_hosts:
       - "${IMMICH_HOST_DOMAIN}:host-gateway"
     # No restart policy: see modules/forgejo/compose.yaml for why services
