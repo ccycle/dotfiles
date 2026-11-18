@@ -93,7 +93,7 @@ OPENCLOUD_DEBUG_HOST_PORT=${OPENCLOUD_DEBUG_HOST_PORT}
 CADDY_POCKET_ID_PORT=${CADDY_POCKET_ID_PORT}
 CADDY_OPENCLOUD_PORT=${CADDY_OPENCLOUD_PORT}
 OPENCLOUD_ADMIN_PASSWORD=${OPENCLOUD_ADMIN_PASSWORD}
-POCKET_ID_API_KEY=${POCKET_ID_API_KEY:-}
+POCKET_ID_API_KEY=${POCKET_ID_API_KEY}
 OPENCLOUD_GROUP_ID=${OPENCLOUD_GROUP_ID:-}
 OPENCLOUD_OIDC_CLIENT_ID=${OPENCLOUD_OIDC_CLIENT_ID:-}
 EOF
@@ -105,6 +105,10 @@ derive_env() {
   : "${OPENCLOUD_HOST_PORT:=$(find_free_port)}"
   : "${OPENCLOUD_DEBUG_HOST_PORT:=$(find_free_port)}"
   : "${CADDY_POCKET_ID_PORT:=$(find_free_port)}"
+  # Handed to the test Pocket ID as STATIC_API_KEY
+  # (fixtures/pocket-id.override.yaml), which authenticates as a synthetic
+  # admin, so no human ever creates an admin or pastes a key.
+  : "${POCKET_ID_API_KEY:=$(openssl rand -hex 32)}"
   : "${CADDY_OPENCLOUD_PORT:=$(find_free_port)}"
   : "${OPENCLOUD_ADMIN_PASSWORD:=$(openssl rand -base64 24)}"
   write_env_file
@@ -271,22 +275,10 @@ pocket_id_api() {
 
 bootstrap_if_needed() {
   if [ -n "${POCKET_ID_API_KEY:-}" ] && [ -n "${OPENCLOUD_GROUP_ID:-}" ] && [ -n "${OPENCLOUD_OIDC_CLIENT_ID:-}" ]; then
-    log "already bootstrapped for this worktree, skipping manual setup"
+    log "already bootstrapped for this worktree"
     return 0
   fi
-
-  echo "" >&2
-  echo "=== One-time Pocket ID bootstrap for worktree '$WORKTREE_ID' ===" >&2
-  echo "1. Open in a browser (locally, or from any other tailnet device):" >&2
-  echo "   ${POCKET_ID_APP_URL}/setup" >&2
-  echo "   Create the admin account and register a passkey (real Touch ID" >&2
-  echo "   / security key required — this cannot be automated)." >&2
-  echo "2. Go to Settings -> Admin -> API Keys, create a key, copy it." >&2
-  echo -n "Paste the API key here: " >&2
-  read -r POCKET_ID_API_KEY
-  [ -n "$POCKET_ID_API_KEY" ] || die "no API key entered"
-  export POCKET_ID_API_KEY
-  write_env_file
+  [ -n "${POCKET_ID_API_KEY:-}" ] || die "POCKET_ID_API_KEY missing from $ENV_FILE (derive_env generates it)"
 
   if [ -z "${OPENCLOUD_GROUP_ID:-}" ]; then
     log "creating opencloud_users group..."

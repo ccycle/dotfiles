@@ -90,7 +90,7 @@ CADDY_POCKET_ID_PORT=${CADDY_POCKET_ID_PORT}
 CADDY_REPORTS_PORT=${CADDY_REPORTS_PORT}
 OAUTH2_PROXY_PORT=${OAUTH2_PROXY_PORT}
 REPORTS_COOKIE_SECRET=${REPORTS_COOKIE_SECRET}
-POCKET_ID_API_KEY=${POCKET_ID_API_KEY:-}
+POCKET_ID_API_KEY=${POCKET_ID_API_KEY}
 REPORTS_GROUP_ID=${REPORTS_GROUP_ID:-}
 REPORTS_OIDC_CLIENT_ID=${REPORTS_OIDC_CLIENT_ID:-}
 REPORTS_OIDC_CLIENT_SECRET=${REPORTS_OIDC_CLIENT_SECRET:-}
@@ -111,6 +111,10 @@ derive_env() {
   # fails its 16/24/32-byte check. `tr` converts the alphabet without
   # changing byte length. Verified against oauth2-proxy v7.15.2.
   : "${REPORTS_COOKIE_SECRET:=$(openssl rand -base64 32 | tr '+/' '-_')}"
+  # Handed to the test Pocket ID as STATIC_API_KEY
+  # (fixtures/pocket-id.override.yaml), which authenticates as a synthetic
+  # admin, so no human ever creates an admin or pastes a key.
+  : "${POCKET_ID_API_KEY:=$(openssl rand -hex 32)}"
 
   mkdir -p "$STATE_DIR/pocket-id/data" "$STATE_DIR/reports"
 
@@ -314,22 +318,10 @@ pocket_id_api() {
 bootstrap_if_needed() {
   if [ -n "${POCKET_ID_API_KEY:-}" ] && [ -n "${REPORTS_GROUP_ID:-}" ] &&
     [ -n "${REPORTS_OIDC_CLIENT_ID:-}" ] && [ -n "${REPORTS_OIDC_CLIENT_SECRET:-}" ]; then
-    log "already bootstrapped for this worktree, skipping manual setup"
+    log "already bootstrapped for this worktree"
     return 0
   fi
-
-  echo "" >&2
-  echo "=== One-time Pocket ID bootstrap for worktree '$WORKTREE_ID' ===" >&2
-  echo "1. Open in a browser (locally, or from any other tailnet device):" >&2
-  echo "   ${POCKET_ID_APP_URL}/setup" >&2
-  echo "   Create the admin account and register a passkey (real Touch ID" >&2
-  echo "   / security key required — this cannot be automated)." >&2
-  echo "2. Go to Settings -> Admin -> API Keys, create a key, copy it." >&2
-  echo -n "Paste the API key here: " >&2
-  read -r POCKET_ID_API_KEY
-  [ -n "$POCKET_ID_API_KEY" ] || die "no API key entered"
-  export POCKET_ID_API_KEY
-  write_env_file
+  [ -n "${POCKET_ID_API_KEY:-}" ] || die "POCKET_ID_API_KEY missing from $ENV_FILE (derive_env generates it)"
 
   if [ -z "${REPORTS_GROUP_ID:-}" ]; then
     log "creating reports_users group..."

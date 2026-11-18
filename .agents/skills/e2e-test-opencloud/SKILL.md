@@ -60,7 +60,9 @@ root cert+key so the test Caddy's certificates are already trusted (see
    docker-compose stack (project name derived from the worktree's
    directory name, matching `.agents/skills/vm-verify`'s VM-naming
    convention), and starts a dedicated Caddy process fronting both.
-2. Bootstraps Pocket ID on first run for this worktree (see above).
+2. On a worktree's first run, bootstraps Pocket ID through its admin API
+   with a generated per-worktree `STATIC_API_KEY` (stored in the
+   gitignored `.env`): user group, role claim, OIDC client.
 3. Finds-or-creates a stable `e2e-test-runner` user via Pocket ID's admin
    API, registers a fresh passkey for it via a CDP virtual authenticator,
    confirms login through OpenCloud's OIDC redirect succeeds, uploads a

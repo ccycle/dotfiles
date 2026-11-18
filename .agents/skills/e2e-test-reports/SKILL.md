@@ -35,10 +35,10 @@ Run from anywhere inside the repository (any worktree):
 1. Brings up an isolated Pocket ID + test Caddy + native oauth2-proxy
    stack, waiting for pocket-id's `/healthz` and for the reports gate to
    answer (a redirect counts — that's the gate doing its job).
-2. On a worktree's first run, prompts once for a Pocket ID admin API key
-   (browser setup at the printed `.../setup` URL), then registers the
-   confidential `reports-e2e` OIDC client and captures its generated
-   secret — oauth2-proxy can't start without it.
+2. On a worktree's first run, bootstraps Pocket ID through its admin API
+   with a generated per-worktree `STATIC_API_KEY` (no human step):
+   registers the confidential `reports-e2e` OIDC client and captures its
+   generated secret — oauth2-proxy can't start without it.
 3. Proves the gate with three Playwright cases:
    - anonymous visit → redirected to pocket-id login;
    - provisioned passkey user → consent → browse listing + file read;
@@ -51,8 +51,8 @@ Run from anywhere inside the repository (any worktree):
    `https://reports.<hostname>.internal/<branch-slug>/reports/` from any
    device on the tailnet after a Pocket ID passkey login. Best-effort: a
    worktree on a host without that module enabled doesn't fail over it.
-5. Tears the stack (containers + volumes + data dirs) down completely,
-   so every run starts from a clean instance.
+5. Stops the containers, test Caddy, and oauth2-proxy (data persists,
+   so later runs reuse the bootstrapped client).
 
 ## When to Use
 
@@ -77,5 +77,3 @@ Run from anywhere inside the repository (any worktree):
 - Ports are persisted in `.env`, not re-picked (the OIDC client's callback
   URL bakes in the reports vhost URL); deleting `.env` forces a full
   re-bootstrap.
-- A real passkey (Touch ID / security key) is required for the login
-  ceremony — it cannot be automated.

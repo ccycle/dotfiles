@@ -154,18 +154,33 @@ session that can register a passkey" is a one-time login-code link
 `user_controller.go` and its Playwright fixtures
 (`account-settings.spec.ts`, `one-time-access-token.spec.ts`).
 
-## Why the Pocket ID Admin Bootstrap Stays Manual (Once Per Worktree)
+## Why the Pocket ID Admin Bootstrap Uses a Static API Key
 
-Pocket ID has no API path to create an admin account or register its
-first passkey — by design, matching production
-([modules/pocket-id/design.md](../../../pocket-id/design.md)). [scripts/stack.sh](scripts/stack.sh)'s `bootstrap_if_needed`
-prompts once per worktree for a browser-created admin API key, then
-automates everything downstream via that key (group creation, custom
-claim, OIDC client registration, allowed-groups). Because Pocket ID's
-data directory is a host bind mount that survives `docker compose down`
-(only `teardown`/`down -v` removes it), this manual step never repeats
-for the same worktree — `up` detects a persisted API key in `modules/opencloud/tests/e2e/
-.env` and skips straight to starting containers.
+Pocket ID has no API path to create the _first_ admin account with a
+passkey, and production deliberately keeps that a human ceremony
+([modules/pocket-id/design.md](../../../pocket-id/design.md)). An earlier version of this suite therefore
+paused once per worktree for a human to do `/setup` with a real
+authenticator and paste an admin API key, which made the suite
+impossible to run unattended.
+
+The test instance instead gets Pocket ID's `STATIC_API_KEY`: a random,
+per-worktree value generated into the gitignored `.env` and passed only
+through the e2e override. Pocket ID v2.11.0 matches it exactly and
+authenticates the request as a synthetic admin user
+(`internal/apikey/service.go`), so no human admin ever exists and every
+bootstrap step (group, custom claim, OIDC client) runs through the API.
+That synthetic user does not count toward `/setup` completion
+(`usersignup/service.go` excludes its fixed ID), but the first API-created
+test user closes `/setup`. Until then, `/setup` is briefly open on the
+tailnet-reachable test origin; this is accepted because the instance is
+test-only and holds no real identity.
+
+Not chosen: the `one-time-access-token` CLI subcommand (via
+`docker compose exec`) only yields a login link for an already-existing
+user, so it would still need a separate admin-creation and key-exchange
+step, and `import` of a generated fixture ZIP couples the suite to Pocket
+ID's export format. One env var is the shorter path. Production never sets
+`STATIC_API_KEY`, so this does not weaken production's posture.
 
 ## Why a Separate Test-Only Caddy Process, Not Production Caddy
 
