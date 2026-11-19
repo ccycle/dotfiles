@@ -20,6 +20,8 @@ let
     );
 in
 {
+  imports = [ ./html-report/home.nix ];
+
   # Pi reads ~/.agents/skills; Claude Code reads ~/.claude/skills; Antigravity
   # CLI (agy) discovers global customizations under ~/.gemini/config.
   home.file =
