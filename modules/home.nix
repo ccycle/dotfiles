@@ -53,6 +53,7 @@
     ./sops/home.nix
     ./ssh/home.nix
     ./sync-home-files/home.nix
+    ./t3code/home.nix
     ./task-check/home.nix
     ./terraform/home.nix
     ./tmux/home.nix
