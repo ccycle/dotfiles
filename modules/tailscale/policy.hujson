@@ -10,6 +10,12 @@
     "tag:client": ["autogroup:admin"],
   },
 
+  // Single devices a rule must address more narrowly than their tag.
+  // Tailscale IPs are stable for a node's lifetime; re-check if the NAS is re-registered.
+  "hosts": {
+    "diskstation": "100.104.190.9",
+  },
+
   // --- ACLs: default-deny, explicit grants ---
   "acls": [
     // Client devices (the owner's own) may reach any port on a
@@ -31,6 +37,15 @@
       "action": "accept",
       "src":    ["tag:server"],
       "dst":    ["tag:server:80,443,53"],
+    },
+
+    // Zotero file sync on mac-mini-m4-pro (itself tag:server) uploads
+    // attachments to the DiskStation WebDAV server (DSM WebDAV HTTPS port).
+    // Without this, server→server traffic is limited to 80/443/53 above.
+    {
+      "action": "accept",
+      "src":    ["tag:server"],
+      "dst":    ["diskstation:5006"],
     },
   ],
 
