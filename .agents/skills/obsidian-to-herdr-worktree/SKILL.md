@@ -27,8 +27,8 @@ worktree whose branch was never started or never merged still asks per-card
 before moving it to `Done`, `Canceled`, or leaving it in place — nothing else
 is ever written to the vault.
 
-This is a narrower, opinionated sibling of the generic `/worktree` skill:
-`/worktree` dispatches implementation work; this skill dispatches plan-only
+This is a narrower, opinionated sibling of the generic `/herdr-worktree` skill:
+`/herdr-worktree` dispatches implementation work; this skill dispatches plan-only
 research, sourced from the vault.
 
 Task(s): $ARGUMENTS

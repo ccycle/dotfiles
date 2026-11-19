@@ -8,7 +8,7 @@ allowed-tools: Bash, Write, Read
 # Delegate to Agent
 
 Hand the current task over to a fresh opencode agent that continues working in
-the **same workspace and branch** as you. Unlike `/worktree` (new branch) or
+the **same workspace and branch** as you. Unlike `/herdr-worktree` (new branch) or
 `/coordinator` (multiple agents), this is a one-to-one in-place handoff.
 
 The handoff is made durable and human-readable in two artifacts:

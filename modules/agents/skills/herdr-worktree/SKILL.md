@@ -1,6 +1,6 @@
 ---
-name: worktree
-description: Launch one or more tasks in new git worktrees using herdr.
+name: herdr-worktree
+description: Launch one or more tasks in new git worktrees using herdr, each handed to a fresh agent of a selectable kind (`--kind`) and model (`--model`).
 disable-model-invocation: true
 allowed-tools: Bash, Write
 ---
@@ -83,6 +83,17 @@ Then use the /merge-and-cleanup skill to open a Forgejo PR for the branch.
 Only instruct worktree agent to `/merge-and-cleanup` if explicitly requested by
 user in task.
 
+**`--kind <kind>`**: Agent kind passed to `herdr agent start --kind` (any value
+`herdr agent start --help` lists, e.g. `claude`, `opencode`, `pi`, `codex`).
+Omitted → `claude`. Applies to every task in the invocation.
+
+**`--model <id>`**: Model for the spawned agent, forwarded after `--` as
+`--model <id>` (claude, opencode, and pi all accept that flag; for other kinds,
+check `<kind> --help` and use its equivalent). Omitted → pass nothing and let
+the agent CLI use its own default. Never invent a model ID.
+
+Strip these flags from `$ARGUMENTS` before treating the rest as tasks.
+
 ## Workflow
 
 Write ALL temp files first, THEN spawn all worktree agents.
@@ -119,8 +130,11 @@ For each task, after writing the prompt file:
 result=$(herdr worktree create --branch <worktree-name> --no-focus --json)
 pane_id=$(echo "$result" | jq -r '.result.root_pane.pane_id')
 
-# Start claude agent in the new workspace's pane
-herdr agent start <worktree-name> --kind claude --pane "$pane_id"
+# Start the agent in the new workspace's pane.
+# <kind> from --kind (default claude). Append `-- --model <id>` only when
+# --model was given. opencode runs unattended, so it also needs `--auto`:
+#   herdr agent start <name> --kind opencode --pane "$pane_id" -- --auto [--model <id>]
+herdr agent start <worktree-name> --kind <kind> --pane "$pane_id" [-- --model <id>]
 
 # Send prompt from file
 herdr agent prompt <worktree-name> "$(cat /tmp/tmp.abc123.md)" --timeout 600000
