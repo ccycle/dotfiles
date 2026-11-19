@@ -40,7 +40,8 @@ reach. Structure it to minimize the user's effort and the room for error:
     nothing more.
 - If it is a shell command the user should run in this session, suggest
   they prefix it with `!` so the output lands directly back in the
-  conversation instead of being manually copy/pasted.
+  conversation instead of being manually copy/pasted. Inside Herdr, use
+  [herdr-tab-handoff](../herdr-tab-handoff/SKILL.md) instead.
 - Do the interpretation yourself once the raw result comes back — never
   ask the user to summarize or judge it on your behalf.
 
