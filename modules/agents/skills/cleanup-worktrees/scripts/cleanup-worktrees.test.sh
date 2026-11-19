@@ -44,7 +44,8 @@ git init -q -b main "$repo"
 git -C "$repo" commit -q --allow-empty -m init
 for b in cleanup-test-single cleanup-test-merged; do
   git -C "$repo" worktree add -q -b "$b" "$tmp/$b"
-  git -C "$tmp/$b" commit -q --allow-empty -m "work on $b"
+  mkdir -p "$tmp/$b/sub" && touch "$tmp/$b/sub/$b"
+  git -C "$tmp/$b" add sub && git -C "$tmp/$b" commit -q -m "work on $b"
   git -C "$repo" merge -q --ff-only "$b"
 done
 # cleanup-merged-worktrees.sh resolves the repo from its own location.
@@ -63,11 +64,13 @@ has() { grep -qF -- "$2" <<<"$1"; } # has <haystack> <needle>
 lacks() { ! has "$@"; }
 no_herdr_remove() { ! grep -q 'worktree remove' "$HERDR_LOG" 2>/dev/null; }
 
-# cleanup-worktree.sh: removes the current worktree.
+# cleanup-worktree.sh: removes the current worktree, even when run from a
+# subdirectory of it.
 list_json cleanup-test-single >"$HERDR_JSON"
-out=$(cd "$tmp/cleanup-test-single" && "$here/cleanup-worktree.sh" --dry-run 2>&1)
+out=$(cd "$tmp/cleanup-test-single/sub" && "$here/cleanup-worktree.sh" --dry-run 2>&1)
+check "single finds worktree from a subdirectory" has "$out" "SAFE (started, merged to main, clean)"
 check "single dry-run shows no 'null' workspace" lacks "$out" null
-out=$(cd "$tmp/cleanup-test-single" && "$here/cleanup-worktree.sh" --force 2>&1)
+out=$(cd "$tmp/cleanup-test-single/sub" && "$here/cleanup-worktree.sh" --force 2>&1)
 check "single --force succeeds" has "$out" "Removed worktree for cleanup-test-single"
 check "single worktree removed" test ! -e "$tmp/cleanup-test-single"
 check "single did not call herdr remove" no_herdr_remove

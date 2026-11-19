@@ -49,7 +49,12 @@ command -v jq >/dev/null 2>&1 || {
   exit 1
 }
 
-cwd=$(pwd)
+# Use the worktree root, not $PWD, so running from a subdirectory still
+# matches herdr's worktree path.
+cwd=$(git rev-parse --show-toplevel 2>/dev/null) || {
+  printf 'Not inside a git worktree.\n' >&2
+  exit 1
+}
 
 # Locate the herdr worktree that contains the current directory
 worktree_info=$(herdr worktree list --json 2>/dev/null | jq -r --arg path "$cwd" '
@@ -75,10 +80,7 @@ if [ "$is_linked" != "true" ]; then
   exit 1
 fi
 
-# Locate the repository root from the worktree itself
-repo_root=$(git -C "$(dirname -- "$0")" rev-parse --show-toplevel 2>/dev/null || true)
-# Prefer the actual repo root of the current worktree
-worktree_repo_root=$(git -C "$cwd" rev-parse --show-toplevel 2>/dev/null || echo "$repo_root")
+worktree_repo_root=$cwd
 
 # Return 0 if the branch has ever been worked on (reflog contains
 # commit/rebase/merge/reset entries), 1 if never started (only the
