@@ -127,7 +127,6 @@
       "WebSearch"
     ],
     "deny": [
-      "Bash(rm -rf *)",
       "Bash(sudo rm *)",
       "Bash(shred *)",
       "Bash(dd *)",
@@ -162,6 +161,7 @@
       "Bash(halt *)",
       "Bash(rbw get *)",
       "Bash(reboot *)",
+      "Bash(rm -rf *)",
       "Bash(shutdown *)",
       "Bash(sops *)",
       "Bash(sudo reboot *)",
