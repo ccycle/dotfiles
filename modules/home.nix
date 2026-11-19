@@ -16,6 +16,7 @@
     ./dotfiles/home.nix
     ./direnv/home.nix
     ./docker/home.nix
+    ./dsh/home.nix
     ./emacs/home.nix
     ./fresh/home.nix
     ./forgejo/home.nix
