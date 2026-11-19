@@ -1,7 +1,20 @@
-{ config, ... }:
+{ config, osConfig, ... }:
+let
+  sr = osConfig.services.staticReports;
+in
 {
-  # Local destination for hosts without services.staticReports (the private
-  # profile shared with the work PC). publish.sh prefers STATIC_REPORTS_DIR
-  # when that host module exports it.
-  home.sessionVariables.HTML_REPORTS_DIR = "${config.home.homeDirectory}/html-reports";
+  # A file instead of env vars: it takes effect right after darwin-rebuild
+  # for every process, with no shell restart, and is inspectable with cat.
+  # Hosts without static-reports (the private profile shared with the work
+  # PC) save locally and get no url line.
+  xdg.configFile."html-report/destination".text =
+    if sr.enable then
+      ''
+        dir=${sr.dataDir}/agent-reports
+        url=${sr.url}/agent-reports
+      ''
+    else
+      ''
+        dir=${config.home.homeDirectory}/html-reports
+      '';
 }

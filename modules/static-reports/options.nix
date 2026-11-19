@@ -31,6 +31,13 @@ in
         would otherwise let anyone enumerate every subdirectory.
       '';
     };
+
+    url = mkOption {
+      type = types.str;
+      readOnly = true;
+      default = reportsUrl;
+      description = "Public base URL of dataDir, for consumers such as the html-report skill.";
+    };
   };
 
   config = mkIf cfg.enable {
@@ -153,13 +160,6 @@ in
     # User-writable, not root-owned: populated by plain user scripts
     # (e.g. .agents/skills/e2e-test-opencloud/scripts/run.sh) with no
     # launchd/root daemon of its own — Caddy only reads from it.
-    # Lets repo-agnostic tooling (modules/agents/skills/html-report) find the
-    # publish target without hardcoding this host's path or domain.
-    environment.variables = {
-      STATIC_REPORTS_DIR = cfg.dataDir;
-      STATIC_REPORTS_URL = reportsUrl;
-    };
-
     system.activationScripts.postActivation.text = ''
       mkdir -p ${cfg.dataDir}
       chown ${config.system.primaryUser} ${cfg.dataDir}

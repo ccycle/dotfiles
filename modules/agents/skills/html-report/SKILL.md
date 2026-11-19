@@ -41,7 +41,7 @@ Write Japanese pages in the document register required by the global Japanese ou
 
 Write the file to the session scratchpad (or a temp dir), then pick the first destination that applies:
 
-1. `STATIC_REPORTS_DIR` or `HTML_REPORTS_DIR` is set: run `scripts/publish.sh <file.html> [<project-slug>]` (path relative to this skill). It prints the URL or absolute path to put in the chat. It fails loudly if neither variable is set; do not work around that by guessing a path.
+1. `~/.config/html-report/destination` exists: run `scripts/publish.sh <file.html> [<project-slug>]` (path relative to this skill). It prints the URL or absolute path to put in the chat. It fails loudly if the file is missing or malformed; do not work around that by guessing a path.
 2. The Artifact tool is available: publish the file as an Artifact and use its link.
 3. Otherwise: give the absolute file path.
 
