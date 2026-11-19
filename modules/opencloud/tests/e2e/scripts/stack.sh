@@ -7,9 +7,8 @@
 # Usage:
 #   stack.sh up        Start (bootstrapping on first run for this worktree)
 #   stack.sh down       Stop containers + test Caddy, keep data
-#   stack.sh teardown  Stop everything AND drop the docker network/volumes
-#                        (data itself lives under modules/opencloud/tests/e2e/.state, which is
-#                        removed by deleting the worktree, not by this)
+#   stack.sh teardown  Stop everything AND drop the docker network/volumes,
+#                        .state and .env (a full reset: the next `up` re-bootstraps)
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -343,6 +342,10 @@ cmd_teardown() {
   derive_env
   stop_caddy
   compose down -v --remove-orphans 2>/dev/null || true
+  # .env records IDs of objects inside the pocket-id-data volume just
+  # dropped, and .state/opencloud holds data tied to that identity, so both
+  # go too; otherwise the next `up` would trust a client that no longer exists.
+  rm -rf "$STATE_DIR" "$ENV_FILE"
 }
 
 case "${1:-}" in

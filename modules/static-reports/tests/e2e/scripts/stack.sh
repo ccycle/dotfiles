@@ -11,7 +11,8 @@
 # Usage:
 #   stack.sh up        Start (bootstrapping on first run for this worktree)
 #   stack.sh down       Stop containers + test Caddy + oauth2-proxy, keep data
-#   stack.sh teardown  Stop everything AND drop the docker network/volumes
+#   stack.sh teardown  Stop everything AND drop the docker network/volumes,
+#                        .state and .env (a full reset: the next `up` re-bootstraps)
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -378,6 +379,9 @@ cmd_teardown() {
   stop_oauth2_proxy
   stop_caddy
   compose down -v --remove-orphans 2>/dev/null || true
+  # .env records IDs of objects inside the pocket-id-data volume just
+  # dropped; otherwise the next `up` would trust a client that no longer exists.
+  rm -rf "$STATE_DIR" "$ENV_FILE"
 }
 
 case "${1:-}" in
