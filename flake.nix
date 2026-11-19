@@ -31,7 +31,7 @@
     gcx.flake = false;
     gwq.url = "github:d-kuro/gwq";
     gwq.flake = false;
-    herdr.url = "github:ogulcancelik/herdr";
+    herdr.url = "github:herdrdev/herdr-nix";
     herdr.inputs.nixpkgs.follows = "nixpkgs";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
     home-manager.url = "github:nix-community/home-manager/release-26.05";
