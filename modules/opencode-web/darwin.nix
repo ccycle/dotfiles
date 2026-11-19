@@ -129,6 +129,9 @@ in
         StandardErrorPath = "/var/tmp/zotero-keepalive.log";
       };
       script = ''
+        # Secrets go in as file paths, not values, so they never appear in argv
+        # (`ps`). oauth2-proxy reads these files verbatim with no trimming, so
+        # the sops values must not end in a newline.
         exec /usr/bin/open -W -j -g "${pkgs.brewCasks.zotero}/Applications/Zotero.app"
       '';
     };
@@ -176,15 +179,12 @@ in
         StandardErrorPath = "/var/log/opencode-web-oauth2-proxy.log";
       };
       script = ''
-        export OIDC_CLIENT_SECRET=$(cat ${config.sops.secrets.opencode_web_oidc_client_secret.path})
-        export OAUTH_COOKIE_SECRET=$(cat ${config.sops.secrets.opencode_web_oauth_cookie_secret.path})
-
         exec ${pkgs.oauth2-proxy}/bin/oauth2-proxy \
           --provider=oidc \
           --oidc-issuer-url=https://auth.${domain} \
           --provider-ca-file=/var/lib/caddy/caddy/pki/authorities/${config.networking.hostName}/root.crt \
           --client-id=opencode-web \
-          --client-secret="$OIDC_CLIENT_SECRET" \
+          --client-secret-file=${config.sops.secrets.opencode_web_oidc_client_secret.path} \
           --redirect-url=${siteUrl}/oauth2/callback \
           --http-address=127.0.0.1:${toString oauth2ProxyPort} \
           --upstream=static://202 \
@@ -194,7 +194,7 @@ in
           --pass-authorization-header=true \
           --reverse-proxy=true \
           --trusted-proxy-ip=127.0.0.1/32 \
-          --cookie-secret="$OAUTH_COOKIE_SECRET" \
+          --cookie-secret-file=${config.sops.secrets.opencode_web_oauth_cookie_secret.path} \
           --cookie-secure=true \
           --cookie-csrf-per-request=false \
           --skip-provider-button=true \

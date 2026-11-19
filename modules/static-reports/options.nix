@@ -118,19 +118,20 @@ in
         StandardErrorPath = "/var/log/static-reports-oauth2-proxy.log";
       };
       script = ''
-        export REPORTS_OIDC_CLIENT_SECRET=$(cat ${config.sops.secrets.reports_oidc_client_secret.path})
-        export REPORTS_OAUTH_COOKIE_SECRET=$(cat ${config.sops.secrets.reports_oauth_cookie_secret.path})
-
         # This Pocket ID deployment has no SMTP configured, so every
         # account's emailVerified is permanently false; oauth2-proxy
         # would otherwise reject every login with "email in id_token
         # isn't verified".
+        #
+        # Secrets go in as file paths, not values, so they never appear in argv
+        # (`ps`). oauth2-proxy reads these files verbatim with no trimming, so
+        # the sops values must not end in a newline.
         exec ${pkgs.oauth2-proxy}/bin/oauth2-proxy \
           --provider=oidc \
           --oidc-issuer-url=https://auth.${domain} \
           --provider-ca-file=/var/lib/caddy/caddy/pki/authorities/${config.networking.hostName}/root.crt \
           --client-id=reports \
-          --client-secret="$REPORTS_OIDC_CLIENT_SECRET" \
+          --client-secret-file=${config.sops.secrets.reports_oidc_client_secret.path} \
           --redirect-url=${reportsUrl}/oauth2/callback \
           --http-address=127.0.0.1:${toString oauth2ProxyPort} \
           --upstream=static://202 \
@@ -140,7 +141,7 @@ in
           --pass-authorization-header=true \
           --reverse-proxy=true \
           --trusted-proxy-ip=127.0.0.1/32 \
-          --cookie-secret="$REPORTS_OAUTH_COOKIE_SECRET" \
+          --cookie-secret-file=${config.sops.secrets.reports_oauth_cookie_secret.path} \
           --cookie-secure=true \
           --cookie-csrf-per-request=false \
           --skip-provider-button=true \
