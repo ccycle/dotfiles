@@ -55,7 +55,7 @@ cwd=$(pwd)
 worktree_info=$(herdr worktree list --json 2>/dev/null | jq -r --arg path "$cwd" '
   .result.worktrees[]
   | select(.path == $path)
-  | "\(.branch)\t\(.open_workspace_id)\t\(.is_linked_worktree)"
+  | "\(.branch)\t\(.open_workspace_id // "")\t\(.is_linked_worktree)"
 ' 2>/dev/null)
 
 if [ -z "$worktree_info" ]; then
@@ -126,7 +126,7 @@ if [ "$status" != "SAFE (started, merged to main, clean)" ]; then
 fi
 
 if [ "$dry_run" = "true" ]; then
-  printf '[dry-run] Would remove worktree (workspace: %s)\n' "$ws_id"
+  printf '[dry-run] Would remove worktree (workspace: %s)\n' "${ws_id:-none, not open in herdr}"
   exit 0
 fi
 
@@ -169,7 +169,14 @@ reports_base_dir="/var/lib/static-reports"
 branch_slug=$(printf '%s' "$ws_branch" | tr '/' '-')
 rm -rf "${reports_base_dir:?}/${branch_slug}" 2>/dev/null || true
 
-herdr worktree remove --workspace "$ws_id" --json 2>/dev/null &&
+# herdr worktree remove only accepts --workspace, so a worktree not open in
+# any workspace goes through git. No --force: classification already required
+# a clean tree, and git still refuses if it turned dirty meanwhile.
+if [ -n "$ws_id" ]; then
+  herdr worktree remove --workspace "$ws_id" --json 2>/dev/null
+else
+  git -C "$worktree_repo_root" worktree remove "$cwd"
+fi &&
   printf 'Removed worktree for %s\n' "$ws_branch" ||
   {
     printf 'Failed to remove worktree for %s\n' "$ws_branch" >&2

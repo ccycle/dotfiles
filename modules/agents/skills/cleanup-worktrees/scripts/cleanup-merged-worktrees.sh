@@ -35,6 +35,17 @@ branch_was_started() {
   [ "$active" -gt 0 ]
 }
 
+# herdr worktree remove only accepts --workspace, so a worktree not open in
+# any workspace (empty ID) goes through git. No --force: the caller has
+# already checked merged/started/clean, and git still refuses a dirty tree.
+remove_worktree() {
+  if [ -n "$1" ]; then
+    herdr worktree remove --workspace "$1" --json 2>/dev/null
+  else
+    git -C "$repo_root" worktree remove "$2"
+  fi
+}
+
 dry_run=false
 force=false
 
@@ -71,13 +82,15 @@ trap 'rm -f "$tmpfile"' EXIT
 herdr worktree list --json 2>/dev/null | jq -r '
   .result.worktrees[]
   | select(.branch != "main")
-  | "\(.branch)\t\(.open_workspace_id)\t\(.path)"
+  | "\(.branch)\t\(.path)\t\(.open_workspace_id // "")"
 ' 2>/dev/null >"$tmpfile"
 
 removed=0
 skipped=0
 
-while IFS='	' read -r ws_branch ws_id ws_path || [ -n "$ws_branch" ]; do
+# ws_id is last: an unopened worktree has an empty ID, and an empty middle
+# field would collapse under IFS whitespace splitting and shift the path.
+while IFS='	' read -r ws_branch ws_path ws_id || [ -n "$ws_branch" ]; do
   if ! git -C "$repo_root" merge-base --is-ancestor "$ws_branch" main 2>/dev/null; then
     skipped=$((skipped + 1))
     continue
@@ -96,14 +109,14 @@ while IFS='	' read -r ws_branch ws_id ws_path || [ -n "$ws_branch" ]; do
   fi
 
   if [ "$dry_run" = "true" ]; then
-    printf '[dry-run] Would remove worktree for %s (workspace: %s)\n' "$ws_branch" "$ws_id"
+    printf '[dry-run] Would remove worktree for %s (workspace: %s)\n' "$ws_branch" "${ws_id:-none, not open in herdr}"
   else
     if [ "$force" = "false" ]; then
       printf 'Remove worktree for %s? [y/N] ' "$ws_branch" >&2
       read -r confirm
       [ "$confirm" != "y" ] && [ "$confirm" != "Y" ] && continue
     fi
-    if herdr worktree remove --workspace "$ws_id" --json 2>/dev/null; then
+    if remove_worktree "$ws_id" "$ws_path"; then
       printf 'Removed worktree for %s\n' "$ws_branch"
     else
       printf 'Failed to remove worktree for %s\n' "$ws_branch" >&2
