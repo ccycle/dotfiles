@@ -52,6 +52,9 @@ Silent stretches are indistinguishable from a hang. The user should never have t
 - Before starting a command expected to take more than ~30 seconds (builds, downloads, e2e tests, rebuilds), say what you are running and why.
 - Prefer running long commands in the background, then poll and report intermediate status instead of blocking silently.
 - When blocked on something only the user can do (sudo password, `rbw unlock`, GUI click, passkey touch, interactive auth), stop and say so explicitly: name the exact command or action, and use the interactive question tool where available (see the `ask-me-to-do` skill). Never wait silently for input.
+- Before concluding a sudo command needs a password, run that exact command with `sudo -n`.
+  Hand it to the user only if it fails with "a password is required".
+  Never infer from a different command such as `sudo -n true`.
 - When retries or searches take longer than expected, report what you are stuck on and what you are trying next — do not go quiet.
 - When the user asks for status, answer with: what is currently running, what is blocking, and what happens next.
 
