@@ -106,7 +106,7 @@ derive_env() {
   : "${CADDY_POCKET_ID_PORT:=$(find_free_port)}"
   : "${CADDY_REPORTS_PORT:=$(find_free_port)}"
   : "${OAUTH2_PROXY_PORT:=$(find_free_port)}"
-  # oauth2-proxy's --cookie-secret only auto-decodes URL-safe base64
+  # oauth2-proxy's --cookie-secret(-file) only auto-decodes URL-safe base64
   # (`-`/`_`) into raw AES key bytes; standard base64's `+`/`/` chars make
   # it fall back to treating the 44-char string itself as the key, which
   # fails its 16/24/32-byte check. `tr` converts the alphabet without
@@ -242,6 +242,13 @@ start_oauth2_proxy() {
   [ -n "${REPORTS_OIDC_CLIENT_ID:-}" ] || die "start_oauth2_proxy: missing REPORTS_OIDC_CLIENT_ID"
   [ -f "$TEST_CA_ROOT" ] || die "start_oauth2_proxy: test Caddy has not created its CA root at $TEST_CA_ROOT"
 
+  # Secrets go in as 0600 files, not argv values, so `ps` never shows them.
+  # oauth2-proxy reads the files verbatim (no trimming): printf %s, no newline.
+  local client_secret_file="$STATE_DIR/oauth2-proxy-client-secret"
+  local cookie_secret_file="$STATE_DIR/oauth2-proxy-cookie-secret"
+  (umask 077 && printf %s "$REPORTS_OIDC_CLIENT_SECRET" >"$client_secret_file")
+  (umask 077 && printf %s "$REPORTS_COOKIE_SECRET" >"$cookie_secret_file")
+
   # This Pocket ID deployment has no SMTP configured, so every account's
   # emailVerified is permanently false; oauth2-proxy would otherwise
   # reject every login with "email in id_token isn't verified" (see
@@ -254,7 +261,7 @@ start_oauth2_proxy() {
       --oidc-issuer-url="${POCKET_ID_APP_URL}" \
       --provider-ca-file="${TEST_CA_ROOT}" \
       --client-id="${REPORTS_OIDC_CLIENT_ID}" \
-      --client-secret="${REPORTS_OIDC_CLIENT_SECRET}" \
+      --client-secret-file="$client_secret_file" \
       --redirect-url="${REPORTS_URL}/oauth2/callback" \
       --http-address="127.0.0.1:${OAUTH2_PROXY_PORT}" \
       --upstream=static://202 \
@@ -263,7 +270,7 @@ start_oauth2_proxy() {
       --set-xauthrequest=true \
       --pass-authorization-header=true \
       --reverse-proxy=true \
-      --cookie-secret="${REPORTS_COOKIE_SECRET}" \
+      --cookie-secret-file="$cookie_secret_file" \
       --cookie-secure=true \
       --cookie-csrf-per-request=false \
       --skip-provider-button=true \
