@@ -60,9 +60,22 @@ in
       }
     ];
 
+    # The agents below run as this user, who cannot create files in
+    # root-owned /var/log — launchd then fails the spawn with EX_CONFIG (78)
+    # before the script runs. Pre-create the logs user-owned (and rotate them
+    # with that owner) rather than moving them to /var/tmp: Alloy only
+    # tails /var/log/*.log, which feeds the Self-Healing dashboard.
+    system.activationScripts.postActivation.text = ''
+      for f in /var/log/self-healing.log /var/log/self-healing-webhook.log; do
+        touch "$f"
+        chown ${config.system.primaryUser}:staff "$f"
+      done
+    '';
+
     environment.etc."newsyslog.d/self-healing.conf".text = ''
-      # logfilename          [owner:group]  mode  count  size  when  flags
-      /var/log/self-healing.log              644   7      10240 *     GZ
+      # logfilename                  [owner:group]  mode  count  size  when  flags
+      /var/log/self-healing.log          ${config.system.primaryUser}:staff  644   7      10240 *     GZ
+      /var/log/self-healing-webhook.log  ${config.system.primaryUser}:staff  644   7      10240 *     GZ
     '';
 
     # User agents, not root daemons (a change from this module's original
