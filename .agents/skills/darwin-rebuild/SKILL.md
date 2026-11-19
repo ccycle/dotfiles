@@ -38,7 +38,9 @@ When invoking this skill, determine the profile automatically:
 ## Prerequisites
 
 - Run `verify-change` first to ensure no build errors
-- `sudo` access is required (the script runs `sudo -H nix ... run`)
+- The script needs no sudo password: `sudo -H nix ...` matches the NOPASSWD rule in [modules/system/darwin.nix](../../../modules/system/darwin.nix).
+  Run it directly.
+  Do not probe with `sudo -n true` — that command is not covered by the rule, so it fails without a cached sudo credential even though the script would pass.
 - Secrets must be properly configured (sops-nix) before running `bootstrap`
 
 ## Example
