@@ -34,6 +34,13 @@ Before finalizing an investigation answer, re-run every measurement it cites
 and fix any claim whose output no longer matches (see the `measure-first`
 skill). Never present an unmeasured assertion as fact.
 
+## Cited Research for External Information
+
+When the answer lives on the web (documentation, specs, versions, product
+behavior, papers, news), follow the `research` skill. Every claim carries a
+Text Fragment link to the verbatim supporting passage, and the report is shown
+only after `check-citations check` passes.
+
 ## Keep Secret Values Out of Output
 
 Command output lands in the transcript, which persists on disk and is sent to the model provider.
