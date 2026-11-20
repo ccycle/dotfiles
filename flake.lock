@@ -1990,14 +1990,14 @@
     "kiac-release": {
       "flake": false,
       "locked": {
-        "lastModified": 1788622334,
-        "narHash": "sha256-TgA+YjN3t9KdKQBzMHXlU/mXfyC9M2rzPVjOpqa+U18=",
+        "lastModified": 1790574286,
+        "narHash": "sha256-ZdpMtCGkSs4nNXgKe2BMj5SxxN1fWH++eekyoBeXd3Q=",
         "type": "tarball",
-        "url": "https://github.com/saiyam1814/kiac/releases/download/v0.7.1/kiac_0.7.1_darwin_arm64.tar.gz"
+        "url": "https://github.com/saiyam1814/kiac/releases/download/v0.8.2/kiac_0.8.2_darwin_arm64.tar.gz"
       },
       "original": {
         "type": "tarball",
-        "url": "https://github.com/saiyam1814/kiac/releases/download/v0.7.1/kiac_0.7.1_darwin_arm64.tar.gz"
+        "url": "https://github.com/saiyam1814/kiac/releases/download/v0.8.2/kiac_0.8.2_darwin_arm64.tar.gz"
       }
     },
     "nix-claude-code": {

@@ -5,7 +5,7 @@ let
   # already extracts it, so this just copies the binary into $out/bin.
   kiac = pkgs.stdenv.mkDerivation {
     pname = "kiac";
-    version = "0.7.1";
+    version = "0.8.2";
     src = inputs.kiac-release;
 
     installPhase = ''

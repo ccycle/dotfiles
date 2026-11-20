@@ -39,7 +39,7 @@
     hunk.url = "github:modem-dev/hunk";
     hunk.inputs.nixpkgs.follows = "nixpkgs";
     kiac-release.flake = false;
-    kiac-release.url = "https://github.com/saiyam1814/kiac/releases/download/v0.7.1/kiac_0.7.1_darwin_arm64.tar.gz";
+    kiac-release.url = "https://github.com/saiyam1814/kiac/releases/download/v0.8.2/kiac_0.8.2_darwin_arm64.tar.gz";
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
     nix-darwin.url = "github:nix-darwin/nix-darwin/nix-darwin-26.05";
     nixpkgs-2211.url = "github:nixos/nixpkgs/22.11";
