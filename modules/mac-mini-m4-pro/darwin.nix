@@ -94,6 +94,14 @@
   # human to make explicitly, not a side effect of enabling detection.
   services.selfHealing.enable = true;
 
+  # Daily Kanban (dotfiles) Todo -> AgentDrafts/ + plan-only worktrees, on
+  # the local LLM only (see modules/obsidian/todo-agent/design.md).
+  services.obsidianTodoAgent = {
+    enable = true;
+    repoDir = "/Users/mfuruki/repositories/github.com/ccycle/dotfiles";
+    model = "ornith-1.5:35b-mlx";
+  };
+
   # Enable macOS Remote Login (SSH on port 22)
   system.activationScripts.postActivation.text = ''
     if ! systemsetup -getremotelogin | grep -q "On"; then
