@@ -15,6 +15,7 @@
   services.caddy.enable = true;
   custom.dnsmasq.enable = true;
   services.immich.enable = true;
+  custom.kiac.enable = true;
   services.monitoring.enable = true;
   # Dormant: superseded by Forgejo (modules/forgejo) for git hosting. Kept
   # in place rather than deleted until the Forgejo evaluation gate passes -

@@ -11,6 +11,7 @@
   services.caddy.enable = true;
   custom.dnsmasq.enable = true;
   services.immich.enable = true;
+  custom.kiac.enable = true;
   services.pocket-id.enable = true;
   services.monitoring.enable = true;
 }
