@@ -928,11 +928,11 @@
     "gcx": {
       "flake": false,
       "locked": {
-        "lastModified": 1788771584,
-        "narHash": "sha256-e3OZ2pkQtABgjDlI5Y74vVdAH0b06/ple1mju2e4niQ=",
+        "lastModified": 1788872573,
+        "narHash": "sha256-YmGB3biX/I4RcMr1BNZah68GYpkLJe02ylTDzjtwX3E=",
         "owner": "grafana",
         "repo": "gcx",
-        "rev": "bdd7c4cd4369d1e42731249adca37cf1e5c5167d",
+        "rev": "683a9984d652530aed6536754ddbbef40ce56e82",
         "type": "github"
       },
       "original": {
