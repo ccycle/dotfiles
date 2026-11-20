@@ -137,7 +137,7 @@ pane_id=$(echo "$result" | jq -r '.result.root_pane.pane_id')
 herdr agent start <worktree-name> --kind <kind> --pane "$pane_id" [-- --model <id>]
 
 # Send prompt from file
-herdr agent prompt <worktree-name> "$(cat /tmp/tmp.abc123.md)" --timeout 600000
+herdr agent prompt <worktree-name> "$(cat /tmp/tmp.abc123.md)"
 ```
 
 Do NOT pass `--wait` to `herdr agent prompt` — the dispatcher does not wait for

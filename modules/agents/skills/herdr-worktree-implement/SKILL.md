@@ -75,7 +75,7 @@ result=$(herdr tab create --workspace "$HERDR_WORKSPACE_ID" --cwd "$PWD" --no-fo
 pane_id=$(echo "$result" | jq -r '.result.root_pane.pane_id')
 
 herdr agent start implement --kind claude --pane "$pane_id"
-herdr agent prompt implement "$(cat "$tmpfile")" --timeout 600000
+herdr agent prompt implement "$(cat "$tmpfile")"
 ```
 
 Do not pass `--wait` — this skill's job ends once the prompt is sent. If

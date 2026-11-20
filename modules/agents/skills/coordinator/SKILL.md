@@ -74,7 +74,7 @@ EOF
 result=$(herdr worktree create --branch auth-module --no-focus --json)
 pane_id=$(echo "$result" | jq -r '.result.root_pane.pane_id')
 herdr agent start auth-module --kind claude --pane "$pane_id"
-herdr agent prompt auth-module "$(cat "$tmpfile_a")" --timeout 600000
+herdr agent prompt auth-module "$(cat "$tmpfile_a")"
 ```
 
 **Monitor:**
