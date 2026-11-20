@@ -30,6 +30,8 @@
   custom.dnsmasq.enable = true;
   services.immich.enable = true;
   custom.kiac.enable = true;
+  # The LAN router, same resolver the host itself uses (scutil --dns).
+  custom.kiac.dnsServers = [ "192.168.10.1" ];
   services.monitoring.enable = true;
   # Dormant: superseded by Forgejo (modules/forgejo) for git hosting. Kept
   # in place rather than deleted until the Forgejo evaluation gate passes -

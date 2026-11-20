@@ -23,6 +23,8 @@
   custom.dnsmasq.enable = true;
   services.immich.enable = true;
   custom.kiac.enable = true;
+  # The LAN router, same resolver the host itself uses (scutil --dns).
+  custom.kiac.dnsServers = [ "192.168.10.1" ];
   services.pocket-id.enable = true;
   services.monitoring.enable = true;
 }
