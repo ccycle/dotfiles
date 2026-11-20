@@ -72,16 +72,17 @@ handles that.
 
 ## Flags
 
-**`--pr`**: When passed, add instruction to use `/merge-and-cleanup` skill at
-the end to open a Forgejo PR for the branch.
+**`--pr`**: When passed, add an instruction to run the `merge-and-cleanup`
+script at the end to open a Forgejo PR for the branch.
+The skill itself is user-invoked only, so the worktree agent runs its script
+directly.
 
 ```
 ...
-Then use the /merge-and-cleanup skill to open a Forgejo PR for the branch.
+Then run ~/.claude/skills/merge-and-cleanup/scripts/merge-and-cleanup.sh to open a Forgejo PR for the branch.
 ```
 
-Only instruct worktree agent to `/merge-and-cleanup` if explicitly requested by
-user in task.
+Only add this instruction if the user explicitly requested it in the task.
 
 **`--kind <kind>`**: Agent kind passed to `herdr agent start --kind` (any value
 `herdr agent start --help` lists, e.g. `claude`, `opencode`, `pi`, `codex`).

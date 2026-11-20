@@ -27,7 +27,7 @@ git worktree list --porcelain | awk '/^worktree/{p=$2} /^branch refs\/heads\/(ma
 - If it prints nothing: `git fetch origin main:main`
 
 This replaces automatic deletion: no git hook removes worktrees, and
-`/merge-and-cleanup` opens the PR without removing them on your behalf.
+`/merge-and-cleanup` removes one only on an explicit `--remove` the user confirmed.
 Cleanup is always explicit and interactive.
 
 ## Backend detection

@@ -36,11 +36,11 @@ Two layers work together:
    - [scripts/cleanup-worktree.sh](scripts/cleanup-worktree.sh) — classifies and removes **the current
      worktree** from inside its session. The sole entry point.
    - `/cleanup-worktrees` skill — wraps the script in an interactive flow:
-     classify → report → confirm → remove. It is the only way a worktree
-     is removed.
-   - The `/merge-and-cleanup` skill opens the PR and never removes
-     worktrees; it finishes by pointing the user at `/cleanup-worktrees`
-     after the PR is merged.
+     classify → report → confirm → remove.
+   - The user-invoked `/merge-and-cleanup` skill calls the same script once
+     the PR is merged, and removes only on an explicit, user-confirmed
+     `--remove` re-run.
+     The script is the only code path that removes a worktree.
 
 The all-branch scanning scripts (`cleanup-merged-worktrees.sh`,
 `detect-stale-worktrees.sh`) from the earlier hook-driven design are kept as
@@ -93,9 +93,10 @@ standalone-script convention.
 - **Cleanup script run from cron/systemd timer.** Rejected for the same
   reason: no interactive confirmation, and it cannot know which worktree
   the user is working in.
-- **Merge skill removing the worktree after merge.** Rejected in favor of
-  separation of concerns: merging and deleting are different decisions.
-  `/merge-and-cleanup` now only suggests `/cleanup-worktrees`.
+- **Merge skill removing the worktree implicitly after merge.** Rejected:
+  merging and deleting are different decisions.
+  `/merge-and-cleanup` classifies after the merge but deletes only when
+  re-run with `--remove` after the user confirms.
 - **Detecting merged branch via ORIG_HEAD in post-merge.** Rejected in
   favor of checking the current branch against `git merge-base
 --is-ancestor` main. The ORIG_HEAD approach is fragile for squash merges;
