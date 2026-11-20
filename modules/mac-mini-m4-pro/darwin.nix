@@ -41,6 +41,10 @@
   services.llm-server.enable = true;
   services.opencode-web.enable = true;
   services.pi-web.enable = true;
+  services.t3code = {
+    enable = true;
+    port = 3773;
+  };
   services.mtplx.enable = true;
 
   services.atticd.enable = true;

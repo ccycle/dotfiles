@@ -35,6 +35,7 @@
     ./storage/darwin.nix
     ./stylix/darwin.nix
     ./system/darwin.nix
+    ./t3code/darwin.nix
     ./tailscale/darwin.nix
     ./tart/darwin.nix
     ./token-usage/darwin.nix
