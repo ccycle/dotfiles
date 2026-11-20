@@ -59,6 +59,7 @@
   # The owner keeps the file; listing it here makes the coupling explicit,
   # and test selection treats a change under it as affecting every feature.
   sharedPaths = [
+    "modules/git/user/id_ed25519_signing.pub" # SSH signing key read by comin for commit verification
     "modules/llm-server/catalog.json" # model catalog read by opencode and pi
     "modules/mtplx/catalog.json" # model catalog read by opencode
     "modules/nodejs/node-tools" # npm lockfile reused by opencode-web and pi-web
@@ -71,5 +72,6 @@
   hostModules = [
     "modules/mac-mini-m4"
     "modules/mac-mini-m4-pro"
+    "modules/macbook-air-m1"
   ];
 }

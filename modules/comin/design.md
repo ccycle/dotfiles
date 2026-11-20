@@ -34,14 +34,14 @@ SSH-based tooling. That doesn't work here:
   attach to.
 - Even switching remote URLs to SSH doesn't work for Forgejo: its SSH
   port is loopback-bound only (`127.0.0.1:2223`, see
-  `modules/forgejo/compose.yaml` and `modules/forgejo/design.md`) -
+  [modules/forgejo/compose.yaml](../forgejo/compose.yaml) and [modules/forgejo/design.md](../forgejo/design.md)) -
   a deliberate security choice, not something this task should
   reverse. `mac-mini-m4` (a different physical host) can't reach it
   over Tailscale regardless of remote URL scheme.
 
 So both remotes authenticate over HTTPS with a read-only,
 repo-scoped access token (`auth.access_token_path`, sops-managed, see
-`modules/comin/secrets.yaml`). Commit-signature verification is
+[modules/comin/secrets.yaml](secrets.yaml)). Commit-signature verification is
 unaffected by this - `sshAllowedSignersPath` verifies the commit
 object itself after fetch, independent of which transport/auth moved
 the bytes.
@@ -55,7 +55,7 @@ because this is unattended pull-and-switch with no human in the loop:
 a compromise of either git host, or a rollback after `/var/lib/comin`
 loss (comin only remembers the last deployed commit there - see
 comin's own howtos.md), would otherwise auto-deploy silently.
-`modules/comin/darwin.nix` copies the signing public key content into
+[modules/comin/darwin.nix](darwin.nix) copies the signing public key content into
 `/etc/comin/allowed_signers` (system-readable) rather than pointing at
 the user's home-manager-deployed `~/.config/git/allowed_signers`,
 since comin runs as a root launchd daemon outside any user session.
