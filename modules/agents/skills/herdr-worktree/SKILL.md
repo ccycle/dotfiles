@@ -106,7 +106,7 @@ is checked out in the current directory.
 Step 1 - Write all prompt files (in parallel):
 
 ```bash
-tmpfile=$(mktemp).md
+tmpfile=$(mktemp -t prompt.XXXXXX.md)
 cat > "$tmpfile" << 'EOF'
 Implement feature X...
 EOF
