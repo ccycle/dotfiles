@@ -137,7 +137,8 @@ pane_id=$(echo "$result" | jq -r '.result.root_pane.pane_id')
 #   herdr agent start <name> --kind opencode --pane "$pane_id" -- --auto [--model <id>]
 herdr agent start <worktree-name> --kind <kind> --pane "$pane_id" [-- --model <id>]
 
-# Send prompt from file
+# Send prompt from file.
+# No --timeout: herdr rejects it without --wait ("--timeout requires --wait").
 herdr agent prompt <worktree-name> "$(cat /tmp/tmp.abc123.md)"
 ```
 
