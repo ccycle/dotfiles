@@ -24,10 +24,17 @@ Create a pull request on the Forgejo instance with `fj` (the binary name of the 
    - Run `git status` to check for uncommitted changes.
    - If changes exist, commit them before proceeding (see the `smart-commit` skill for branching and message conventions).
 
-4. **Push the Branch**
-   - Run `git push -u origin HEAD` (or the remote pointing at Forgejo).
+4. **Rebase onto the Base Branch**
+   - Run `git fetch origin <base>` to get the latest base branch.
+   - Run `git rebase origin/<base>` to rebase the current branch.
+   - If conflicts occur, resolve them and continue the rebase (`git rebase --continue`).
+   - This keeps the PR branch up to date and avoids merge conflicts in the PR.
 
-5. **Create the PR**
+5. **Push the Branch**
+   - Run `git push -u origin HEAD` (or the remote pointing at Forgejo).
+   - If the branch was pushed before, the rebase rewrote its history and a plain push is rejected. Push with `git push --force-with-lease origin HEAD` instead (see the `force-push` skill). If the remote branch is protected and rejects the force push, stop and hand over to the user.
+
+6. **Create the PR**
    - The title is a positional argument; there is no `--title` flag:
      ```bash
      fj pr create --base <base> --head <branch> "<title>" --body "<body>"
@@ -54,11 +61,11 @@ Create a pull request on the Forgejo instance with `fj` (the binary name of the 
 
    - Guidelines: lead with a concise summary, explain the "why" before the "how", keep commit messages in English.
 
-6. **Report the Result**
+7. **Report the Result**
    - Confirm the PR number from the `created pull request #N` output.
    - Display the title, base, and head.
 
-7. **Monitor CI and Repair Failures**
+8. **Monitor CI and Repair Failures**
    - Watch both CI jobs for this PR's head commit (`Verify / Syntax + Structure + Build` and `Formatter`) via `fj actions -R origin tasks`, matching the row whose commit prefix is the PR's head commit.
    - CI takes several minutes: use `ScheduleWakeup` to check back rather than a `sleep`-polling loop.
    - If a job fails, follow the `investigate-forgejo-ci` skill to fetch the log and classify the cause.
