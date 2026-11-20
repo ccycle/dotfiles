@@ -7,6 +7,7 @@
     ./brew-nix/darwin.nix
     ./caddy/darwin.nix
     ./cli-tools/darwin.nix
+    ./comin/darwin.nix
     ./desktoppr/darwin.nix
     ./dnsmasq/darwin.nix
     ./docker/darwin.nix

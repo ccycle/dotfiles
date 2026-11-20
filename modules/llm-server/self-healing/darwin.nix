@@ -2,6 +2,7 @@
   config,
   lib,
   pkgs,
+  username,
   ...
 }:
 
@@ -23,7 +24,7 @@ let
   # (~/.config/opencode/opencode.json, see modules/opencode/home.nix)
   # already points at the local ollama provider, and git/fj already
   # have this user's own Forgejo credentials.
-  userBin = "/etc/profiles/per-user/mfuruki/bin";
+  userBin = "/etc/profiles/per-user/${username}/bin";
   sharedPath = "${userBin}:${pkgs.curl}/bin:${pkgs.jq}/bin:${pkgs.docker-compose}/bin:${pkgs.coreutils}/bin:${pkgs.git}/bin:$PATH";
   sharedEnv = ''
     export PATH="${sharedPath}"

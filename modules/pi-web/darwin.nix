@@ -2,6 +2,7 @@
   config,
   lib,
   pkgs,
+  homeDirectory,
   ...
 }:
 
@@ -75,7 +76,7 @@ in
 
     dataDir = mkOption {
       type = types.str;
-      default = "${config.users.users.mfuruki.home}/.pi/agent";
+      default = "${homeDirectory}/.pi/agent";
       description = "Path to the pi agent data directory.";
     };
   };

@@ -1,10 +1,24 @@
-{ ... }:
+{
+  lib,
+  ...
+}:
 
 {
   networking.hostName = "mac-mini-m4-pro";
 
   # No local GUI session ever available (see modules/pinentry/darwin.nix).
   custom.pinentry.headless = true;
+
+  custom.dotfiles.dir = lib.mkDefault "/Users/ccycle/repositories/github.com/ccycle/dotfiles";
+  custom.storage.volumes = lib.mkDefault {
+    forgejo = "/Volumes/WD_BLACK_SN850X_TB5";
+    immich = "/Volumes/WD_BLACK_SN850X_TB5";
+    llm-server = "/Users/ccycle/Library/Caches/llama.cpp";
+    monitoring = "/Volumes/WD_BLACK_SN850X_TB5";
+    navidrome = "/Volumes/WD_BLACK_SN850X_TB5";
+    opencloud = "/Volumes/WD_BLACK_SN850X_TB5";
+  };
+  services.comin.enable = true;
 
   services.altserver.enable = true;
   services.tailscale.splitDns.enable = true;

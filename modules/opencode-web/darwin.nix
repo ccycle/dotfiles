@@ -2,6 +2,7 @@
   config,
   lib,
   pkgs,
+  homeDirectory,
   ...
 }:
 
@@ -75,7 +76,7 @@ in
 
     vaultPath = mkOption {
       type = types.str;
-      default = "/Users/mfuruki/Obsidian/zettelkasten";
+      default = "${homeDirectory}/Obsidian/zettelkasten";
       description = "Path to the Obsidian zettelkasten vault directory.";
     };
   };

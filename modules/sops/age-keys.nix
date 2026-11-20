@@ -46,6 +46,13 @@
       ];
     }
     {
+      path_regex = "modules/comin/secrets.yaml$";
+      hosts = [
+        "mac-mini-m4"
+        "mac-mini-m4-pro"
+      ];
+    }
+    {
       # Per-host secret files for services running on both servers.
       path_regex = "modules/(immich|monitoring|opencloud|pocket-id)/secrets-mac-mini-m4.yaml$";
       hosts = [ "mac-mini-m4" ];

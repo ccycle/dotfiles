@@ -13,6 +13,7 @@
     apple-container-pkg.url = "https://github.com/apple/container/releases/download/1.4.1/container-1.4.1-installer-signed.pkg";
     attic.url = "github:zhaofengli/attic";
     brew-nix.url = "github:BatteredBunny/brew-nix";
+    comin.url = "github:nlewo/comin";
     nix-claude-code.url = "github:ryoppippi/nix-claude-code";
     devx.url = "github:input-output-hk/devx";
     flake-parts.inputs.nixpkgs-lib.follows = "nixpkgs";
@@ -69,10 +70,7 @@
     pyzotero-cli.url = "github:chriscarrollsmith/pyzotero-cli";
     serena.url = "github:oraios/serena";
     sops-nix.url = "github:Mic92/sops-nix";
-    dotfiles-config.url = "path:./modules/dotfiles/default-config";
-    storage-config.url = "path:./modules/storage/default-config";
     obsidian-vault-config.url = "path:./modules/obsidian/default-config";
-    user-config.url = "path:./modules/user/default-config";
     uv2nix.inputs.nixpkgs.follows = "nixpkgs";
     uv2nix.url = "github:pyproject-nix/uv2nix";
     worktrunk.url = "github:max-sixty/worktrunk";
@@ -106,6 +104,9 @@
       forDarwinSystems = inputs.nixpkgs.lib.genAttrs darwinSystems;
 
       # Only pass `inputs` itself and explicit derived values — do not spread inputs.
+      # All profiles share the same anonymous username (comin's pure evaluation
+      # cannot see .local/* overrides, and every machine is being migrated to
+      # "ccycle" — see modules/comin/design.md).
       mkSpecialArgs =
         system:
         let
@@ -114,7 +115,8 @@
         {
           inherit inputs;
           inherit system;
-          inherit (inputs.user-config) username homeDirectory;
+          username = "ccycle";
+          homeDirectory = "/Users/ccycle";
           tailscalePackage = inputs.tailscale.packages.${system}.tailscale;
           gituiPackage = inputs.nixpkgs.legacyPackages.${system}.callPackage ./modules/gitui/drv.nix {
             src = inputs.gitui;
@@ -278,15 +280,14 @@
                 specialArgs = mkSpecialArgs system;
               }
             );
-            private = forDarwinSystems (
-              system:
-              inputs.nix-darwin.lib.darwinSystem {
-                modules = [
-                  ./darwin.nix
-                ];
-                specialArgs = mkSpecialArgs system;
-              }
-            );
+            "macbook-air-m1" = inputs.nix-darwin.lib.darwinSystem {
+              system = "aarch64-darwin";
+              modules = [
+                ./darwin.nix
+                ./modules/macbook-air-m1/darwin.nix
+              ];
+              specialArgs = mkSpecialArgs "aarch64-darwin";
+            };
             "mac-mini-m4" = inputs.nix-darwin.lib.darwinSystem {
               system = "aarch64-darwin";
               modules = [

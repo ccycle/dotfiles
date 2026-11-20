@@ -189,7 +189,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/mfuruki/.claude/hooks/protect-critical-files.sh"
+            "command": "$HOME/.claude/hooks/protect-critical-files.sh"
           }
         ]
       }
@@ -200,7 +200,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/mfuruki/.claude/hooks/post-nix-edit-reminder.sh"
+            "command": "$HOME/.claude/hooks/post-nix-edit-reminder.sh"
           }
         ]
       }
@@ -262,7 +262,7 @@
       "**Protected IaC scopes**: IAM, RBAC, networking, quota, and node-pool resources; anything whose name or tag carries `prod` or `production` as a whole word or name segment; also treat home-lab node-defining Nix modules (`modules/*` machine-specific configs) as sensitive infra scope given personal-infra posture",
       "### User-specific",
       "**Primary use of Claude Code**: personal infrastructure-as-code / dotfiles management (Nix flakes, nix-darwin, home-manager) for a personal macOS + homelab setup",
-      "**Trusted repo**: `/Users/mfuruki/repositories/github.com/ccycle/dotfiles` and its remotes `github.com/ccycle/dotfiles` and `forgejo.mac-mini-m4-pro.internal/ccycle/dotfiles.git`",
+      "**Trusted repo**: `~/repositories/github.com/ccycle/dotfiles` and its remotes `github.com/ccycle/dotfiles` and `forgejo.mac-mini-m4-pro.internal/ccycle/dotfiles.git`",
       "**Org-specific CLIs**: None configured — project-specific tools observed: `herdr`, `fj` (Forgejo CLI), `nix`/`nix-instantiate`, `orbctl`, `rbw`, `kanban`/`board`/`state_file` (project scripting)",
       "routine under this repo's skill scripts (`.agents/skills/*/scripts/`): frequently-invoked local automation"
     ]
