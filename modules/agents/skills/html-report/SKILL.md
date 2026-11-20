@@ -28,7 +28,7 @@ Everything else lives in the page.
 - **Do not add.** No history of how you got here, no excuses, no rejected alternatives, no repeated lists, no caveats that do not change a decision.
 - **Prefer a figure or table** over paragraphs whenever the content is structural (flows, comparisons, status of many items).
 
-Write Japanese pages in the document register required by the global Japanese output rules.
+Write Japanese pages in the document register required by the `japanese-writing` skill.
 
 ## Page format
 
