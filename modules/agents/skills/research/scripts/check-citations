@@ -1,0 +1,261 @@
+#!/usr/bin/env python3
+"""Citation checker for research reports.
+
+A URL alone does not stop hallucination: a model can invent a plausible URL,
+or cite a real page that never says what the claim says. Every web citation
+therefore carries a Text Fragment (#:~:text=...) that is both mechanically
+checkable here (the quoted text must exist in the fetched page) and
+human-checkable (the browser highlights the passage on click).
+
+Usage:
+  check-citations link <url> <start> [<end>]   print a Text Fragment link, after
+                                                verifying the text is on the page
+  check-citations check <report.md>             verify every claim in a report
+
+Report rules enforced by `check`:
+  - Every top-level list item is a claim. It must contain at least one citation,
+    or the marker [unverifiable].
+  - A web citation is an http(s) link with a #:~:text= fragment whose text is
+    found in the fetched page (HTML or PDF).
+  - A file citation is a relative or absolute path link with #L<n> or
+    #L<n>-L<m>, resolved against the report's directory; the lines must exist.
+  - A bare http(s) link without a text fragment fails.
+Exit status is 0 only when every citation passes and every claim is cited.
+"""
+
+import html.parser
+import os
+import re
+import subprocess
+import sys
+import tempfile
+import unicodedata
+import urllib.error
+import urllib.parse
+import urllib.request
+
+USER_AGENT = "Mozilla/5.0 (compatible; citation-checker)"
+LINK_RE = re.compile(r"\[[^\]]*\]\(([^)\s]+)\)")
+FILE_LINE_RE = re.compile(r"^(?P<path>[^#]+)#L(?P<start>\d+)(?:-L(?P<end>\d+))?$")
+UNVERIFIABLE = "[unverifiable]"
+
+
+class _TextExtractor(html.parser.HTMLParser):
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.parts = []
+        self._skip = 0
+
+    def handle_starttag(self, tag, attrs):
+        if tag in ("script", "style", "noscript", "template"):
+            self._skip += 1
+
+    def handle_endtag(self, tag):
+        if tag in ("script", "style", "noscript", "template") and self._skip:
+            self._skip -= 1
+
+    def handle_data(self, data):
+        if not self._skip:
+            self.parts.append(data)
+
+
+def normalize(text):
+    # Whitespace is dropped entirely rather than collapsed: joining HTML text
+    # nodes can insert or remove spaces inside a phrase (<b>Fire</b>fox), and
+    # CJK text has no spaces to anchor on. Browsers match case-insensitively.
+    text = unicodedata.normalize("NFKC", text).casefold()
+    return re.sub(r"\s+", "", text)
+
+
+_page_cache = {}
+
+
+def fetch_text(url):
+    """Return the normalized text of a page, or raise RuntimeError."""
+    base = url.split("#", 1)[0]
+    if base in _page_cache:
+        return _page_cache[base]
+    req = urllib.request.Request(base, headers={"User-Agent": USER_AGENT})
+    try:
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            body = resp.read()
+            ctype = resp.headers.get("Content-Type", "")
+            charset = resp.headers.get_content_charset() or "utf-8"
+    except (urllib.error.URLError, TimeoutError, ValueError) as e:
+        raise RuntimeError(f"fetch failed: {e}") from e
+    if "pdf" in ctype or body.startswith(b"%PDF"):
+        with tempfile.NamedTemporaryFile(suffix=".pdf") as f:
+            f.write(body)
+            f.flush()
+            try:
+                out = subprocess.run(
+                    ["pdftotext", "-q", f.name, "-"],
+                    capture_output=True,
+                    check=True,
+                )
+            except (OSError, subprocess.CalledProcessError) as e:
+                raise RuntimeError(f"pdftotext failed: {e}") from e
+        text = out.stdout.decode("utf-8", "replace")
+    else:
+        parser = _TextExtractor()
+        parser.feed(body.decode(charset, "replace"))
+        text = " ".join(parser.parts)
+    norm = normalize(text)
+    if not norm:
+        raise RuntimeError("page has no extractable text (JS-rendered or blocked?)")
+    _page_cache[base] = norm
+    return norm
+
+
+def parse_text_directives(url):
+    """Return a list of (start, end-or-None) from a #:~:text= fragment."""
+    _, _, fragment = url.partition("#")
+    _, sep, directives = fragment.partition(":~:")
+    if not sep:
+        return []
+    result = []
+    for directive in directives.split("&"):
+        if not directive.startswith("text="):
+            continue
+        parts = directive[len("text=") :].split(",")
+        # prefix- and -suffix only disambiguate between repeated matches; the
+        # claim is supported as long as the start (and end) text exist.
+        if parts and parts[0].endswith("-"):
+            parts = parts[1:]
+        if parts and parts[-1].startswith("-"):
+            parts = parts[:-1]
+        parts = [urllib.parse.unquote(p) for p in parts]
+        if len(parts) == 1:
+            result.append((parts[0], None))
+        elif len(parts) == 2:
+            result.append((parts[0], parts[1]))
+        else:
+            result.append((None, None))
+    return result
+
+
+def check_web(url):
+    """Return None if the citation holds, else an error message."""
+    directives = parse_text_directives(url)
+    if not directives:
+        return "web link has no #:~:text= fragment"
+    try:
+        page = fetch_text(url)
+    except RuntimeError as e:
+        return str(e)
+    for start, end in directives:
+        if not start:
+            return "malformed text directive"
+        pos = page.find(normalize(start))
+        if pos < 0:
+            # A bot wall or JS-rendered shell also lands here; its text is short.
+            return f"text not found on page ({len(page)} chars of text): {start!r}"
+        if end is not None and page.find(normalize(end), pos) < 0:
+            return f"end text not found after start: {end!r}"
+    return None
+
+
+def check_file(target, base_dir):
+    m = FILE_LINE_RE.match(target)
+    if not m:
+        return "file link needs #L<n> or #L<n>-L<m>"
+    path = urllib.parse.unquote(m["path"])
+    if path.startswith("file://"):
+        path = path[len("file://") :]
+    path = os.path.join(base_dir, path)
+    try:
+        with open(path, encoding="utf-8", errors="replace") as f:
+            n_lines = sum(1 for _ in f)
+    except OSError as e:
+        return f"cannot read file: {e}"
+    start = int(m["start"])
+    end = int(m["end"] or start)
+    if not 1 <= start <= end <= n_lines:
+        return f"lines {start}-{end} out of range (file has {n_lines})"
+    return None
+
+
+def claims(markdown):
+    """Yield (line_number, text) for each top-level list item, skipping code."""
+    item, item_line, in_fence = None, 0, False
+    for n, line in enumerate(markdown.splitlines(), 1):
+        if line.lstrip().startswith("```"):
+            in_fence = not in_fence
+            continue
+        if in_fence:
+            continue
+        if re.match(r"^[-*+] |^\d+[.)] ", line):
+            if item is not None:
+                yield item_line, item
+            item, item_line = line, n
+        elif item is not None and (line.startswith((" ", "\t"))):
+            item += "\n" + line
+        elif item is not None:
+            yield item_line, item
+            item = None
+    if item is not None:
+        yield item_line, item
+
+
+def cmd_check(report):
+    base_dir = os.path.dirname(os.path.abspath(report))
+    with open(report, encoding="utf-8") as f:
+        text = f.read()
+    failures = cited = unverifiable = 0
+    for line_no, claim in claims(text):
+        targets = LINK_RE.findall(claim)
+        if not targets:
+            if UNVERIFIABLE in claim:
+                unverifiable += 1
+                print(f"skip {report}:{line_no}: marked {UNVERIFIABLE}")
+            else:
+                failures += 1
+                print(f"FAIL {report}:{line_no}: claim has no citation")
+            continue
+        claim_ok = True
+        for target in targets:
+            if target.startswith(("http://", "https://")):
+                err = check_web(target)
+            else:
+                err = check_file(target, base_dir)
+            if err:
+                claim_ok = False
+                print(f"FAIL {report}:{line_no}: {err}\n     {target}")
+        if claim_ok:
+            cited += 1
+            print(f"ok   {report}:{line_no}")
+        else:
+            failures += 1
+    print(f"\n{cited} cited, {unverifiable} unverifiable, {failures} failed")
+    if cited + unverifiable + failures == 0:
+        print("no claims found: write each claim as a top-level list item")
+        return 1
+    return 1 if failures else 0
+
+
+def cmd_link(url, start, end=None):
+    base = url.split("#", 1)[0]
+    # quote() leaves "-" alone as unreserved, but the spec requires it encoded:
+    # a term ending or starting with "-" would be parsed as prefix/suffix.
+    enc = lambda s: urllib.parse.quote(s, safe="").replace("-", "%2D")  # noqa: E731
+    directive = enc(start) + ("," + enc(end) if end else "")
+    link = f"{base}#:~:text={directive}"
+    err = check_web(link)
+    if err:
+        print(f"FAIL {err}", file=sys.stderr)
+        return 1
+    print(link)
+    return 0
+
+
+def main(argv):
+    if len(argv) == 2 and argv[0] == "check":
+        return cmd_check(argv[1])
+    if len(argv) in (3, 4) and argv[0] == "link":
+        return cmd_link(*argv[1:])
+    print(__doc__, file=sys.stderr)
+    return 2
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))
