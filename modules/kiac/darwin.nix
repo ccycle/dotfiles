@@ -1,10 +1,16 @@
-{ config, lib, ... }:
+{
+  config,
+  lib,
+  username,
+  homeDirectory,
+  ...
+}:
 let
   cfg = config.custom.kiac;
   # Mirrors modules/docker/orbstack/darwin.nix's userBin: kiac/container
   # only exist in this user's home-manager profile, and kiac itself is a
   # per-user tool (like OrbStack), so this runs as a user agent.
-  userBin = "/etc/profiles/per-user/mfuruki/bin";
+  userBin = "/etc/profiles/per-user/${username}/bin";
   dnsFlags = lib.concatMapStringsSep " " (ip: "--dns ${lib.escapeShellArg ip}") cfg.dnsServers;
 in
 {
@@ -15,7 +21,7 @@ in
 
     environment.etc."newsyslog.d/kiac-resume.conf".text = ''
       # logfilename                              [owner:group]     mode  count  size  when  flags
-      /Users/mfuruki/Library/Logs/kiac-resume.log  mfuruki:staff  644   7      10240 *     GZ
+      ${homeDirectory}/Library/Logs/kiac-resume.log  ${username}:staff  644   7      10240 *     GZ
     '';
 
     # One-shot at login: bring the "homelab" cluster back after a host
@@ -24,8 +30,8 @@ in
     launchd.user.agents.kiac-resume = {
       serviceConfig = {
         RunAtLoad = true;
-        StandardOutPath = "/Users/mfuruki/Library/Logs/kiac-resume.log";
-        StandardErrorPath = "/Users/mfuruki/Library/Logs/kiac-resume.log";
+        StandardOutPath = "${homeDirectory}/Library/Logs/kiac-resume.log";
+        StandardErrorPath = "${homeDirectory}/Library/Logs/kiac-resume.log";
       };
       script = ''
         # apple/container's signed installer puts `container` in /usr/local/bin
