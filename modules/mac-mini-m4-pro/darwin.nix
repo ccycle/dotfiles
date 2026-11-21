@@ -98,7 +98,7 @@
   # the local LLM only (see modules/obsidian/todo-agent/design.md).
   services.obsidianTodoAgent = {
     enable = true;
-    repoDir = "/Users/mfuruki/repositories/github.com/ccycle/dotfiles";
+    repoDir = "/Users/ccycle/repositories/github.com/ccycle/dotfiles";
     model = "ornith-1.5:35b-mlx";
   };
 
