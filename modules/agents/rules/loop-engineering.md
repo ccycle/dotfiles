@@ -55,6 +55,9 @@ Silent stretches are indistinguishable from a hang. The user should never have t
 - Before concluding a sudo command needs a password, run that exact command with `sudo -n`.
   Hand it to the user only if it fails with "a password is required".
   Never infer from a different command such as `sudo -n true`.
+- When `$SSH_TTY` or `$SSH_CONNECTION` is set, the user is not at the Mac's screen.
+  For a password or unlock step, ask them to run the command in their terminal and type the password there (sudo prompt, pinentry-curses).
+  Never ask for Touch ID, a GUI dialog click, or any other action on the physical Mac.
 - When retries or searches take longer than expected, report what you are stuck on and what you are trying next — do not go quiet.
 - When the user asks for status, answer with: what is currently running, what is blocking, and what happens next.
 
