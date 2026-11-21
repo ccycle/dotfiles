@@ -23,9 +23,6 @@ in
     environment.etc."comin/allowed_signers".text =
       ''ccycle713@gmail.com namespaces="git" ${builtins.readFile signingKey}'';
 
-    sops.secrets.comin-forgejo-access-token.sopsFile = ./secrets.yaml;
-    sops.secrets.comin-github-access-token.sopsFile = ./secrets.yaml;
-
     services.comin = {
       sshAllowedSignersPath = "/etc/comin/allowed_signers";
 
@@ -37,16 +34,17 @@ in
       # Forgejo outage - which this same repo also causes when it manages
       # Forgejo itself (see modules/forgejo/design.md) - doesn't strand
       # deploys. See modules/comin/design.md.
+      # No auth: both repos are publicly readable, and comin sends Basic auth
+      # whenever a token is set, so a wrong token turns a working anonymous
+      # fetch into "authentication required".
       remotes = [
         {
           name = "forgejo";
           url = "https://forgejo.mac-mini-m4-pro.internal/ccycle/dotfiles.git";
-          auth.access_token_path = config.sops.secrets.comin-forgejo-access-token.path;
         }
         {
           name = "github";
           url = "https://github.com/ccycle/dotfiles";
-          auth.access_token_path = config.sops.secrets.comin-github-access-token.path;
         }
       ];
     };

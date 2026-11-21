@@ -22,7 +22,7 @@ rejected: it adds attack surface (a local remote comin trusts
 implicitly) for a benefit (faster local iteration) this deployment
 doesn't need.
 
-## Auth: access tokens, not SSH deploy keys
+## Auth: anonymous HTTPS, not SSH deploy keys or tokens
 
 The original plan was SSH deploy keys, matching this repo's existing
 SSH-based tooling. That doesn't work here:
@@ -39,12 +39,18 @@ SSH-based tooling. That doesn't work here:
   reverse. `mac-mini-m4` (a different physical host) can't reach it
   over Tailscale regardless of remote URL scheme.
 
-So both remotes authenticate over HTTPS with a read-only,
-repo-scoped access token (`auth.access_token_path`, sops-managed, see
-[modules/comin/secrets.yaml](secrets.yaml)). Commit-signature verification is
-unaffected by this - `sshAllowedSignersPath` verifies the commit
-object itself after fetch, independent of which transport/auth moved
-the bytes.
+Both repos are publicly readable, so both remotes fetch over HTTPS
+anonymously. Read-only access tokens were the next plan and were
+rejected after they shipped as sops placeholders: comin then failed
+every fetch with "authentication required", and no deployment
+happened until someone read the log. A token adds a secret to rotate
+but protects nothing here: fetch auth only gates reading public code.
+Trust comes from commit-signature verification -
+`sshAllowedSignersPath` verifies the commit object itself after fetch,
+independent of which transport moved the bytes.
+
+Non-goal: private repos. Making either repo private requires
+reintroducing per-remote tokens.
 
 ## Commit signature verification
 
