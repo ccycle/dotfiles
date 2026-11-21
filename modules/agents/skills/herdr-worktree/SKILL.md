@@ -127,8 +127,12 @@ anything yourself.
 For each task, after writing the prompt file:
 
 ```bash
-# Create worktree + workspace (--no-focus keeps current pane focused)
-result=$(herdr worktree create --branch <worktree-name> --no-focus --json)
+# Create worktree + workspace (--no-focus keeps current pane focused).
+# herdr only creates worktrees from the main checkout (linked_worktree_source otherwise),
+# so point --cwd there and keep the current branch as the base explicitly.
+main_checkout=$(git worktree list --porcelain | sed -n '1s/^worktree //p')
+result=$(herdr worktree create --cwd "$main_checkout" --base "$(git branch --show-current)" \
+  --branch <worktree-name> --no-focus --json)
 pane_id=$(echo "$result" | jq -r '.result.root_pane.pane_id')
 
 # Start the agent in the new workspace's pane.
