@@ -132,7 +132,9 @@ $content")
 対象ノート(${title})の中身:
 ${content}"
   # Trailing newline submits the prompt (same as the interactive skill).
-  herdr agent prompt "$slug" "$prompt"$'\n' --timeout 600000
+  # No --wait: the worker keeps running after this run exits (--timeout is
+  # only accepted together with --wait).
+  herdr agent prompt "$slug" "$prompt"$'\n'
 
   tmp=$(mktemp)
   jq --arg slug "$slug" --arg title "$title" --arg backend "pi/ollama/$MODEL" \
