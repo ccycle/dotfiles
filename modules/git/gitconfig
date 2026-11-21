@@ -71,3 +71,4 @@
 [include]
     path = github/gitconfig
     path = ghq/gitconfig
+    path = user/gitconfig
