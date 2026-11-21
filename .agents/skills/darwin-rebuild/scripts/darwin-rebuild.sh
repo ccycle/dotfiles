@@ -65,23 +65,10 @@ fi
 
 overrides=""
 
-# Ensure machine-local .local state for this checkout (restores
-# storage/obsidian-vault from the main checkout and syncs dotfiles.dir to this
-# checkout), then wire the overrides for whatever now exists.
-"${repo_root}/.agents/skills/setup-local-storage/scripts/ensure-local.sh"
-
-for m in storage obsidian-vault; do
-  if [ -d "${repo_root}/.local/${m}" ]; then
-    overrides="${overrides} --override-input ${m}-config \"path:${repo_root}/.local/${m}\""
-  fi
-done
-
-if [ -d "${repo_root}/.local/dotfiles" ]; then
-  overrides="${overrides} --override-input dotfiles-config \"path:${repo_root}/.local/dotfiles\""
-fi
-
-if [ -d "${repo_root}/.local/user" ]; then
-  overrides="${overrides} --override-input user-config \"path:${repo_root}/.local/user\""
+# .local/obsidian-vault is gitignored; .worktreeinclude copies it into new
+# worktrees.
+if [ -d "${repo_root}/.local/obsidian-vault" ]; then
+  overrides="--override-input obsidian-vault-config \"path:${repo_root}/.local/obsidian-vault\""
 fi
 
 eval sudo -H ${NIX} run "${flake_root}#${app}" -- switch --flake "${flake_root}#${config}" --impure -L ${overrides}

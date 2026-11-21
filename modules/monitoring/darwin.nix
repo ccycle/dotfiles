@@ -16,7 +16,7 @@ in
     assertions = [
       {
         assertion = vol != "";
-        message = "custom.storage.volumes.monitoring must be set. Run: .agents/skills/setup-local-storage/scripts/setup-local-storage.sh monitoring=/Volumes/<YOUR_DRIVE>";
+        message = "custom.storage.volumes.monitoring must be set in the host module (modules/<host>/darwin.nix)";
       }
     ];
 

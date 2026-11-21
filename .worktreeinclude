@@ -13,5 +13,4 @@ modules/static-reports/tests/e2e/.env
 settings.local.json
 
 # Machine-local state (verbatim copy from main checkout)
-.local/storage/
 .local/obsidian-vault/

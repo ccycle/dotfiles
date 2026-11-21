@@ -58,11 +58,7 @@ is suspected to be corrupted).
    not the Determinate Nix installer, whose daemon nix-darwin refuses to
    activate alongside since this repo's nix-darwin manages Nix itself) —
    skipped if a reused VM already has it from a previous run.
-4. Runs `.agents/skills/darwin-rebuild/scripts/darwin-rebuild.sh private` inside the VM. This lets the existing
-   `.local/dotfiles/flake.nix` auto-creation logic
-   ([scripts/ensure-local.sh](../setup-local-storage/scripts/ensure-local.sh), which that script
-   calls) run unmodified, wiring `custom.dotfiles.dir` to the VM-local copy of the
-   worktree.
+4. Runs `.agents/skills/darwin-rebuild/scripts/darwin-rebuild.sh private` inside the VM.
 5. Verifies that the key `mkOutOfStoreSymlink` targets (Claude skills/settings/
    hooks, ai-rules files, herdr config, direnv) resolve into the VM's copy of the
    worktree, not somewhere stale or broken.
@@ -87,8 +83,8 @@ is suspected to be corrupted).
 
 ## Out of Scope
 
-- `mac-mini-m4` / `mac-mini-m4-pro` profiles (they require `.local/storage`
-  pointing at a physically mounted external volume, which has no VM-local
+- `mac-mini-m4` / `mac-mini-m4-pro` profiles (their
+  `custom.storage.volumes` point at a physically mounted external volume, which has no VM-local
   equivalent here).
 - The existing `.agents/skills/smoke-test-*` skills — `private` enables none of
   the services they check, so they don't apply.

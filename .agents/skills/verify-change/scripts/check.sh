@@ -5,12 +5,6 @@ set -e
 SYSTEM=$(nix eval --raw --impure --expr 'builtins.currentSystem')
 echo "Detected system: $SYSTEM"
 
-# Current host identity, used to tell host profiles from foreign ones. On
-# macOS the declared networking.hostName matches `scutil --get LocalHostName`.
-LOCAL_HOST="$(scutil --get LocalHostName 2>/dev/null || hostname -s)"
-LOCAL_HOST="$(echo "$LOCAL_HOST" | tr '[:upper:]' '[:lower:]' | sed 's/\.local$//')"
-echo "Detected host: $LOCAL_HOST"
-
 function check_syntax() {
   echo "=== 🔍 Checking Nix Syntax ==="
   find . -name "*.nix" -not -path "*/node_modules/*" -not -path "*/.git/*" -print0 | xargs -0 nix-instantiate --parse >/dev/null
@@ -127,40 +121,6 @@ function list_configs() {
   ' --raw --impure
 }
 
-# Declared hostName of a config; "null" means the profile is host-agnostic
-# (no host module pins it, so it is meant to build on any machine).
-function get_config_host() {
-  nix eval "${1}#darwinConfigurations.${2}.config.networking.hostName" --json --impure 2>/dev/null | jq -r .
-}
-
-# Machine-local state (.local/storage) is only valid for the current host.
-# Foreign profiles would fail eval-time assertions because their services'
-# storage volumes are not configured on this machine, so dry-run them against
-# a placeholder that satisfies every known volume assertion. Keep the service
-# list in sync with the `assertions` in modules/<service>/darwin.nix.
-function get_placeholder_storage() {
-  local dir="${REPO_ROOT}/.local/.verify-placeholder-storage"
-  mkdir -p "${dir}/vol"
-  cat >"${dir}/flake.nix" <<EOF
-{
-  outputs = { ... }: {
-    darwinModules.default = { ... }: {
-      custom.storage.volumes = {
-        forgejo = "${dir}/vol";
-        gitlab = "${dir}/vol";
-        immich = "${dir}/vol";
-        llm-server = "${dir}/vol";
-        monitoring = "${dir}/vol";
-        navidrome = "${dir}/vol";
-        opencloud = "${dir}/vol";
-      };
-    };
-  };
-}
-EOF
-  echo "${dir}"
-}
-
 function build_dry_run() {
   local flake_path=$1
   local config=$2
@@ -177,29 +137,8 @@ function build_dry_run() {
   fi
 
   local override_args=()
-  # Host-agnostic configs and the current host's config use the real
-  # machine-local storage; foreign hosts use a placeholder so their volume
-  # assertions cannot fail from missing machine state.
-  local storage_override=""
-  local host
-  host="$(get_config_host "$flake_path" "$config")"
-  if [ -n "${host}" ] && [ "${host}" != "null" ] && [ "${host}" != "${LOCAL_HOST}" ]; then
-    echo "  (host '${host}' != current '${LOCAL_HOST}': using placeholder storage config)"
-    storage_override="$(get_placeholder_storage)"
-  elif [ -d "${REPO_ROOT}/.local/storage" ]; then
-    storage_override="${REPO_ROOT}/.local/storage"
-  fi
-  if [ -n "${storage_override}" ]; then
-    override_args+=(--override-input storage-config "path:${storage_override}")
-  fi
-  if [ -d "${REPO_ROOT}/.local/dotfiles" ]; then
-    override_args+=(--override-input dotfiles-config "path:${REPO_ROOT}/.local/dotfiles")
-  fi
   if [ -d "${REPO_ROOT}/.local/obsidian-vault" ]; then
     override_args+=(--override-input obsidian-vault-config "path:${REPO_ROOT}/.local/obsidian-vault")
-  fi
-  if [ -d "${REPO_ROOT}/.local/user" ]; then
-    override_args+=(--override-input user-config "path:${REPO_ROOT}/.local/user")
   fi
 
   local target="${flake_path}#darwinConfigurations.${config}.system"
@@ -232,14 +171,7 @@ if [ -f /etc/nix/nix.conf ] && grep -q 'ssl-cert-file' /etc/nix/nix.conf; then
   fi
 fi
 
-# 0.5. Ensure machine-local .local state for this checkout. Worktrees never
-# carry the gitignored .local/ directory; restore storage/obsidian-vault from
-# the main checkout and regenerate dotfiles.dir so the dry-run validates THIS
-# checkout's files instead of main's.
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../.." && pwd)"
-echo "=== 📂 Ensuring machine-local .local state ==="
-"${REPO_ROOT}/.agents/skills/setup-local-storage/scripts/ensure-local.sh"
-echo ""
 
 # 1. Syntax check
 check_syntax

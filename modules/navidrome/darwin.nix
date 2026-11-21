@@ -16,7 +16,7 @@ in
     assertions = [
       {
         assertion = vol != "";
-        message = "custom.storage.volumes.navidrome must be set. Run: .agents/skills/setup-local-storage/scripts/setup-local-storage.sh navidrome=/Volumes/<YOUR_DRIVE>";
+        message = "custom.storage.volumes.navidrome must be set in the host module (modules/<host>/darwin.nix)";
       }
     ];
 

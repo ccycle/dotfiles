@@ -3,8 +3,8 @@
 ## Purpose
 
 Let each service declare where its data lives (`custom.storage.volumes.<service>`)
-without hardcoding a path in tracked Nix files. The actual value comes from
-`.local/storage/flake.nix`, a gitignored, per-machine override.
+without hardcoding a path in tracked Nix files. The actual values are committed in each host module
+(`modules/<host>/darwin.nix`).
 
 ## Why Per-Service, Not a Single Shared Root
 

@@ -14,7 +14,7 @@ Enable the official Obsidian CLI (`obsidian`) to be used from the command line a
 ## Why This Structure
 
 - **Single-file module** (`home.nix` with both `options` and `config`): The module has one small function. Splitting it into `options.nix` and `home.nix` would add import boilerplate without benefit.
-- **[default-config/flake.nix](default-config/flake.nix)**: Follows the same `--override-input` pattern as `modules/storage/default-config`. This is the established dotfiles convention for local-overridable configs that must survive Nix evaluation inside the store (where `builtins.pathExists` to the repo root fails).
+- **[default-config/flake.nix](default-config/flake.nix)**: Uses the `--override-input` pattern, the dotfiles convention for local-overridable configs that must survive Nix evaluation inside the store (where `builtins.pathExists` to the repo root fails).
 - **Agent Skill in `.agents/skills/obsidian-manager/`**: The `obsidian` CLI is best exercised by an Agent calling its subcommands. The Skill provides the task descriptions; the module provides the environment (PATH, activation) that makes those commands work.
 
 ## Rejected Alternatives

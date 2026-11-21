@@ -92,15 +92,8 @@ mac-mini-m4 | mac-mini-m4-pro) ;;
 *) die "unsupported host '${HOST}'; run this on mac-mini-m4 or mac-mini-m4-pro" ;;
 esac
 
-# Worktrees lack the gitignored .local/ state; restore it and wire the
-# same flake overrides darwin-rebuild.sh uses so nix eval can succeed.
-"${REPO_ROOT}/.agents/skills/setup-local-storage/scripts/ensure-local.sh"
-
 eval_args=()
-for m in storage obsidian-vault; do
-  [ -d "${REPO_ROOT}/.local/${m}" ] && eval_args+=(--override-input "${m}-config" "path:${REPO_ROOT}/.local/${m}")
-done
-[ -d "${REPO_ROOT}/.local/dotfiles" ] && eval_args+=(--override-input dotfiles-config "path:${REPO_ROOT}/.local/dotfiles")
+[ -d "${REPO_ROOT}/.local/obsidian-vault" ] && eval_args+=(--override-input obsidian-vault-config "path:${REPO_ROOT}/.local/obsidian-vault")
 
 echo "== reading declared config for ${HOST} =="
 clients_json="$(${NIX} eval --json --impure "${eval_args[@]}" ".#darwinConfigurations.${HOST}.config.services.pocket-id.oidcClients")"

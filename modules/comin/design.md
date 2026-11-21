@@ -65,8 +65,8 @@ since comin runs as a root launchd daemon outside any user session.
 comin evaluates the flake via `git+file://<repo>?rev=<sha>` - a
 content-addressed fetch from git history at that commit, not a
 read of the working tree. Gitignored files (`.local/storage`,
-`.local/user`, etc., which `scripts/darwin-rebuild.sh` normally
-injects via `--override-input`) are therefore invisible to comin no
+`.local/user`, etc., which `scripts/darwin-rebuild.sh` used to
+inject via `--override-input`) are therefore invisible to comin no
 matter what exists on disk beside its clone. Confirmed empirically:
 `nix eval` against `darwinConfigurations.mac-mini-m4{,-pro}` with no
 overrides (comin's exact invocation - see `internal/executor/utils.go`,
