@@ -1,0 +1,85 @@
+{
+  "title": "DORA (comin deployments)",
+  "uid": "dora",
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": true,
+  "time": { "from": "now-30d", "to": "now" },
+  "refresh": "5m",
+  "description": "Derived from comin_deployment_info, which comin Reset()s and re-sets to a single {commit_id,status} series per deployment, so distinct commit_ids over the range count deployments. Bounded by Prometheus retention (30d). Lead time is not shown: commit timestamps are not in any metric.",
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Deployments (range)",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "count(count by (commit_id) (max_over_time(comin_deployment_info{status=\"done\"}[$__range]))) or vector(0)",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Change failure rate",
+      "description": "Failed / (done + failed) distinct commits. A commit that failed and later succeeded counts in both.",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 0 },
+      "fieldConfig": { "defaults": { "unit": "percentunit" }, "overrides": [] },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "(count(count by (commit_id) (max_over_time(comin_deployment_info{status=\"failed\"}[$__range]))) or vector(0)) / count(count by (commit_id) (max_over_time(comin_deployment_info{status=~\"done|failed\"}[$__range])))",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Mean time to restore",
+      "description": "Total time the latest deployment was in failed state / number of failed commits (1m resolution).",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 6, "w": 6, "x": 12, "y": 0 },
+      "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum_over_time(max(comin_deployment_info{status=\"failed\"})[$__range:1m]) * 60 / count(count by (commit_id) (max_over_time(comin_deployment_info{status=\"failed\"}[$__range])))",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Remotes failing to fetch",
+      "description": "Non-zero means comin cannot see new commits, so the panels above stop counting.",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 6, "w": 6, "x": 18, "y": 0 },
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "red", "value": 1 } ] }
+        },
+        "overrides": []
+      },
+      "targets": [
+        { "refId": "A", "expr": "sum(comin_last_fetch_failed)", "instant": true }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "Deployment status by commit",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 6 },
+      "targets": [
+        { "refId": "A", "expr": "comin_deployment_info", "legendFormat": "{{status}} {{commit_id}}" }
+      ]
+    }
+  ]
+}

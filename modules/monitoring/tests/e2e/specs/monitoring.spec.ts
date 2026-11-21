@@ -118,6 +118,14 @@ test("Grafana local admin can log in via the API and fetch the real services-ove
   expect(body.dashboard.panels.length, "dashboard has panels").toBeGreaterThan(0);
 });
 
+test("Grafana provisions the DORA dashboard from the checked-in JSON", async ({ request }) => {
+  await grafanaApiLogin(request);
+  const res = await request.get(`${GRAFANA_URL}/api/dashboards/uid/dora`);
+  expect(res.ok(), `dashboard fetch: ${res.status()} ${await res.text()}`).toBeTruthy();
+  const body = (await res.json()) as { dashboard: { title: string } };
+  expect(body.dashboard.title).toBe("DORA (comin deployments)");
+});
+
 test("Grafana dashboard renders in the browser without console errors", async ({ page }) => {
   const consoleErrors: string[] = [];
   page.on("console", (msg) => {
