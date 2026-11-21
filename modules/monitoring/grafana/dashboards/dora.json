@@ -63,13 +63,17 @@
       "gridPos": { "h": 6, "w": 6, "x": 18, "y": 0 },
       "fieldConfig": {
         "defaults": {
-          "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "red", "value": 1 } ] }
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "red", "value": 1 }
+            ]
+          }
         },
         "overrides": []
       },
-      "targets": [
-        { "refId": "A", "expr": "sum(comin_last_fetch_failed)", "instant": true }
-      ]
+      "targets": [{ "refId": "A", "expr": "sum(comin_last_fetch_failed)", "instant": true }]
     },
     {
       "id": 5,
@@ -78,7 +82,11 @@
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "gridPos": { "h": 8, "w": 24, "x": 0, "y": 6 },
       "targets": [
-        { "refId": "A", "expr": "comin_deployment_info", "legendFormat": "{{status}} {{commit_id}}" }
+        {
+          "refId": "A",
+          "expr": "comin_deployment_info",
+          "legendFormat": "{{status}} {{commit_id}}"
+        }
       ]
     }
   ]
