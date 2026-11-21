@@ -136,17 +136,12 @@ function build_dry_run() {
     return 0
   fi
 
-  local override_args=()
-  if [ -d "${REPO_ROOT}/.local/obsidian-vault" ]; then
-    override_args+=(--override-input obsidian-vault-config "path:${REPO_ROOT}/.local/obsidian-vault")
-  fi
-
   local target="${flake_path}#darwinConfigurations.${config}.system"
   echo "Target: $target"
   # A real build instead of --dry-run: check_expected_bins needs the output,
   # and one build costs about the same as a dry-run plus a second evaluation.
   local system_out
-  system_out=$(nix build "$target" --impure -L --no-link --print-out-paths "${override_args[@]}")
+  system_out=$(nix build "$target" --impure -L --no-link --print-out-paths)
   echo "✅ $profile build passed."
 
   check_expected_bins "$flake_path" "$config" "$system_out"

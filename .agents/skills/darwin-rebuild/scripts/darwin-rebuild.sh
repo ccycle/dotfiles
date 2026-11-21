@@ -63,15 +63,7 @@ else
   exit 1
 fi
 
-overrides=""
-
-# .local/obsidian-vault is gitignored; .worktreeinclude copies it into new
-# worktrees.
-if [ -d "${repo_root}/.local/obsidian-vault" ]; then
-  overrides="--override-input obsidian-vault-config \"path:${repo_root}/.local/obsidian-vault\""
-fi
-
-eval sudo -H ${NIX} run "${flake_root}#${app}" -- switch --flake "${flake_root}#${config}" --impure -L ${overrides}
+eval sudo -H ${NIX} run "${flake_root}#${app}" -- switch --flake "${flake_root}#${config}" --impure -L
 
 # Best-effort push of the new system and home-manager closures to the attic
 # cache (push-on-event model). Failures must not fail the rebuild.

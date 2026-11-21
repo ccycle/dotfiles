@@ -2804,17 +2804,6 @@
         "type": "github"
       }
     },
-    "obsidian-vault-config": {
-      "locked": {
-        "path": "./modules/obsidian/default-config",
-        "type": "path"
-      },
-      "original": {
-        "path": "./modules/obsidian/default-config",
-        "type": "path"
-      },
-      "parent": []
-    },
     "old-ghc-nix": {
       "flake": false,
       "locked": {
@@ -3011,7 +3000,6 @@
         "nixpkgs-2605": "nixpkgs-2605_2",
         "nixpkgs-playwright": "nixpkgs-playwright",
         "nixpkgs-unstable": "nixpkgs-unstable_3",
-        "obsidian-vault-config": "obsidian-vault-config",
         "pi": "pi",
         "pip2nix": "pip2nix",
         "pyzotero-cli": "pyzotero-cli",

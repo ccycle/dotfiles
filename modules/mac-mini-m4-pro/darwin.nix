@@ -1,5 +1,6 @@
 {
   lib,
+  username,
   ...
 }:
 
@@ -19,6 +20,10 @@
     opencloud = "/Volumes/WD_BLACK_SN850X_TB5";
   };
   services.comin.enable = true;
+  home-manager.users.${username}.obsidian = {
+    enable = true;
+    vaults = [ "/Users/ccycle/Obsidian/zettelkasten" ];
+  };
 
   services.altserver.enable = true;
   services.tailscale.splitDns.enable = true;

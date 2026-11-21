@@ -11,6 +11,3 @@ modules/static-reports/tests/e2e/.env
 
 # Local editor/tool settings
 settings.local.json
-
-# Machine-local state (verbatim copy from main checkout)
-.local/obsidian-vault/

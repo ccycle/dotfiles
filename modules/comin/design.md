@@ -100,9 +100,10 @@ All profiles share the anonymous username `ccycle` (hardcoded in
 (`custom.storage.volumes`, `custom.dotfiles.dir`) are committed
 directly in each host's `darwin.nix` via `lib.mkDefault`. The former
 `.local/*` override-input mechanism (`user-config`, `storage-config`,
-`dotfiles-config`) has been removed — comin's pure evaluation cannot
-see gitignored files, and unifying the username across all machines
-eliminates the need for per-machine identity overrides.
+`dotfiles-config`, and later `obsidian-vault-config`) has been removed —
+comin's pure evaluation cannot see gitignored files, and unifying the
+username across all machines eliminates the need for per-machine identity
+overrides.
 
 A private `builtins.fetchGit`-based repo was evaluated and rejected:
 it carried a rev-pinning cost on every value change, forced a

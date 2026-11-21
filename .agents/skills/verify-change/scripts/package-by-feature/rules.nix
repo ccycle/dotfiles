@@ -34,9 +34,7 @@
   ];
 
   # Paths (repo-relative) fully exempt from every check.
-  exemptPaths = [
-    "modules/obsidian/default-config" # standalone flake used as --override-input stub
-  ];
+  exemptPaths = [ ];
 
   # Feature directories intentionally not imported by their parent
   # aggregator (e.g. temporarily disabled via a commented-out import).

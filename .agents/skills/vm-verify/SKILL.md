@@ -10,7 +10,7 @@ description: Verify darwin-rebuild switch (private profile) and dotfiles symlink
 `repo_root` into every `mkOutOfStoreSymlink` target (Claude skills/settings/hooks,
 ai-rules files, herdr config, direnv). Running it directly from a git worktree
 repoints those symlinks away from the main checkout and corrupts the host's real
-state. `.local/` is also gitignored, so it never exists in a fresh worktree.
+state.
 
 This skill sidesteps both problems by running the real `darwin-rebuild switch`
 inside a macOS VM (via [Tart](https://tart.run/)) that has its own independent
@@ -51,9 +51,7 @@ is suspected to be corrupted).
    `--fresh` is passed, or if the previous VM is missing/corrupt. Boots it
    headless either way.
 2. `rsync`s the current worktree into the VM over SSH (excluding `.git`, with
-   `--delete` so files removed from the worktree don't linger in a reused VM;
-   `.local/` is gitignored so it's never transferred — no host-local secrets or
-   paths leak into the VM).
+   `--delete` so files removed from the worktree don't linger in a reused VM).
 3. Installs Nix inside the VM (upstream multi-user installer, non-interactive —
    not the Determinate Nix installer, whose daemon nix-darwin refuses to
    activate alongside since this repo's nix-darwin manages Nix itself) —

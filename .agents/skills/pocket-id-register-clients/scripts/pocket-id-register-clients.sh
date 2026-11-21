@@ -92,12 +92,9 @@ mac-mini-m4 | mac-mini-m4-pro) ;;
 *) die "unsupported host '${HOST}'; run this on mac-mini-m4 or mac-mini-m4-pro" ;;
 esac
 
-eval_args=()
-[ -d "${REPO_ROOT}/.local/obsidian-vault" ] && eval_args+=(--override-input obsidian-vault-config "path:${REPO_ROOT}/.local/obsidian-vault")
-
 echo "== reading declared config for ${HOST} =="
-clients_json="$(${NIX} eval --json --impure "${eval_args[@]}" ".#darwinConfigurations.${HOST}.config.services.pocket-id.oidcClients")"
-groups_json="$(${NIX} eval --json --impure "${eval_args[@]}" ".#darwinConfigurations.${HOST}.config.services.pocket-id.oidcGroups")"
+clients_json="$(${NIX} eval --json --impure ".#darwinConfigurations.${HOST}.config.services.pocket-id.oidcClients")"
+groups_json="$(${NIX} eval --json --impure ".#darwinConfigurations.${HOST}.config.services.pocket-id.oidcGroups")"
 
 secrets_file="modules/pocket-id/secrets-${HOST}.yaml"
 api_key="$(sops -d --output-type json "${secrets_file}" 2>/dev/null | jq -r '.pocket_id_admin_api_key // empty' 2>/dev/null || true)"
