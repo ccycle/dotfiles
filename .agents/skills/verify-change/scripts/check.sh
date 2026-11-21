@@ -31,6 +31,23 @@ function check_md_links() {
   echo ""
 }
 
+# comin evaluates the committed flake purely, so anything injected with
+# --override-input (e.g. gitignored .local/* flakes) silently diverges from
+# what comin deploys. All per-host values must be committed in
+# modules/<host>/darwin.nix instead. See modules/comin/design.md.
+function check_no_override_input() {
+  echo "=== 🚫 Checking for --override-input usage ==="
+  local hits
+  hits="$(git -C "${REPO_ROOT}" grep --untracked -nE -- '--override-input|"path:' -- ':!*.md' ':!flake.lock' ':!.agents/skills/verify-change/scripts/check.sh' || true)"
+  if [ -n "${hits}" ]; then
+    echo "${hits}"
+    echo "❌ --override-input / path: flake inputs are forbidden; commit the value in modules/<host>/darwin.nix." >&2
+    return 1
+  fi
+  echo "✅ No --override-input usage."
+  echo ""
+}
+
 function check_recipients() {
   echo "=== 🔐 Checking sops recipient drift against age key ledger ==="
   "${REPO_ROOT}/.agents/skills/credentials-manager/scripts/check-recipients.sh"
@@ -178,6 +195,9 @@ echo ""
 
 # 2.5. Markdown file references (links, not inline code; no broken targets)
 check_md_links
+
+# 2.55. comin-incompatible override inputs
+check_no_override_input
 
 # 2.6. Sops recipient check against the age key ledger
 check_recipients

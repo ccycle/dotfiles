@@ -103,7 +103,7 @@ directly in each host's `darwin.nix` via `lib.mkDefault`. The former
 `dotfiles-config`, and later `obsidian-vault-config`) has been removed —
 comin's pure evaluation cannot see gitignored files, and unifying the
 username across all machines eliminates the need for per-machine identity
-overrides.
+overrides. `verify-change` rejects any reintroduced `--override-input`.
 
 A private `builtins.fetchGit`-based repo was evaluated and rejected:
 it carried a rev-pinning cost on every value change, forced a

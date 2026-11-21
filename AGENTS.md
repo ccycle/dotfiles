@@ -67,6 +67,7 @@ Modules must access external flake inputs through the `inputs` attribute, not as
 - **Formatting:** Run `nix fmt` after editing Nix files.
 - **Syntax Validation:** Run `nix-instantiate --parse <file>` before committing. For flake-based files, `nix flake check` or `nix build --dry-run` catches evaluation errors.
 - **Secrets Management:** Secrets are managed with sops-nix — never hardcode them in Nix files. Edit the per-module `secrets.yaml` files with the `sops` CLI, never the encrypted file directly. Reference secrets via `config.sops.secrets.<name>.path`.
+- **No Override Inputs:** comin deploys the committed flake as-is, so never use `--override-input` or gitignored `.local/*` flakes. Commit per-host values in `modules/<host>/darwin.nix`. `verify-change` enforces this.
 - **Flake Lock:** Never edit `flake.lock` directly — use `nix flake update` or `nix flake lock --update-input <input>`.
 
 ## File Preference Policy
