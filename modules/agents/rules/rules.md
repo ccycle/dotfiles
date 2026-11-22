@@ -78,6 +78,13 @@ Never maintain the same fact in two places. Code carries its own constraints; do
 
 Use the `no-comments` skill to strip comments from a diff and encode what they claimed, the `design-doc` skill to create or update a `design.md`, and the `doc-audit` skill to find code/doc duplication and drift.
 
+## Change Sequencing
+
+- Subtract before you add: remove dead code, redundant guards, and stale references first, then build on the simpler base.
+- Migrate callers, then delete the old API in the same change; do not keep a compatibility layer when no external user depends on it.
+- In a planned migration, converge on the target design instead of writing throwaway compatibility code.
+  Intermediate breakage is allowed only between commits on a working branch: every merge to the default branch must build and pass verification, because the default branch may be deployed as-is (the dotfiles repo's comin does exactly that).
+
 ## Japanese Output
 
 Before writing any Japanese text — a chat reply, a file, a commit message, or an artifact — load the `japanese-writing` skill and follow it.
