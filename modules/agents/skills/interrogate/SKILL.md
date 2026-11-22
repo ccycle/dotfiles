@@ -44,6 +44,7 @@ The CLIs may run with broad tool permissions, so after they finish, check `git s
 
 Give every adversary the scope, the intent, the worktree path, and this brief verbatim:
 
+> Read ~/.claude/CLAUDE.md and ~/.claude/rules/loop-engineering.md before anything else.
 > Break this change.
 > Work only inside the worktree path given.
 > Prove each finding with a run against the real code: a failing test, a repro script, or command output that shows the wrong behavior.

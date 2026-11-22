@@ -37,6 +37,8 @@ Do NOT read source files, edit code, or implement tasks yourself.
 
 **Prompt file rules:**
 
+- First line: `Read ~/.claude/CLAUDE.md and ~/.claude/rules/loop-engineering.md before anything else.` (a non-Claude agent may not load them on its own)
+- A `Bar:` line naming the checks the work must pass; the agent treats it as the whole bar (see "Delegated work" in loop-engineering)
 - Self-contained with full context (agents cannot see your conversation)
 - Use RELATIVE paths only (each worktree has its own root)
 - If referencing earlier conversation context, include it verbatim
@@ -145,3 +147,7 @@ Spawn multiple agents, wait for all, review, merge:
 6. **Use timeouts** to avoid waiting forever. Handle timeout exits gracefully.
 7. **Prompt files should use relative paths** (each worktree has its own root).
 8. You are a coordinator, not an implementer. Never edit source files directly.
+
+## Sources
+
+The rule-file first line and the `Bar:` line are adapted (rewritten, not copied) from the `worker.md` kickoff in [cursor/plugins pstack](https://github.com/cursor/plugins/tree/main/pstack) (MIT).

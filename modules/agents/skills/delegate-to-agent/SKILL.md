@@ -88,12 +88,16 @@ the work in-place:
 
 ```bash
 herdr agent prompt <name> "$(cat <<'EOF'
+Read ~/.claude/CLAUDE.md and ~/.claude/rules/loop-engineering.md before anything else.
+
 You are continuing a task in this worktree (same branch, same repo root).
 
 First read the handoff file and follow it:
   <handoff_path>
 
 Task: <task text / session task>
+
+Bar: <the checks this work must pass, e.g. "verify-change for mac-mini-m4-pro">
 
 Continue the work in this worktree. Do NOT create new worktrees, do NOT spawn
 more agents, and do NOT write handoff files — just do the task. Keep your
@@ -125,3 +129,12 @@ Tell the user:
 5. Stop after sending the prompt — do not wait, poll, or monitor.
 6. The prompt must reference the handoff file and forbid nested delegation (no
    new worktrees, no further agents, no extra handoff files).
+7. The prompt's first line tells the delegate to read the rule files, because
+   a non-Claude agent may not load them on its own.
+8. The prompt states the bar explicitly. The delegate treats it as the whole
+   bar (see "Delegated work" in loop-engineering), so a missing check in the
+   bar will not be run.
+
+## Sources
+
+Rules 7 and 8 are adapted (rewritten, not copied) from the `worker.md` kickoff in [cursor/plugins pstack](https://github.com/cursor/plugins/tree/main/pstack) (MIT).

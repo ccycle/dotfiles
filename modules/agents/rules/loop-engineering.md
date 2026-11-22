@@ -21,6 +21,12 @@ Minimum criteria by task type:
 Before declaring done, run every verification command from the criteria and report each result with the actual output.
 If any criterion fails, iterate or escalate — never declare done with failing criteria.
 
+Exceptions:
+
+- Delegated work: when an agent is started with a kickoff that states the bar (the checks the work must pass), that bar is the whole bar.
+  Do not add checks, gates, or review rounds above it, including the minimum criteria above.
+  With no bar stated, the minimum criteria above apply.
+
 ## Long Autonomous Runs
 
 Applies only when the user explicitly starts a long-running loop (`/loop`, "keep going until X", "run overnight").
