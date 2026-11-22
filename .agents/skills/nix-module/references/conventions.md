@@ -118,3 +118,17 @@ Directories that group related packages by category (e.g., `cli-tools`, `languag
 When a home-manager module should only apply on darwin (e.g., brew cask installations), inject it via `home-manager.sharedModules` in the feature's `darwin.nix` rather than importing it from the global [modules/home.nix](../../../../modules/home.nix).
 
 **Precedent:** [modules/docker/orbstack/darwin.nix](../../../../modules/docker/orbstack/darwin.nix) injects `orbstack/home.nix` via `home-manager.sharedModules`.
+
+## 9. Activation Scripts Must Be Idempotent
+
+`home.activation` and `system.activationScripts` run on every switch, after crashes, and after partial earlier runs.
+Each one must converge to the same end state no matter how many times it runs or where a previous run stopped.
+
+**Rule:**
+
+- Derive each step from the state that exists now, not from what a previous run meant to do: read the current state, compare it with the goal, and apply only the difference.
+- Make leftovers recognizable as stale: write to a temporary path and `mv` it into place instead of writing the target in place.
+- Before merging, answer two questions for the script: what happens if it runs twice in a row, and what happens if the previous run died at each step.
+  If the answer depends on what was left behind, add a reconciliation step.
+
+Adapted (rewritten, not copied) from the `make-operations-idempotent` principle in [cursor/plugins pstack](https://github.com/cursor/plugins/tree/main/pstack) (MIT).
