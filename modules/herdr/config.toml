@@ -53,3 +53,22 @@ path=$(herdr worktree list | jq -r '.result.worktrees[] | select(.is_linked_work
 key = "prefix+a"
 type = "shell"
 command = "$HOME/.config/herdr/scripts/group-workspaces.sh"
+
+# Agents waiting on the user: blocked (question/permission) first, then done, oldest first.
+# prefix+j is taken by the default focus_pane_down.
+[[keys.command]]
+key = "prefix+i"
+# popup, not shell: shell runs detached with no terminal, so fzf cannot draw.
+type = "popup"
+width = "90%"
+height = "80%"
+command = '''
+pane=$(herdr agent list | jq -r '.result.agents
+  | map(select(.agent_status == "blocked" or .agent_status == "done"))
+  | sort_by(.agent_status != "blocked", .state_change_seq) | .[]
+  | "\(.pane_id)\t\(.agent_status)\t\(.name // .terminal_title_stripped)"' \
+  | fzf --height 100% --layout=reverse --border --delimiter='\t' --with-nth=2.. \
+        --preview 'herdr agent read {1} --lines 30' --preview-window=right:70%:wrap \
+  | cut -f1)
+[ -n "$pane" ] && herdr agent focus "$pane"
+'''
