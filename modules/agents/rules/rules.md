@@ -65,17 +65,18 @@ User-facing documentation (README, commit messages) may use any language.
 
 ## Documentation Placement Principle
 
-Never maintain the same fact in two places. Implementation details belong in code comments; documentation carries only design intent that code cannot express.
+Never maintain the same fact in two places. Code carries its own constraints; documentation carries only design intent that code cannot express.
 
 **What this means in practice:**
 
-- Code comments explain the "why" at code level: non-obvious constraints, invariants, gotchas, and reasons a simpler approach was not used.
+- Do not write code comments. A comment is an unenforced claim that drifts silently.
+- Encode a constraint instead: a name that says it, a type, an option without a default, an assertion, a lint or check whose error names the fix, or a test that fails when the constraint breaks.
+- The only allowed comment is about something this code cannot change (an upstream bug, an external format quirk, a vendor requirement), and it must link to the external source.
 - Design intent that code cannot express — rationale for structure, non-goals, rejected alternatives, trade-offs, cross-cutting constraints — goes in a `design.md` next to the code it describes.
-- Never restate in documentation what the code or its comments already say (signatures, option values, file lists, step-by-step behavior).
-- If a documented statement would become wrong after a mechanical code change (rename, reorder, restructure), it belongs in or next to the code, not in a doc.
-- Docs MUST NOT duplicate comments, and comments MUST NOT duplicate docs.
+- Never restate in documentation what the code already says (signatures, option values, file lists, step-by-step behavior).
+- If a documented statement would become wrong after a mechanical code change (rename, reorder, restructure), it belongs in the code, not in a doc.
 
-Use the `design-doc` skill to create or update a `design.md`, and the `doc-audit` skill to find code/doc duplication and drift.
+Use the `no-comments` skill to strip comments from a diff and encode what they claimed, the `design-doc` skill to create or update a `design.md`, and the `doc-audit` skill to find code/doc duplication and drift.
 
 ## Japanese Output
 
