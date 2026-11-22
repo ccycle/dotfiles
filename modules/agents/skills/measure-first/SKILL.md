@@ -30,6 +30,10 @@ Preferred sources, in order:
 If a claim genuinely cannot be measured, mark it `unverifiable` and say why —
 never substitute a guess.
 
+If a claim is a performance number (latency, throughput, a speedup, a
+regression), also answer every question in the
+[benchmark checklist](references/benchmark-checklist.md) before reporting it.
+
 ## 3. Measure
 
 Run the measurements. Record the actual output verbatim as evidence.
