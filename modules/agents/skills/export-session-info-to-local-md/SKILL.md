@@ -90,7 +90,19 @@ than a fabricated long one.
 Write the entire file in English for token efficiency — the successor agent
 reads this, not a human.
 
-## Step 5 — Write the file
+## Step 5 — Commit work in progress
+
+Uncommitted edits are lost if the worktree is cleaned up, so make them durable before handing off:
+
+```bash
+git status --porcelain
+```
+
+If it prints anything other than the handoff file itself, stage those changes and commit them on the current branch as one `wip: <slug>` commit.
+If the tree does not build or tests fail, say so in one line of the commit body.
+Do not push, and do not include `<slug>.md` in this commit.
+
+## Step 6 — Write the file
 
 Overwrite `<slug>.md` with the current snapshot, following this skeleton.
 Adapt it to the task; the sections are a guide, not a straitjacket.
@@ -132,19 +144,21 @@ Adapt it to the task; the sections are a guide, not a straitjacket.
 # write the file (path: $repo_root/$slug.md)
 ```
 
-## Step 6 — Report
+## Step 7 — Report
 
 Tell the user:
 
 - The path of the written file (`<slug>.md`)
 - A one-line summary of the snapshot
+- The `wip:` commit SHA, if Step 5 made one
 - That the successor agent (or the human) can read the file to continue;
   suggest committing it if it should travel with the branch
 
 ## Rules
 
 1. Write only `<slug>.md` at the git repo root — never create any other file,
-   and never write outside the repository.
+   and never write outside the repository. The Step 5 `wip:` commit is the
+   only other change this skill makes.
 2. The slug is derived from the **task name** (Step 1–2), not from the branch
    name. Never fall back to the branch name or a generic label.
 3. Overwrite an existing file — it is a snapshot of current state, not an
@@ -158,3 +172,9 @@ Tell the user:
 6. Never fabricate session state. If you lack context, record that honestly.
 7. Explicit invocation only — do not write a handoff file on your own
    initiative unless the user asks for it.
+
+## Sources
+
+The work-in-progress commit step is adapted (rewritten, not copied) from the
+`pause-safely` playbook in
+[cursor/plugins pstack](https://github.com/cursor/plugins/tree/main/pstack) (MIT).
