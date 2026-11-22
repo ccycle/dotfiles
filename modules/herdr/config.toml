@@ -37,3 +37,9 @@ command = '''
 path=$(herdr worktree list | jq -r '.result.worktrees[] | select(.is_linked_worktree) | "\(.branch // \"detached\")\t\(.path)"' | fzf --height 40% --layout=reverse --border --with-nth=1 | awk -F'\t' '{print $2}')
 [ -n "$path" ] && herdr worktree open --path "$path" --focus
 '''
+
+# Put workspaces whose labels share a prefix next to each other.
+[[keys.command]]
+key = "prefix+a"
+type = "shell"
+command = "$HOME/.config/herdr/scripts/group-workspaces.sh"

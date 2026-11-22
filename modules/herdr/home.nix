@@ -22,6 +22,9 @@
   home.file."${config.home.homeDirectory}/.config/herdr/config.toml".source =
     config.lib.file.mkOutOfStoreSymlink "${config.custom.dotfiles.dir}/modules/herdr/config.toml";
 
+  home.file."${config.home.homeDirectory}/.config/herdr/scripts/group-workspaces.sh".source =
+    config.lib.file.mkOutOfStoreSymlink "${config.custom.dotfiles.dir}/modules/herdr/group-workspaces.sh";
+
   home.file."${config.home.homeDirectory}/.config/herdr/plugins/config/persiyanov.reviewr/config.toml".source =
     config.lib.file.mkOutOfStoreSymlink "${config.custom.dotfiles.dir}/modules/herdr/reviewr-config.toml";
 
