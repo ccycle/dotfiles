@@ -107,7 +107,9 @@ When something is unknown or broken:
   3. If the observation contradicts the premise, look for what the failures
      share that the premise did not predict, and change what causes it
      instead of adding a mechanism that cleans up after it.
+
   Do not write the next fix until the premise is written down and tested.
+
 - For concrete retry limits and escalation policy, see `~/.claude/rules/loop-engineering.md`.
 
 ## 8. Self-Review Before Declaring Done

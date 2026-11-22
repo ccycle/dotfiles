@@ -18,11 +18,11 @@ A finding survives only when its command, rerun by you, shows the failure.
 
 One per available CLI, plus one Claude subagent:
 
-| Adversary | Non-interactive form | Model listing |
-| --- | --- | --- |
-| opencode | `opencode run --dir <worktree> -m <provider/model> "<brief>"` | `opencode models` |
-| pi | `cd <worktree> && pi -p --no-session --model <pattern> "<brief>"` | `pi --list-models` |
-| Claude | `Agent` with `subagent_type: "general-purpose"` and the worktree path in the brief | — |
+| Adversary | Non-interactive form                                                               | Model listing      |
+| --------- | ---------------------------------------------------------------------------------- | ------------------ |
+| opencode  | `opencode run --dir <worktree> -m <provider/model> "<brief>"`                      | `opencode models`  |
+| pi        | `cd <worktree> && pi -p --no-session --model <pattern> "<brief>"`                  | `pi --list-models` |
+| Claude    | `Agent` with `subagent_type: "general-purpose"` and the worktree path in the brief | —                  |
 
 Use the models the user named.
 If none were named, pick a model from a different vendor than the session model for each CLI (from its listing), and name the choice in the report.
