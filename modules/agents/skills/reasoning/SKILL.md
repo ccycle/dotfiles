@@ -99,6 +99,15 @@ When something is unknown or broken:
 - Two or more failed fixes in a row means the model of the problem is wrong,
   not that the next patch will work. Widen the investigation instead of
   narrowing it.
+- Before the next fix, attack the premise:
+  1. Write down the one sentence every failed fix assumed.
+  2. Name an observation that would come out differently if that sentence
+     were false, and make it. Look at how the failures are distributed, not
+     only at how large they are.
+  3. If the observation contradicts the premise, look for what the failures
+     share that the premise did not predict, and change what causes it
+     instead of adding a mechanism that cleans up after it.
+  Do not write the next fix until the premise is written down and tested.
 - For concrete retry limits and escalation policy, see `~/.claude/rules/loop-engineering.md`.
 
 ## 8. Self-Review Before Declaring Done
@@ -119,3 +128,9 @@ When something is unknown or broken:
   not a survey of options.
 - State what you did not check. A precise boundary of your verification is
   more useful than an impression of completeness.
+
+## Sources
+
+The premise-attack steps in section 7 are adapted (rewritten, not copied) from
+the `attack-the-premise` principle in
+[cursor/plugins pstack](https://github.com/cursor/plugins/tree/main/pstack) (MIT).
