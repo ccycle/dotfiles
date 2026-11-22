@@ -54,11 +54,8 @@ key = "prefix+a"
 type = "shell"
 command = "$HOME/.config/herdr/scripts/group-workspaces.sh"
 
-# Agents waiting on the user: blocked (question/permission) first, then done, oldest first.
-# prefix+j is taken by the default focus_pane_down.
 [[keys.command]]
 key = "prefix+i"
-# popup, not shell: shell runs detached with no terminal, so fzf cannot draw.
 type = "popup"
 width = "90%"
 height = "80%"
