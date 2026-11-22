@@ -59,6 +59,9 @@
   # Branch protection is managed via the Forgejo GUI (repo Settings >
   # Branches), not services.forgejo.branchProtections - required check
   # contexts live with the workflows that report them.
+  # Merge styles are also GUI-managed (repo Settings > Repository): only
+  # fast-forward is allowed, because Forgejo's server-side rebase drops
+  # commit signatures and comin refuses unsigned commits.
   custom.lm-studio.enable = true;
   services.llm-server.enable = true;
   services.opencode-web.enable = true;
