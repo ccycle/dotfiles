@@ -19,9 +19,10 @@ evidence invalidates its output.
 - Surface implicit constraints: conventions in the surrounding code,
   compatibility requirements, things the user did not say but the environment
   implies.
-- If the request is ambiguous in a way that changes what you would build, ask.
-  Otherwise state your interpretation explicitly and proceed — do not silently
-  guess.
+- If the request is ambiguous, pick the most reasonable interpretation, state
+  it explicitly, and proceed — do not silently guess. If an experiment can
+  settle the ambiguity, run it. Ask only when the choice is product direction
+  (what to build), not execution (how to build it).
 
 ## 2. Maintain a Fact/Assumption Ledger
 

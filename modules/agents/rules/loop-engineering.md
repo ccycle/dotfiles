@@ -23,25 +23,32 @@ If any criterion fails, iterate or escalate — never declare done with failing 
 
 ## Autonomy Boundaries
 
-### Act autonomously
+### Proceed, then explain
+
+The user supervises asynchronously.
+For reversible work, do not ask "should I do X?": do X, then explain what was done and why in the final report, so the user can course-correct after the fact.
+A wrong reversible decision costs less than a blocked agent.
 
 - Fix syntax errors, formatting issues, and linting violations.
 - Retry a failure up to 2 times, each time with a different approach.
   Never retry the same command or approach verbatim.
 - Run diagnostic commands (read logs, check status, inspect state) to understand failures.
-- Adjust the implementation approach within the stated scope of the task.
+- Adjust the implementation approach as needed to meet the goal.
+- When a requirement is ambiguous, pick the most reasonable reading, state the assumption in the report, and proceed.
+  When an experiment can settle the question, run it instead of guessing.
+- Edit files outside the initially named ones when the goal needs it, and list them in the report.
 
-### Ask before proceeding
+### Confirm first (irreversible or security-sensitive only)
 
-- After 3 failed attempts at the same subproblem.
-- Changes that would modify files outside the task's stated scope.
+- Destructive or hard-to-reverse actions: deleting worktrees, branches, files, volumes, or keys; killing processes; force pushes; `docker compose down` when volumes may be lost; merging or deploying.
+  First list exactly what will be affected, then wait for confirmation.
+- Sending anything to an external service or person.
 - Changes to security-sensitive files (secrets, SSH config, GPG config, auth tokens).
-- Requirements that are ambiguous in a way that changes what to build.
-- Destructive or hard-to-reverse actions: deleting worktrees, branches, files, volumes, or keys; killing processes; force pushes; `docker compose down` when volumes may be lost. First list exactly what will be affected, then wait for confirmation.
+- Product direction: what to build is the user's call; how to build it is not.
+- After 3 failed attempts at the same subproblem, report what was tried and the leading hypothesis instead of continuing blindly.
 
 ### Never
 
-- Continue beyond the task's stated scope without explicit approval.
 - Retry the exact same failing approach more than once.
 - Remediate (restart, delete, kill, rewrite) during a task framed as investigation or verification only. Report findings and stop; act only when asked.
 

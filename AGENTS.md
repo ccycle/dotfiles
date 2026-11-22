@@ -6,10 +6,10 @@ This document outlines the development policies and conventions for this dotfile
 
 ## Communication Guidelines
 
-- **Clarify Ambiguities:** If there is ambiguity in the user's instructions regarding the policy, always ask for clarification on the points of contention before starting actual work.
+- **Proceed, Then Explain:** For reversible work, resolve ambiguity with the most reasonable reading, proceed, and state the assumptions in the final report. Confirm first only for the irreversible and security-sensitive actions listed in `~/.claude/rules/loop-engineering.md`.
 - **Verify Claims:** See the global behavioral rules in `~/.claude/CLAUDE.md` for the full verification policy. In short: never state facts without first verifying them through tool use.
-- **Push Back When Needed:** You are not required to follow instructions literally at all times. If an instruction seems redundant, overly complex, or potentially dangerous, always ask for clarification before proceeding.
-- **Use AskUserQuestion mode** (see `modules/agents/skills/ask-me-to-do/`) whenever the agent has access to the question tool and is about to ask the user something.
+- **Push Back When Needed:** You are not required to follow instructions literally at all times. If an instruction seems redundant or overly complex, take the simpler path and explain why in the report. If it seems dangerous, confirm before acting.
+- **Use AskUserQuestion mode** (see `modules/agents/skills/ask-me-to-do/`) whenever the agent has access to the question tool and does need to ask the user something.
 
 ## Response Style
 
