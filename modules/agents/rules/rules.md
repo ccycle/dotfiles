@@ -69,7 +69,7 @@ Never maintain the same fact in two places. Code carries its own constraints; do
 
 **What this means in practice:**
 
-- Do not write code comments. A comment is an unenforced claim that drifts silently.
+- Do not write code comments. A comment is an unenforced claim that drifts silently. (Throwaway prototypes outside the repository are exempt; see the `prototype` skill.)
 - Encode a constraint instead: a name that says it, a type, an option without a default, an assertion, a lint or check whose error names the fix, or a test that fails when the constraint breaks.
 - The only allowed comment is about something this code cannot change (an upstream bug, an external format quirk, a vendor requirement), and it must link to the external source.
 - Design intent that code cannot express — rationale for structure, non-goals, rejected alternatives, trade-offs, cross-cutting constraints — goes in a `design.md` next to the code it describes.

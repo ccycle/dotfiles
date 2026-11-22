@@ -26,6 +26,7 @@ Exceptions:
 - Delegated work: when an agent is started with a kickoff that states the bar (the checks the work must pass), that bar is the whole bar.
   Do not add checks, gates, or review rounds above it, including the minimum criteria above.
   With no bar stated, the minimum criteria above apply.
+- Throwaway prototypes built outside the repository follow the `prototype` skill instead of these criteria.
 
 ## Long Autonomous Runs
 
