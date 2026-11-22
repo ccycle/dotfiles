@@ -21,6 +21,18 @@ Minimum criteria by task type:
 Before declaring done, run every verification command from the criteria and report each result with the actual output.
 If any criterion fails, iterate or escalate — never declare done with failing criteria.
 
+## Long Autonomous Runs
+
+Applies only when the user explicitly starts a long-running loop (`/loop`, "keep going until X", "run overnight").
+
+- State the exit condition as a checkable predicate before the first iteration, and never relax it to declare victory.
+- Each iteration makes the smallest change the evidence justifies, checks it against the predicate, commits if the predicate moved, and reverts if it did not.
+- A plateau is not a stop: pivot to a different approach and keep going.
+  The "report after 3 failed attempts" rule below does not apply; surface only a genuine dead end, with what was tried.
+- Fix discoveries that block or support the goal (broken skills, related bugs, flaky checks) yourself, each in its own branch and PR; opening those PRs needs no confirmation.
+  Merging, deploying, and the other irreversible actions below still do.
+- Record each iteration with the `show-me-your-work` skill.
+
 ## Autonomy Boundaries
 
 ### Proceed, then explain
@@ -42,7 +54,7 @@ A wrong reversible decision costs less than a blocked agent.
 
 - Destructive or hard-to-reverse actions: deleting worktrees, branches, files, volumes, or keys; killing processes; force pushes; `docker compose down` when volumes may be lost; merging or deploying.
   First list exactly what will be affected, then wait for confirmation.
-- Sending anything to an external service or person.
+- Sending anything to an external service or person, except PRs opened during a Long Autonomous Run.
 - Changes to security-sensitive files (secrets, SSH config, GPG config, auth tokens).
 - Product direction: what to build is the user's call; how to build it is not.
 - After 3 failed attempts at the same subproblem, report what was tried and the leading hypothesis instead of continuing blindly.
