@@ -36,7 +36,7 @@ command = "herdr plugin action invoke open-file-viewer-tab --plugin herdr-file-v
 [[keys.command]]
 key = "prefix+m"
 type = "popup"
-command = 'vi "$HOME/Obsidian/zettelkasten/herdr メモ.md"'
+command = 'vi "$HOME/Obsidian/zettelkasten/herdr-memo.md"'
 width = "70%"
 height = "70%"
 
