@@ -30,6 +30,16 @@ key = "prefix+shift+f"
 type = "shell"
 command = "herdr plugin action invoke open-file-viewer-tab --plugin herdr-file-viewer"
 
+# Server-wide scratch memo for topics to hand to agents later.
+# prefix+n is taken by the default next-tab binding.
+# Popup position is fixed (centered); only width/height are configurable.
+[[keys.command]]
+key = "prefix+m"
+type = "popup"
+command = 'vi "$HOME/Obsidian/zettelkasten/herdr メモ.md"'
+width = "70%"
+height = "70%"
+
 [[keys.command]]
 key = "prefix+w"
 type = "shell"
