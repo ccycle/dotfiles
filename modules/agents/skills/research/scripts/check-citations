@@ -15,6 +15,9 @@ Usage:
 Report rules enforced by `check`:
   - Every top-level list item is a claim. It must contain at least one citation,
     or the marker [unverifiable].
+  - A citation is an inline link in the claim, or in a footnote definition
+    ([^id]: ...) that the claim references with [^id]. An undefined footnote
+    fails.
   - A web citation is an http(s) link with a #:~:text= fragment whose text is
     found in the fetched page (HTML or PDF).
   - A file citation is a relative or absolute path link with #L<n> or
@@ -36,6 +39,8 @@ import urllib.request
 
 USER_AGENT = "Mozilla/5.0 (compatible; citation-checker)"
 LINK_RE = re.compile(r"\[[^\]]*\]\(([^)\s]+)\)")
+FOOTNOTE_REF_RE = re.compile(r"\[\^([^\]\s]+)\](?!:)")
+FOOTNOTE_DEF_RE = re.compile(r"^\[\^([^\]\s]+)\]:\s?(.*)$")
 FILE_LINE_RE = re.compile(r"^(?P<path>[^#]+)#L(?P<start>\d+)(?:-L(?P<end>\d+))?$")
 UNVERIFIABLE = "[unverifiable]"
 
@@ -197,13 +202,43 @@ def claims(markdown):
         yield item_line, item
 
 
+def footnotes(markdown):
+    """Return {id: text} for each footnote definition, skipping code."""
+    notes, current, in_fence = {}, None, False
+    for line in markdown.splitlines():
+        if line.lstrip().startswith("```"):
+            in_fence = not in_fence
+            current = None
+            continue
+        if in_fence:
+            continue
+        m = FOOTNOTE_DEF_RE.match(line)
+        if m:
+            current = m[1]
+            notes[current] = m[2]
+        elif current is not None and line.startswith((" ", "\t")):
+            notes[current] += "\n" + line
+        else:
+            current = None
+    return notes
+
+
 def cmd_check(report):
     base_dir = os.path.dirname(os.path.abspath(report))
     with open(report, encoding="utf-8") as f:
         text = f.read()
+    notes = footnotes(text)
     failures = cited = unverifiable = 0
     for line_no, claim in claims(text):
+        refs = FOOTNOTE_REF_RE.findall(claim)
+        undefined = [r for r in refs if r not in notes]
+        if undefined:
+            failures += 1
+            print(f"FAIL {report}:{line_no}: undefined footnote [^{undefined[0]}]")
+            continue
         targets = LINK_RE.findall(claim)
+        for ref in refs:
+            targets += LINK_RE.findall(notes[ref])
         if not targets:
             if UNVERIFIABLE in claim:
                 unverifiable += 1

@@ -72,6 +72,25 @@ expect "one bad citation fails the whole claim" 1 \
 expect "nested lines belong to the claim" 0 \
   "- Firefox supports it
   - evidence: [q]($page#:~:text=Firefox)"
+expect "footnote citation passes" 0 \
+  "- Firefox supports it.[^1]
+
+[^1]: [“Firefox … version 131”]($page#:~:text=Firefox,version%20131) (page)"
+expect "footnote with a broken quote fails" 1 \
+  "- Firefox supports it.[^1]
+
+[^1]: [“since version 120”]($page#:~:text=since%20version%20120) (page)"
+expect "undefined footnote fails" 1 \
+  "- Firefox supports it.[^1]"
+expect "footnote without a link fails" 1 \
+  "- Firefox supports it.[^1]
+
+[^1]: the page says so"
+expect "footnote continuation line is checked" 1 \
+  "- Firefox supports it.[^1]
+
+[^1]: [a]($page#:~:text=Firefox)
+    [b]($page#:~:text=Chrome)"
 expect "report with no claims fails" 1 \
   "Just prose, no list."
 
