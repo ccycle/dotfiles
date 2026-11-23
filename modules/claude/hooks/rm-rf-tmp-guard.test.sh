@@ -38,7 +38,7 @@ expect ask "rm -rf foo"
 expect ask "rm -rf /tmp/x /Users/x"
 expect ask "rm -rf /tmp/x; rm -rf ~"
 expect ask "rm -rf /tmp/x && rm -rf ~"
-expect ask "rm -rf \$HOME"
+expect ask 'rm -rf $HOME'
 expect ask "cd / && rm -rf usr"
 expect ask "rm -Rf /etc"
 expect none "rm /tmp/file"
