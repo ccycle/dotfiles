@@ -139,6 +139,7 @@ in
       script = ''
         set -euo pipefail
         export OLLAMA_HOST=127.0.0.1:${toString cfg.port}
+        export OLLAMA_MODELS="${cfg.modelsDir}"
         until ${pkgs.curl}/bin/curl -sf "http://$OLLAMA_HOST/api/version" >/dev/null; do sleep 5; done
 
         ${concatStringsSep "\n" (mapAttrsToList provisionModel catalog.models)}
