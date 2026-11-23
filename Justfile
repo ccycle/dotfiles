@@ -9,7 +9,7 @@ node2nix-npm-install:
     node2nix
 
 darwin-rebuild:
-    sudo darwin-rebuild switch --flake ".#private.$(uname -m | sed 's/arm64/aarch64/')-darwin" --impure -L --show-trace
+    .agents/skills/darwin-rebuild/scripts/darwin-rebuild.sh
 
 update-gwq:
     nix flake lock --update-input gwq

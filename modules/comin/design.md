@@ -2,12 +2,10 @@
 
 ## Purpose
 
-Pull-based GitOps for the two always-on, single-purpose mac minis
-(`mac-mini-m4`, `mac-mini-m4-pro`). A comin launchd daemon polls this
-repo's remotes and auto-deploys `darwinConfigurations.<hostname>` on
-push to `main`, replacing manual `darwin-rebuild switch` for these two
-hosts only. `private` (the portable, multi-machine profile) is
-untouched and keeps manual rebuild.
+Pull-based GitOps for every host profile that sets
+`services.comin.enable`. A comin launchd daemon polls this repo's
+remotes and auto-deploys `darwinConfigurations.<hostname>` on push to
+`main`, replacing manual `darwin-rebuild switch` on those hosts.
 
 ## Remote ordering and the self-hosting loop
 
@@ -122,8 +120,8 @@ infrastructure topology (username, drive labels) that is not secret.
 The first `services.comin.enable = true` deploy still goes through
 manual `sudo darwin-rebuild switch` (chicken-and-egg: comin itself
 ships via a rebuild). comin takes over polling after that. The
-`darwin-rebuild` app/Justfile recipe stays for `private` and for
-this one-time bootstrap.
+`darwin-rebuild` app/Justfile recipe stays for this one-time
+bootstrap and for applying a change before it is pushed.
 
 ## Skip the deprecated `activate-user`
 

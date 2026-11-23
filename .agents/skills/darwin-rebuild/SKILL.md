@@ -1,34 +1,25 @@
 ---
 name: darwin-rebuild
-description: Apply Darwin system configuration by running the darwin-rebuild skill's script with the appropriate profile. Use this after modifying Nix configuration files and passing verify-change checks.
+description: Apply Darwin system configuration by running the darwin-rebuild skill's script, which picks the profile from this machine's hostname. Use this after modifying Nix configuration files and passing verify-change checks.
 ---
 
 # Darwin Rebuild
 
 This skill applies the nix-darwin system configuration to the local machine using [scripts/darwin-rebuild.sh](scripts/darwin-rebuild.sh).
 
-## Profile Selection Policy
-
-When invoking this skill, determine the profile automatically:
-
-1. **Auto-discover from hostname**: Run `hostname` (or check `uname -n`) and match the result against the available `darwinConfigurations` in `flake.nix`. Each profile sets `networking.hostName` to its own name (e.g., `mac-mini-m4-pro` profile sets `networking.hostName = "mac-mini-m4-pro"`), so the current hostname directly identifies the correct profile.
-2. **Fallback to `private`**: If the hostname does not match any profile in `darwinConfigurations`, use `private` as the default profile.
-3. **`bootstrap` is never auto-selected**: The `bootstrap` profile must always be explicitly requested by the user.
-
 ## Usage
 
 ```bash
-.agents/skills/darwin-rebuild/scripts/darwin-rebuild.sh <profile>
+.agents/skills/darwin-rebuild/scripts/darwin-rebuild.sh [profile]
 ```
 
-## Profiles
+Run it without a profile.
+The script uses `scutil --get LocalHostName` (the same default as `darwin-rebuild switch --flake .`), resolves it to a `darwinConfigurations` entry with or without an architecture suffix, and fails with the profile list read from the flake when nothing matches.
+Do not fall back to another profile on that failure; report the mismatch to the user.
 
-| Profile           | Description                                                                  |
-| ----------------- | ---------------------------------------------------------------------------- |
-| `private`         | Default personal Darwin configuration (fallback when hostname doesn't match) |
-| `mac-mini-m4`     | Configuration for Mac Mini M4                                                |
-| `mac-mini-m4-pro` | Configuration for Mac Mini M4 Pro                                            |
-| `bootstrap`       | Bootstrap flake — provisions sops-nix secrets on fresh install               |
+Pass a profile only when the user names one.
+`--help` lists the profiles the flake currently defines.
+`bootstrap` matches no hostname, so it runs only when requested by name.
 
 ## When to Use
 
@@ -46,13 +37,6 @@ When invoking this skill, determine the profile automatically:
 ## Example
 
 ```bash
-# 1. Determine profile from hostname
-profile=$(hostname)
-# If hostname doesn't match a darwinConfigurations key, fall back to "private"
-
-# 2. Verify changes first
-.agents/skills/verify-change/scripts/check.sh "$profile"
-
-# 3. Apply the configuration
-.agents/skills/darwin-rebuild/scripts/darwin-rebuild.sh "$profile"
+.agents/skills/verify-change/scripts/check.sh "$(scutil --get LocalHostName)"
+.agents/skills/darwin-rebuild/scripts/darwin-rebuild.sh
 ```

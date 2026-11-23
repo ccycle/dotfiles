@@ -7,7 +7,7 @@ repo_root="$(git -C "$(dirname -- "$0")" rev-parse --show-toplevel)"
 arch="$(${NIX} eval --impure --raw --expr 'builtins.currentSystem')"
 
 # Discover available profiles from the main flake's darwinConfigurations.
-# Enumerates fully-qualified config paths (e.g. "private.aarch64-darwin",
+# Enumerates fully-qualified config paths (e.g. "bootstrap.aarch64-darwin",
 # "mac-mini-m4") by checking whether each top-level attr is a direct
 # darwinSystem (has .system) or a per-architecture attrset.
 all_configs="$(${NIX} eval "${repo_root}#darwinConfigurations" --apply '
@@ -24,25 +24,32 @@ all_configs="$(${NIX} eval "${repo_root}#darwinConfigurations" --apply '
 ' --raw 2>/dev/null || echo "")"
 
 # User-facing short names (strip architecture suffix for display)
-display_profiles="$(echo "${all_configs}" | sed 's/\.\(aarch64-darwin\|x86_64-darwin\)$//' | sort -u)"
+display_profiles="$(echo "${all_configs}" | sed -E 's/\.(aarch64|x86_64)-darwin$//' | sort -u)"
 
 show_usage() {
-  echo "Usage: $(basename -- "$0") <profile>"
+  echo "Usage: $(basename -- "$0") [profile]"
   echo ""
-  echo "Profiles:"
-  if [ -n "${display_profiles}" ]; then
-    echo "${display_profiles}" | while IFS= read -r p; do
-      printf "  %-18s Run main flake configuration\n" "${p}"
-    done
-  fi
+  echo "Without a profile, uses this machine's LocalHostName ($(scutil --get LocalHostName 2>/dev/null || echo unknown))."
+  echo ""
+  echo "Profiles (from flake.nix darwinConfigurations):"
+  echo "${display_profiles}" | sed 's/^/  /'
 }
 
-if [ $# -ne 1 ] || [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
+if [ $# -gt 1 ] || [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
   show_usage >&2
   exit 1
 fi
 
-profile="$1"
+if [ -z "${display_profiles}" ]; then
+  echo "Could not list darwinConfigurations from ${repo_root}; run: nix eval ${repo_root}#darwinConfigurations --apply builtins.attrNames" >&2
+  exit 1
+fi
+
+if [ $# -eq 1 ]; then
+  profile="$1"
+else
+  profile="$(scutil --get LocalHostName)"
+fi
 
 flake_root="${repo_root}"
 app="darwin-rebuild"

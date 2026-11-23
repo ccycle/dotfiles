@@ -176,7 +176,7 @@ all_configs="$(${NIX} eval "${REPO_ROOT}#darwinConfigurations" --apply '
     (builtins.concatMap resolve (builtins.attrNames configs))
 ' --raw 2>/dev/null || echo "")"
 
-profiles="$(echo "${all_configs}" | sed 's/\.\(aarch64-darwin\|x86_64-darwin\)$//' | sort -u | grep -v '^$' || true)"
+profiles="$(echo "${all_configs}" | sed -E 's/\.(aarch64|x86_64)-darwin$//' | sort -u | grep -v '^$' || true)"
 [ -n "${profiles}" ] || profiles="bootstrap"
 
 if [ -z "${profile}" ]; then

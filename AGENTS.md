@@ -185,16 +185,8 @@ from measurement, never from memory or speculation.
 
 ## Profile Build Attribute Paths
 
-Each profile has a different `nix build` attribute path due to how they are defined in `flake.nix`:
-
-| Profile         | Attribute Path                                                           |
-| --------------- | ------------------------------------------------------------------------ |
-| bootstrap       | `.#darwinConfigurations.bootstrap.aarch64-darwin.system`                 |
-| private         | `.#darwinConfigurations.private.aarch64-darwin.system`                   |
-| mac-mini-m4     | `.#darwinConfigurations.mac-mini-m4.system` (no architecture suffix)     |
-| mac-mini-m4-pro | `.#darwinConfigurations.mac-mini-m4-pro.system` (no architecture suffix) |
-
-**Why the difference:** `bootstrap` and `private` are wrapped with `forDarwinSystems`, so the key includes the architecture name. `mac-mini-m4` and `mac-mini-m4-pro` call `darwinSystem` directly, so there is no architecture suffix. See `flake.nix` for details.
+Profiles are the keys of `darwinConfigurations` in `flake.nix`; list them with `nix eval .#darwinConfigurations --apply builtins.attrNames`.
+A profile built with `darwinSystem` directly builds at `.#darwinConfigurations.<profile>.system`; one wrapped with `forDarwinSystems` (such as `bootstrap`) is keyed by system and needs the architecture: `.#darwinConfigurations.<profile>.aarch64-darwin.system`.
 
 ## Summary Checklist
 

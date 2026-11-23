@@ -266,16 +266,12 @@
                 ./darwin.nix
               ];
             };
-          # `private` uses forDarwinSystems, so the attr path includes the arch
-          # (e.g. .private.aarch64-darwin.system).
-          # `mac-mini-m4` / `mac-mini-m4-pro` call darwinSystem directly,
-          # so there is no arch suffix (e.g. .mac-mini-m4.system).
           darwinConfigurations = {
             # Config-only base: the shared module set (./darwin.nix) with no
             # host profile, so every host-toggled service stays at its
             # default (off). Use for settings-only switches that must not
             # trigger service/package builds:
-            #   darwin-rebuild switch --flake .#bootstrap
+            #   .agents/skills/darwin-rebuild/scripts/darwin-rebuild.sh bootstrap
             bootstrap = forDarwinSystems (
               system:
               inputs.nix-darwin.lib.darwinSystem {

@@ -132,7 +132,7 @@ function check_expected_bins() {
 
 # Flatten darwinConfigurations into fully-qualified config paths. Entries are
 # either direct darwinSystem results (mac-mini-m4) or per-architecture attrsets
-# (private.<arch>); resolving both here lets every downstream step use the
+# (bootstrap.<arch>); resolving both here lets every downstream step use the
 # uniform path <flake>#darwinConfigurations.<config>.<attr>.
 function list_configs() {
   nix eval "${1}#darwinConfigurations" --apply '

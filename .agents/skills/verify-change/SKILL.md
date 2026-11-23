@@ -15,16 +15,14 @@ Run the verification script from the repository root:
 .agents/skills/verify-change/scripts/check.sh [profile]
 ```
 
-Profiles are discovered from the flake: `bootstrap`, `private`, `mac-mini-m4`, `mac-mini-m4-pro`. If no profile is specified, all profiles compatible with the current system (architecture) are checked.
+Profiles are discovered from the flake's `darwinConfigurations`. If no profile is specified, all profiles compatible with the current system (architecture) are checked.
 
 ## Checks Performed
 
 1.  **Syntax Check:** Parses all `.nix` files using `nix-instantiate --parse` to catch syntax errors immediately.
 2.  **Structure Check:** Validates the Package by Feature layout of `modules/` (aggregation imports, support-file whitelist, no cross-hierarchy imports, host modules set options only). Rules are declared in [scripts/package-by-feature/rules.nix](scripts/package-by-feature/rules.nix) and evaluated by [scripts/package-by-feature/check.nix](scripts/package-by-feature/check.nix); to allow an intentional exception, edit `rules.nix` (e.g. `allowUnimported`, `exemptPaths`).
 3.  **Build:** Builds the darwin configuration for the specified (or all) profiles without switching, ensuring that all dependencies and modules can be resolved.
-    - **bootstrap**: Builds `.#darwinConfigurations.bootstrap.<system>.system`
-    - **private**: Builds `.#darwinConfigurations.private.<system>.system`
-    - **mac-mini-m4** / **mac-mini-m4-pro**: Builds `.#darwinConfigurations.<profile>.system` (if on aarch64-darwin)
+    Each profile builds `.#darwinConfigurations.<profile>.system`, or `.#darwinConfigurations.<profile>.<system>.system` for a profile keyed by system (such as `bootstrap`); profiles for another architecture are skipped.
 4.  **Expected Binaries:** If any module declares an `expected-bins.txt` (one binary name per line, colocated with the module that adds the package - see `modules/cli-tools/expected-bins.txt` for a reference example), checks that profile's built closure (both `environment.systemPackages`'s `sw/bin` and each home-manager user's `home.path/bin` - a package attribute name doesn't always match its binary name, e.g. `ripgrep` -> `rg`) and confirms every declared binary is actually present. Skipped entirely when no module declares one.
 5.  **Markdown References:** Checks that markdown prose refers to repository paths as relative links rather than inline code, and that every relative link target exists.
 
