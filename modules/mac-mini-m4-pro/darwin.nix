@@ -62,6 +62,10 @@
   # Merge styles are also GUI-managed (repo Settings > Repository): only
   # fast-forward is allowed, because Forgejo's server-side rebase drops
   # commit signatures and comin refuses unsigned commits.
+  # main also has "Require signed commits", which only passes while
+  # ~/.ssh/id_ed25519_signing.pub stays added and verified on the ccycle
+  # Forgejo account. The PR "Update branch" button and the web editor create
+  # unsigned commits (no server signing key), so rebase locally instead.
   custom.lm-studio.enable = true;
   services.llm-server.enable = true;
   services.opencode-web.enable = true;
