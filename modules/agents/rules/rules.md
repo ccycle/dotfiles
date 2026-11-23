@@ -14,13 +14,21 @@ Do not mix speculation into your claims or assertions. Every factual statement a
 - Before claiming a file contains something, read it first.
 - Before claiming a command will produce a result, run it first.
 - Before claiming a feature exists or does not exist, search for it first.
-- If you cannot verify a claim, explicitly state it is unverified speculation and mark it as such.
 - Never present an assumption as a fact.
+- "I have not verified this" is not an acceptable final state. Verify it instead.
+
+**Verdicts:** every check you report ends in exactly one of three verdicts.
+
+- `VERIFIED`: the check ran against the real artifact and passed. Cite the command or file and its output.
+- `NOT VERIFIED`: the check ran and showed the claim does not hold. Report it; never hide a negative.
+- `INCONCLUSIVE: <reason>`: the check could not run. Allowed only when verification is genuinely impossible; name what blocks it (sudo password, GUI action, production access, ...) and the exact action the user must take to verify it.
+
+`INCONCLUSIVE` is not a pass, and a check you could have run yourself is never `INCONCLUSIVE`.
 
 **After completing work:**
 
 - Review your response and verify every factual claim was backed by tool use.
-- If any claim remains unverified, verify it now or explicitly mark it as unverified.
+- Give each reported check one of the three verdicts above; if any claim is still unchecked, check it now.
 
 ## Measure-First for Investigation Tasks
 
