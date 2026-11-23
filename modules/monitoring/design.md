@@ -153,6 +153,11 @@ for agent-driven investigation.
   is unverified as of this writing (same caution as the Caddy metrics-module
   constraint below) — wiring it in is a deliberate later decision, not an
   oversight.
+- **comin alerts are built from comin's own exporter gauges only.**
+  On 2026-11-23 every activation on `mac-mini-m4-pro` failed for about 19 hours while `comin_last_deployment_failed` stayed at 1, so the signal already existed and only the rule was missing.
+  "Behind main" is inferred from the causes that keep comin from deploying a new commit (every remote failing, suspended, or the fetch loop stalled), not measured as a commit gap, because comin exports the deployed commit but not the fetched one.
+  A crashed comin is left to `ScrapeTargetDown`.
+  Like every rule here, these alerts reach no human (see Non-Goals); they make the failure visible in Grafana and `/api/v1/alerts` instead of only in `/var/log/comin.log`.
 
 ## Rejected Alternatives
 
@@ -164,6 +169,8 @@ for agent-driven investigation.
 - **`prometheus_monitoring['enable'] = false`** as the way to disable
   GitLab's bundled Prometheus — rejected because it disables all bundled
   exporters too; the server and Alertmanager are disabled individually.
+- **A textfile exporter comparing the remote `main` head with the deployed commit** for comin — rejected for now: it needs its own polling and remote access, and `CominDeploymentFailed` alone would have caught the 2026-11-23 incident.
+  Revisit if comin falls behind without any of those causes showing.
 - **Loki ruler for log-based alerts** — rejected while there is no
   notification channel; Prometheus alert rules cover the triage-entry-point
   need.

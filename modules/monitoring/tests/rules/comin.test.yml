@@ -1,0 +1,107 @@
+rule_files:
+  - ../../prometheus-rules.yml
+
+evaluation_interval: 1m
+
+tests:
+  - name: activation failure like the 2026-11-23 ensureAppManagement incident
+    interval: 1m
+    input_series:
+      - series: 'comin_last_eval_failed{job="comin",instance="host-gateway:4243"}'
+        values: "0x60"
+      - series: 'comin_last_build_failed{job="comin",instance="host-gateway:4243"}'
+        values: "0x60"
+      - series: 'comin_last_deployment_failed{job="comin",instance="host-gateway:4243"}'
+        values: "0x10 1x50"
+      - series: 'comin_is_suspended{job="comin",instance="host-gateway:4243"}'
+        values: "0x60"
+      - series: 'comin_last_fetch_failed{job="comin",instance="host-gateway:4243",remote_name="forgejo"}'
+        values: "0x60"
+      - series: 'comin_last_fetch_failed{job="comin",instance="host-gateway:4243",remote_name="github"}'
+        values: "0x60"
+      - series: 'comin_fetch_count{job="comin",instance="host-gateway:4243",remote_name="forgejo",status="succeeded"}'
+        values: "0+1x60"
+    alert_rule_test:
+      - eval_time: 14m
+        alertname: CominDeploymentFailed
+        exp_alerts: []
+      - eval_time: 20m
+        alertname: CominDeploymentFailed
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              job: comin
+              instance: host-gateway:4243
+            exp_annotations:
+              summary: "comin eval, build, or activation is failing; see comin status and /var/log/comin.log"
+      - eval_time: 60m
+        alertname: CominBehindMain
+        exp_alerts: []
+
+  - name: eval and build failing together still yield one alert
+    interval: 1m
+    input_series:
+      - series: 'comin_last_eval_failed{job="comin",instance="host-gateway:4243"}'
+        values: "1x10"
+      - series: 'comin_last_build_failed{job="comin",instance="host-gateway:4243"}'
+        values: "1x10"
+      - series: 'comin_last_deployment_failed{job="comin",instance="host-gateway:4243"}'
+        values: "0x10"
+    alert_rule_test:
+      - eval_time: 10m
+        alertname: CominDeploymentFailed
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              job: comin
+              instance: host-gateway:4243
+            exp_annotations:
+              summary: "comin eval, build, or activation is failing; see comin status and /var/log/comin.log"
+
+  - name: one remote failing is not stuck, every remote failing is
+    interval: 1m
+    input_series:
+      - series: 'comin_is_suspended{job="comin",instance="host-gateway:4243"}'
+        values: "0x120"
+      - series: 'comin_last_fetch_failed{job="comin",instance="host-gateway:4243",remote_name="forgejo"}'
+        values: "0x60 1x60"
+      - series: 'comin_last_fetch_failed{job="comin",instance="host-gateway:4243",remote_name="github"}'
+        values: "1x120"
+      - series: 'comin_fetch_count{job="comin",instance="host-gateway:4243",remote_name="github",status="failed"}'
+        values: "0+1x120"
+    alert_rule_test:
+      - eval_time: 60m
+        alertname: CominBehindMain
+        exp_alerts: []
+      - eval_time: 100m
+        alertname: CominBehindMain
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              job: comin
+              instance: host-gateway:4243
+            exp_annotations:
+              summary: "comin has stopped picking up new commits (every remote failing, suspended, or no fetch in 30m)"
+
+  - name: fetch loop stalled while suspended
+    interval: 1m
+    input_series:
+      - series: 'comin_is_suspended{job="comin",instance="host-gateway:4243"}'
+        values: "0x30 1x90"
+      - series: 'comin_last_fetch_failed{job="comin",instance="host-gateway:4243",remote_name="forgejo"}'
+        values: "0x120"
+      - series: 'comin_fetch_count{job="comin",instance="host-gateway:4243",remote_name="forgejo",status="succeeded"}'
+        values: "0+1x30 30x90"
+    alert_rule_test:
+      - eval_time: 55m
+        alertname: CominBehindMain
+        exp_alerts: []
+      - eval_time: 100m
+        alertname: CominBehindMain
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              job: comin
+              instance: host-gateway:4243
+            exp_annotations:
+              summary: "comin has stopped picking up new commits (every remote failing, suspended, or no fetch in 30m)"

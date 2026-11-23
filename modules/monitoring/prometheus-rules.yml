@@ -163,3 +163,24 @@ groups:
           severity: warning
         annotations:
           summary: "kiac-health has not written a probe in over 5 minutes"
+
+  - name: comin
+    rules:
+      - alert: CominDeploymentFailed
+        expr: comin_last_eval_failed + comin_last_build_failed + comin_last_deployment_failed > 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "comin eval, build, or activation is failing; see comin status and /var/log/comin.log"
+
+      - alert: CominBehindMain
+        expr: >-
+          min without (remote_name) (comin_last_fetch_failed) == 1
+          or comin_is_suspended == 1
+          or sum without (remote_name, status) (increase(comin_fetch_count[30m])) == 0
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: "comin has stopped picking up new commits (every remote failing, suspended, or no fetch in 30m)"
