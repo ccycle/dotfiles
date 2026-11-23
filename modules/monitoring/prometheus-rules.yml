@@ -129,3 +129,37 @@ groups:
           severity: warning
         annotations:
           summary: "self-healing daemon has not completed a run in over ~28h"
+
+  - name: kiac
+    rules:
+      - alert: KiacResumeFailed
+        expr: kiac_resume_exit_code != 0
+        labels:
+          severity: critical
+        annotations:
+          summary: "kiac-resume exited with code {{ $value }} (see /var/log/kiac-resume.log)"
+
+      - alert: KiacResumeNotRunSinceBoot
+        expr: kiac_resume_end_timestamp_seconds < node_boot_time_seconds
+        for: 10m
+        labels:
+          severity: critical
+        annotations:
+          summary: "kiac-resume has not finished since the last host boot"
+
+      - alert: KiacClusterUnhealthy
+        expr: >-
+          kiac_runtime_up == 0 or kiac_node_ready == 0 or kiac_node_dns_ok == 0
+          or kiac_kube_system_pods_not_running > 0 or kiac_kube_system_pods == 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "kiac homelab is unhealthy ({{ $labels.__name__ }}); check the kiac_* gauges"
+
+      - alert: KiacHealthProbeStale
+        expr: time() - kiac_health_probe_timestamp_seconds > 300
+        labels:
+          severity: warning
+        annotations:
+          summary: "kiac-health has not written a probe in over 5 minutes"
