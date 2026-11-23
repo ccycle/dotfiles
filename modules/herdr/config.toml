@@ -46,8 +46,8 @@ type = "popup"
 width = "60%"
 height = "60%"
 command = '''
-path=$(herdr worktree list | jq -r '.result.worktrees[] | select(.is_linked_worktree) | "\(.branch // \"detached\")\t\(.path)"' | fzf --height 100% --layout=reverse --border --delimiter='\t' --with-nth=1 | awk -F'\t' '{print $2}')
-[ -n "$path" ] && herdr worktree open --path "$path" --focus
+worktree=$(herdr worktree list | jq -r '.result.worktrees[] | select(.is_linked_worktree) | "\(.branch // "detached")\t\(.path)"' | fzf --height 100% --layout=reverse --border --delimiter='\t' --with-nth=1 | awk -F'\t' '{print $2}')
+[ -n "$worktree" ] && herdr worktree open --path "$worktree" --focus
 '''
 
 # Put workspaces whose labels share a prefix next to each other.
