@@ -46,8 +46,24 @@ type = "popup"
 width = "60%"
 height = "60%"
 command = '''
-worktree=$(herdr worktree list | jq -r '.result.worktrees[] | select(.is_linked_worktree) | "\(.branch // "detached")\t\(.path)"' | fzf --height 100% --layout=reverse --border --delimiter='\t' --with-nth=1 | awk -F'\t' '{print $2}')
-[ -n "$worktree" ] && herdr worktree open --path "$worktree" --focus
+workspaces=$(herdr workspace list)
+selected=$({
+  printf '%s\n' "$workspaces"
+  printf '%s\n' "$workspaces" | jq -r '[.result.workspaces[].worktree.repo_root // empty] | unique[]' |
+    while IFS= read -r root; do herdr worktree list --cwd "$root"; done
+} | jq -rs '
+  (.[0].result.workspaces) as $ws
+  | ($ws | map(.worktree.checkout_path // empty)) as $open
+  | ($ws[] | "workspace\t\(.label)\t\(.workspace_id)"),
+    (.[1:][].result | .source.repo_name as $repo | .worktrees[]
+      | select(.is_linked_worktree and (.path as $p | $open | index([$p]) | not))
+      | "worktree\t\($repo)/\(.branch // "detached")\t\(.path)")' |
+  fzf --height 100% --layout=reverse --border --delimiter='\t' --with-nth=1,2)
+target=$(printf '%s\n' "$selected" | cut -f3)
+case "$selected" in
+  workspace*) herdr workspace focus "$target" ;;
+  worktree*) herdr worktree open --path "$target" --focus ;;
+esac
 '''
 
 # Put workspaces whose labels share a prefix next to each other.
