@@ -161,7 +161,6 @@
       "Bash(halt *)",
       "Bash(rbw get *)",
       "Bash(reboot *)",
-      "Bash(rm -rf *)",
       "Bash(shutdown *)",
       "Bash(sops *)",
       "Bash(sudo reboot *)",
@@ -184,6 +183,15 @@
       }
     ],
     "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 $HOME/.claude/hooks/rm-rf-tmp-guard.py"
+          }
+        ]
+      },
       {
         "matcher": "Edit|Write",
         "hooks": [
