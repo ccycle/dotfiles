@@ -1,64 +1,34 @@
 #!/usr/bin/env bash
-# Atomic secret rotation: edit -> verify -> commit -> rebuild.
-#
-# Encapsulates the full rotation workflow for a single sops-encrypted
-# secrets file into one command:
-#
-#   1. Opens the file in $EDITOR via sops (re-encrypts on save).
-#   2. Verifies recipient integrity against modules/sops/age-keys.nix
-#      via .agents/skills/credentials-manager/scripts/check-recipients.sh
-#      (fails loudly if the edit broke the declared key rules).
-#   3. Commits the change with a structured message.
-#   4. Runs .agents/skills/darwin-rebuild/scripts/darwin-rebuild.sh for the
-#      chosen profile so the new value reaches /run/secrets and consuming
-#      services restart.
-#
-# Security notes:
-#   - Decrypted content is never echoed; only git diff --stat metadata
-#     is displayed.
-#   - The commit contains only the target file (working tree must be
-#     clean beforehand, unless --allow-dirty is passed).
-#
-# Usage:
-#   .agents/skills/credentials-manager/scripts/secret-rotate.sh --key <key> --value <val> [--profile <name>]
-#                            [--no-rebuild] <path/to/secrets.yaml>
-#   .agents/skills/credentials-manager/scripts/secret-rotate.sh [--profile <name>] [--message <msg>]
-#                            [--no-rebuild] [--allow-dirty]
-#                            <path/to/secrets.yaml>
 set -euo pipefail
 
 REPO_ROOT="$(git -C "$(dirname "${BASH_SOURCE[0]}")" rev-parse --show-toplevel)"
 cd "${REPO_ROOT}"
 
 NIX="nix --extra-experimental-features nix-command --extra-experimental-features flakes"
+SOPS_WITH_RBW="${REPO_ROOT}/.agents/skills/credentials-manager/scripts/sops-with-rbw"
+BWS_AGENT="${REPO_ROOT}/modules/agents/skills/bws/scripts/bws-agent"
 
 usage() {
   cat <<EOF
-Usage: $(basename -- "$0") [options] <path/to/secrets.yaml>
+Usage: $(basename -- "$0") --key <key> (--from-prompt | --from-bws <project-id> <bws-key>)
+                          [--profile <name>] [--message <msg>] [--no-rebuild] [--allow-dirty]
+                          <path/to/secrets.yaml>
 
-Rotate a secret inside a sops-encrypted YAML file and propagate it.
+Replace one key in a sops-encrypted YAML file, commit it, and darwin-rebuild.
+No other key is ever decrypted to the screen, and the new value never appears
+on a command line.
 
-Two modes:
-  Key mode (non-interactive):
-    --key <key> --value <val>   Set a specific key via sops set.
-    Example: $(basename -- "$0") --key attic.push-token --value abc123 secrets/attic/secrets.yaml
-
-  Editor mode (interactive):
-    Without --key, opens the file in \$EDITOR via sops for manual editing.
-
-Options:
-  -k, --key <key>       Dot-separated key path to rotate (enables key mode).
-  -v, --value <val>     New value for the key (required with --key).
-  -p, --profile <name>  darwin profile to rebuild (e.g. private,
-                        mac-mini-m4-pro, bootstrap). Prompted for when
-                        omitted on a TTY.
-  -m, --message <msg>   Custom commit subject
-                        (default: "rotate(secrets): <file> key=<key>")
-      --no-rebuild      Stop after committing; skip darwin-rebuild.
-      --allow-dirty     Permit rotation even with unrelated uncommitted
-                        changes (the commit still stages only the target
-                        file).
-  -h, --help            Show this help.
+  -k, --key <key>        Dot-separated key path to replace (e.g. forgejo_api_token).
+      --from-prompt      Read the new value from a hidden prompt (for the user's terminal).
+      --from-bws <project-id> <bws-key>
+                         Take the new value from a Bitwarden Secrets Manager project
+                         through bws-agent (for agents; the user stores the value in
+                         the web vault first).
+  -p, --profile <name>   darwin profile to rebuild. Prompted for when omitted on a TTY.
+  -m, --message <msg>    Commit subject (default: "rotate(secrets): <file> key=<key>").
+      --no-rebuild       Stop after committing; skip darwin-rebuild.
+      --allow-dirty      Permit unrelated uncommitted changes (only the target file is staged).
+  -h, --help             Show this help.
 EOF
 }
 
@@ -72,7 +42,9 @@ message=""
 no_rebuild=0
 allow_dirty=0
 key=""
-value=""
+source_kind=""
+bws_project=""
+bws_key=""
 file=""
 
 while [ $# -gt 0 ]; do
@@ -82,10 +54,16 @@ while [ $# -gt 0 ]; do
     key="$2"
     shift 2
     ;;
-  -v | --value)
-    [ $# -ge 2 ] || die "--value requires a value"
-    value="$2"
-    shift 2
+  --from-prompt)
+    source_kind=prompt
+    shift
+    ;;
+  --from-bws)
+    [ $# -ge 3 ] || die "--from-bws requires <project-id> <bws-key>"
+    source_kind=bws
+    bws_project="$2"
+    bws_key="$3"
+    shift 3
     ;;
   -p | --profile)
     [ $# -ge 2 ] || die "--profile requires a value"
@@ -109,6 +87,9 @@ while [ $# -gt 0 ]; do
     usage
     exit 0
     ;;
+  -*)
+    die "unknown option: $1 (whole-file editing is not supported; replace one key with --key)"
+    ;;
   *)
     file="$1"
     shift
@@ -120,20 +101,16 @@ done
   usage >&2
   exit 1
 }
+[ -n "${key}" ] || die "--key is required"
+[ -n "${source_kind}" ] || die "pass --from-prompt or --from-bws <project-id> <bws-key>"
 [ -f "${file}" ] || die "secrets file not found: ${file}"
 command -v sops >/dev/null 2>&1 || die "sops is not installed or not on PATH"
-
-# Validate --key / --value pairing
-if [ -n "${key}" ] && [ -z "${value}" ]; then
-  die "--key requires --value"
+if [ "${source_kind}" = bws ]; then
+  [[ ${bws_key} =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] || die "bws key must be a shell variable name: ${bws_key}"
 fi
-if [ -z "${key}" ] && [ -n "${value}" ]; then
-  die "--value requires --key"
-fi
-key_mode=0
-[ -n "${key}" ] && key_mode=1
 
-# --- Pre-flight: refuse to mix unrelated changes into the rotation commit ---
+index="$(jq -rn --arg k "${key}" '$k | split(".") | map("[" + tojson + "]") | join("")')"
+
 if ! git diff --quiet -- . ':!.local' || ! git diff --cached --quiet -- . ':!.local'; then
   if [ "${allow_dirty}" -ne 1 ]; then
     echo "Working tree has uncommitted changes:" >&2
@@ -142,70 +119,50 @@ if ! git diff --quiet -- . ':!.local' || ! git diff --cached --quiet -- . ':!.lo
   fi
 fi
 
-# --- Sanity check BEFORE opening the editor ---
-echo "==> Pre-edit recipient check: ${file}"
+echo "==> Pre-change recipient check: ${file}"
 "${REPO_ROOT}/.agents/skills/credentials-manager/scripts/check-recipients.sh" >/dev/null ||
-  die "recipient check failed before edit; fix key rules first (see modules/sops/age-keys.nix)"
+  die "recipient check failed before the change; fix key rules first (see modules/sops/age-keys.nix)"
 
-# --- Edit phase ---
 before_hash="$(git hash-object -- "${file}")"
 
-if [ "${key_mode}" -eq 1 ]; then
-  # Key mode: set a specific key non-interactively
-  # sops set expects JSON-encoded values; wrap strings in quotes.
-  echo "==> Setting '${key}' in ${file}"
-  sops set "${file}" "${key}" "\"${value}\""
-else
-  # Editor mode: open in $EDITOR via sops (re-encrypts on save)
-  echo "==> Opening ${file} in \${EDITOR:-vi} via sops..."
-  # sops exits with code 200 when the editor closed without changes; that is
-  # a normal outcome ("nothing to rotate"), not an error.
-  set +e
-  EDITOR="${EDITOR:-vi}" sops "${file}"
-  sops_rc=$?
-  set -e
-
-  if [ "${sops_rc}" -eq 200 ]; then
-    echo "No changes made to ${file}; nothing to rotate."
-    exit 0
-  elif [ "${sops_rc}" -ne 0 ]; then
-    die "sops exited with code ${sops_rc}; aborting without committing."
-  fi
-fi
+echo "==> Setting '${key}' in ${file}"
+case "${source_kind}" in
+prompt)
+  read -rsp "New value for ${key} (hidden): " value
+  echo
+  [ -n "${value}" ] || die "empty value; nothing changed"
+  printf '%s' "${value}" | jq -Rs . | "${SOPS_WITH_RBW}" set --value-stdin "${file}" "${index}"
+  unset value
+  ;;
+bws)
+  printf -v set_cmd '[ -n "${%s:-}" ] || { echo "bws key %s is missing or empty" >&2; exit 3; }; printf %%s "$%s" | jq -Rs . | %q set --value-stdin %q %q' \
+    "${bws_key}" "${bws_key}" "${bws_key}" "${SOPS_WITH_RBW}" "${file}" "${index}"
+  "${BWS_AGENT}" run "${bws_project}" -- "${set_cmd}"
+  ;;
+esac
 
 after_hash="$(git hash-object -- "${file}")"
 if [ "${before_hash}" = "${after_hash}" ]; then
-  echo "No changes made to ${file}; nothing to rotate."
-  exit 0
+  die "${file} did not change; not committing"
 fi
 
-# --- Post-edit verification ---
-echo "==> Post-edit recipient check (all secrets files)..."
+echo "==> Post-change recipient check (all secrets files)..."
 "${REPO_ROOT}/.agents/skills/credentials-manager/scripts/check-recipients.sh" ||
-  die "edit broke recipient rules; NOT committing. Inspect 'git diff ${file}' and revert if needed."
+  die "the change broke recipient rules; NOT committing. Inspect 'git diff ${file}' and revert if needed."
 
 echo "==> Change summary (metadata only):"
 git diff --stat -- "${file}"
 
-# --- Commit ---
-if [ -n "${message}" ]; then
-  : # use user-provided message
-elif [ "${key_mode}" -eq 1 ]; then
-  message="rotate(secrets): ${file} key=${key}"
-else
-  message="rotate(secrets): ${file}"
-fi
+[ -n "${message}" ] || message="rotate(secrets): ${file} key=${key}"
 git add -- "${file}"
 git commit -m "${message}"
 echo "==> Committed: ${message}"
 
-# --- Rebuild ---
 if [ "${no_rebuild}" -eq 1 ]; then
   echo "==> --no-rebuild given; services still use the OLD value until the next switch."
   exit 0
 fi
 
-# Discover available profiles exactly like the darwin-rebuild skill's script does.
 all_configs="$(${NIX} eval "${REPO_ROOT}#darwinConfigurations" --apply '
   configs:
   let
@@ -229,8 +186,6 @@ if [ -z "${profile}" ]; then
     die "non-interactive session: pass --profile explicitly"
   fi
   echo "==> Which profile consumes this secret?"
-  # Recommend the profile whose name matches the local hostname
-  # (informational only; the user confirms explicitly).
   host_hint="$(scutil --get LocalHostName 2>/dev/null | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9-' '-' || true)"
   recommended=""
   i=0

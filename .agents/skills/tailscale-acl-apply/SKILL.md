@@ -28,8 +28,8 @@ Step") for the rationale.
   https://tailscale.com/kb/1623 rather than assuming a name here.
 - That OAuth client's ID/secret stored in [modules/tailscale/secrets.yaml](../../../modules/tailscale/secrets.yaml):
   ```bash
-  .agents/skills/credentials-manager/scripts/edit-secrets.sh modules/tailscale/secrets.yaml
-  # add: tailscale_tf_oauth_client_id, tailscale_tf_oauth_client_secret
+  .agents/skills/credentials-manager/scripts/secret-rotate.sh --key tailscale_tf_oauth_client_id --from-prompt --no-rebuild modules/tailscale/secrets.yaml
+  .agents/skills/credentials-manager/scripts/secret-rotate.sh --key tailscale_tf_oauth_client_secret --from-prompt --no-rebuild modules/tailscale/secrets.yaml
   ```
   (`tailscale_tailnet` already exists in this file for the Split DNS
   feature and is reused as-is.)

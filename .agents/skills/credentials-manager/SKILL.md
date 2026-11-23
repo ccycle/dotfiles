@@ -9,13 +9,21 @@ This skill helps you manage secrets and access tokens in the dotfiles, following
 
 ## Features
 
-### 1. Edit Secrets
+### 1. Rotate or Add One Secret
 
-Safely edit `secrets.yaml` files using the `sops` wrapper.
+Replace (or add) a single key without decrypting the rest of the file to any screen.
+The script commits the change and runs darwin-rebuild; run it with `--help` for the options.
 
-```bash
-.agents/skills/credentials-manager/scripts/edit-secrets.sh <path/to/secrets.yaml>
-```
+- Agent: ask the user to store the new value in a Bitwarden Secrets Manager project the agent can read (see the bws skill), then run:
+
+  ```bash
+  .agents/skills/credentials-manager/scripts/secret-rotate.sh --key <name> --from-bws <project-id> <bws-key> --profile <profile> <path/to/secrets.yaml>
+  ```
+
+- User at a terminal (or pre-typed via herdr-tab-handoff): `--from-prompt` reads the value from a hidden prompt instead.
+
+Never open a whole secrets file in an editor or with `sops -d` from an agent session; the `block-secret-screen-reads` Claude Code hook refuses it.
+A value whose issuer can write it back itself (e.g. Pocket ID client secrets via the pocket-id-register-clients skill) needs neither path.
 
 ### 2. Configure Nix Access Tokens
 
@@ -43,7 +51,7 @@ All paths below are relative to the repository root.
 | [verify-rbw-integration.sh](scripts/verify-rbw-integration.sh) | Verify rbw + sops wiring (rbw installed, unlocked, key item reachable).                                                                      |
 | [check-recipients.sh](scripts/check-recipients.sh)             | Compare every `secrets*.yaml` recipient list against [modules/sops/age-keys.nix](../../../modules/sops/age-keys.nix) (no decryption needed). |
 | [generate-sops-yaml.sh](scripts/generate-sops-yaml.sh)         | Regenerate the committed `.sops.yaml` from [modules/sops/age-keys.nix](../../../modules/sops/age-keys.nix).                                  |
-| [secret-rotate.sh](scripts/secret-rotate.sh)                   | Rotate one secrets file: edit -> recipient check -> commit -> darwin-rebuild.                                                                |
+| [secret-rotate.sh](scripts/secret-rotate.sh)                   | Replace one key from a hidden prompt or bws -> recipient check -> commit -> darwin-rebuild.                                                  |
 
 ## Policies
 
