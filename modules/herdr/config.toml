@@ -43,11 +43,26 @@ height = "70%"
 [[keys.command]]
 key = "prefix+w"
 type = "popup"
-width = "60%"
+width = "80%"
 height = "60%"
 command = '''
-workspace=$(herdr workspace list | jq -r '.result.workspaces[] | "\(.workspace_id)\t\(.label)"' |
-  fzf --height 100% --layout=reverse --border --delimiter='\t' --with-nth=2 | cut -f1)
+workspace=$({
+  printf 'STATUS\tWORKSPACE\tREPOSITORY\tBRANCH\tID\n'
+  herdr workspace list | jq -r '.result.workspaces[] | [.agent_status, .workspace_id, .label, (.worktree.repo_name // "-"), (.worktree.checkout_path // "-")] | @tsv' |
+    while IFS=$'\t' read -r agent_status id label repo dir; do
+      branch=-
+      [ "$dir" != - ] && branch=$(git -C "$dir" branch --show-current)
+      [ -n "$branch" ] || branch=detached
+      printf '%s\t%s\t%s\t%s\t%s\n' "$agent_status" "$label" "$repo" "$branch" "$id"
+    done
+} | column -t -s "$(printf '\t')" |
+  sed -E \
+    -e "s/^STATUS +/$(printf '\033[90m·\033[0m') /" \
+    -e "s/^blocked +/$(printf '\033[31m●\033[0m') /" \
+    -e "s/^working +/$(printf '\033[33m●\033[0m') /" \
+    -e "s/^done +/$(printf '\033[32m●\033[0m') /" \
+    -e "s/^[a-z]+ +/$(printf '\033[90m●\033[0m') /" |
+  fzf --ansi --height 100% --layout=reverse --border --header-lines=1 --with-nth=..-2 | awk '{print $NF}')
 [ -n "$workspace" ] && herdr workspace focus "$workspace"
 '''
 
