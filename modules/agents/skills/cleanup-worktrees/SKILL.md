@@ -6,95 +6,19 @@ allowed-tools: Bash
 
 # Cleanup Worktrees
 
-Remove the herdr worktree you are currently in, but only when it is safe
-to do so: the branch has been started (reflog shows work) and is already
-merged to main.
-
-## When to use
-
-Call this after the branch has been merged to main, while sitting inside
-that worktree's session. It deletes the worktree you are in — nothing else.
-
-A Forgejo merge does not update local `main`, and the cleanup script
-classifies against local `main`. Update it first:
-
-```bash
-git fetch origin
-git worktree list --porcelain | awk '/^worktree/{p=$2} /^branch refs\/heads\/(main|master)$/{print p}'
-```
-
-- If that prints a path (`MAIN_WORKTREE`): `git -C <MAIN_WORKTREE> pull --ff-only origin main`
-- If it prints nothing: `git fetch origin main:main`
-
-This replaces automatic deletion: no git hook removes worktrees, and
-`/merge-and-cleanup` removes one only on an explicit `--remove` the user confirmed.
-Cleanup is always explicit and interactive.
-
-## Backend detection
-
-Check `HERDR_ENV`:
-
-```bash
-test "${HERDR_ENV:-}" = "1"
-```
-
-- Use **herdr** commands throughout
-
-## Workflow
-
-### 1. Classify the current worktree
-
-Run the script that ships with this skill — it is
-`scripts/cleanup-worktree.sh` next to this SKILL.md, i.e.
-`modules/agents/skills/cleanup-worktrees/scripts/cleanup-worktree.sh` in the
-dotfiles repo and `~/.claude/skills/cleanup-worktrees/scripts/cleanup-worktree.sh`
-when deployed:
-
-```bash
-scripts/cleanup-worktree.sh --dry-run
-```
-
-The script prints `<branch>\t<status>\t<path>` and exits non-zero when the
-worktree must not be removed.
-
-Interpret the status:
-
-| Status                                           | Meaning                 | Action                                                                              |
-| ------------------------------------------------ | ----------------------- | ----------------------------------------------------------------------------------- |
-| `SAFE (started, merged to main, clean)`          | ready for removal       | proceed                                                                             |
-| `NOT MERGED (branch is not an ancestor of main)` | work not in main yet    | do NOT remove                                                                       |
-| `NEVER STARTED (reflog shows only creation)`     | no work ever done       | do NOT remove                                                                       |
-| `IN PROGRESS (uncommitted changes)`              | has uncommitted work    | do NOT remove                                                                       |
-| `LIVE CONFIG (...)`                              | live dotfiles link here | do NOT remove; ask the user to run darwin-rebuild from a main checkout, then re-run |
-| `Refusing to remove` (main checkout)             | not a linked worktree   | do NOT remove                                                                       |
-
-### 2. Report to the user
-
-Tell the user the classification. If the status is not SAFE, explain why
-and stop. Do not attempt removal.
-
-### 3. Remove
-
-If the classification is SAFE, remove it without confirmation:
+Run [the cleanup script](scripts/cleanup-worktree.sh) from inside the worktree to delete (deployed at `~/.claude/skills/cleanup-worktrees/scripts/cleanup-worktree.sh`):
 
 ```bash
 scripts/cleanup-worktree.sh --force
 ```
 
-## Other Scripts In This Skill
+It fast-forwards local main to origin/main, classifies the current worktree, and removes it only when the status is `SAFE`.
+Any other status exits non-zero and removes nothing; `--dry-run` classifies without removing.
 
-- `scripts/cleanup-merged-worktrees.sh` — inspect (and optionally remove)
-  every merged worktree at once, for out-of-band merges. Not tied to the
-  current directory.
-- `scripts/detect-stale-worktrees.sh` — report abandoned worktrees (no diff
-  from main, or no activity for N days, no running agent).
-- `design.md` — why cleanup is interactive, classification rules, and the
-  git hooks that keep main linear.
+Report the printed status to the user.
+When the script refuses, explain why and stop; never try to remove the worktree another way.
+The one status that needs the user is `LIVE CONFIG`: ask them to run darwin-rebuild from a main checkout, then re-run.
 
-## Rules
+Removal deletes the working directory, so make it the last action in the session.
 
-- Only remove the worktree you are currently in — never another worktree,
-  and never the main checkout.
-- Never use `--force` to override a non-SAFE classification.
-- After removal the working directory no longer exists; make removal the
-  last action in the session.
+[cleanup-merged-worktrees.sh](scripts/cleanup-merged-worktrees.sh) and [detect-stale-worktrees.sh](scripts/detect-stale-worktrees.sh) scan all worktrees at once; see [design.md](design.md).

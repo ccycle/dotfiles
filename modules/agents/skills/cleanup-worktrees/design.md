@@ -35,8 +35,9 @@ Two layers work together:
    removal:
    - [scripts/cleanup-worktree.sh](scripts/cleanup-worktree.sh) — classifies and removes **the current
      worktree** from inside its session. The sole entry point.
-   - `/cleanup-worktrees` skill — wraps the script in an interactive flow:
-     classify → report → confirm → remove.
+   - `/cleanup-worktrees` skill — a single script call: the script syncs
+     local main, classifies, and removes only a SAFE worktree, so the agent
+     spends no tokens re-deriving the procedure.
    - The user-invoked `/merge-and-cleanup` skill calls the same script once
      the PR is merged, and removes only on an explicit, user-confirmed
      `--remove` re-run.

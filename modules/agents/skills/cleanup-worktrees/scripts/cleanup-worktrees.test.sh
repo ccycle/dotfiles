@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Regression test: a merged, started, clean worktree that is not open in any
+# Regression test: an unmerged worktree is refused, and a merged, started, clean worktree that is not open in any
 # herdr workspace (open_workspace_id: null) must be removed through git, never
 # via `herdr worktree remove --workspace null`.
 # Runs against a real temporary git repo; only herdr (needs a live server) and
@@ -40,14 +40,20 @@ chmod +x "$tmp/bin/herdr" "$tmp/bin/tart"
 export PATH="$tmp/bin:$PATH" HERDR_LOG="$tmp/herdr.log" HERDR_JSON="$tmp/list.json"
 
 repo="$tmp/repo"
+git init -q --bare -b main "$tmp/origin.git"
 git init -q -b main "$repo"
+git -C "$repo" remote add origin "$tmp/origin.git"
 git -C "$repo" commit -q --allow-empty -m init
-for b in cleanup-test-single cleanup-test-merged; do
-  git -C "$repo" worktree add -q -b "$b" "$tmp/$b"
-  mkdir -p "$tmp/$b/sub" && touch "$tmp/$b/sub/$b"
-  git -C "$tmp/$b" add sub && git -C "$tmp/$b" commit -q -m "work on $b"
-  git -C "$repo" merge -q --ff-only "$b"
-done
+git -C "$repo" push -q origin main
+add_worktree() { # add_worktree <branch>: one commit of work on a new branch off main
+  git -C "$repo" worktree add -q -b "$1" "$tmp/$1"
+  mkdir -p "$tmp/$1/sub" && touch "$tmp/$1/sub/$1"
+  git -C "$tmp/$1" add sub && git -C "$tmp/$1" commit -q -m "work on $1"
+}
+# Merged only on origin, as a Forgejo merge leaves it: the script must sync local main itself.
+add_worktree cleanup-test-single
+git -C "$repo" push -q origin cleanup-test-single:main
+add_worktree cleanup-test-unmerged
 # cleanup-merged-worktrees.sh resolves the repo from its own location.
 mkdir "$repo/.scripts" && cp "$here/cleanup-merged-worktrees.sh" "$repo/.scripts/"
 echo .scripts >>"$repo/.git/info/exclude"
@@ -64,6 +70,12 @@ has() { grep -qF -- "$2" <<<"$1"; } # has <haystack> <needle>
 lacks() { ! has "$@"; }
 no_herdr_remove() { ! grep -q 'worktree remove' "$HERDR_LOG" 2>/dev/null; }
 
+# cleanup-worktree.sh: refuses a started but unmerged worktree.
+list_json cleanup-test-unmerged >"$HERDR_JSON"
+out=$(cd "$tmp/cleanup-test-unmerged" && "$here/cleanup-worktree.sh" --force 2>&1)
+check "unmerged --force refuses" has "$out" "NOT MERGED (branch is not an ancestor of main)"
+check "unmerged worktree kept" test -d "$tmp/cleanup-test-unmerged"
+
 # cleanup-worktree.sh: removes the current worktree, even when run from a
 # subdirectory of it.
 list_json cleanup-test-single >"$HERDR_JSON"
@@ -75,7 +87,9 @@ check "single --force succeeds" has "$out" "Removed worktree for cleanup-test-si
 check "single worktree removed" test ! -e "$tmp/cleanup-test-single"
 check "single did not call herdr remove" no_herdr_remove
 
-# cleanup-merged-worktrees.sh: scans all worktrees.
+# cleanup-merged-worktrees.sh: scans all worktrees; it does not sync main, so merge locally.
+add_worktree cleanup-test-merged
+git -C "$repo" merge -q --ff-only cleanup-test-merged
 list_json cleanup-test-merged >"$HERDR_JSON"
 out=$("$repo/.scripts/cleanup-merged-worktrees.sh" --dry-run 2>&1)
 check "merged dry-run lists candidate" has "$out" "Would remove worktree for cleanup-test-merged"

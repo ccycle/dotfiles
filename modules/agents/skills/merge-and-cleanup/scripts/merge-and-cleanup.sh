@@ -126,14 +126,6 @@ open)
     "$(jq -r .number <<<"$pr")" "$(jq -r .html_url <<<"$pr")"
   ;;
 merged)
-  # A Forgejo merge does not move local main, and cleanup-worktree.sh classifies against local main.
-  git fetch origin
-  main_wt=$(git worktree list --porcelain | awk '/^worktree /{p=substr($0, 10)} /^branch refs\/heads\/(main|master)$/{print p}')
-  if [ -n "$main_wt" ]; then
-    git -C "$main_wt" pull --ff-only origin main
-  else
-    git fetch origin main:main
-  fi
   # Sibling skill script; the relative path holds both in the repo and under ~/.claude/skills.
   cleanup="$(dirname "$0")/../../cleanup-worktrees/scripts/cleanup-worktree.sh"
   [ -x "$cleanup" ] || die "cleanup-worktree.sh not found at $cleanup"

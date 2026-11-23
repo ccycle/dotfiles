@@ -82,6 +82,21 @@ fi
 
 worktree_repo_root=$cwd
 
+# A Forgejo merge does not move local main, and classification checks against local main.
+git -C "$cwd" fetch -q origin || {
+  printf 'git fetch origin failed; cannot classify against an up-to-date main.\n' >&2
+  exit 1
+}
+main_wt=$(git -C "$cwd" worktree list --porcelain | awk '/^worktree /{p=substr($0, 10)} /^branch refs\/heads\/main$/{print p}')
+if [ -n "$main_wt" ]; then
+  git -C "$main_wt" merge -q --ff-only origin/main
+else
+  git -C "$cwd" fetch -q origin main:main
+fi || {
+  printf 'Could not fast-forward local main to origin/main.\n' >&2
+  exit 1
+}
+
 # Return 0 if the branch has ever been worked on (reflog contains
 # commit/rebase/merge/reset entries), 1 if never started (only the
 # initial creation entry) or if no reflog is available.
@@ -89,10 +104,7 @@ branch_was_started() {
   branch="$1"
   entries=$(git -C "$worktree_repo_root" reflog show --format="%gs" "$branch" 2>/dev/null) || return 1
   [ -z "$entries" ] && return 1
-  active=$(printf '%s\n' "$entries" |
-    grep -vE '^(branch: Created from|checkout:|rebase \(start\))' |
-    wc -l | tr -d ' ')
-  [ "$active" -gt 0 ]
+  printf '%s\n' "$entries" | grep -qvE '^(branch: Created from|checkout:|rebase \(start\))'
 }
 
 # Return 0 if the active home-manager generation links into this worktree.
@@ -178,9 +190,8 @@ if [ -n "$ws_id" ]; then
   herdr worktree remove --workspace "$ws_id" --json 2>/dev/null
 else
   git -C "$worktree_repo_root" worktree remove "$cwd"
-fi &&
-  printf 'Removed worktree for %s\n' "$ws_branch" ||
-  {
-    printf 'Failed to remove worktree for %s\n' "$ws_branch" >&2
-    exit 1
-  }
+fi || {
+  printf 'Failed to remove worktree for %s\n' "$ws_branch" >&2
+  exit 1
+}
+printf 'Removed worktree for %s\n' "$ws_branch"
