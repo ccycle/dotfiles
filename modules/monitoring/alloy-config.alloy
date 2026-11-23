@@ -37,8 +37,9 @@ local.file_match "host_logs" {
 }
 
 loki.source.file "host_logs" {
-  targets    = local.file_match.host_logs.targets
-  forward_to = [loki.process.extract_level.receiver]
+  targets       = local.file_match.host_logs.targets
+  forward_to    = [loki.process.extract_level.receiver]
+  tail_from_end = true
 }
 
 // GitLab file logs. GitLab Omnibus writes its real logs (rails, sidekiq,

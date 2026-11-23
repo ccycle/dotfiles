@@ -101,7 +101,7 @@ services:
     volumes:
       - ${ALLOY_CONFIG}:/etc/alloy/config.alloy:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /var/log:/var/log/host:ro
+      - /private/var/log:/var/log/host:ro
       # GitLab writes its real logs (rails, sidekiq, gitaly, ...) to this
       # host directory, not to the container's stdout. Empty fallback dir
       # keeps the stack working when GitLab is disabled.
