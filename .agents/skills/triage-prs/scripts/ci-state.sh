@@ -30,7 +30,7 @@ while :; do
   fi
   sleep 20
 done
-jq -r '.statuses[] | "\(.status)\t\(.context)"' <<<"$status" >&2
+jq -r '(.statuses // [])[] | "\(.status)\t\(.context)"' <<<"$status" >&2
 echo "$state"
 case "$state" in
 success) exit 0 ;;

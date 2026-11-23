@@ -1,17 +1,16 @@
 ---
 name: triage-prs
-description: Triage the open Forgejo PRs of this repo (forgejo.mac-mini-m4-pro.internal/ccycle/dotfiles) — fast-forward merge every PR that is on top of main with green CI, and delegate the rebase or CI fix of each other PR to the herdr agent in that PR's worktree, one PR at a time. Use when asked to "merge what can be merged and fix the rest" for this repo's PRs. Requires HERDR_ENV=1.
+description: Triage the open Forgejo PRs of this repo (forgejo.mac-mini-m4-pro.internal/ccycle/dotfiles) — rebase each PR in its herdr worktree, push, wait for CI, and fast-forward merge it, one PR at a time; only a rebase conflict or red CI goes to the herdr agent in that worktree. Use when asked to "merge what can be merged and fix the rest" for this repo's PRs. Requires HERDR_ENV=1.
 ---
 
 # Triage PRs
 
-You are the dispatcher.
-You merge, and you verify what agents claim; you never run git (rebase, push, conflict resolution) inside a PR's worktree.
-That work belongs to the agent already running in the worktree, which holds the PR's context.
-
 A PR is mergeable only when its head is on top of `origin/main` and its CI is green, because main allows fast-forward merges only and requires signed commits (see [mac-mini-m4-pro/darwin.nix](../../../modules/mac-mini-m4-pro/darwin.nix)).
 Forgejo's `mergeable: true` ignores both.
 Never use Forgejo's server-side rebase or "Update branch": they produce unsigned commits.
+
+You do the clean path yourself with [triage.sh](scripts/triage.sh).
+Only its failures go to the agent in the PR's worktree, which holds the PR's context.
 
 ## Steps
 
@@ -19,46 +18,38 @@ Never use Forgejo's server-side rebase or "Update branch": they produce unsigned
    This list is the scope of the run.
    A PR that opens later is reported at the end, not processed, unless the user asks.
 
-2. Order the list.
-   PRs with `on_main=yes` and `ci=success` go first.
-   Then small PRs that share no files with the others.
+2. Choose the merge order.
+   Small PRs that share no files with the others go first.
    PRs that touch the same files as another PR go last, so that only one side has to resolve the conflict.
    Compare with `git diff --name-only origin/main...<head>`.
 
-3. Take the PRs strictly one at a time, because every merge moves main and invalidates the rest:
-   1. Run [prs.sh](scripts/prs.sh) again for the current state.
-   2. If `on_main=yes` and `ci=success`, merge with [merge.sh](scripts/merge.sh) and go to the next PR.
-      It refuses an already merged PR, so a merge the user did by hand mid-run is safe.
-   3. Otherwise delegate (below), then verify the agent's claims yourself: `prs.sh` shows `on_main=yes`, `git verify-commit <head>` passes, and [ci-state.sh](scripts/ci-state.sh) `<head> --wait 1800` prints `success`.
-      The agent finishing its turn does not mean CI passed.
-   4. Merge with `merge.sh`.
-      If CI is red, look at the failure with the [investigate-forgejo-ci skill](../investigate-forgejo-ci/SKILL.md) and send the agent one more prompt with the cause.
-      After two red rounds on one PR, leave it and report it.
+3. Run `triage.sh <pr>...` in that order, in the background, and wait for its exit notification.
+   It prints one line per PR.
+   Read only those lines; open the log it names only to explain a failure.
 
-4. Report: PRs merged (number and head SHA), PRs left open with the reason, and PRs that appeared during the run.
+4. For each line that says `delegate to <pane>`, prompt that agent (below), wait for it, then run `triage.sh <pr>` again for that PR alone.
+   The agent finishing its turn does not mean CI passed; `triage.sh` checks CI and signatures itself.
+   For a CI failure, find the cause with the [investigate-forgejo-ci skill](../investigate-forgejo-ci/SKILL.md) first and put it in the prompt.
+   After two failed rounds on one PR, leave it and report it.
 
-## Delegating to the worktree agent
+5. Report: PRs merged (number and head SHA), PRs left open with the reason, and PRs that appeared during the run.
 
-Use the `agent_pane` column of `prs.sh` as the target of `herdr agent` (see the [herdr skill](../../../modules/agents/skills/herdr/SKILL.md)); agents are not always named after their branch.
+## Delegating a failure
 
-- `idle` or `done`: send the prompt.
-- `working`: the agent is busy with something else; do not interrupt it.
-  Move on to the next PR and come back.
-- `blocked`: it is waiting for the user; skip the PR and report it.
-- `none` (worktree without an agent): `herdr tab create --cwd <worktree> --label <branch>`, then `herdr agent start <branch> --kind claude --pane <root_pane>` and send the prompt.
-- `no-worktree`: the PR was not made from a herdr worktree; skip it and report it.
-  Do not create a worktree for it.
+Use the pane from the `triage.sh` line as the target of `herdr agent` (see the [herdr skill](../../../modules/agents/skills/herdr/SKILL.md)); agents are not always named after their branch.
+`triage.sh` skips a PR whose agent is `working` or `blocked`; come back to it later, or report it if it stays blocked.
+If the worktree has no agent (`none` in `prs.sh`), run `herdr tab create --cwd <worktree> --label <branch>`, then `herdr agent start <branch> --kind claude --pane <root_pane>`.
 
-Send the prompt with `herdr agent prompt <pane> "<prompt>" --wait --timeout 3600000`.
+Send the prompt with `herdr agent prompt <pane> "<prompt>" --wait --timeout 3600000 >/dev/null`.
+Do not read the agent's screen; the next `triage.sh` run is the verdict.
 Fill in this template:
 
 ```text
-Rebase this PR branch (<branch>, PR #<n>) onto origin/main, which is now <origin/main sha>.
-<For a CI failure: CI failed on <head>: <failing context and the error line>. Fix it.>
-<Expected conflicts: <files>, from <PR or commit that landed>. Resolve by <keeping both changes | ...>.>
-Bar: verify-change passes for <affected profile>; every commit is signed (git verify-commit); push with git push --force-with-lease; wait for CI on the new head.
-Report the new head SHA and the CI result for each context.
-Do not merge the PR.
+PR #<n> (<branch>) needs a fix before it can merge. origin/main is now <origin/main sha>.
+<Rebase conflict in <files>, from <PR or commit that landed>. Rebase onto origin/main and resolve by <keeping both changes | ...>.>
+<CI failed on <head>: <failing context and the error line>. Fix it.>
+Bar: verify-change passes for <affected profile>; every commit is signed (git verify-commit); push with git push --force-with-lease.
+Do not merge the PR. Reply with one line: the new head SHA.
 ```
 
 ## Related skills
