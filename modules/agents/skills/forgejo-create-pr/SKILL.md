@@ -66,8 +66,12 @@ Create a pull request on the Forgejo instance with `fj` (the binary name of the 
    - Display the title, base, and head.
 
 8. **Monitor CI and Repair Failures**
-   - Watch both CI jobs for this PR's head commit (`Verify / Syntax + Structure + Build` and `Formatter`) via `fj actions -R origin tasks`, matching the row whose commit prefix is the PR's head commit.
-   - CI takes several minutes: use `ScheduleWakeup` to check back rather than a `sleep`-polling loop.
+   - Wait for CI to finish, not for a guessed delay: start [scripts/wait-for-ci.sh](scripts/wait-for-ci.sh) (deployed as `~/.claude/skills/forgejo-create-pr/scripts/wait-for-ci.sh`) on the PR's head commit as a background command whose exit notifies you (Claude Code: Bash with `run_in_background`), and do not schedule a wakeup or `sleep` for CI:
+     ```bash
+     ~/.claude/skills/forgejo-create-pr/scripts/wait-for-ci.sh origin "$(git rev-parse HEAD)" 300 60
+     ```
+   - It exits as soon as the newest task of every job for that commit is terminal, printing them: exit 0 means every job passed, exit 1 means a job failed or was cancelled. Exit 3 (no task appeared) and exit 4 (timed out) mean CI did not run as expected; report them instead of re-waiting.
+   - Where the timeouts come from: the longest of the last 100 tasks in `fj actions -R origin tasks` (measured 2026-11-23) took 1m31s, and the Build job usually takes 1m2s–1m9s. 300s leaves room for one run queued behind two others. 60s for the first task to appear is generous because Forgejo creates the tasks when the push arrives.
    - If a job fails, follow the `investigate-forgejo-ci` skill to fetch the log and classify the cause.
    - Fix only routine causes: formatter diffs (`nix fmt`), stale vendored hashes (`vendorHash` / `npmDepsHash` / `cargoHash`), and Package by Feature structure violations. Verify with the `verify-change` skill (at minimum the build output owning the failure) before pushing.
    - Push the fix to the same PR branch with a normal push (force-push is rejected on protected branches) and return to monitoring.

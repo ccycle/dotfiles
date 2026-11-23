@@ -69,8 +69,10 @@ fixed-output derivation '<drv>': specified: <old-hash> got: <new-hash>`.
    (e.g. `nix build '.#gcx'` if `flake.nix` exposes it under `packages`),
    not the whole system closure, to keep the loop fast.
 
-6. **Push and re-check** — after pushing, CI takes several minutes; use
-   `ScheduleWakeup` to check back rather than a `sleep`-polling loop.
+6. **Push and re-check** — after pushing, wait for the new head commit's CI
+   with `wait-for-ci.sh` as described in step 8 of
+   [the forgejo-create-pr skill](../../../modules/agents/skills/forgejo-create-pr/SKILL.md),
+   not with `ScheduleWakeup` or a fixed `sleep`.
 
 ## Reference
 
