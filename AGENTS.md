@@ -124,17 +124,15 @@ Age private keys are managed via rbw (Rust Bitwarden CLI) to eliminate plaintext
 
 ### Usage
 
-Use `sops-with-rbw` wrapper script instead of plain `sops`:
+Use `sops-with-rbw` wrapper script instead of plain `sops`.
+Agents change one key at a time with [secret-rotate.sh](.agents/skills/credentials-manager/scripts/secret-rotate.sh) (see the [credentials-manager skill](.agents/skills/credentials-manager/SKILL.md)) and list key names with `yq 'keys' <file>`; decrypting or editing a whole file is for the user's own terminal and is refused by the [block-secret-screen-reads hook](modules/claude/hooks/block-secret-screen-reads.py):
 
 ```bash
-# Decrypt a secrets file
-.agents/skills/credentials-manager/scripts/sops-with-rbw -d modules/attic/secrets.yaml
+# Agent: replace one key from a bws project
+.agents/skills/credentials-manager/scripts/secret-rotate.sh --key attic-ci-token --from-bws <project-id> <bws-key> --profile <profile> modules/attic/secrets.yaml
 
-# Edit a secrets file
+# User only: edit a whole secrets file
 .agents/skills/credentials-manager/scripts/sops-with-rbw edit modules/attic/secrets.yaml
-
-# Encrypt a secrets file
-.agents/skills/credentials-manager/scripts/sops-with-rbw -e modules/attic/secrets.yaml
 ```
 
 ### Security Properties

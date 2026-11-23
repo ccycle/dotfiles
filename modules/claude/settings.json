@@ -192,6 +192,15 @@
             "command": "$HOME/.claude/hooks/protect-critical-files.sh"
           }
         ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/block-secret-screen-reads.py"
+          }
+        ]
       }
     ],
     "PostToolUse": [

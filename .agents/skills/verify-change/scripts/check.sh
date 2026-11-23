@@ -54,6 +54,12 @@ function check_recipients() {
   echo ""
 }
 
+function check_claude_hooks() {
+  echo "=== 🪝 Testing Claude Code hooks ==="
+  "${REPO_ROOT}/modules/claude/hooks/block-secret-screen-reads.test.sh"
+  echo ""
+}
+
 # Verify every module's declared expected-bins.txt binaries actually exist in
 # a profile's built closure. Package attribute names don't always match their
 # binary name (e.g. `ripgrep` -> `rg`), so this checks concrete binary names
@@ -201,6 +207,8 @@ check_no_override_input
 
 # 2.6. Sops recipient check against the age key ledger
 check_recipients
+
+check_claude_hooks
 
 # 3. Build every compatible profile (or only the one given as $1)
 PROFILE="${1:-}"
