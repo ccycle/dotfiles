@@ -141,29 +141,31 @@ Adding `grep` to the daemon `PATH` was rejected: the stub would still
 do nothing, and print a longer deprecation warning instead.
 The patch can go once upstream comin stops calling `activate-user`.
 
-## App Management permission: launch the Go binary, not its shell wrapper
+## No `/Applications/Nix Apps` on comin hosts
 
 nix-darwin aborts activation unless it can write into every bundle in
 `/Applications/Nix Apps` (`ensureAppManagement` in nix-darwin's
-`modules/system/applications.nix`). Those bundles are vendor-notarized
-brew-nix casks, so macOS gates the write behind the App Management TCC
-permission. comin is a system launchd daemon outside any GUI session,
-so nix-darwin reports this as "permission denied when trying to update
-apps over SSH" even when nobody is using SSH; the suggested
-"Allow full disk access for remote users" fix only covers `sshd` and
-does not help.
+`modules/system/applications.nix`).
+The bundles there are vendor-notarized brew-nix casks, so macOS gates
+that write behind the App Management TCC permission.
+comin is a system launchd daemon outside any GUI session, so every
+deploy failed with "permission denied when trying to update apps over
+SSH", even with nobody on SSH.
+[darwin.nix](darwin.nix) therefore replaces `system.build.applications`
+with an empty tree on every host that enables comin.
+Packages stay in `environment.systemPackages`, so their CLIs and the
+services that launch a bundle from its `/nix/store` path keep working;
+only the copies in `/Applications` go away.
 
-Upstream's `bin/comin` is a `makeWrapper` bash script. TCC recorded
-the denial against that wrapper's bash interpreter, so a grant would
-have to go to a shared Nix bash, giving every script it runs App
-Management. [darwin.nix](darwin.nix) instead points `bin/comin` at the
-Go binary (`.comin-wrapped`) and moves the wrapper's environment into
-the launchd plist, so the grant covers comin alone.
+Rejected: granting App Management or Full Disk Access to comin.
+TCC keys a grant for a bare binary to its path and its ad-hoc cdhash,
+so it would have to be re-granted from a GUI session on every comin
+rebuild, and comin's makeWrapper script would put the grant on a
+shared Nix bash that every script using it inherits.
+Rejected: moving the apps to Homebrew casks, which leaves `brew` to
+modify notarized bundles from the same daemon context and most likely
+meets the same App Management gate (untested).
 
-Trade-off: the grant is keyed to a `/nix/store` path, so every change
-to the comin build (a version bump or a patch change) needs a new
-grant in System Settings > Privacy & Security > App Management, made
-from a GUI session (Screen Sharing). Until then comin's deploys fail
-with the same error. Rejected alternatives:
-granting the wrapper's bash (too broad), and dropping the brew-nix GUI
-apps from comin hosts (removes apps that are still used there).
+The bundles already in `/Applications/Nix Apps` still trip the check
+before activation can remove them, so a host needs one
+`darwin-rebuild switch` from a GUI session after this lands.
