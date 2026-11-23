@@ -1,0 +1,25 @@
+--- a/internal/executor/utils.go
++++ b/internal/executor/utils.go
+@@ -266,7 +266,6 @@
+ }
+ 
+ func switchToConfigurationDarwin(operation string, outPath string, dryRun bool, stdout, stderr io.WriteCloser) error {
+-	activateUserExe := filepath.Join(outPath, "activate-user")
+ 	activateExe := filepath.Join(outPath, "activate")
+ 
+ 	if dryRun {
+@@ -274,14 +273,6 @@
+ 		return nil
+ 	}
+ 
+-	logrus.Infof("nix: activating user environment: '%s'", activateUserExe)
+-	userCmd := exec.Command(activateUserExe)
+-	userCmd.Stdout = stdout
+-	userCmd.Stderr = stderr
+-	if err := userCmd.Run(); err != nil {
+-		return fmt.Errorf("user activation command %s fails with %s", activateUserExe, err)
+-	}
+-
+ 	logrus.Infof("nix: activating system environment: '%s'", activateExe)
+ 	cmd := exec.Command(activateExe)
+ 	cmd.Stdout = stdout

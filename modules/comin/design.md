@@ -124,3 +124,19 @@ manual `sudo darwin-rebuild switch` (chicken-and-egg: comin itself
 ships via a rebuild). comin takes over polling after that. The
 `darwin-rebuild` app/Justfile recipe stays for `private` and for
 this one-time bootstrap.
+
+## Skip the deprecated `activate-user`
+
+comin's Darwin deploy runs `activate-user` and then `activate`.
+Since nix-darwin made user activation part of `activate`,
+`activate-user` is a stub marked `# nix-darwin: deprecated` that does
+nothing but print a deprecation warning, and nix-darwin advises
+deployment tools to skip it.
+Under comin's launchd `PATH` (nix, git, openssh only) the stub also
+fails to find `grep` on its upgrade check, which exits 0 and logs
+`grep: command not found` on every deploy.
+[skip-activate-user.patch](skip-activate-user.patch) removes the call
+from comin.
+Adding `grep` to the daemon `PATH` was rejected: the stub would still
+do nothing, and print a longer deprecation warning instead.
+The patch can go once upstream comin stops calling `activate-user`.

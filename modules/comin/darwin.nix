@@ -2,6 +2,7 @@
   config,
   inputs,
   lib,
+  system,
   ...
 }:
 
@@ -13,6 +14,9 @@ let
   # allowed_signers file - the home-manager-deployed ~/.config/git/allowed_signers
   # is scoped to the login user, not readable at system-activation time.
   signingKey = ../git/user/id_ed25519_signing.pub;
+  cominWithoutActivateUser = inputs.comin.packages.${system}.comin.overrideAttrs (old: {
+    patches = (old.patches or [ ]) ++ [ ./skip-activate-user.patch ];
+  });
 in
 {
   imports = [
@@ -24,6 +28,7 @@ in
       ''ccycle713@gmail.com namespaces="git" ${builtins.readFile signingKey}'';
 
     services.comin = {
+      package = cominWithoutActivateUser;
       sshAllowedSignersPath = "/etc/comin/allowed_signers";
 
       # Loopback-bound, scraped by Prometheus via the same host-gateway
