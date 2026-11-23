@@ -68,10 +68,11 @@ Create a pull request on the Forgejo instance with `fj` (the binary name of the 
 8. **Monitor CI and Repair Failures**
    - Wait for CI to finish, not for a guessed delay: start [scripts/wait-for-ci.sh](scripts/wait-for-ci.sh) (deployed as `~/.claude/skills/forgejo-create-pr/scripts/wait-for-ci.sh`) on the PR's head commit as a background command whose exit notifies you (Claude Code: Bash with `run_in_background`), and do not schedule a wakeup or `sleep` for CI:
      ```bash
-     ~/.claude/skills/forgejo-create-pr/scripts/wait-for-ci.sh origin "$(git rev-parse HEAD)" 300 60
+     ~/.claude/skills/forgejo-create-pr/scripts/wait-for-ci.sh origin "$(git rev-parse HEAD)" 480 60
      ```
-   - It exits as soon as the newest task of every job for that commit is terminal, printing them: exit 0 means every job passed, exit 1 means a job failed or was cancelled. Exit 3 (no task appeared) and exit 4 (timed out) mean CI did not run as expected; report them instead of re-waiting.
-   - Where the timeouts come from: the longest of the last 100 tasks in `fj actions -R origin tasks` (measured 2026-11-23) took 1m31s, and the Build job usually takes 1m2s–1m9s. 300s leaves room for one run queued behind two others. 60s for the first task to appear is generous because Forgejo creates the tasks when the push arrives.
+   - It exits as soon as the newest run of every workflow for that commit is terminal, printing them: exit 0 means every run passed, exit 1 means a run failed or was cancelled. Exit 3 (no run appeared) and exit 4 (timed out) mean CI did not run as expected; report them instead of re-waiting.
+   - It reads the Actions runs API, not `fj actions tasks`. Forgejo creates every workflow run when the push arrives, but it creates a run's task only when a runner starts it (up to 88s later). Path-filtered workflows such as `lint.yaml` may not run at all. So the task list cannot tell when a commit's CI is complete.
+   - Where the timeouts come from: across the last 100 runs from `/api/v1/repos/ccycle/dotfiles/actions/runs` (measured 2026-11-23), the longest push-to-finish time (`stopped - created`, queueing included) was 240s, for `verify.yaml` (median 90s). 480s is twice that. Runs exist as soon as the push is accepted, so 60s with no run means CI was not triggered.
    - If a job fails, follow the `investigate-forgejo-ci` skill to fetch the log and classify the cause.
    - Fix only routine causes: formatter diffs (`nix fmt`), stale vendored hashes (`vendorHash` / `npmDepsHash` / `cargoHash`), and Package by Feature structure violations. Verify with the `verify-change` skill (at minimum the build output owning the failure) before pushing.
    - Push the fix to the same PR branch with a normal push (force-push is rejected on protected branches) and return to monitoring.
