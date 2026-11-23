@@ -2,6 +2,7 @@
   config,
   inputs,
   lib,
+  pkgs,
   system,
   ...
 }:
@@ -17,6 +18,14 @@ let
   cominWithoutActivateUser = inputs.comin.packages.${system}.comin.overrideAttrs (old: {
     patches = (old.patches or [ ]) ++ [ ./skip-activate-user.patch ];
   });
+  cominWithoutShellWrapper =
+    let
+      upstream = cominWithoutActivateUser;
+    in
+    pkgs.runCommand "comin-without-shell-wrapper-${upstream.version}" { meta.mainProgram = "comin"; } ''
+      mkdir -p $out/bin
+      ln -s ${upstream}/bin/.comin-wrapped $out/bin/comin
+    '';
 in
 {
   imports = [
@@ -27,8 +36,10 @@ in
     environment.etc."comin/allowed_signers".text =
       ''ccycle713@gmail.com namespaces="git" ${builtins.readFile signingKey}'';
 
+    launchd.daemons.comin.serviceConfig.EnvironmentVariables.GIT_CONFIG_SYSTEM = "${./git.config}";
+
     services.comin = {
-      package = cominWithoutActivateUser;
+      package = cominWithoutShellWrapper;
       sshAllowedSignersPath = "/etc/comin/allowed_signers";
 
       # Loopback-bound, scraped by Prometheus via the same host-gateway
