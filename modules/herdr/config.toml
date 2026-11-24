@@ -48,11 +48,17 @@ height = "60%"
 command = '''
 workspace=$({
   printf 'STATUS\tWORKSPACE\tREPOSITORY\tBRANCH\tID\n'
-  herdr workspace list | jq -r '.result.workspaces[] | [.agent_status, .workspace_id, .label, (.worktree.repo_name // "-"), (.worktree.checkout_path // "-")] | @tsv' |
+  herdr api snapshot | jq -r '.result.snapshot as $s | $s.workspaces[] | . as $w
+    | [$s.layouts[] | select(.tab_id == $w.active_tab_id) | .focused_pane_id][0] as $active_pane
+    | [$s.panes[] | select(.pane_id == $active_pane) | .cwd][0] as $active_cwd
+    | [.agent_status, .workspace_id, .label, (.worktree.repo_name // "-"), (.worktree.checkout_path // $active_cwd // "-")] | @tsv' |
     while IFS=$'\t' read -r agent_status id label repo dir; do
       branch=-
-      [ "$dir" != - ] && branch=$(git -C "$dir" branch --show-current)
-      [ -n "$branch" ] || branch=detached
+      if toplevel=$(git -C "$dir" rev-parse --show-toplevel 2>/dev/null); then
+        [ "$repo" != - ] || repo=${toplevel##*/}
+        branch=$(git -C "$dir" branch --show-current)
+        [ -n "$branch" ] || branch=detached
+      fi
       printf '%s\t%s\t%s\t%s\t%s\n' "$agent_status" "$label" "$repo" "$branch" "$id"
     done
 } | column -t -s "$(printf '\t')" |
