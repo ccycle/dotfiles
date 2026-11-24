@@ -50,7 +50,7 @@ If none exists, mark the claim `[unverifiable]` and say why; never weaken or rew
 Write the report to a Markdown file (in the scratchpad unless the user names a location).
 Every top-level list item is a claim, and every claim carries at least one citation or the marker `[unverifiable]` with a reason.
 Cite with a footnote reference such as `[^1]` at the end of the claim, so the claim reads as one short line.
-Put the footnote definitions after all claims, one per line, each holding the quote as link text and the source name after it:
+Put the footnote definitions after all claims, each on its own line and holding the quote as link text and the source name after it:
 
 ```markdown
 - A Text Fragment URL makes the browser jump to a given passage.[^1]
@@ -58,7 +58,9 @@ Put the footnote definitions after all claims, one per line, each holding the qu
 - Whether vendor X plans to support it [unverifiable]: no public statement found.
 
 [^1]: [“Text fragments link directly to specific text”](https://developer.mozilla.org/en-US/docs/Web/URI/Reference/Fragment/Text_fragments#:~:text=Text%20fragments%20link%20directly%20to%20specific%20text) (MDN)
+
 [^2]: [“Safari 16.1”](<link 1>) (source A)
+
 [^3]: [“Safari: 18.2”](<link 2>) (source B)
 ```
 

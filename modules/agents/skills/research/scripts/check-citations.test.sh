@@ -80,6 +80,12 @@ expect "footnote with a broken quote fails" 1 \
   "- Firefox supports it.[^1]
 
 [^1]: [“since version 120”]($page#:~:text=since%20version%20120) (page)"
+expect "blank lines between footnotes pass" 0 \
+  "- Firefox supports it.[^1] Since 131.[^2]
+
+[^1]: [a]($page#:~:text=Firefox)
+
+[^2]: [b]($page#:~:text=version%20131)"
 expect "undefined footnote fails" 1 \
   "- Firefox supports it.[^1]"
 expect "footnote without a link fails" 1 \
