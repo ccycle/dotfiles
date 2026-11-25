@@ -11,8 +11,16 @@ distinct situations, and each has its own narrow form.
 
 ## 1. Decision needed (you don't know what to do next, or there's a real choice)
 
-Use the interactive question tool (AskUserQuestion), never plain text:
+Before asking, fetch the latest state yourself: re-read the files, re-run
+the commands, or re-query the service the decision depends on. Never ask
+from memory or from an earlier turn's output; the state may have changed
+since. Skip the question entirely if the fresh state already settles it.
 
+Then use the interactive question tool (AskUserQuestion), never plain text:
+
+- Put the freshly fetched facts the choice hinges on (value, output, status,
+  and when you fetched it) in the question text, so the user decides from
+  current state without re-checking.
 - Short, self-contained title per question.
 - Concrete, mutually exclusive options.
 - Your recommended choice first, labeled `(Recommended)`, whenever you have
@@ -49,14 +57,16 @@ reach. Structure it to minimize the user's effort and the room for error:
 
 1. Never pose an open-ended free-text question when a structured choice
    covers it.
-2. Every decision-type question goes through AskUserQuestion, with a
+2. Fetch the latest state before every decision-type question, and state
+   it in the question.
+3. Every decision-type question goes through AskUserQuestion, with a
    recommended option first whenever you have one.
-3. Every delegated action is a concrete, minimal, copy-pasteable
+4. Every delegated action is a concrete, minimal, copy-pasteable
    instruction — never vague.
-4. Ask for the smallest possible piece of information back — a choice, a
+5. Ask for the smallest possible piece of information back — a choice, a
    yes/no, or one specific value — never "tell me what happened."
-5. Batch what you can ask now into one round; don't drip questions one at
+6. Batch what you can ask now into one round; don't drip questions one at
    a time when several are already answerable.
-6. If the question tool is unavailable, fall back to a numbered
+7. If the question tool is unavailable, fall back to a numbered
    plain-text question, still narrow and with the recommendation marked,
    and wait for the reply.
