@@ -1,61 +1,53 @@
 #!/usr/bin/env python3
-import glob
 import json
 import os
 import re
 import shlex
 import sys
 
-SHELL_METACHARACTERS = re.compile(r"[;&|<>$`(){}\n\\]")
-TMP_ROOTS = ["/tmp", "/private/tmp", "/var/folders", "/private/var/folders"]
+OPTION = r"(?:-[rRfvd]+|--recursive|--force|--verbose)"
+LITERAL = r"[A-Za-z0-9_./,:@%+=*?-]"
+TARGET = rf"(?:/{LITERAL}*|'/(?:{LITERAL}| )*'|\"/(?:{LITERAL}| )*\")"
+SINGLE_PLAIN_RM = re.compile(rf"rm(?: +{OPTION})*(?: +--)?((?: +{TARGET})+) *")
+RECURSIVE_RM_ANYWHERE = re.compile(r"\brm\s+-\S*[rR]")
+GLOB = re.compile(r"[*?]")
+INSIDE_TMP = re.compile(
+    rf"(?:{re.escape(os.path.realpath('/tmp'))}|/private/var/folders/[^/]+/[^/]+/T)/.+"
+)
 
 
-def tmp_roots():
-    roots = TMP_ROOTS + ([os.environ["TMPDIR"]] if os.environ.get("TMPDIR") else [])
-    return {os.path.realpath(r) for r in roots}
-
-
-def strictly_inside_tmp(path):
-    real = os.path.realpath(path)
-    return any(real.startswith(root + os.sep) for root in tmp_roots())
-
-
-def targets_all_in_tmp(command, cwd):
-    if SHELL_METACHARACTERS.search(command):
+def strictly_inside_tmp(target):
+    if {".", ".."}.intersection(target.split("/")):
         return False
-    tokens = shlex.split(command)
-    targets = [t for t in tokens[1:] if not t.startswith("-")]
-    if not targets or any(".." in t.split("/") for t in targets):
+    parent, name = os.path.split(target)
+    if GLOB.search(parent):
         return False
-    paths = [os.path.join(cwd, os.path.expanduser(t)) for t in targets]
-    expanded = [m for p in paths for m in (glob.glob(p) if glob.has_magic(p) else [p])]
-    return bool(expanded) and all(strictly_inside_tmp(p) for p in expanded)
+    real_parent = os.path.realpath(parent)
+    if GLOB.search(name):
+        return "**" not in name and bool(INSIDE_TMP.fullmatch(real_parent))
+    follows_final_symlink = name == ""
+    removed = real_parent if follows_final_symlink else os.path.join(real_parent, name)
+    return bool(INSIDE_TMP.fullmatch(removed))
 
 
-def is_recursive_rm(command):
-    try:
-        tokens = shlex.split(command)
-    except ValueError:
-        return False
-    return bool(tokens) and tokens[0] == "rm" and any(
-        t.startswith("-") and not t.startswith("--") and ("r" in t or "R" in t) or t == "--recursive"
-        for t in tokens[1:]
-    )
+def removes_only_tmp(command):
+    plain = SINGLE_PLAIN_RM.fullmatch(command)
+    return bool(plain) and all(strictly_inside_tmp(t) for t in shlex.split(plain.group(1)))
 
 
-def decide(command, cwd):
-    if is_recursive_rm(command) and targets_all_in_tmp(command, cwd):
-        return "allow", "every rm -r target resolves strictly inside a temporary directory"
-    if re.search(r"\brm\s+-\S*[rR]", command):
+def decide(command):
+    if removes_only_tmp(command):
+        return "allow", "every rm target is a literal path strictly inside a temporary directory"
+    if RECURSIVE_RM_ANYWHERE.search(command):
         return "ask", "rm -r outside a temporary directory (or not a single plain command) needs confirmation"
     return None, None
 
 
 def main():
     payload = json.load(sys.stdin)
-    if payload.get("tool_name") != "Bash":
+    if payload["tool_name"] != "Bash":
         return
-    decision, reason = decide(payload.get("tool_input", {}).get("command", ""), payload.get("cwd", os.getcwd()))
+    decision, reason = decide(payload["tool_input"]["command"])
     if decision:
         json.dump(
             {
