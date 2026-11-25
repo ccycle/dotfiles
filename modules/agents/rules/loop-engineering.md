@@ -61,6 +61,8 @@ A wrong reversible decision costs less than a blocked agent.
 
 - Destructive or hard-to-reverse actions: deleting worktrees, branches, files, volumes, or keys; killing processes; force pushes; `docker compose down` when volumes may be lost; merging or deploying.
   First list exactly what will be affected, then wait for confirmation.
+  Exempt: files strictly below `/tmp`, `/private/tmp`, or the macOS per-user temporary directory that you or your session created.
+  Delete those without asking, as a standalone `rm` with literal absolute paths: the Claude Code hook approves only that form, so chaining, variables, and redirections still prompt.
 - Sending anything to an external service or person, except PRs opened during a Long Autonomous Run.
 - Changes to security-sensitive files (secrets, SSH config, GPG config, auth tokens).
 - Product direction: what to build is the user's call; how to build it is not.
