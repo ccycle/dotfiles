@@ -56,7 +56,10 @@ function check_recipients() {
 
 function check_claude_hooks() {
   echo "=== 🪝 Testing Claude Code hooks ==="
-  "${REPO_ROOT}/modules/claude/hooks/block-secret-screen-reads.test.sh"
+  local hook_test
+  for hook_test in "${REPO_ROOT}"/modules/claude/hooks/*.test.sh; do
+    bash "$hook_test"
+  done
   echo ""
 }
 
