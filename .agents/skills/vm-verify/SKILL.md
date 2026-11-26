@@ -1,95 +1,55 @@
 ---
 name: vm-verify
-description: Verify darwin-rebuild switch (private profile) and dotfiles symlink correctness inside an isolated Apple Silicon macOS VM (Tart), without touching the host machine's $HOME. Use when validating dotfiles changes made in a git worktree.
+description: Verify darwin-rebuild switch (macbook-air-m1 profile), dotfiles symlinks, and sops secret activation inside an ephemeral Apple Silicon macOS VM (Tart), without touching the host machine's $HOME or system. Safe to run from several worktrees at once. Use when validating dotfiles changes made in a git worktree.
 ---
 
 # VM-Based darwin-rebuild Verification
 
-`darwin-rebuild switch` mutates the single shared `$HOME` on the host machine: the
-`custom.dotfiles.dir` option (see [modules/dotfiles/home.nix](../../../modules/dotfiles/home.nix)) bakes the invoking
-`repo_root` into every `mkOutOfStoreSymlink` target (Claude skills/settings/hooks,
-ai-rules files, herdr config, direnv). Running it directly from a git worktree
-repoints those symlinks away from the main checkout and corrupts the host's real
-state.
+`darwin-rebuild switch` mutates global host state: the single system profile,
+`/etc`, launchd, and the shared `$HOME`. The `custom.dotfiles.dir` option (see
+[modules/dotfiles/home.nix](../../../modules/dotfiles/home.nix)) bakes the
+invoking checkout into every `mkOutOfStoreSymlink` target, so a switch from a
+worktree repoints the host's symlinks. Home-manager activation alone is not
+isolated either: it also changes the docker context, OrbStack settings, the rbw
+config, and gui-domain launchd agents.
 
-This skill sidesteps both problems by running the real `darwin-rebuild switch`
-inside a macOS VM (via [Tart](https://tart.run/)) that has its own independent
-`$HOME`. The VM never touches the host's `$HOME`, so it's safe to run from any
-worktree without affecting the main checkout or other worktrees. The VM is kept
-(stopped, not deleted) between runs and reused on the next invocation for the
-same worktree, so only the first run pays the full clone + Nix install cost.
+This skill runs the real activation inside a throwaway macOS VM instead.
 
-## Prerequisites
+## Two tiers
 
-- Apple Silicon Mac (Tart requires an Apple Silicon host to run macOS guests).
-- [Tart](https://tart.run/) and `sshpass` (used to authenticate against the
-  default `admin`/`admin` credentials on Cirrus Labs' base image). Both are
-  declared in [modules/tart/darwin.nix](../../../modules/tart/darwin.nix) and installed automatically by
-  `darwin-rebuild switch` for the `private` profile — no manual `brew install`
-  needed. `tart` is packaged in nixpkgs under a Fair Source license (`unfree`),
-  allowed via a predicate scoped to just that package.
+- **Build-only, unlimited parallelism:** for most parallel checks,
+  [verify-change](../verify-change/SKILL.md) (`nix build --no-link`) is enough.
+  It touches only the shared Nix store, whose per-path locks deduplicate
+  concurrent builds of the same derivations.
+- **Activation, at most 2 at once:** this skill. Use it when the change affects
+  activation (symlinks, launchd, `/etc`, secrets), not just evaluation.
 
 ## Usage
 
 Run from the repository root of the worktree you want to verify:
 
 ```bash
-.agents/skills/vm-verify/scripts/run.sh [--fresh]
+.agents/skills/vm-verify/scripts/run.sh [--rebuild-golden]
 ```
 
-The script always targets the `private` profile and always operates on whichever
-worktree it's invoked from (it resolves its own path via `$0`, not a hardcoded
-location). Pass `--fresh` to force a clean reclone instead of reusing the
-worktree's existing VM (e.g. after bumping the base image, or if the VM's state
-is suspected to be corrupted).
+Pass `--rebuild-golden` after bumping the base image, or when the golden
+image's store has drifted far from the current closure and per-run copies get
+slow.
 
-## What It Does
+## Prerequisites
 
-1. Reuses the worktree's existing VM if one is already cloned (`tart get`); only
-   clones fresh from Cirrus Labs' official macOS base image
-   (`ghcr.io/cirruslabs/macos-sequoia-base:latest`) on the first run, when
-   `--fresh` is passed, or if the previous VM is missing/corrupt. Boots it
-   headless either way.
-2. `rsync`s the current worktree into the VM over SSH (excluding `.git`, with
-   `--delete` so files removed from the worktree don't linger in a reused VM).
-3. Installs Nix inside the VM (upstream multi-user installer, non-interactive —
-   not the Determinate Nix installer, whose daemon nix-darwin refuses to
-   activate alongside since this repo's nix-darwin manages Nix itself) —
-   skipped if a reused VM already has it from a previous run.
-4. Runs `.agents/skills/darwin-rebuild/scripts/darwin-rebuild.sh private` inside the VM.
-5. Verifies that the key `mkOutOfStoreSymlink` targets (Claude skills/settings/
-   hooks, ai-rules files, herdr config, direnv) resolve into the VM's copy of the
-   worktree, not somewhere stale or broken.
-6. Stops the VM on exit, success or failure, but does not delete it — the next
-   run against the same worktree reuses it.
+- Apple Silicon Mac.
+- `tart`, `sshpass`, `sops`, and `age-keygen`. Tart and sshpass are declared in
+  [modules/tart/darwin.nix](../../../modules/tart/darwin.nix); all four are
+  installed by every profile.
 
-## Known Constraints
-
-- Apple limits macOS VM concurrency to **2 per host at the kernel level**
-  ([source](https://cirrus-ci.org/blog/2022/07/07/isolating-network-between-tarts-macos-virtual-machines/)).
-  A third concurrent `vm-verify` run will fail at VM boot. This skill does not
-  queue or serialize runs — coordinate manually across worktrees. Stopped VMs
-  don't count against this limit, only running ones, so keeping many worktrees'
-  VMs around doesn't make this worse.
-- Only the first run for a worktree (or a `--fresh` run) pays the full clone +
-  Nix install + full package closure cost; subsequent runs reuse the stopped VM
-  and only fetch/build what changed.
-- Each worktree accumulates its own VM disk image on the host, so disk usage
-  grows with the number of worktrees ever verified. Nothing prunes these
-  automatically outside of [scripts/cleanup-worktree.sh](../../../modules/agents/skills/cleanup-worktrees/scripts/cleanup-worktree.sh) deleting the VM when
-  the worktree itself is removed (see that script).
+Design rationale: [design.md](design.md).
 
 ## Out of Scope
 
-- `mac-mini-m4` / `mac-mini-m4-pro` profiles (their
-  `custom.storage.volumes` point at a physically mounted external volume, which has no VM-local
-  equivalent here).
-- The existing `.agents/skills/smoke-test-*` skills — `private` enables none of
-  the services they check, so they don't apply.
-
-## When to Use
-
-- After making dotfiles changes in a git worktree, to confirm `darwin-rebuild
-switch` and the resulting symlinks actually work — without risking the host's
-  `$HOME` or colliding with other worktrees doing the same thing in parallel (up
-  to the 2-VM concurrency limit).
+- `mac-mini-m4` / `mac-mini-m4-pro` profiles. Their `custom.storage.volumes`
+  point at a physically mounted external volume, which has no VM equivalent.
+- The `.agents/skills/smoke-test-*` skills. `macbook-air-m1` enables none of their
+  services.
+- Services that need nested virtualization (OrbStack/Docker). macOS guests
+  cannot host further VMs.
