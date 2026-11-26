@@ -14,7 +14,7 @@ Force push the current branch to origin using `git push origin HEAD --force-with
 
 1. **Pre-flight Check**
    - Run `git branch --show-current` to identify the current branch.
-   - If on `main` or `master`, warn the user and ask for explicit confirmation before proceeding — force-pushing these branches is dangerous.
+   - If on `main` or `master`, stop and do not push: main changes only through a merged Forgejo PR.
    - Run `git status` to confirm the working tree state.
 
 2. **Execute Force Push**
