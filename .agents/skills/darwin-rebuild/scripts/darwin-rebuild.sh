@@ -3,12 +3,7 @@ set -eu
 
 NIX="nix --extra-experimental-features nix-command --extra-experimental-features flakes"
 
-repo_root="$(git -C "$(dirname -- "$0")" rev-parse --show-toplevel 2>/dev/null || true)"
-if [ -z "${repo_root}" ]; then
-  # Not a git checkout (vm-verify copies the tree without .git): fall back to
-  # the fixed depth, .agents/skills/darwin-rebuild/scripts/<this file>.
-  repo_root="$(CDPATH='' cd -- "$(dirname -- "$0")/../../../.." && pwd)"
-fi
+repo_root="$(git -C "$(dirname -- "$0")" rev-parse --show-toplevel)"
 arch="$(${NIX} eval --impure --raw --expr 'builtins.currentSystem')"
 
 # Discover available profiles from the main flake's darwinConfigurations.
