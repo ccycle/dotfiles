@@ -153,12 +153,12 @@ if [ "$force" = "false" ]; then
   }
 fi
 
-# Tear down the worktree's vm-verify VM (.agents/skills/vm-verify), if any,
-# so reused-but-abandoned VMs don't linger on disk after the worktree is gone.
 vm_name="dotfiles-verify-$(basename "$worktree_repo_root")"
 if command -v tart >/dev/null 2>&1; then
-  tart stop "$vm_name" >/dev/null 2>&1 || true
-  tart delete "$vm_name" >/dev/null 2>&1 || true
+  tart list --quiet 2>/dev/null | grep -xE "${vm_name}(--run[0-9]+)?" | while IFS= read -r vm; do
+    tart stop "$vm" >/dev/null 2>&1 || true
+    tart delete "$vm" >/dev/null 2>&1 || true
+  done
 fi
 
 # Tear down every co-located e2e test stack (modules/*/tests/*/scripts/
