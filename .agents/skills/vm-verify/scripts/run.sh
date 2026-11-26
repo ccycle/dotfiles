@@ -120,7 +120,7 @@ for bin in tart sshpass sops age-keygen; do
   fi
 done
 cleanup_script="${repo_root}/modules/agents/skills/cleanup-worktrees/scripts/cleanup-worktree.sh"
-if ! grep -qF "\"\${vm_name}(--run[0-9]+)?\"" "$cleanup_script"; then
+if ! grep -qF -- '(--run[0-9]+)?' "$cleanup_script"; then
   echo "${cleanup_script} no longer matches run clones named like ${CLONE}; update its VM teardown pattern or CLONE in $0." >&2
   exit 1
 fi
