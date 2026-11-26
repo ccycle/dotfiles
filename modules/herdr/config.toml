@@ -47,23 +47,46 @@ type = "popup"
 width = "80%"
 height = "60%"
 command = '''
-workspace=$({
-  printf 'STATUS\tWORKSPACE\tREPOSITORY\tBRANCH\tID\tPANE\n'
-  herdr api snapshot | jq -r '.result.snapshot as $s | $s.workspaces[] | . as $w
-    | [$s.layouts[] | select(.tab_id == $w.active_tab_id) | .focused_pane_id][0] as $active_pane
-    | [$s.panes[] | select(.pane_id == $active_pane) | .cwd][0] as $active_cwd
-    | ([$s.panes[] | select(.workspace_id == $w.workspace_id and .agent != null) | .pane_id][0] // $active_pane) as $preview_pane
-    | [.agent_status, .workspace_id, .label, (.worktree.repo_name // "-"), (.worktree.checkout_path // $active_cwd // "-"), $preview_pane] | @tsv' |
-    while IFS=$'\t' read -r agent_status id label repo dir preview_pane; do
+full_rows=$(mktemp)
+trap 'rm -f "$full_rows"' EXIT
+preview_full_row='$(NF - 1) == id { split("workspace tab repository worktree branch", name, " "); for (i = 2; i < NF - 1; i++) printf "%-12s%s\n", name[i - 1], $i }'
+export full_rows preview_full_row
+fzf_border_pointer_status_and_gap_width=18
+tab=$({
+  printf 'STATUS\tWORKSPACE\tTAB\tREPOSITORY\tWORKTREE\tBRANCH\tID\tPANE\n'
+  herdr api snapshot | jq -r '.result.snapshot as $s | $s.tabs[] | . as $t
+    | first($s.workspaces[] | select(.workspace_id == $t.workspace_id)) as $w
+    | [$s.layouts[] | select(.tab_id == $t.tab_id) | .focused_pane_id][0] as $focused_pane
+    | [$s.panes[] | select(.pane_id == $focused_pane) | .cwd][0] as $focused_cwd
+    | ([$s.panes[] | select(.tab_id == $t.tab_id and .agent != null) | .pane_id][0] // $focused_pane) as $preview_pane
+    | [$t.agent_status, $t.tab_id, $w.label, $t.label, ($w.worktree.repo_name // "-"),
+       (if $w.worktree.is_linked_worktree then $w.worktree.checkout_path | split("/") | last else "-" end),
+       ($w.worktree.checkout_path // $focused_cwd // "-"), $preview_pane] | @tsv' |
+    while IFS=$'\t' read -r agent_status id workspace_label tab_label repo worktree dir preview_pane; do
       branch=-
       if toplevel=$(git -C "$dir" rev-parse --show-toplevel 2>/dev/null); then
         [ "$repo" != - ] || repo=${toplevel##*/}
         branch=$(git -C "$dir" branch --show-current)
         [ -n "$branch" ] || branch=detached
       fi
-      printf '%s\t%s\t%s\t%s\t%s\t%s\n' "$agent_status" "$label" "$repo" "$branch" "$id" "$preview_pane"
+      printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$agent_status" "$workspace_label" "$tab_label" "$repo" "$worktree" "$branch" "$id" "$preview_pane"
     done
-} | column -t -s "$(printf '\t')" |
+} | tee "$full_rows" | awk -F '\t' -v OFS='\t' -v budget=$(($(tput cols) - fzf_border_pointer_status_and_gap_width)) '
+  { row[NR] = $0; for (i = 2; i < NF - 1; i++) if (length($i) > w[i]) w[i] = length($i); n = NF }
+  END {
+    for (;;) {
+      total = 0; widest = 2
+      for (i = 2; i < n - 1; i++) { total += w[i]; if (w[i] > w[widest]) widest = i }
+      if (total <= budget || w[widest] <= 4) break
+      w[widest]--
+    }
+    for (r = 1; r <= NR; r++) {
+      split(row[r], f, "\t")
+      for (i = 2; i < n - 1; i++) if (length(f[i]) > w[i]) f[i] = substr(f[i], 1, w[i] - 2) ".."
+      line = f[1]; for (i = 2; i <= n; i++) line = line OFS f[i]
+      print line
+    }
+  }' | column -t -s "$(printf '\t')" |
   sed -E \
     -e "s/^STATUS +/$(printf '\033[90m·\033[0m') /" \
     -e "s/^blocked +/$(printf '\033[31m●\033[0m') /" \
@@ -71,9 +94,10 @@ workspace=$({
     -e "s/^done +/$(printf '\033[32m●\033[0m') /" \
     -e "s/^[a-z]+ +/$(printf '\033[90m●\033[0m') /" |
   fzf --ansi --height 100% --layout=reverse --border --header-lines=1 --with-nth=..-3 \
-      --preview 'herdr pane read {-1} --lines 40 --format ansi' --preview-window=down:60%:wrap:follow |
+    --preview 'awk -F "\t" -v id={-2} "$preview_full_row" "$full_rows"; printf "%${FZF_PREVIEW_COLUMNS}s\n" "" | sed "s/ /─/g"; herdr pane read {-1} --lines 40 --format ansi' \
+    --preview-window=down:60%:wrap:follow:~6 |
   awk '{print $(NF-1)}')
-[ -n "$workspace" ] && herdr workspace focus "$workspace"
+[ -n "$tab" ] && herdr tab focus "$tab"
 '''
 
 # Put workspaces whose labels share a prefix next to each other.
