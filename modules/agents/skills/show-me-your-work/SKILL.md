@@ -13,10 +13,11 @@ Keep exactly one log per effort.
 One TSV file, one row per decision, header row first:
 
 ```text
-ts	phase	decision	why	evidence	result
+ts	by	phase	decision	why	evidence	result
 ```
 
 - `ts`: ISO 8601 UTC timestamp.
+- `by`: who made the decision. `human` when the user decided it (an instruction, an answer to a question, a rejected tool call); `ai` when the agent chose it on its own, including assumptions made to resolve ambiguity.
 - `phase`: the phase or workstream.
 - `decision`: what was chosen or done, one line.
 - `why`: the reason in plain words.
@@ -30,12 +31,13 @@ Every cell is a single line with no tabs.
 ```bash
 log_decision() {
   local log=$1; shift
-  [ -s "$log" ] || printf 'ts\tphase\tdecision\twhy\tevidence\tresult\n' > "$log"
+  case $1 in human|ai) ;; *) echo "log_decision: by must be human or ai, got '$1'" >&2; return 1 ;; esac
+  [ -s "$log" ] || printf 'ts\tby\tphase\tdecision\twhy\tevidence\tresult\n' > "$log"
   local cells=("$(date -u +%Y-%m-%dT%H:%M:%SZ)")
   for c in "$@"; do cells+=("$(printf '%s' "$c" | tr '\t\n' '  ')"); done
   (IFS=$'\t'; printf '%s\n' "${cells[*]}") >> "$log"
 }
-log_decision "$log" <phase> <decision> <why> <evidence> <result>
+log_decision "$log" <by> <phase> <decision> <why> <evidence> <result>
 ```
 
 Log forks chosen, units completed with their check result, pivots and reverts with their trigger, and blockers.
