@@ -369,7 +369,6 @@ in
 
           FORGEJO_API="http://127.0.0.1:3000/api/v1"
           FORGEJO_TOKEN=$(cat ${config.sops.secrets.forgejo_api_token.path})
-          GITHUB_TOKEN=$(cat ${config.sops.secrets.github_push_mirror_token.path})
 
           attempts=0
           until ${pkgs.curl}/bin/curl -sf "http://127.0.0.1:3000/api/healthz" >/dev/null 2>&1; do
@@ -402,15 +401,16 @@ in
               if [ "$already_mirrored" = "true" ]; then
                 echo "Push mirror for ${m.owner}/${m.repo} already exists, skipping."
               else
-                ${pkgs.curl}/bin/curl -sf -X POST \
+                ${pkgs.jq}/bin/jq -n \
+                  --arg remote_address "${m.remoteUrl}" \
+                  --arg remote_username "x-access-token" \
+                  --rawfile remote_password ${config.sops.secrets.github_push_mirror_token.path} \
+                  --arg interval "8h0m0s" \
+                  '{remote_address: $remote_address, remote_username: $remote_username, remote_password: ($remote_password | rtrimstr("\n")), interval: $interval, sync_on_commit: true}' \
+                | ${pkgs.curl}/bin/curl -sf -X POST \
                   -H "Authorization: token $FORGEJO_TOKEN" \
                   -H "Content-Type: application/json" \
-                  -d "$(${pkgs.jq}/bin/jq -n \
-                    --arg remote_address "${m.remoteUrl}" \
-                    --arg remote_username "x-access-token" \
-                    --arg remote_password "$GITHUB_TOKEN" \
-                    --arg interval "8h0m0s" \
-                    '{remote_address: $remote_address, remote_username: $remote_username, remote_password: $remote_password, interval: $interval, sync_on_commit: true}')" \
+                  -d @- \
                   "$FORGEJO_API/repos/${m.owner}/${m.repo}/push_mirrors" \
                   && echo "Created push mirror for ${m.owner}/${m.repo}." \
                   || echo "Failed to create push mirror for ${m.owner}/${m.repo}."
