@@ -1,5 +1,16 @@
 { pkgs, ... }:
 
+let
+  rbwWithTerminalEditor = pkgs.symlinkJoin {
+    name = "rbw-terminal-editor";
+    paths = [ pkgs.rbw ];
+    nativeBuildInputs = [ pkgs.makeWrapper ];
+    meta.mainProgram = "rbw";
+    postBuild = ''
+      wrapProgram $out/bin/rbw --set VISUAL /usr/bin/vi
+    '';
+  };
+in
 {
   home.packages = with pkgs; [
     bws
@@ -13,7 +24,7 @@
     p7zip
     platinum-searcher
     poppler-utils
-    rbw
+    rbwWithTerminalEditor
     remarshal
     rename
     ripgrep
