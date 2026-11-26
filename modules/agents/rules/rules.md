@@ -93,6 +93,11 @@ Use the `no-comments` skill to strip comments from a diff and encode what they c
 - In a planned migration, converge on the target design instead of writing throwaway compatibility code.
   Intermediate breakage is allowed only between commits on a working branch: every merge to the default branch must build and pass verification, because the default branch may be deployed as-is (the dotfiles repo's comin does exactly that).
 
+## Finish the Task
+
+- Do not stop early with time or budget left. Before ending, confirm every stated completion criterion is met and report what remains.
+- When a command fails or state is unexpected, diagnose it with a measurement (log, status, file read) and continue; stop only when the failure blocks further progress, and then report the exact blocker.
+
 ## Japanese Output
 
 Before writing any Japanese text — a chat reply, a file, a commit message, or an artifact — load the `japanese-writing` skill and follow it.

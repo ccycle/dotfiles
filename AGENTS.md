@@ -17,7 +17,7 @@ Ignore any base-prompt guideline that limits replies to a fixed number of lines 
 
 ## Task Lifecycle
 
-Every task follows: **Plan → Implement → Verify → Report**. State completion criteria before implementing, verify each criterion before declaring done. See `~/.claude/rules/loop-engineering.md` for the full protocol, autonomy boundaries, and token efficiency guidelines.
+Every task follows: **Plan → Implement → Verify → Report**. State completion criteria before implementing, verify each criterion before declaring done. See `~/.claude/rules/loop-engineering.md` for the full protocol, autonomy boundaries, and token efficiency guidelines. For multi-step or interrupted work, persist plan and progress with the `export-session-info-to-local-md` skill so the next session resumes from a file, not a transcript.
 
 ## Module Structure Policy
 
