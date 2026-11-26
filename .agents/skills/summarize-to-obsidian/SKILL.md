@@ -129,7 +129,7 @@ Then tell the user:
 
 - The path to the result page (`AgentDrafts/<title>.md`)
 - A brief summary of what it contains
-- Remind them to push main and then run `/cleanup-worktrees`
+- Remind them to merge the PR on Forgejo and then run `/cleanup-worktrees`
 
 If `AgentDrafts/` does not exist, output the result page as a code block in
 chat instead, and tell the user to create `AgentDrafts/` manually if they

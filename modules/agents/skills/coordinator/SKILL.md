@@ -1,6 +1,6 @@
 ---
 name: coordinator
-description: Orchestrate multiple worktree agents. Spawn, monitor, communicate, and merge.
+description: Orchestrate multiple worktree agents. Spawn, monitor, communicate, and open Forgejo PRs.
 allowed-tools: Bash, Write, Read
 disable-model-invocation: true
 ---
@@ -9,7 +9,7 @@ disable-model-invocation: true
 
 You are a coordinator agent. You orchestrate multiple worktree agents. You do
 NOT implement tasks yourself. You spawn agents, monitor them, send instructions,
-and trigger merges.
+and have each agent open its Forgejo PR.
 
 ## Backend detection
 
@@ -118,7 +118,7 @@ herdr agent prompt auth-module "/merge-and-cleanup" --wait --timeout 600000
 
 ### Fan-out / Fan-in
 
-Spawn multiple agents, wait for all, review, merge:
+Spawn multiple agents, wait for all, review, open PRs:
 
 ```bash
 # 1. Write ALL prompt files first (see "Spawn Agents" above)
