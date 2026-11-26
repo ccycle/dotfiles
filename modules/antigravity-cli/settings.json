@@ -28,7 +28,8 @@
       "command(sudo mkfs)",
       "command(sudo fdisk)",
       "command(diskutil eraseDisk)",
-      "command(diskutil eraseVolume)"
+      "command(diskutil eraseVolume)",
+      "command(gh auth token)"
     ]
   }
 }

@@ -142,7 +142,9 @@
       "Bash(diskutil eraseVolume *)",
       "Bash(sudo diskutil *)",
       "Bash(gh repo delete *)",
-      "Bash(gh auth token*)"
+      "Bash(gh auth token*)",
+      "Read(//etc/nix/nix-access-tokens.conf)",
+      "Read(//run/secrets/**)"
     ],
     "ask": [
       "Bash(bws secret *)",

@@ -30,6 +30,15 @@ expect 2 "second line decrypts" $'git status\nsops -d modules/forgejo/secrets.ya
 expect 0 "sops set via stdin" "printf %s x | jq -Rs . | sops-with-rbw set --value-stdin modules/forgejo/secrets.yaml '[\"k\"]'"
 expect 0 "sops updatekeys" "sops updatekeys -y modules/forgejo/secrets.yaml"
 expect 0 "grep for the word sops" "git grep -n sops -- modules"
+expect 2 "cat rendered nix access tokens" "cat /etc/nix/nix-access-tokens.conf"
+expect 2 "masked read of nix access tokens still reads it" "sed -E 's/=.*/<hidden>/' /etc/nix/nix-access-tokens.conf"
+expect 2 "read a sops-nix secret" "sudo cat /run/secrets/github_push_mirror_token"
+expect 2 "nix config show dumps access-tokens" "nix config show | grep access"
+expect 2 "nix config show access-tokens" "nix config show access-tokens"
+expect 2 "legacy nix show-config" "nix show-config"
+expect 0 "nix config show one other setting" "nix config show substituters"
+expect 0 "presence check of rendered secret" "test -s /etc/nix/nix-access-tokens.conf"
+expect 0 "ls rendered secret" "ls -l /run/secrets/rendered/nix-access-tokens.conf"
 expect 0 "single-key rotation" ".agents/skills/credentials-manager/scripts/secret-rotate.sh --key forgejo_api_token --from-prompt modules/forgejo/secrets.yaml"
 
 if [ "${HERDR_ENV:-}" != 1 ]; then

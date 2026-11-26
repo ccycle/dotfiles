@@ -14,6 +14,8 @@ COMMAND_PREFIXES = {"env", "exec", "command", "sudo", "nice", "nohup", "time"}
 SEPARATORS = {"|", "||", "&&", ";", "&", "(", ")", ";;", "|&"}
 PANE_SCREEN_READS = {"read", "wait-output"}
 ROTATE = ".agents/skills/credentials-manager/scripts/secret-rotate.sh"
+RENDERED_SECRET_PATHS = ("nix-access-tokens.conf", "/run/secrets")
+METADATA_ONLY_COMMANDS = {"ls", "stat", "test", "[", "readlink"}
 
 
 def split(text):
@@ -52,6 +54,26 @@ def shows_plaintext(segment):
     if i is None or os.path.basename(segment[i]) not in SOPS_COMMANDS:
         return False
     return not SOPS_ARGS_THAT_NEVER_SHOW_PLAINTEXT.intersection(segment[i + 1:])
+
+
+def reads_rendered_secret(segment):
+    i = command_word(segment)
+    if i is None or os.path.basename(segment[i]) in METADATA_ONLY_COMMANDS:
+        return False
+    return any(p in token for token in segment for p in RENDERED_SECRET_PATHS)
+
+
+def shows_nix_access_tokens(segment):
+    i = command_word(segment)
+    if i is None or os.path.basename(segment[i]) != "nix":
+        return False
+    args = segment[i + 1:]
+    if args[:1] == ["show-config"]:
+        return True
+    if args[:2] != ["config", "show"]:
+        return False
+    names = [a for a in args[2:] if not a.startswith("-")]
+    return not names or "access-tokens" in names
 
 
 def reads_pane_screen(segment):
@@ -98,6 +120,14 @@ def main():
                 f"or pre-type `{ROTATE} --key <name> --from-prompt <file>` for the user. "
                 "To list key names, run `yq 'keys' <file>` on the encrypted file. "
                 "Whole-file `sops edit` is for the user's own terminal only."
+            )
+
+    for segment in found:
+        if reads_rendered_secret(segment) or shows_nix_access_tokens(segment):
+            block(
+                f"Blocked: `{shlex.join(segment)}` can print a rendered sops secret such as the Nix GitHub/GitLab access tokens. "
+                "Check presence with `test -s <path>` or `ls -l <path>`, "
+                "or read one setting with `nix config show <name>` for a name other than access-tokens."
             )
 
     if any(reads_pane_screen(s) for s in found):
