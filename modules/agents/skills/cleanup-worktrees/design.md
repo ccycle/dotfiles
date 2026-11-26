@@ -27,7 +27,8 @@ Two layers work together:
      leave it different from `refs/remotes/origin/main`, covering direct
      commits, merges, rebases, cherry-picks, and `branch -f`. main is
      integrated only through Forgejo PRs.
-   - `pre-push` — ensures local main is an ancestor of origin/main.
+   - `pre-push` — rejects every push to `main` on any remote, so a direct
+     push to GitHub cannot bypass Forgejo and its push mirror.
    - There is deliberately **no `post-merge` hook**: cleanup is never
      automatic (see Rejected Alternatives).
 
