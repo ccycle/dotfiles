@@ -98,6 +98,13 @@ Host-specific configurations live in `modules/<hostname>/darwin.nix`. These file
    { ... }: { services.my-feature.enable = true; }
    ```
 
+**Home features are gated by their parent, not by themselves.**
+[modules/home.nix](../../../../modules/home.nix) wraps every listed feature and every `<sub>/home.nix` it imports, declares `custom.<feature>.enable` / `custom.<feature>.<sub>.enable` for each, and applies the module's config only when its own option is true.
+A sub-module's option follows its parent unless set, so one module whose package fails to build is turned off by setting its option to `false` instead of commenting out its import.
+A module's `home.nix` therefore needs no enable option or `mkIf` of its own.
+`custom.profile` has no default: `"personal"` turns every feature on (the dotfiles configurations in `flake.nix` set it), `"work"` turns none on so an external flake consuming `homeManagerModules.default` (dotfiles-work) enables only what it lists.
+The wrapper exists so the gate cannot be forgotten in any of the ~90 home modules.
+
 **Option namespace rules:**
 
 - Use `services.<name>` when nix-darwin does not already declare that namespace.

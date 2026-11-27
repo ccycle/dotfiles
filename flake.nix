@@ -139,6 +139,12 @@
               ./modules/python/pyzotero-cli/drv.nix
               { src = inputs.pyzotero-cli; };
         };
+
+      personalHomeProfile =
+        { username, ... }:
+        {
+          home-manager.users.${username}.custom.profile = "personal";
+        };
     in
     flake-parts.lib.mkFlake { inherit inputs; } (
       top@{ self, ... }:
@@ -275,6 +281,7 @@
               inputs.nix-darwin.lib.darwinSystem {
                 modules = [
                   ./darwin.nix
+                  personalHomeProfile
                 ];
                 specialArgs = mkSpecialArgs system;
               }
@@ -283,6 +290,7 @@
               system = "aarch64-darwin";
               modules = [
                 ./darwin.nix
+                personalHomeProfile
                 ./modules/macbook-air-m1/darwin.nix
               ];
               specialArgs = mkSpecialArgs "aarch64-darwin";
@@ -291,6 +299,7 @@
               system = "aarch64-darwin";
               modules = [
                 ./darwin.nix
+                personalHomeProfile
                 ./modules/mac-mini-m4/darwin.nix
               ];
               specialArgs = mkSpecialArgs "aarch64-darwin";
@@ -299,6 +308,7 @@
               system = "aarch64-darwin";
               modules = [
                 ./darwin.nix
+                personalHomeProfile
                 ./modules/mac-mini-m4-pro/darwin.nix
               ];
               specialArgs = mkSpecialArgs "aarch64-darwin";
@@ -322,6 +332,7 @@
                 modules = [
                   ./home.nix
                   inputs.sops-nix.homeManagerModules.sops
+                  { custom.profile = "personal"; }
                 ];
                 extraSpecialArgs = mkSpecialArgs system;
               }
