@@ -74,4 +74,10 @@ check "rebase-push.sh leaves a conflicting branch as it was" "$(git -C "$tmp/con
 echo dirty >"$tmp/clean/own"
 check "rebase-push.sh refuses uncommitted changes" "$("$here/rebase-push.sh" "$tmp/clean" 2>/dev/null)" "uncommitted changes in $tmp/clean"
 
+git -C "$tmp/main" worktree add -q -b overlap "$tmp/overlap" origin/main
+commit "$tmp/overlap" shared overlap
+rows="$(printf 'pr\tbranch\thead\n30\tconflicting\tconflicting\n10\toverlap\toverlap\n20\tclean\tclean\n')"
+check "order.sh puts PRs that share no files first, then overlapping ones by number" \
+  "$(cd "$tmp/main" && "$here/order.sh" <<<"$rows")" "20 10 30"
+
 exit "$failures"

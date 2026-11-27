@@ -1,11 +1,22 @@
 #!/usr/bin/env bash
 set -uo pipefail
 
+here="$(cd "$(dirname "$0")" && pwd)"
+if [ "${1:-}" = --all ]; then
+  open="$("$here/prs.sh")" || exit 2
+  order="$("$here/order.sh" <<<"$open")" || exit 2
+  read -r -a prs <<<"$order"
+  [ ${#prs[@]} -gt 0 ] || {
+    echo "no open PRs"
+    exit 0
+  }
+  echo "order: ${prs[*]}"
+  set -- "${prs[@]}"
+fi
 [ $# -gt 0 ] || {
-  echo "usage: triage.sh <pr-number>... (in merge order)" >&2
+  echo "usage: triage.sh --all | <pr-number>... (in merge order)" >&2
   exit 2
 }
-here="$(cd "$(dirname "$0")" && pwd)"
 log="$(mktemp -t triage-prs.XXXXXX)" || exit 2
 echo "log: $log"
 

@@ -14,25 +14,19 @@ Only its failures go to the agent in the PR's worktree, which holds the PR's con
 
 ## Steps
 
-1. Snapshot the open PRs with [prs.sh](scripts/prs.sh).
-   This list is the scope of the run.
+1. Run `triage.sh --all` in the background and wait for its exit notification.
+   It snapshots the open PRs with [prs.sh](scripts/prs.sh); that list is the scope of the run.
    A PR that opens later is reported at the end, not processed, unless the user asks.
-
-2. Choose the merge order.
-   Small PRs that share no files with the others go first.
-   PRs that touch the same files as another PR go last, so that only one side has to resolve the conflict.
-   Compare with `git diff --name-only origin/main...<head>`.
-
-3. Run `triage.sh <pr>...` in that order, in the background, and wait for its exit notification.
+   [order.sh](scripts/order.sh) puts PRs that share no files with the others first and overlapping ones last, so that only one side has to resolve the conflict; `triage.sh` prints that order.
    It prints one line per PR.
    Read only those lines; open the log it names only to explain a failure.
 
-4. For each line that says `delegate to <pane>`, prompt that agent (below), wait for it, then run `triage.sh <pr>` again for that PR alone.
+2. For each line that says `delegate to <pane>`, prompt that agent (below), wait for it, then run `triage.sh <pr>` again for that PR alone.
    The agent finishing its turn does not mean CI passed; `triage.sh` checks CI and signatures itself.
    For a CI failure, find the cause with the [investigate-forgejo-ci skill](../investigate-forgejo-ci/SKILL.md) first and put it in the prompt.
    After two failed rounds on one PR, leave it and report it.
 
-5. Report: PRs merged (number and head SHA), PRs left open with the reason, and PRs that appeared during the run.
+3. Report: PRs merged (number and head SHA), PRs left open with the reason, and PRs that appeared during the run.
 
 ## Delegating a failure
 
