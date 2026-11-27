@@ -1,4 +1,9 @@
-{ pkgs, pkgs-2311, ... }:
+{
+  lib,
+  pkgs,
+  pkgs-2311,
+  ...
+}:
 let
   my-python-packages =
     ps: with ps; [
@@ -19,8 +24,10 @@ in
     (pkgs-2311.python311.withPackages my-python-packages)
   ];
   imports = [
-    # ./pip2nix/home.nix
+    ./pip2nix/home.nix
     ./uv/home.nix
     ./pyzotero-cli/home.nix
   ];
+
+  custom.python.pip2nix.enable = lib.mkDefault false;
 }

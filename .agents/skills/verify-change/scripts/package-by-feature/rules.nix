@@ -38,10 +38,7 @@
 
   # Feature directories intentionally not imported by their parent
   # aggregator (e.g. temporarily disabled via a commented-out import).
-  allowUnimported = [
-    "modules/haskell/ghc-wasm-meta" # commented out in modules/haskell/home.nix
-    "modules/python/pip2nix" # commented out in modules/python/home.nix
-  ];
+  allowUnimported = [ ];
 
   # Repo-root directories that ../ references may escape into
   # (conventions.md §3 allows shared helpers under utils/).
