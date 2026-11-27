@@ -18,15 +18,28 @@ since. Skip the question entirely if the fresh state already settles it.
 
 Then use the interactive question tool (AskUserQuestion), never plain text:
 
+- Make each question readable on its own: the user may see only the
+  question dialog, not your earlier messages. State what is being decided
+  and why it must be decided now, in one line each.
 - Put the freshly fetched facts the choice hinges on (value, output, status,
   and when you fetched it) in the question text, so the user decides from
   current state without re-checking.
 - Short, self-contained title per question.
-- Concrete, mutually exclusive options.
+- Concrete, mutually exclusive options. Each option's description says what
+  changes if it is chosen and whether that is reversible.
 - Your recommended choice first, labeled `(Recommended)`, whenever you have
   one.
+- Always add `Explain first` as the last option, described as "Write a
+  report on this question, then ask again." This leaves at most three real
+  options.
 - Rely on the tool's built-in free-form escape — don't add your own "other"
-  option.
+  option. `Explain first` is not an "other" option; it is required.
+
+If the user picks `Explain first`, write a report with the
+[html-report](../html-report/SKILL.md) skill covering the background, what
+each option leads to, and why you recommend one. Then fetch the latest
+state again and re-ask the same question, minus any option the report
+showed to be wrong.
 
 Batch every question you can currently ask into one round rather than
 asking one at a time and waiting between each.
@@ -59,8 +72,9 @@ reach. Structure it to minimize the user's effort and the room for error:
    covers it.
 2. Fetch the latest state before every decision-type question, and state
    it in the question.
-3. Every decision-type question goes through AskUserQuestion, with a
-   recommended option first whenever you have one.
+3. Every decision-type question goes through AskUserQuestion, readable
+   without the preceding conversation, with a recommended option first
+   whenever you have one and `Explain first` last.
 4. Every delegated action is a concrete, minimal, copy-pasteable
    instruction — never vague.
 5. Ask for the smallest possible piece of information back — a choice, a
