@@ -57,7 +57,7 @@
     # See modules/opencloud/tests/e2e/design.md.
     nixpkgs-playwright.url = "github:nixos/nixpkgs/26.05";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
-    nixpkgs.url = "github:nixos/nixpkgs/26.05";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-26.05";
     ghostty.url = "github:ghostty-org/ghostty";
     # opencode.url = "github:anomalyco/opencode/dev";
     pi.url = "github:lukasl-dev/pi.nix";

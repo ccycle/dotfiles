@@ -9,7 +9,6 @@
       grpcurl
       hcp
       k6
-      localstack
       minikube
     ]
     ++ (with pkgs-2211; [

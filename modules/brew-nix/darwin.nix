@@ -18,7 +18,7 @@
         pkgs.brewCasks.google-japanese-ime.overrideAttrs (old: {
           nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ pkgs.p7zip ];
           src = old.src.overrideAttrs {
-            outputHash = "sha256-749fuw3zrpNGDt0/taaFtwnENd0vpwsKphhHMmbDSYw=";
+            outputHash = "sha256-48QH2tIE4kMY50s3HS1Loytg3S99cQo14sbgFEc4AKQ=";
           };
           unpackPhase = ''
             7z x $src -o_dmg
