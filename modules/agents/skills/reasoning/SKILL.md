@@ -22,7 +22,9 @@ evidence invalidates its output.
 - If the request is ambiguous, pick the most reasonable interpretation, state
   it explicitly, and proceed — do not silently guess. If an experiment can
   settle the ambiguity, run it. Ask only when the choice is product direction
-  (what to build), not execution (how to build it).
+  (what to build), not execution (how to build it). A request that names a
+  solution but not the problem it solves is product direction: ask about the
+  problem first, as the global "Problem Before Solution" rule requires.
 
 ## 2. Maintain a Fact/Assumption Ledger
 

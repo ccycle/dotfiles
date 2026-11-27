@@ -93,6 +93,15 @@ Use the `no-comments` skill to strip comments from a diff and encode what they c
 - In a planned migration, converge on the target design instead of writing throwaway compatibility code.
   Intermediate breakage is allowed only between commits on a working branch: every merge to the default branch must build and pass verification, because the default branch may be deployed as-is (the dotfiles repo's comin does exactly that).
 
+## Problem Before Solution
+
+Every instruction serves a problem the user wants solved; the work is judged against that problem, not against the literal instruction.
+
+- When an instruction states only a solution ("do X", "change A to B", "add option Y") and not the problem it is meant to solve, ask about the problem before implementing. This hearing step is mandatory.
+- Ask with the interactive question tool following the `ask-me-to-do` skill: offer the candidate problems you inferred from the instruction and the code as options, most likely first, so the user picks instead of writing an explanation.
+- Skip the hearing when the instruction already states the problem, or when only one problem is plausible (a quoted error to fix, a typo to correct). Ask about the problem only, never about implementation details you can decide yourself.
+- Once the problem is known, check the requested solution against it; if a different solution fits the problem better, say so before implementing.
+
 ## Finish the Task
 
 - Do not stop early with time or budget left. Before ending, confirm every stated completion criterion is met and report what remains.

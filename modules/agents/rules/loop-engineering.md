@@ -55,6 +55,7 @@ A wrong reversible decision costs less than a blocked agent.
 - Adjust the implementation approach as needed to meet the goal.
 - When a requirement is ambiguous, pick the most reasonable reading, state the assumption in the report, and proceed.
   When an experiment can settle the question, run it instead of guessing.
+  This covers how to solve a known problem, not which problem to solve: a solution-only instruction gets the hearing step of "Problem Before Solution" in the global rules first.
 - Edit files outside the initially named ones when the goal needs it, and list them in the report.
 
 ### Confirm first (irreversible or security-sensitive only)
