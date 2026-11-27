@@ -1,29 +1,39 @@
 #!/usr/bin/env sh
 # Detect stale herdr worktrees that can be safely cleaned up.
-# Heuristics: no agent running, no changes from main, age threshold.
+# Heuristics: no agent running, no changes from the base branch, age threshold.
 
 set -eu
 
 show_usage() {
   cat <<'EOF'
-Usage: detect-stale-worktrees.sh [OPTIONS]
+Usage: detect-stale-worktrees.sh --base BRANCH [OPTIONS]
 
 Detect stale herdr worktrees (abandoned, never merged, no activity).
 
 Options:
+  --base BRANCH       Branch to compare against (e.g. main, master)
   --list              Show candidates only (default)
-  --auto-clean        Remove safe candidates (no diff from main + no agent)
+  --auto-clean        Remove safe candidates (no diff from BRANCH + no agent)
   --force-confirm     Prompt for each candidate before removal
   --days DAYS         Age threshold in days (default: 30)
   -h, --help          Show this help
 EOF
 }
 
+base=""
 mode="list"
 threshold_days=30
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
+  --base)
+    [ "$#" -ge 2 ] || {
+      printf -- '--base needs a branch name\n' >&2
+      exit 1
+    }
+    base=$2
+    shift
+    ;;
   --list) mode="list" ;;
   --auto-clean) mode="auto-clean" ;;
   --force-confirm) mode="force-confirm" ;;
@@ -54,6 +64,11 @@ while [ "$#" -gt 0 ]; do
   esac
   shift
 done
+
+[ -n "$base" ] || {
+  printf -- '--base BRANCH is required (e.g. --base main)\n' >&2
+  exit 1
+}
 
 command -v herdr >/dev/null 2>&1 || {
   printf 'herdr not found\n' >&2
@@ -93,9 +108,9 @@ trap 'rm -f "$tmpfile"' EXIT
 
 herdr worktree list --json 2>/dev/null | jq -r '
   .result.worktrees[]
-  | select(.branch != "main")
+  | select(.branch != $base)
   | "\(.branch)\t\(.open_workspace_id)\t\(.path)"
-' 2>/dev/null >"$tmpfile"
+' --arg base "$base" 2>/dev/null >"$tmpfile"
 
 safe_count=0
 stale_count=0
@@ -139,10 +154,10 @@ while IFS='	' read -r ws_branch ws_id ws_path || [ -n "$ws_branch" ]; do
     continue
   fi
 
-  # Category 1: safe to delete (no diff from main + work was started + clean)
-  if git -C "$repo_root" diff --quiet "main...$ws_branch" 2>/dev/null; then
+  # Category 1: safe to delete (no diff from base + work was started + clean)
+  if git -C "$repo_root" diff --quiet "$base...$ws_branch" 2>/dev/null; then
     safe=true
-    status="SAFE (started, no diff from main)"
+    status="SAFE (started, no diff from $base)"
     safe_count=$((safe_count + 1))
   fi
 
@@ -150,7 +165,7 @@ while IFS='	' read -r ws_branch ws_id ws_path || [ -n "$ws_branch" ]; do
   if [ "$safe" = "false" ]; then
     last_commit_ts=$(git -C "$repo_root" log -1 --format=%ct "$ws_branch" 2>/dev/null || echo "0")
     if [ "$last_commit_ts" -lt "$threshold_ts" ] 2>/dev/null; then
-      unpushed=$(git -C "$ws_path" log --oneline origin/main..HEAD 2>/dev/null | wc -l | tr -d ' ')
+      unpushed=$(git -C "$ws_path" log --oneline "origin/$base..HEAD" 2>/dev/null | wc -l | tr -d ' ')
       if [ "$unpushed" -eq 0 ] && [ "$dirty" = "false" ]; then
         stale=true
         status="STALE (last commit >${threshold_days}d ago, no agent, no activity)"

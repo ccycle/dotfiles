@@ -18,7 +18,7 @@
 #   BACKFILL  <title>            <branch>
 #
 # <reason> for CONFIRM is NEVER_STARTED or NOT_MERGED — the same
-# classification modules/agents/skills/cleanup-worktrees uses. The caller must ask the
+# classification .agents/skills/cleanup-worktrees uses. The caller must ask the
 # user (per-card, via the interactive question tool) whether a CONFIRM line
 # becomes Done, Canceled, or stays in its current column, then apply the
 # choice itself with move-card.sh.

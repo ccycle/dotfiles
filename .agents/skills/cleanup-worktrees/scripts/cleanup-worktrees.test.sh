@@ -72,17 +72,34 @@ no_herdr_remove() { ! grep -q 'worktree remove' "$HERDR_LOG" 2>/dev/null; }
 
 # cleanup-worktree.sh: refuses a started but unmerged worktree.
 list_json cleanup-test-unmerged >"$HERDR_JSON"
-out=$(cd "$tmp/cleanup-test-unmerged" && "$here/cleanup-worktree.sh" --force 2>&1)
+out=$(cd "$tmp/cleanup-test-unmerged" && "$here/cleanup-worktree.sh" --base main --force 2>&1)
 check "unmerged --force refuses" has "$out" "NOT MERGED (branch is not an ancestor of main)"
 check "unmerged worktree kept" test -d "$tmp/cleanup-test-unmerged"
+
+# cleanup-worktree.sh: the base branch is required, never assumed.
+out=$(cd "$tmp/cleanup-test-unmerged" && "$here/cleanup-worktree.sh" --force 2>&1)
+check "missing --base refuses" has "$out" "--base BRANCH is required"
+check "missing --base keeps worktree" test -d "$tmp/cleanup-test-unmerged"
+
+# cleanup-worktree.sh: --base master syncs local master from origin and judges against it, not main.
+git -C "$repo" push -q origin main:master
+git -C "$repo" branch -q master main
+add_worktree cleanup-test-master
+git -C "$repo" push -q origin cleanup-test-master:master
+list_json cleanup-test-master >"$HERDR_JSON"
+out=$(cd "$tmp/cleanup-test-master" && "$here/cleanup-worktree.sh" --base main --dry-run 2>&1)
+check "master branch is not merged to main" has "$out" "NOT MERGED (branch is not an ancestor of main)"
+out=$(cd "$tmp/cleanup-test-master" && "$here/cleanup-worktree.sh" --base master --force 2>&1)
+check "--base master removes" has "$out" "Removed worktree for cleanup-test-master"
+check "master worktree removed" test ! -e "$tmp/cleanup-test-master"
 
 # cleanup-worktree.sh: removes the current worktree, even when run from a
 # subdirectory of it.
 list_json cleanup-test-single >"$HERDR_JSON"
-out=$(cd "$tmp/cleanup-test-single/sub" && "$here/cleanup-worktree.sh" --dry-run 2>&1)
+out=$(cd "$tmp/cleanup-test-single/sub" && "$here/cleanup-worktree.sh" --base main --dry-run 2>&1)
 check "single finds worktree from a subdirectory" has "$out" "SAFE (started, merged to main, clean)"
 check "single dry-run shows no 'null' workspace" lacks "$out" null
-out=$(cd "$tmp/cleanup-test-single/sub" && "$here/cleanup-worktree.sh" --force 2>&1)
+out=$(cd "$tmp/cleanup-test-single/sub" && "$here/cleanup-worktree.sh" --base main --force 2>&1)
 check "single --force succeeds" has "$out" "Removed worktree for cleanup-test-single"
 check "single worktree removed" test ! -e "$tmp/cleanup-test-single"
 check "single did not call herdr remove" no_herdr_remove
@@ -91,10 +108,10 @@ check "single did not call herdr remove" no_herdr_remove
 add_worktree cleanup-test-merged
 git -C "$repo" merge -q --ff-only cleanup-test-merged
 list_json cleanup-test-merged >"$HERDR_JSON"
-out=$("$repo/.scripts/cleanup-merged-worktrees.sh" --dry-run 2>&1)
+out=$("$repo/.scripts/cleanup-merged-worktrees.sh" --base main --dry-run 2>&1)
 check "merged dry-run lists candidate" has "$out" "Would remove worktree for cleanup-test-merged"
 check "merged dry-run shows no 'null' workspace" lacks "$out" null
-out=$("$repo/.scripts/cleanup-merged-worktrees.sh" --force 2>&1)
+out=$("$repo/.scripts/cleanup-merged-worktrees.sh" --base main --force 2>&1)
 check "merged --force succeeds" has "$out" "Removed worktree for cleanup-test-merged"
 check "merged worktree removed" test ! -e "$tmp/cleanup-test-merged"
 check "merged did not call herdr remove" no_herdr_remove

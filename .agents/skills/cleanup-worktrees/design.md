@@ -32,13 +32,17 @@ Two layers work together:
    - There is deliberately **no `post-merge` hook**: cleanup is never
      automatic (see Rejected Alternatives).
 
-2. **On-demand cleanup (agent-driven, interactive)** handles worktree
+2. **On-demand cleanup (human-invoked, script-decided)** handles worktree
    removal:
    - [scripts/cleanup-worktree.sh](scripts/cleanup-worktree.sh) — classifies and removes **the current
-     worktree** from inside its session. The sole entry point.
-   - `/cleanup-worktrees` skill — a single script call: the script syncs
-     local main, classifies, and removes only a SAFE worktree, so the agent
-     spends no tokens re-deriving the procedure.
+     worktree** from inside its session. The sole entry point. Every
+     decision (sync, classify, refuse, remove) is an ordinary branch in the
+     script, so the outcome is the same whoever runs it.
+   - `/cleanup-worktrees` skill — user-invoked only
+     (`disable-model-invocation`) and nothing but the script call. The
+     human decides *when* to clean up; the script decides *whether* it is
+     safe. The agent makes neither decision, so it has no judgment to get
+     wrong and no procedure to re-derive.
    - The user-invoked `/merge-and-cleanup` skill calls the same script once
      the PR is merged, and removes only on an explicit, user-confirmed
      `--remove` re-run.
@@ -71,6 +75,19 @@ The same `branch_was_started` check is duplicated in each script because
 each is a self-contained POSIX script following the existing
 standalone-script convention.
 
+## Base Branch
+
+The branch a worktree must be merged into is a required `--base` argument
+on every script, never an assumed `main`: repositories differ (`main`,
+`master`, ...), and a wrong guess would classify an unmerged branch as
+merged or the reverse. Callers in this repo pass `--base main` explicitly.
+
+## Scope
+
+The skill is repo-scoped (`.agents/skills/`), not global: removal also tears
+down this repo's vm-verify VM, e2e stacks, static-reports output, and
+checks the home-manager live-config links, none of which exist elsewhere.
+
 ## Constraints
 
 - Scripts must work with only POSIX sh, git, jq, and herdr — all already
@@ -95,6 +112,10 @@ standalone-script convention.
 - **Cleanup script run from cron/systemd timer.** Rejected for the same
   reason: no interactive confirmation, and it cannot know which worktree
   the user is working in.
+- **Agent-interpreted skill (agent reads the status and decides what to
+  do next).** Rejected: the same status could lead to different actions
+  per session, and the agent could talk itself into removing a worktree
+  another way. The script's exit code is the decision.
 - **Merge skill removing the worktree implicitly after merge.** Rejected:
   merging and deleting are different decisions.
   `/merge-and-cleanup` classifies after the merge but deletes only when

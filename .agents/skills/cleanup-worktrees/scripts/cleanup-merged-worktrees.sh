@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# Remove herdr worktrees for branches already merged to main.
+# Remove herdr worktrees for branches already merged to a base branch.
 # Intended for out-of-band merges (GitHub/Forgejo PR, etc.)
 # where the post-merge hook did not fire.
 
@@ -7,14 +7,15 @@ set -eu
 
 show_usage() {
   cat <<'EOF'
-Usage: cleanup-merged-worktrees.sh [OPTIONS]
+Usage: cleanup-merged-worktrees.sh --base BRANCH [OPTIONS]
 
-Remove herdr worktrees for branches already merged to main.
+Remove herdr worktrees for branches already merged to BRANCH.
 
 Worktrees that were never started (branch reflog shows only the
 initial creation) are excluded from removal.
 
 Options:
+  --base BRANCH  Branch to treat as merged into (e.g. main, master)
   --dry-run   List candidates without removing
   --force     Skip confirmation
   -h, --help  Show this help
@@ -46,11 +47,20 @@ remove_worktree() {
   fi
 }
 
+base=""
 dry_run=false
 force=false
 
-for arg in "$@"; do
-  case "$arg" in
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+  --base)
+    [ "$#" -ge 2 ] || {
+      printf -- '--base needs a branch name\n' >&2
+      exit 1
+    }
+    base=$2
+    shift
+    ;;
   --dry-run) dry_run=true ;;
   --force) force=true ;;
   -h | --help)
@@ -58,12 +68,18 @@ for arg in "$@"; do
     exit 0
     ;;
   *)
-    printf 'Unknown option: %s\n' "$arg" >&2
+    printf 'Unknown option: %s\n' "$1" >&2
     show_usage
     exit 1
     ;;
   esac
+  shift
 done
+
+[ -n "$base" ] || {
+  printf -- '--base BRANCH is required (e.g. --base main)\n' >&2
+  exit 1
+}
 
 command -v herdr >/dev/null 2>&1 || {
   printf 'herdr not found\n' >&2
@@ -81,9 +97,9 @@ trap 'rm -f "$tmpfile"' EXIT
 
 herdr worktree list --json 2>/dev/null | jq -r '
   .result.worktrees[]
-  | select(.branch != "main")
+  | select(.branch != $base)
   | "\(.branch)\t\(.path)\t\(.open_workspace_id // "")"
-' 2>/dev/null >"$tmpfile"
+' --arg base "$base" 2>/dev/null >"$tmpfile"
 
 removed=0
 skipped=0
@@ -91,7 +107,7 @@ skipped=0
 # ws_id is last: an unopened worktree has an empty ID, and an empty middle
 # field would collapse under IFS whitespace splitting and shift the path.
 while IFS='	' read -r ws_branch ws_path ws_id || [ -n "$ws_branch" ]; do
-  if ! git -C "$repo_root" merge-base --is-ancestor "$ws_branch" main 2>/dev/null; then
+  if ! git -C "$repo_root" merge-base --is-ancestor "$ws_branch" "$base" 2>/dev/null; then
     skipped=$((skipped + 1))
     continue
   fi

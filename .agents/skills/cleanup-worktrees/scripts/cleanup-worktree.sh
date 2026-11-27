@@ -7,25 +7,37 @@ set -eu
 
 show_usage() {
   cat <<'EOF'
-Usage: cleanup-worktree.sh [OPTIONS]
+Usage: cleanup-worktree.sh --base BRANCH [OPTIONS]
 
 Classify the current herdr worktree and remove it if it is merged to
-main and work was started on its branch.
+BRANCH and work was started on its branch.
 
 When invoked from the main checkout this script refuses to run.
 
 Options:
+  --base BRANCH  Branch the worktree must be merged into (e.g. main, master)
   --dry-run   Only classify, do not remove
   --force     Remove without confirmation (SAFE classification only)
   -h, --help  Show this help
 EOF
 }
 
+base=""
 dry_run=false
 force=false
 
-for arg in "$@"; do
+while [ "$#" -gt 0 ]; do
+  arg=$1
+  shift
   case "$arg" in
+  --base)
+    [ "$#" -gt 0 ] || {
+      printf -- '--base needs a branch name\n' >&2
+      exit 1
+    }
+    base=$1
+    shift
+    ;;
   --dry-run) dry_run=true ;;
   --force) force=true ;;
   -h | --help)
@@ -39,6 +51,11 @@ for arg in "$@"; do
     ;;
   esac
 done
+
+[ -n "$base" ] || {
+  printf -- '--base BRANCH is required (e.g. --base main)\n' >&2
+  exit 1
+}
 
 command -v herdr >/dev/null 2>&1 || {
   printf 'herdr not found\n' >&2
@@ -82,18 +99,18 @@ fi
 
 worktree_repo_root=$cwd
 
-# A Forgejo merge does not move local main, and classification checks against local main.
+# A Forgejo merge does not move the local base branch, and classification checks against it.
 git -C "$cwd" fetch -q origin || {
-  printf 'git fetch origin failed; cannot classify against an up-to-date main.\n' >&2
+  printf 'git fetch origin failed; cannot classify against an up-to-date %s.\n' "$base" >&2
   exit 1
 }
-main_wt=$(git -C "$cwd" worktree list --porcelain | awk '/^worktree /{p=substr($0, 10)} /^branch refs\/heads\/main$/{print p}')
-if [ -n "$main_wt" ]; then
-  git -C "$main_wt" merge -q --ff-only origin/main
+base_wt=$(git -C "$cwd" worktree list --porcelain | awk -v ref="branch refs/heads/$base" '/^worktree /{p=substr($0, 10)} $0 == ref {print p}')
+if [ -n "$base_wt" ]; then
+  git -C "$base_wt" merge -q --ff-only "origin/$base"
 else
-  git -C "$cwd" fetch -q origin main:main
+  git -C "$cwd" fetch -q origin "$base:$base"
 fi || {
-  printf 'Could not fast-forward local main to origin/main.\n' >&2
+  printf 'Could not fast-forward local %s to origin/%s.\n' "$base" "$base" >&2
   exit 1
 }
 
@@ -124,20 +141,21 @@ if [ -n "$(git -C "$cwd" status --porcelain 2>/dev/null)" ]; then
   status="IN PROGRESS (uncommitted changes)"
 elif ! branch_was_started "$ws_branch"; then
   status="NEVER STARTED (reflog shows only creation)"
-elif ! git -C "$worktree_repo_root" merge-base --is-ancestor "$ws_branch" main 2>/dev/null; then
-  status="NOT MERGED (branch is not an ancestor of main)"
+elif ! git -C "$worktree_repo_root" merge-base --is-ancestor "$ws_branch" "$base" 2>/dev/null; then
+  status="NOT MERGED (branch is not an ancestor of $base)"
 elif is_live_config_source; then
-  status="LIVE CONFIG (home-manager links point here; darwin-rebuild from main first)"
+  status="LIVE CONFIG (home-manager links point here; darwin-rebuild from $base first)"
 else
-  status="SAFE (started, merged to main, clean)"
+  status="SAFE (started, merged to $base, clean)"
 fi
 
 printf '%s\t%s\t%s\n' "$ws_branch" "$status" "$cwd"
 
-if [ "$status" != "SAFE (started, merged to main, clean)" ]; then
+case "$status" in SAFE*) ;; *)
   printf 'Not removing this worktree.\n' >&2
   exit 1
-fi
+  ;;
+esac
 
 if [ "$dry_run" = "true" ]; then
   printf '[dry-run] Would remove worktree (workspace: %s)\n' "${ws_id:-none, not open in herdr}"

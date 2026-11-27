@@ -126,13 +126,12 @@ open)
     "$(jq -r .number <<<"$pr")" "$(jq -r .html_url <<<"$pr")"
   ;;
 merged)
-  # Sibling skill script; the relative path holds both in the repo and under ~/.claude/skills.
-  cleanup="$(dirname "$0")/../../cleanup-worktrees/scripts/cleanup-worktree.sh"
-  [ -x "$cleanup" ] || die "cleanup-worktree.sh not found at $cleanup"
+  cleanup="$top/.agents/skills/cleanup-worktrees/scripts/cleanup-worktree.sh"
+  [ -x "$cleanup" ] || die "this repository has no cleanup-worktrees skill at $cleanup"
   if [ "$remove" = true ]; then
-    exec "$cleanup" --force
+    exec "$cleanup" --base main --force
   fi
-  "$cleanup" --dry-run
+  "$cleanup" --base main --dry-run
   printf 'Re-run with --remove to delete this worktree.\n'
   ;;
 *) die "PR #$(jq -r .number <<<"$pr") was closed without merging" ;;
