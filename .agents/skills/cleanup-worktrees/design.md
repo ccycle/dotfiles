@@ -40,7 +40,7 @@ Two layers work together:
      script, so the outcome is the same whoever runs it.
    - `/cleanup-worktrees` skill — user-invoked only
      (`disable-model-invocation`) and nothing but the script call. The
-     human decides *when* to clean up; the script decides *whether* it is
+     human decides _when_ to clean up; the script decides _whether_ it is
      safe. The agent makes neither decision, so it has no judgment to get
      wrong and no procedure to re-derive.
    - The user-invoked `/merge-and-cleanup` skill calls the same script once
