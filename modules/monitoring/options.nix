@@ -228,8 +228,9 @@ in
           echo "# TYPE data_dir_size_bytes gauge"
           ${lib.concatMapStringsSep "\n" (t: ''
             if [ -d "${t.dir}" ]; then
-              SIZE=$(${pkgs.coreutils}/bin/du -sb "${t.dir}" | ${pkgs.coreutils}/bin/cut -f1)
-              echo "data_dir_size_bytes{service=\"${t.name}\"} $SIZE"
+              if DU=$(${pkgs.coreutils}/bin/du -sb "${t.dir}"); then
+                echo "data_dir_size_bytes{service=\"${t.name}\"} $(echo "$DU" | ${pkgs.coreutils}/bin/cut -f1)"
+              fi
             fi
           '') dataDirTargets}
         } > "$OUT/data_dir_size_bytes.prom".tmp

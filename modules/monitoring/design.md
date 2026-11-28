@@ -196,6 +196,8 @@ for agent-driven investigation.
 
 - Host bind-mount sources must be macOS-canonical paths (`/private/var/log`, not `/var/log`).
   OrbStack resolves a `/var/...` source to its own Linux VM, so a `/var/log` mount silently shows the VM's logs instead of the host's.
+- Root launchd daemons cannot read the external `/Volumes/WD_BLACK_*` volumes: macOS privacy protection (TCC) answers `Operation not permitted`, even for root.
+  `data-dir-size` therefore omits a service whose `du` fails instead of reporting a partial or zero size; those services have no size series until the daemon's binaries are granted access.
 - Host log files are tailed from their end when Alloy has no saved position for them, so a newly visible file contributes only lines written after that point, not its whole backlog.
 - Every port published by a service stack must be unique across all stacks,
   because they all land on the host's 127.0.0.1. Check existing mappings
