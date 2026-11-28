@@ -8,9 +8,15 @@ mkdir -p "$work/a/b"
 ln -s "$HOME" "$work/escape"
 ln -s "$work/a" "$work/inside"
 
+wt="$work/home/.herdr/worktrees/repo/branch"
+mkdir -p "$wt/build/out" "$wt/build/.github" "$work/home/.herdr/worktrees/repo/other" "$work/main/.git"
+touch "$wt/.git" "$work/home/.herdr/worktrees/repo/other/.git"
+ln -s "$work/main" "$wt/escape"
+ln -s "$wt/build" "$wt/inside"
+
 decision() {
-  jq -nc --arg c "$1" --arg d "$work" '{tool_name:"Bash",tool_input:{command:$c},cwd:$d}' |
-    python3 "$hook" | jq -rs '.[0].hookSpecificOutput.permissionDecision // "none"'
+  jq -nc --arg c "$1" --arg d "${cwd:-$work}" '{tool_name:"Bash",tool_input:{command:$c},cwd:$d}' |
+    HOME="$work/home" python3 "$hook" | jq -rs '.[0].hookSpecificOutput.permissionDecision // "none"'
 }
 
 failures=0
@@ -107,6 +113,37 @@ if [ "$(uname)" = Darwin ]; then
   expect ask "rm -rf /var/folders/aa/bb/T/*"
   expect ask "rm -rf /var/folders/aa/bb/C/x"
 fi
+
+cwd=$wt
+expect allow "rm -rf build"
+expect allow "rm -rf build/out result"
+expect allow "rm -rf build/"
+expect allow "rm -rf build/*"
+expect allow "rm -rf inside/out"
+expect allow "rm -rf build/.github"
+expect allow "rm -rf build /tmp/x"
+expect ask "rm -rf *"
+expect ask "rm -rf ./build"
+expect ask "rm -rf ../other/x"
+expect ask "rm -rf escape/x"
+expect ask "rm -rf escape/"
+expect ask "rm -rf .git"
+expect ask "rm -rf build/.git/x"
+expect ask "rm -rf build ~/x"
+expect ask "rm -rf build && rm -rf ~"
+expect ask "cd .. && rm -rf other"
+expect ask "rm -rf -build"
+cwd="$wt/build"
+expect allow "rm -rf out"
+cwd="$work/home/.herdr/worktrees/repo"
+expect ask "rm -rf branch"
+expect ask "rm -rf branch/build"
+cwd="$work/main"
+expect ask "rm -rf build"
+cwd="$work/home/.herdr/worktrees/repo/nogit"
+mkdir -p "$cwd/x"
+expect ask "rm -rf x"
+unset cwd
 
 [ "$failures" -eq 0 ] || {
   echo "$failures failure(s)"
