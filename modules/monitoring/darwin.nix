@@ -10,6 +10,7 @@ in
 {
   imports = [
     ./options.nix
+    ./ntfy/darwin.nix
   ];
 
   config = mkIf cfg.enable {

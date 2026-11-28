@@ -9,15 +9,6 @@ for agent-driven investigation.
 
 ## Non-Goals
 
-- **No alert notifications.** Alert rules are evaluated so their firing state
-  is queryable via the Prometheus API and visible in Grafana, and there is
-  still no notification channel (Slack, email, ...) of any kind. The "no
-  Alertmanager" half of this non-goal is scoped down, not lifted: one
-  Alertmanager instance now exists ([modules/monitoring/alertmanager.yml](alertmanager.yml)),
-  but its only receiver is a local webhook that wakes
-  `modules/llm-server/self-healing`'s daemon — see that module's design.md
-  for the full detection-latency rationale. Adding a real notification
-  channel remains a deliberate future decision, not an oversight.
 - No vendored community dashboards. Only compact hand-written dashboard JSONs
   are checked in; large community dashboards (e.g. grafana.com ID 193 for
   Docker) can be imported manually through the UI into the persistent Grafana
@@ -167,7 +158,7 @@ for agent-driven investigation.
   On 2026-11-23 every activation on `mac-mini-m4-pro` failed for about 19 hours while `comin_last_deployment_failed` stayed at 1, so the signal already existed and only the rule was missing.
   "Behind main" is inferred from the causes that keep comin from deploying a new commit (every remote failing, suspended, or the fetch loop stalled), not measured as a commit gap, because comin exports the deployed commit but not the fetched one.
   A crashed comin is left to `ScrapeTargetDown`.
-  Like every rule here, these alerts reach no human (see Non-Goals); they make the failure visible in Grafana and `/api/v1/alerts` instead of only in `/var/log/comin.log`.
+  Like every rule here, these alerts also reach a human through ntfy (below).
 - **Every `services.caddy.portalEntries` URL is probed, and that list is the only probe configuration.**
   Smoke-test skills only run when someone runs them, and scrape jobs only see services that export metrics: on 2026-11-29 immich, opencloud, and pocket-id on `mac-mini-m4` had answered 502 or nothing for about a week, and navidrome, pocket-id, dnsmasq, static-reports, and llm-server were not scraped at all.
   Portal entries already exist per enabled service per host, so a service gets a health check by being on the portal, with no per-service probe code; this is the shared health-check design that one-off per-service probes were deferred for.
@@ -176,6 +167,14 @@ for agent-driven investigation.
   Redirects are not followed, so a down Pocket ID raises one alert for `auth.*` instead of one for every service behind it.
   Any status below 500 that proves the backend answered counts as reachable: on 2026-11-29 every healthy `mac-mini-m4-pro` endpoint answered an anonymous probe with 200 or, behind oauth2-proxy, 302.
   Probing another host is out of scope here: the native exporter does not trust the peer host's Caddy CA (on 2026-11-29: `x509: "Caddy Local Authority - mac-mini-m4 - ECC Intermediate" certificate is not trusted`).
+
+- **Every alert reaches a human through one self-hosted ntfy on `mac-mini-m4-pro`, and still wakes self-healing.**
+  The earlier "no alert notifications" non-goal assumed someone would look at Grafana; on 2026-11-29 `mac-mini-m4` had ten alerts firing for seven to seventeen days that nobody saw.
+  Alertmanager sends each alert to both receivers (`continue: true`), so adding a human does not change what self-healing receives.
+  Both hosts post to the same ntfy over HTTPS, so the iPhone subscribes to one server; `mac-mini-m4`'s Alertmanager reaches it on port 443, which the tailnet ACL already allows between servers.
+  The Alertmanager container does not trust the host's Caddy CA (curl exit 60 without it on 2026-11-29), so the ntfy host's public root certificate is committed under `ca/` and mounted in; `services.monitoring.notify.ntfyHost` picks both the URL and that certificate.
+  ntfy forwards a poll request with each message ID to ntfy.sh (`--upstream-base-url`), because without it iPhone delivery can lag by hours; the alert text itself stays on the tailnet.
+  `ntfyHost` has no default, so a host cannot enable monitoring without deciding where its alerts go.
 
 ## Rejected Alternatives
 

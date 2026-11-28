@@ -27,4 +27,5 @@
   custom.kiac.dnsServers = [ "192.168.10.1" ];
   services.pocket-id.enable = true;
   services.monitoring.enable = true;
+  services.monitoring.notify.ntfyHost = "mac-mini-m4-pro";
 }

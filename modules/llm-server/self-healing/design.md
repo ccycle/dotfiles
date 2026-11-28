@@ -69,7 +69,7 @@ full decision tree.
   poll.** `modules/monitoring`'s "no Alertmanager" non-goal is scoped down
   — not lifted — specifically to allow one Alertmanager instance whose
   only receiver is a webhook to `self-healing-webhook`'s local listener
-  (see [modules/monitoring/design.md](../../monitoring/design.md)); no notification channel exists.
+  (see [modules/monitoring/design.md](../../monitoring/design.md)); the same alerts also go to a human through monitoring's ntfy receiver.
   The webhook payload itself is never parsed for alert detail — the daemon
   already re-queries Prometheus's `/api/v1/alerts` for the full current
   firing set on every run, so the webhook only needs to serve as a "poll
@@ -135,8 +135,10 @@ full decision tree.
   Redis) with a real restart-ordering dependency that a single
   `restart-service`/`restart-stack` action can't safely express. Revisit
   once a project-specific playbook is worth the complexity.
-- **No notification channel.** Same non-goal as `modules/monitoring`:
-  reviewing output is a pull (Grafana dashboard, log tail), not a push.
+- **No notification for self-healing's own output.** Reviewing what it
+  decided or proposed is a pull (Grafana dashboard, log tail), not a
+  push; the alerts that woke it already reached a human through
+  `modules/monitoring`'s ntfy receiver.
 - **No tool-calling / agentic loop for the judgment LLM.** It only ever
   sees one prompt and returns one JSON object; it cannot issue further
   queries. Data gathering is entirely the script's job. `propose-fix-pr`'s
@@ -201,10 +203,6 @@ full decision tree.
   fires on an actual state transition, unlike a poll loop that has to
   guess an interval short enough to matter yet cheap enough to run
   constantly.
-- **An Alertmanager receiver with a real notification channel** (Slack,
-  email, ...) — rejected; the whole point of scoping down the "no
-  Alertmanager" non-goal was the firing-webhook use case only, not
-  reopening the "no notification channel" non-goal above.
 - **Giving `propose-fix.sh` write access without a changed-file
   allow-list, relying on the prompt alone to keep it scoped** — rejected;
   a prompt instruction is not enforcement, see Why This Structure.

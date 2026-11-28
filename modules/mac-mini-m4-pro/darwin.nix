@@ -38,6 +38,8 @@
   # The LAN router, same resolver the host itself uses (scutil --dns).
   custom.kiac.dnsServers = [ "192.168.10.1" ];
   services.monitoring.enable = true;
+  services.monitoring.notify.ntfyHost = "mac-mini-m4-pro";
+  services.ntfy.enable = true;
   # Dormant: superseded by Forgejo (modules/forgejo) for git hosting. Kept
   # in place rather than deleted until the Forgejo evaluation gate passes -
   # CI running on real hardware, branch protection active, and backup/

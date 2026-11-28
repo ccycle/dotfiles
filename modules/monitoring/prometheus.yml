@@ -8,8 +8,6 @@ rule_files:
 scrape_config_files:
   - /etc/prometheus/scrape.d/*.yml
 
-# Webhook-only Alertmanager (see modules/monitoring/design.md): fires the
-# self-healing webhook receiver, no notification channel is configured.
 alerting:
   alertmanagers:
     - static_configs:

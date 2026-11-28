@@ -77,6 +77,8 @@ let
   alloyConfig = ./alloy-config.alloy;
   tempoConfig = ./tempo.yml;
   alertmanagerConfig = ./alertmanager.yml;
+  notifyUrlFile = pkgs.writeText "notify-url" "https://ntfy.${cfg.notify.ntfyHost}.internal/alerts?template=alertmanager";
+  notifyCaFile = ./ca + "/${cfg.notify.ntfyHost}-root.pem";
   grafanaProvisioningDir = ./grafana/provisioning;
   grafanaDashboardsDir = ./grafana/dashboards;
   launchdJobStateName = "launchd-job-state";
@@ -95,6 +97,11 @@ in
 {
   options.services.monitoring = {
     enable = mkEnableOption "Monitoring stack";
+
+    notify.ntfyHost = mkOption {
+      type = types.str;
+      description = "Host running services.ntfy that receives every alert for a human. Its public Caddy root certificate must be committed as modules/monitoring/ca/<host>-root.pem.";
+    };
 
     prometheusAuthHash = mkOption {
       type = types.str;
@@ -387,6 +394,8 @@ in
         export ALLOY_CONFIG="${alloyConfig}"
         export TEMPO_CONFIG="${tempoConfig}"
         export ALERTMANAGER_CONFIG="${alertmanagerConfig}"
+        export NOTIFY_URL_FILE="${notifyUrlFile}"
+        export NOTIFY_CA_FILE="${notifyCaFile}"
         export GRAFANA_PROVISIONING_DIR="${grafanaProvisioningDir}"
         export GRAFANA_DASHBOARDS_DIR="${grafanaDashboardsDir}"
         export GRAFANA_ROOT_URL="https://grafana.${config.networking.hostName}.internal"
