@@ -79,12 +79,7 @@
   services.atticd.enable = true;
   services.staticReports.enable = true;
 
-  # This host is both where Claude Code / opencode sessions actually run
-  # (via Herdr worktrees over SSH) and where its own monitoring stack
-  # lives, so the daily push target is this host's own tailnet name -
-  # see modules/token-usage/design.md.
   services.tokenUsage.enable = true;
-  services.tokenUsage.remoteHost = "mac-mini-m4-pro.internal";
 
   # log-only (the default) - decisions get logged and reviewable on the
   # Self-Healing Grafana dashboard, nothing executes yet. propose-fix-pr

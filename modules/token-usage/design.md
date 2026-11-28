@@ -10,8 +10,8 @@ third-party monitoring project.
 
 - **Runs as a user LaunchAgent (`launchd.user.agents`), not a root
   daemon.** It only ever reads this user's own `~/.claude/projects` and
-  `~/.local/share/opencode/opencode.db`, and pushes over this user's own SSH
-  identity - none of that needs root, unlike `modules/monitoring`'s
+  `~/.local/share/opencode/opencode.db`, and writes into a world-writable
+  textfile dir - none of that needs root, unlike `modules/monitoring`'s
   node-exporter/textfile-collector daemons, which touch root-owned system
   paths.
 - **Claude Code usage is computed from the raw JSONL transcripts**, summed
@@ -50,26 +50,15 @@ third-party monitoring project.
   number of distinct `session` label values in flight at any time roughly
   tracks Prometheus's own 30-day retention (`prometheus.yml`) instead of
   growing without bound as chat history accumulates.
-- **Pushed to a remote node-exporter textfile dir over SSH (scp + a remote
-  `mv` for atomicity), not queried directly by that host's Prometheus.**
-  node-exporter's `--collector.textfile.directory` only reads local files;
-  there is no push-metrics endpoint to hit instead. The remote
-  `node-exporter-textfile` directory is `chmod 777` (see
-  [modules/monitoring/options.nix](../monitoring/options.nix)) so the unprivileged SSH user can write
-  into it, the same trust tradeoff already made for `$MONITORING_DATA_DIR`
-  on a single-user, tailnet-only home server.
-- **`remoteHost` defaults to nothing and must be set per-host**
-  (`services.tokenUsage.remoteHost`), per this repo's no-default-fallbacks
-  policy. On `mac-mini-m4-pro` it's set to that same host's own
-  `.internal` tailnet name: this machine is simultaneously where the actual
-  Claude Code / opencode sessions run (via Herdr worktrees over SSH) and
-  where its own monitoring stack lives, so the push is a same-host tailnet
-  round-trip today. The mechanism doesn't assume that - a different
-  personal machine could point `remoteHost` at either mac-mini's tailnet
-  name with no code change.
+- **Written straight into this host's node-exporter textfile dir, on the host that runs the monitoring stack.**
+  node-exporter's `--collector.textfile.directory` only reads local files, and the sessions and the stack live on the same machine (`mac-mini-m4-pro`).
+  The directory is `chmod 777` (see [modules/monitoring/options.nix](../monitoring/options.nix)) so this unprivileged agent can write into it, the same trust tradeoff already made for `$MONITORING_DATA_DIR` on a single-user, tailnet-only home server.
 
 ## Rejected Alternatives
 
+- **Pushing the `.prom` file over SSH (scp to `remoteHost`)** - the original design, removed on 2026-11-28.
+  It never delivered a sample: the Nix `openssh` rejected the Apple-only `UseKeychain` line in `~/.ssh/config`, and this host has no `authorized_keys` for a same-host login anyway, while the script exited 0 so launchd showed success.
+  Revisit only when a second machine with its own sessions needs to report; at that point make the remote target explicit and its auth tested.
 - **A third-party opencode monitoring dashboard/exporter** - rejected;
   reading opencode's own SQLite `session` table directly is simpler than
   standing up another tool, and this repo already has direct-SQLite-read
