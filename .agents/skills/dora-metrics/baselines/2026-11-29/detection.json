@@ -1,0 +1,31 @@
+{
+  "mac-mini-m4-pro": {
+    "endpoints": 15,
+    "endpoints_probed": 0,
+    "endpoints_down_now": ["https://mtplx.mac-mini-m4-pro.internal"],
+    "alerts_firing": 0,
+    "alerts_firing_over_24h": []
+  },
+  "mac-mini-m4": {
+    "endpoints": 6,
+    "endpoints_probed": 0,
+    "endpoints_down_now": [
+      "https://auth.mac-mini-m4.internal",
+      "https://opencloud.mac-mini-m4.internal",
+      "https://immich.mac-mini-m4.internal"
+    ],
+    "alerts_firing": 10,
+    "alerts_firing_over_24h": [
+      "ImmichPostgresDown/immich-postgres",
+      "ScrapeTargetDown/forgejo",
+      "ScrapeTargetDown/gitlab-exporter-sidekiq",
+      "ScrapeTargetDown/gitlab-postgres",
+      "ScrapeTargetDown/gitlab-rails",
+      "ScrapeTargetDown/gitlab-redis",
+      "ScrapeTargetDown/gitlab-sidekiq",
+      "ScrapeTargetDown/immich-api",
+      "ScrapeTargetDown/immich-microservices",
+      "ScrapeTargetDown/opencloud"
+    ]
+  }
+}

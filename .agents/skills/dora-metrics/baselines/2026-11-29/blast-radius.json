@@ -1,0 +1,234 @@
+{
+  "pulls_measured": 30,
+  "pulls_eval_failed": [],
+  "changed_profiles_per_pull": {
+    "count": 30,
+    "median": 0.0,
+    "p90": 4,
+    "max": 4
+  },
+  "pulls_changing_every_profile": 7,
+  "pulls_by_changed_profile": {
+    "mac-mini-m4": 10,
+    "mac-mini-m4-pro": 12,
+    "macbook-air-m1": 8,
+    "bootstrap.aarch64-darwin": 7
+  },
+  "pulls": [
+    {
+      "sha": "9b543f9",
+      "changed_profiles": ["mac-mini-m4", "mac-mini-m4-pro", "macbook-air-m1"],
+      "every_profile": false,
+      "feature_dirs": ["comin"]
+    },
+    {
+      "sha": "bf3ddd1",
+      "changed_profiles": ["mac-mini-m4", "mac-mini-m4-pro"],
+      "every_profile": false,
+      "feature_dirs": ["monitoring"]
+    },
+    {
+      "sha": "5693ebf",
+      "changed_profiles": [
+        "bootstrap.aarch64-darwin",
+        "mac-mini-m4",
+        "mac-mini-m4-pro",
+        "macbook-air-m1"
+      ],
+      "every_profile": true,
+      "feature_dirs": ["agents"]
+    },
+    {
+      "sha": "a54c3e5",
+      "changed_profiles": [],
+      "every_profile": false,
+      "feature_dirs": ["agents"]
+    },
+    {
+      "sha": "c762399",
+      "changed_profiles": [],
+      "every_profile": false,
+      "feature_dirs": ["herdr"]
+    },
+    {
+      "sha": "7c2ef25",
+      "changed_profiles": [],
+      "every_profile": false,
+      "feature_dirs": ["agents"]
+    },
+    {
+      "sha": "56959b8",
+      "changed_profiles": [],
+      "every_profile": false,
+      "feature_dirs": ["herdr"]
+    },
+    {
+      "sha": "c11d186",
+      "changed_profiles": [],
+      "every_profile": false,
+      "feature_dirs": ["agents"]
+    },
+    {
+      "sha": "b5c6ad8",
+      "changed_profiles": [],
+      "every_profile": false,
+      "feature_dirs": ["agents", "claude"]
+    },
+    {
+      "sha": "76dcd66",
+      "changed_profiles": [],
+      "every_profile": false,
+      "feature_dirs": ["agents"]
+    },
+    {
+      "sha": "89fab47",
+      "changed_profiles": [],
+      "every_profile": false,
+      "feature_dirs": ["herdr"]
+    },
+    {
+      "sha": "406b7cf",
+      "changed_profiles": [
+        "bootstrap.aarch64-darwin",
+        "mac-mini-m4",
+        "mac-mini-m4-pro",
+        "macbook-air-m1"
+      ],
+      "every_profile": true,
+      "feature_dirs": ["agents"]
+    },
+    {
+      "sha": "ecdd4b9",
+      "changed_profiles": [
+        "bootstrap.aarch64-darwin",
+        "mac-mini-m4",
+        "mac-mini-m4-pro",
+        "macbook-air-m1"
+      ],
+      "every_profile": true,
+      "feature_dirs": ["agents"]
+    },
+    {
+      "sha": "5b318b6",
+      "changed_profiles": ["mac-mini-m4-pro"],
+      "every_profile": false,
+      "feature_dirs": ["agents", "llm-server"]
+    },
+    {
+      "sha": "e1b3228",
+      "changed_profiles": ["mac-mini-m4-pro"],
+      "every_profile": false,
+      "feature_dirs": ["mac-mini-m4-pro", "obsidian"]
+    },
+    {
+      "sha": "985fffc",
+      "changed_profiles": [],
+      "every_profile": false,
+      "feature_dirs": ["agents"]
+    },
+    {
+      "sha": "7243444",
+      "changed_profiles": [],
+      "every_profile": false,
+      "feature_dirs": ["agents"]
+    },
+    {
+      "sha": "86d56fb",
+      "changed_profiles": [
+        "bootstrap.aarch64-darwin",
+        "mac-mini-m4",
+        "mac-mini-m4-pro",
+        "macbook-air-m1"
+      ],
+      "every_profile": true,
+      "feature_dirs": ["antigravity-cli", "claude", "cli-tools", "forgejo", "git"]
+    },
+    {
+      "sha": "cc91524",
+      "changed_profiles": [
+        "bootstrap.aarch64-darwin",
+        "mac-mini-m4",
+        "mac-mini-m4-pro",
+        "macbook-air-m1"
+      ],
+      "every_profile": true,
+      "feature_dirs": ["agents", "brew-nix"]
+    },
+    {
+      "sha": "aa25395",
+      "changed_profiles": [],
+      "every_profile": false,
+      "feature_dirs": ["agents"]
+    },
+    {
+      "sha": "4e76b15",
+      "changed_profiles": [],
+      "every_profile": false,
+      "feature_dirs": ["herdr"]
+    },
+    {
+      "sha": "b0f4dcc",
+      "changed_profiles": [],
+      "every_profile": false,
+      "feature_dirs": ["herdr"]
+    },
+    {
+      "sha": "bf1207b",
+      "changed_profiles": [],
+      "every_profile": false,
+      "feature_dirs": ["agents"]
+    },
+    {
+      "sha": "61354a2",
+      "changed_profiles": [],
+      "every_profile": false,
+      "feature_dirs": ["agents"]
+    },
+    {
+      "sha": "a67fb59",
+      "changed_profiles": [
+        "bootstrap.aarch64-darwin",
+        "mac-mini-m4",
+        "mac-mini-m4-pro",
+        "macbook-air-m1"
+      ],
+      "every_profile": true,
+      "feature_dirs": ["agents", "opencloud"]
+    },
+    {
+      "sha": "354d4e5",
+      "changed_profiles": [],
+      "every_profile": false,
+      "feature_dirs": ["haskell", "python"]
+    },
+    {
+      "sha": "bf5af7a",
+      "changed_profiles": [],
+      "every_profile": false,
+      "feature_dirs": []
+    },
+    {
+      "sha": "b4dee20",
+      "changed_profiles": [
+        "bootstrap.aarch64-darwin",
+        "mac-mini-m4",
+        "mac-mini-m4-pro",
+        "macbook-air-m1"
+      ],
+      "every_profile": true,
+      "feature_dirs": ["brew-nix", "cloud-tools", "git"]
+    },
+    {
+      "sha": "e5bbb5b",
+      "changed_profiles": [],
+      "every_profile": false,
+      "feature_dirs": ["comin"]
+    },
+    {
+      "sha": "1088b0f",
+      "changed_profiles": ["mac-mini-m4", "mac-mini-m4-pro"],
+      "every_profile": false,
+      "feature_dirs": ["mac-mini-m4-pro", "monitoring", "token-usage"]
+    }
+  ]
+}

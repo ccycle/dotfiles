@@ -1,0 +1,61 @@
+{
+  "window": {
+    "first_merge": "2026-09-04T10:35:17+09:00",
+    "last_merge": "2026-11-28T22:15:20+09:00"
+  },
+  "pulls_measured": 141,
+  "pulls_skipped_no_commits_on_main": [],
+  "deployment_frequency_per_week": {
+    "median": 6,
+    "last_4_weeks": [6, 7, 36, 53]
+  },
+  "lead_time_first_commit_to_merge_hours": {
+    "count": 141,
+    "median": 0.42,
+    "p90": 32.06,
+    "max": 349.69
+  },
+  "rework_rate": 0.163,
+  "change_failure_rate": 0.246,
+  "failed_change_pulls": [
+    12, 48, 47, 50, 52, 53, 56, 57, 58, 62, 64, 65, 68, 70, 75, 78, 77, 82, 86, 89, 91, 92, 94, 95,
+    106, 109, 115, 120, 128
+  ],
+  "merge_to_comin_pickup_hours": {
+    "count": 48,
+    "median": 0.01,
+    "p90": 0.02,
+    "max": 0.84
+  },
+  "time_to_restore": {
+    "mac-mini-m4-pro": {
+      "resolved_hours": {
+        "count": 4,
+        "median": 0.5,
+        "p90": 15.25,
+        "max": 15.25
+      },
+      "ongoing": []
+    },
+    "mac-mini-m4": {
+      "resolved_hours": {
+        "count": 1,
+        "median": 0.0,
+        "p90": 0.0,
+        "max": 0.0
+      },
+      "ongoing": [
+        "ImmichPostgresDown/immich-postgres: 166h",
+        "ScrapeTargetDown/forgejo: 406h",
+        "ScrapeTargetDown/gitlab-exporter-sidekiq: 406h",
+        "ScrapeTargetDown/gitlab-postgres: 406h",
+        "ScrapeTargetDown/gitlab-rails: 406h",
+        "ScrapeTargetDown/gitlab-redis: 406h",
+        "ScrapeTargetDown/gitlab-sidekiq: 406h",
+        "ScrapeTargetDown/immich-api: 166h",
+        "ScrapeTargetDown/immich-microservices: 166h",
+        "ScrapeTargetDown/opencloud: 166h"
+      ]
+    }
+  }
+}
