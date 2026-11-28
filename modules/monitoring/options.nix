@@ -54,6 +54,16 @@ let
       dir = config.services.immich.dbDir;
     };
   prometheusConfig = ./prometheus.yml;
+  scrapeFiles =
+    lib.optional config.services.immich.enable ./scrape/immich.yml
+    ++ lib.optional config.services.opencloud.enable ./scrape/opencloud.yml
+    ++ lib.optional config.services.forgejo.enable ./scrape/forgejo.yml
+    ++ lib.optional config.services.atticd.enable ./scrape/attic.yml
+    ++ lib.optional config.services.comin.enable ./scrape/comin.yml;
+  scrapeDir = pkgs.runCommand "prometheus-scrape.d" { } ''
+    mkdir $out
+    ${lib.concatMapStrings (f: "cp ${f} $out/${baseNameOf f}\n") scrapeFiles}
+  '';
   prometheusRules = ./prometheus-rules.yml;
   lokiConfig = ./loki-config.yml;
   alloyConfig = ./alloy-config.alloy;
@@ -347,6 +357,7 @@ in
         export MONITORING_DATA_DIR="${cfg.dataDir}"
         export PROMETHEUS_CONFIG="${prometheusConfig}"
         export PROMETHEUS_RULES="${prometheusRules}"
+        export PROMETHEUS_SCRAPE_DIR="${scrapeDir}"
         export LOKI_CONFIG="${lokiConfig}"
         export ALLOY_CONFIG="${alloyConfig}"
         export TEMPO_CONFIG="${tempoConfig}"

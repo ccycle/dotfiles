@@ -1,0 +1,5 @@
+scrape_configs:
+  # Metrics live on the proxy's debug port (PROXY_DEBUG_ADDR), not 9200.
+  - job_name: "opencloud"
+    static_configs:
+      - targets: ["host-gateway:9205"]

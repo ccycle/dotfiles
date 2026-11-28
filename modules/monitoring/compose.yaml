@@ -9,6 +9,7 @@ services:
       - ${MONITORING_DATA_DIR:-/var/lib/monitoring}/prometheus:/prometheus
       - ${PROMETHEUS_CONFIG}:/etc/prometheus/prometheus.yml:ro
       - ${PROMETHEUS_RULES}:/etc/prometheus/rules.yml:ro
+      - ${PROMETHEUS_SCRAPE_DIR}:/etc/prometheus/scrape.d:ro
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
       - "--storage.tsdb.path=/prometheus"

@@ -32,6 +32,10 @@ for agent-driven investigation.
   stacks are independent launchd-managed compose projects; a shared network
   would couple their startup order and lifecycle. The cost is that every
   scraped service must publish its metrics port on the host's 127.0.0.1.
+- **A service's scrape jobs live in `scrape/<service>.yml` and are mounted only on hosts that enable the service.**
+  With one static `prometheus.yml`, a host without Forgejo or Attic still scraped them, so `ScrapeTargetDown` fired for as long as the host ran and a real outage looked like the usual noise.
+  Prometheus's `scrape_config_files` keeps each fragment a plain YAML file; Nix only chooses which ones to copy into the mounted directory.
+  Jobs every monitoring host has (Prometheus itself, node_exporter, Caddy, cAdvisor) stay in `prometheus.yml`.
 - **GitLab is scraped with a minimal exporter set**, one signal per failure
   domain: Rails web metrics, sidekiq job execution, sidekiq queue backlog
   (only available from gitlab_exporter), postgres, redis. The bundled

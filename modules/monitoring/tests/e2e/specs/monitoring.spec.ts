@@ -8,12 +8,14 @@
 // Runs against an isolated per-worktree stack (never modules/monitoring's
 // real instance or data - own ports, own Grafana volume).
 import { test, expect, type APIRequestContext } from "@playwright/test";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 
 const PROMETHEUS_URL = requireEnv("PROMETHEUS_URL");
 const GRAFANA_URL = requireEnv("GRAFANA_URL");
 const LOKI_URL = requireEnv("LOKI_URL");
 const PROMETHEUS_CONFIG = requireEnv("PROMETHEUS_CONFIG");
+const PROMETHEUS_SCRAPE_DIR = requireEnv("PROMETHEUS_SCRAPE_DIR");
 
 const GRAFANA_ADMIN_USER = "admin";
 const GRAFANA_ADMIN_PASSWORD = requireEnv("GRAFANA_ADMIN_PASSWORD");
@@ -27,7 +29,8 @@ function requireEnv(name: string): string {
 }
 
 // The set of job_names actually configured in the real scrape config -
-// read from the same file the stack itself mounts (PROMETHEUS_CONFIG),
+// read from the same files the stack itself mounts (PROMETHEUS_CONFIG and
+// PROMETHEUS_SCRAPE_DIR),
 // not hand-copied here, so this suite can't silently drift from
 // modules/monitoring/prometheus.yml as jobs are added/removed. A plain
 // regex, not a YAML parser: prometheus.yml's job_name lines are always
@@ -35,7 +38,13 @@ function requireEnv(name: string): string {
 // dependency for one field isn't worth it in a suite that otherwise
 // depends on nothing but @playwright/test.
 function configuredJobNames(): string[] {
-  const text = readFileSync(PROMETHEUS_CONFIG, "utf-8");
+  const files = [
+    PROMETHEUS_CONFIG,
+    ...readdirSync(PROMETHEUS_SCRAPE_DIR)
+      .filter((name) => name.endsWith(".yml"))
+      .map((name) => join(PROMETHEUS_SCRAPE_DIR, name)),
+  ];
+  const text = files.map((file) => readFileSync(file, "utf-8")).join("\n");
   const matches = [...text.matchAll(/^\s*-\s*job_name:\s*"([^"]+)"/gm)];
   const jobs = matches.map((m) => m[1]);
   expect(jobs.length, `at least one job_name found in ${PROMETHEUS_CONFIG}`).toBeGreaterThan(0);

@@ -1,0 +1,6 @@
+scrape_configs:
+  # comin's built-in Prometheus exporter, loopback-bound on its default port
+  # (services.comin.exporter). Reports deployment status/failures.
+  - job_name: "comin"
+    static_configs:
+      - targets: ["host-gateway:4243"]

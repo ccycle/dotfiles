@@ -1,0 +1,7 @@
+scrape_configs:
+  # Attic cache metrics from the attic-exporter (Python HTTP server on 9201).
+  # Queries the atticd SQLite database on each scrape for cache size, dedup
+  # ratio, and access patterns.
+  - job_name: "attic-exporter"
+    static_configs:
+      - targets: ["host-gateway:9201"]
