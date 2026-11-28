@@ -89,6 +89,7 @@ in
         descriptionJa = "Pi Web・コーディングエージェント";
         descriptionEn = "Pi Web & Coding Agent";
         logoSvg = builtins.readFile ./pi-web-logo.svg;
+        alwaysOn = true;
       }
     ];
 

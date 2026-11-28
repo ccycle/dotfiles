@@ -54,6 +54,7 @@ in
         descriptionJa = "フォト＆ビデオ管理";
         descriptionEn = "Photo & Video Management";
         logoSvg = builtins.readFile ./immich-logo.svg;
+        alwaysOn = true;
       }
     ];
 

@@ -89,6 +89,7 @@ in
         descriptionJa = "OpenCode Web・ノート検索";
         descriptionEn = "OpenCode Web & Note Search";
         logoSvg = builtins.readFile ./opencode-web-logo.svg;
+        alwaysOn = true;
       }
     ];
 

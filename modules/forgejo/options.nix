@@ -190,6 +190,7 @@ in
           descriptionJa = "軽量 Git フォージ";
           descriptionEn = "Lightweight Git Forge";
           logoSvg = builtins.readFile ./forgejo-logo.svg;
+          alwaysOn = true;
         }
       ];
 

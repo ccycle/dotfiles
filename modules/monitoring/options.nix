@@ -64,6 +64,14 @@ let
     mkdir $out
     ${lib.concatMapStrings (f: "cp ${f} $out/${baseNameOf f}\n") scrapeFiles}
   '';
+  probeTargets = pkgs.writeText "probe-targets.json" (
+    builtins.toJSON [
+      {
+        targets = map (e: e.url) (builtins.filter (e: e.alwaysOn) config.services.caddy.portalEntries);
+      }
+    ]
+  );
+  blackboxConfig = ./blackbox.yml;
   prometheusRules = ./prometheus-rules.yml;
   lokiConfig = ./loki-config.yml;
   alloyConfig = ./alloy-config.alloy;
@@ -131,6 +139,7 @@ in
         descriptionJa = "ダッシュボード＆可視化";
         descriptionEn = "Dashboards & Visualization";
         logoSvg = builtins.readFile ./grafana-logo.svg;
+        alwaysOn = true;
       }
       {
         name = "Prometheus";
@@ -138,6 +147,7 @@ in
         descriptionJa = "モニタリングシステム";
         descriptionEn = "Monitoring System";
         logoSvg = builtins.readFile ./prometheus-logo.svg;
+        alwaysOn = true;
       }
     ];
 
@@ -211,6 +221,20 @@ in
     # daemon (loopback-only on 9100), NOT inside the Docker stack — a Linux
     # container via OrbStack would only observe the container/VM's own
     # filesystem, not the true host APFS volumes. Same pattern as atticd.
+    launchd.daemons.blackbox-exporter = {
+      serviceConfig = {
+        KeepAlive = true;
+        RunAtLoad = true;
+        StandardOutPath = "/var/log/blackbox-exporter.log";
+        StandardErrorPath = "/var/log/blackbox-exporter.log";
+      };
+      script = ''
+        exec ${pkgs.prometheus-blackbox-exporter}/bin/blackbox_exporter \
+          --web.listen-address=127.0.0.1:9115 \
+          --config.file=${blackboxConfig}
+      '';
+    };
+
     launchd.daemons.node-exporter = {
       serviceConfig = {
         KeepAlive = true;
@@ -358,6 +382,7 @@ in
         export PROMETHEUS_CONFIG="${prometheusConfig}"
         export PROMETHEUS_RULES="${prometheusRules}"
         export PROMETHEUS_SCRAPE_DIR="${scrapeDir}"
+        export PROBE_TARGETS="${probeTargets}"
         export LOKI_CONFIG="${lokiConfig}"
         export ALLOY_CONFIG="${alloyConfig}"
         export TEMPO_CONFIG="${tempoConfig}"

@@ -29,6 +29,7 @@ in
         descriptionJa = "コーディングエージェント GUI";
         descriptionEn = "Coding agent GUI";
         logoSvg = builtins.readFile ./t3code-logo.svg;
+        alwaysOn = true;
       }
     ];
 

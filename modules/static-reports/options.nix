@@ -48,6 +48,7 @@ in
         descriptionJa = "静的レポート・成果物の閲覧 (テスト結果など)";
         descriptionEn = "Browse static reports/artifacts (test results, etc.)";
         logoSvg = builtins.readFile ./reports-logo.svg;
+        alwaysOn = true;
       }
     ];
 

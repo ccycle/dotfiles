@@ -49,6 +49,7 @@ in
         descriptionJa = "ソースコード管理 & CI/CD";
         descriptionEn = "Source Code Management & CI/CD";
         logoSvg = builtins.readFile ./gitlab-logo.svg;
+        alwaysOn = true;
       }
     ];
 

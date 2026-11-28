@@ -88,6 +88,7 @@ in
         descriptionJa = "ローカル LLM 推論サーバー";
         descriptionEn = "Local LLM Inference Server";
         logoSvg = builtins.readFile ./llm-server-logo.svg;
+        alwaysOn = true;
       }
     ];
 

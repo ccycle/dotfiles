@@ -1,0 +1,7 @@
+modules:
+  http_reachable:
+    prober: http
+    timeout: 10s
+    http:
+      follow_redirects: false
+      valid_status_codes: [200, 204, 301, 302, 303, 307, 308, 401, 403, 404]

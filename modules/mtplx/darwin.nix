@@ -61,6 +61,7 @@ in
         descriptionJa = "MTPLX ローカル推論サーバー (MLX / 投機的デコーディング)";
         descriptionEn = "MTPLX Local Inference Server (MLX / speculative decoding)";
         logoSvg = builtins.readFile ./mtplx-logo.svg;
+        alwaysOn = false;
       }
     ];
 

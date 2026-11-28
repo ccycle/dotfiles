@@ -1,0 +1,26 @@
+rule_files:
+  - ../../prometheus-rules.yml
+
+evaluation_interval: 1m
+
+tests:
+  - name: a portal endpoint returning 502 like immich on mac-mini-m4 since 2026-11-21
+    interval: 1m
+    input_series:
+      - series: 'probe_success{job="endpoint-probe",instance="https://immich.mac-mini-m4.internal"}'
+        values: "1x10 0x20"
+      - series: 'probe_success{job="endpoint-probe",instance="https://grafana.mac-mini-m4.internal"}'
+        values: "1x30"
+    alert_rule_test:
+      - eval_time: 14m
+        alertname: EndpointDown
+        exp_alerts: []
+      - eval_time: 17m
+        alertname: EndpointDown
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              job: endpoint-probe
+              instance: https://immich.mac-mini-m4.internal
+            exp_annotations:
+              summary: "https://immich.mac-mini-m4.internal has failed its reachability probe for 5 minutes"

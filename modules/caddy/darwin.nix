@@ -108,6 +108,7 @@ in
         descriptionJa = "ルート証明書のダウンロード";
         descriptionEn = "Download Root Certificate";
         logoSvg = builtins.readFile ./ca-certificate-logo.svg;
+        alwaysOn = true;
       }
     ]
     ++ lib.optionals config.services.atticd.enable [
@@ -117,6 +118,7 @@ in
         descriptionJa = "Nix バイナリキャッシュ";
         descriptionEn = "Nix Binary Cache";
         logoSvg = builtins.readFile ./attic-logo.svg;
+        alwaysOn = true;
       }
     ];
 

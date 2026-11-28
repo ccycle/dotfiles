@@ -18,8 +18,6 @@ for agent-driven investigation.
   `modules/llm-server/self-healing`'s daemon — see that module's design.md
   for the full detection-latency rationale. Adding a real notification
   channel remains a deliberate future decision, not an oversight.
-- No blackbox/synthetic probing — reachability is covered by the
-  smoke-test skills.
 - No vendored community dashboards. Only compact hand-written dashboard JSONs
   are checked in; large community dashboards (e.g. grafana.com ID 193 for
   Docker) can be imported manually through the UI into the persistent Grafana
@@ -35,7 +33,7 @@ for agent-driven investigation.
 - **A service's scrape jobs live in `scrape/<service>.yml` and are mounted only on hosts that enable the service.**
   With one static `prometheus.yml`, a host without Forgejo or Attic still scraped them, so `ScrapeTargetDown` fired for as long as the host ran and a real outage looked like the usual noise.
   Prometheus's `scrape_config_files` keeps each fragment a plain YAML file; Nix only chooses which ones to copy into the mounted directory.
-  Jobs every monitoring host has (Prometheus itself, node_exporter, Caddy, cAdvisor) stay in `prometheus.yml`.
+  Jobs every monitoring host has (Prometheus itself, the endpoint probe, node_exporter, Caddy, cAdvisor) stay in `prometheus.yml`.
 - **GitLab is scraped with a minimal exporter set**, one signal per failure
   domain: Rails web metrics, sidekiq job execution, sidekiq queue backlog
   (only available from gitlab_exporter), postgres, redis. The bundled
@@ -170,6 +168,14 @@ for agent-driven investigation.
   "Behind main" is inferred from the causes that keep comin from deploying a new commit (every remote failing, suspended, or the fetch loop stalled), not measured as a commit gap, because comin exports the deployed commit but not the fetched one.
   A crashed comin is left to `ScrapeTargetDown`.
   Like every rule here, these alerts reach no human (see Non-Goals); they make the failure visible in Grafana and `/api/v1/alerts` instead of only in `/var/log/comin.log`.
+- **Every `services.caddy.portalEntries` URL is probed, and that list is the only probe configuration.**
+  Smoke-test skills only run when someone runs them, and scrape jobs only see services that export metrics: on 2026-11-29 immich, opencloud, and pocket-id on `mac-mini-m4` had answered 502 or nothing for about a week, and navidrome, pocket-id, dnsmasq, static-reports, and llm-server were not scraped at all.
+  Portal entries already exist per enabled service per host, so a service gets a health check by being on the portal, with no per-service probe code; this is the shared health-check design that one-off per-service probes were deferred for.
+  `alwaysOn` has no default so that every service states whether it may legitimately be down; mtplx is started on demand and would otherwise alert whenever it is dormant.
+  The blackbox exporter runs natively on the host, like node_exporter, because a native Go binary verifies the host's own Caddy certificates through the System keychain; a container would need the CA mounted in.
+  Redirects are not followed, so a down Pocket ID raises one alert for `auth.*` instead of one for every service behind it.
+  Any status below 500 that proves the backend answered counts as reachable: on 2026-11-29 every healthy `mac-mini-m4-pro` endpoint answered an anonymous probe with 200 or, behind oauth2-proxy, 302.
+  Probing another host is out of scope here: the native exporter does not trust the peer host's Caddy CA (on 2026-11-29: `x509: "Caddy Local Authority - mac-mini-m4 - ECC Intermediate" certificate is not trusted`).
 
 ## Rejected Alternatives
 

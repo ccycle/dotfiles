@@ -158,6 +158,7 @@ in
         descriptionJa = "パスキー認証プロバイダ (OIDC)";
         descriptionEn = "Passkey Authentication Provider (OIDC)";
         logoSvg = builtins.readFile ./pocket-id-logo.svg;
+        alwaysOn = true;
       }
     ];
 

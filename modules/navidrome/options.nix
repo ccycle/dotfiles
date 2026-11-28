@@ -51,6 +51,7 @@ in
         descriptionJa = "音楽ストリーミングサーバー";
         descriptionEn = "Music Streaming Server";
         logoSvg = builtins.readFile ./navidrome-logo.svg;
+        alwaysOn = true;
       }
     ];
 

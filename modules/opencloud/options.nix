@@ -180,6 +180,7 @@ in
         descriptionJa = "クラウドストレージ (ownCloud Infinite)";
         descriptionEn = "Cloud Storage (ownCloud Infinite)";
         logoSvg = builtins.readFile ./opencloud-logo.svg;
+        alwaysOn = true;
       }
     ];
 

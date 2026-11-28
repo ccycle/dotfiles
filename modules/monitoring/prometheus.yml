@@ -23,6 +23,20 @@ scrape_configs:
     static_configs:
       - targets: ["localhost:9090"]
 
+  - job_name: "endpoint-probe"
+    metrics_path: /probe
+    params:
+      module: [http_reachable]
+    file_sd_configs:
+      - files: ["/etc/prometheus/probe-targets.json"]
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: host-gateway:9115
+
   # Host-level (macOS) metrics from the native node_exporter launchd
   # daemon, loopback-bound on 9100 (see options.nix). Same
   # host-gateway pattern as Caddy's loopback metrics port below.

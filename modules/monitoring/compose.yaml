@@ -10,6 +10,7 @@ services:
       - ${PROMETHEUS_CONFIG}:/etc/prometheus/prometheus.yml:ro
       - ${PROMETHEUS_RULES}:/etc/prometheus/rules.yml:ro
       - ${PROMETHEUS_SCRAPE_DIR}:/etc/prometheus/scrape.d:ro
+      - ${PROBE_TARGETS}:/etc/prometheus/probe-targets.json:ro
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
       - "--storage.tsdb.path=/prometheus"
