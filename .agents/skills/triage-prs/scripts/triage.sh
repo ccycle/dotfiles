@@ -2,6 +2,7 @@
 set -uo pipefail
 
 here="$(cd "$(dirname "$0")" && pwd)"
+rebase_push="$(git -C "$here" rev-parse --show-toplevel)/modules/agents/skills/forgejo-create-pr/scripts/rebase-push.sh"
 if [ "${1:-}" = --all ]; then
   open="$("$here/prs.sh")" || exit 2
   order="$("$here/order.sh" <<<"$open")" || exit 2
@@ -40,7 +41,7 @@ for n in "$@"; do
       echo "#$n skip: no local worktree for $branch"
       continue
     }
-    sha="$("$here/rebase-push.sh" "$wt" 2>>"$log")" || {
+    sha="$("$rebase_push" "$wt" origin main true 2>>"$log")" || {
       echo "#$n rebase failed, delegate to $pane: $sha"
       continue
     }

@@ -60,20 +60,6 @@ done
 commit "$tmp/clean" own clean
 commit "$tmp/conflicting" shared conflicting
 git -C "$tmp/main" push -q origin clean conflicting
-commit "$tmp/main" shared moved
-git -C "$tmp/main" push -q origin main
-
-"$here/rebase-push.sh" "$tmp/clean" >/dev/null 2>&1
-check "rebase-push.sh rebases a clean branch" "$?" 0
-git -C "$tmp/main" fetch -q origin
-git -C "$tmp/main" merge-base --is-ancestor origin/main origin/clean
-check "rebase-push.sh pushed the branch on top of main" "$?" 0
-before="$(git -C "$tmp/conflicting" rev-parse HEAD)"
-check "rebase-push.sh names the conflicting file" "$("$here/rebase-push.sh" "$tmp/conflicting" 2>/dev/null)" "conflict in shared"
-check "rebase-push.sh leaves a conflicting branch as it was" "$(git -C "$tmp/conflicting" rev-parse HEAD):$(git -C "$tmp/conflicting" status --porcelain)" "$before:"
-echo dirty >"$tmp/clean/own"
-check "rebase-push.sh refuses uncommitted changes" "$("$here/rebase-push.sh" "$tmp/clean" 2>/dev/null)" "uncommitted changes in $tmp/clean"
-
 git -C "$tmp/main" worktree add -q -b overlap "$tmp/overlap" origin/main
 commit "$tmp/overlap" shared overlap
 rows="$(printf 'pr\tbranch\thead\n30\tconflicting\tconflicting\n10\toverlap\toverlap\n20\tclean\tclean\n')"

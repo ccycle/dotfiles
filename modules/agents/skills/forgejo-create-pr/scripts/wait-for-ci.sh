@@ -23,12 +23,7 @@ EOF
 timeout_seconds="$3"
 no_runs_timeout_seconds="$4"
 [[ $timeout_seconds =~ ^[0-9]+$ && $no_runs_timeout_seconds =~ ^[0-9]+$ ]] || usage
-remote_url="$(git remote get-url "$1")"
-[[ $remote_url =~ ^(https://[^/]+)/([^/]+)/([^/]+)$ ]] || {
-  echo "error: remote $1 URL is not https://<host>/<owner>/<repo>: $remote_url" >&2
-  exit 2
-}
-runs_url="${BASH_REMATCH[1]}/api/v1/repos/${BASH_REMATCH[2]}/${BASH_REMATCH[3]%.git}/actions/runs"
+runs_url="$("$(dirname "$0")/api-url.sh" "$1")/actions/runs"
 sha="$(git rev-parse --verify "$2^{commit}")"
 poll_interval_seconds=10
 
