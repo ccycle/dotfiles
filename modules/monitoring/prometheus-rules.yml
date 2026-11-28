@@ -21,6 +21,21 @@ groups:
         annotations:
           summary: "Container {{ $labels.name }} restarted more than twice in 30m"
 
+      - alert: TextfileCollectorParseError
+        expr: node_textfile_scrape_error == 1
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "node_exporter cannot parse a .prom file in its textfile dir; see /var/log/node-exporter.log"
+
+      - alert: TextfileMetricStale
+        expr: time() - node_textfile_mtime_seconds{file!~".*/(kiac_resume|self_healing_heartbeat)\\.prom"} > 172800
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.file }} has not been rewritten in over 2 days; its writer job is failing"
+
   - name: gitlab
     rules:
       - alert: GitLabPostgresDown

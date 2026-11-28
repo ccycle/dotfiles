@@ -199,7 +199,7 @@ in
       script = ''
         mkdir -p ${nodeExporterTextfileDir}
         # World-writable (same trust model as $MONITORING_DATA_DIR below):
-        # modules/token-usage pushes its .prom file in here over SSH as the
+        # modules/token-usage writes its .prom file in here as the
         # regular user, not root, on a single-user trusted home server.
         chmod 777 ${nodeExporterTextfileDir}
         exec ${pkgs.prometheus-node-exporter}/bin/node_exporter \
@@ -228,7 +228,7 @@ in
           echo "# TYPE data_dir_size_bytes gauge"
           ${lib.concatMapStringsSep "\n" (t: ''
             if [ -d "${t.dir}" ]; then
-              SIZE=$(${pkgs.coreutils}/bin/du -sb "${t.dir}" | ${pkgs.coreutils}/bin/awk '{print $1}')
+              SIZE=$(${pkgs.coreutils}/bin/du -sb "${t.dir}" | ${pkgs.coreutils}/bin/cut -f1)
               echo "data_dir_size_bytes{service=\"${t.name}\"} $SIZE"
             fi
           '') dataDirTargets}

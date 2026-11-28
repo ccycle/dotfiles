@@ -1,0 +1,46 @@
+rule_files:
+  - ../../prometheus-rules.yml
+
+evaluation_interval: 1m
+
+tests:
+  - name: token_usage.prom stops being rewritten like the 2026-11 scp failure
+    interval: 1h
+    input_series:
+      - series: 'node_textfile_mtime_seconds{job="node-exporter",instance="host-gateway:9100",file="/var/lib/node-exporter-textfile/token_usage.prom"}'
+        values: "0x72"
+      - series: 'node_textfile_mtime_seconds{job="node-exporter",instance="host-gateway:9100",file="/var/lib/node-exporter-textfile/kiac_resume.prom"}'
+        values: "0x72"
+    alert_rule_test:
+      - eval_time: 47h
+        alertname: TextfileMetricStale
+        exp_alerts: []
+      - eval_time: 49h
+        alertname: TextfileMetricStale
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              job: node-exporter
+              instance: host-gateway:9100
+              file: /var/lib/node-exporter-textfile/token_usage.prom
+            exp_annotations:
+              summary: "/var/lib/node-exporter-textfile/token_usage.prom has not been rewritten in over 2 days; its writer job is failing"
+
+  - name: malformed .prom file like the empty du value
+    interval: 1m
+    input_series:
+      - series: 'node_textfile_scrape_error{job="node-exporter",instance="host-gateway:9100"}'
+        values: "0x5 1x30"
+    alert_rule_test:
+      - eval_time: 10m
+        alertname: TextfileCollectorParseError
+        exp_alerts: []
+      - eval_time: 25m
+        alertname: TextfileCollectorParseError
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              job: node-exporter
+              instance: host-gateway:9100
+            exp_annotations:
+              summary: "node_exporter cannot parse a .prom file in its textfile dir; see /var/log/node-exporter.log"
