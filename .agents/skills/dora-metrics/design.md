@@ -38,6 +38,15 @@ Rework rate (PRs made only of `fix`/`revert` commits) is reported alongside, bec
   It cannot see files deployed with `mkOutOfStoreSymlink` (agent rules and skills, herdr, claude, and others): they point into the checkout, so a change to them leaves every `drvPath` unchanged and reaches every machine as soon as its checkout moves, without a build or a comin deploy.
   In the 2026-11-29 baseline, 17 of 30 PRs changed no profile, and most of them touched only such files.
 
+## Relation to the Grafana DORA Dashboard
+
+[modules/monitoring/grafana/dashboards/dora.json](../../../modules/monitoring/grafana/dashboards/dora.json) shows the same DORA metrics live, from `comin_deployment_info`.
+The two answer different questions and neither replaces the other:
+
+- The dashboard counts a deployment as failed when comin's eval, build, or activation fails; this skill counts a change as failed when a fix to the same scope follows it, which also catches changes that deployed cleanly and broke a service.
+- The dashboard only reaches back as far as comin's deployment store and Prometheus retention (data starts 2026-11-22 on `mac-mini-m4-pro`), and has no lead time; this skill reads months of merged PRs.
+- Once endpoint probes exist, detection coverage is a plain Prometheus query and belongs on a dashboard; the `detection` subcommand exists to measure the gap before that.
+
 ## Rejected Alternatives
 
 - Class cohesion metrics (LCOM and similar) assume classes and methods; the repo is declarative Nix plus shell.
