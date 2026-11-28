@@ -39,10 +39,10 @@ echo ""
 # --- 2. Plugin Installation ---
 echo "=== 🔌 Plugin Installation ==="
 
-if herdr plugin list --json 2>/dev/null | jq -e --arg id "$PLUGIN_ID" '.result.plugins[] | select(.id == $id)' >/dev/null 2>&1; then
+if herdr plugin list --json 2>/dev/null | jq -e --arg id "$PLUGIN_ID" '.result.plugins[] | select(.plugin_id == $id)' >/dev/null 2>&1; then
   pass "$PLUGIN_ID is installed"
 else
-  fail "$PLUGIN_ID is not installed (run: herdr plugin install persiyanov/herdr-reviewr)"
+  fail "$PLUGIN_ID is not installed (run: modules/herdr/install-plugins.sh)"
 fi
 
 echo ""
@@ -56,7 +56,7 @@ else
   fail "herdr config.toml is missing, not a symlink, or missing the reviewr toggle keybinding"
 fi
 
-if [ -L "$REVIEWR_CFG" ] && readlink "$REVIEWR_CFG" | grep -q "modules/herdr/reviewr-config.toml"; then
+if [ -L "$REVIEWR_CFG" ] && readlink -f "$REVIEWR_CFG" | grep -q "modules/herdr/reviewr-config.toml"; then
   pass "reviewr config.toml is symlinked into the repo"
 else
   fail "reviewr config.toml is missing or not symlinked into the repo"
@@ -83,7 +83,12 @@ else
   fail "failed to invoke the ${PLUGIN_ID} open action"
 fi
 
-AFTER_COUNT=$(herdr pane list --workspace "$WORKSPACE_ID" | jq '.result.panes | length')
+AFTER_COUNT=$BEFORE_COUNT
+for _ in $(seq 1 10); do
+  AFTER_COUNT=$(herdr pane list --workspace "$WORKSPACE_ID" | jq '.result.panes | length')
+  [ "$AFTER_COUNT" -gt "$BEFORE_COUNT" ] && break
+  sleep 1
+done
 if [ "$AFTER_COUNT" -gt "$BEFORE_COUNT" ]; then
   pass "reviewr opened a pane in the scratch workspace ($BEFORE_COUNT -> $AFTER_COUNT panes)"
 else

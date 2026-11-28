@@ -5,7 +5,7 @@ description: Run smoke tests to verify the herdr-reviewr plugin is installed, co
 
 # herdr-reviewr Smoke Test
 
-Verifies that the `persiyanov.reviewr` plugin (declared in [modules/herdr/home.nix](../../../modules/herdr/home.nix)) is installed
+Verifies that the `persiyanov.reviewr` plugin (installed by [modules/herdr/install-plugins.sh](../../../modules/herdr/install-plugins.sh)) is installed
 in the running herdr server, its config symlinks resolve into the repo, and it actually opens a
 pane when invoked — driven entirely through herdr's own socket API (`herdr pane` / `herdr
 workspace` / `herdr plugin`), the same primitives herdr uses to control panes for AI agents.
@@ -23,21 +23,23 @@ Requires `jq`.
 ## Checks Performed
 
 1. **herdr Server**: `herdr status` succeeds.
-2. **Plugin Installation**: `herdr plugin list --json` lists `persiyanov.reviewr` (confirms the
-   `home.activation.herdr-reviewr-install` script ran successfully).
+2. **Plugin Installation**: `herdr plugin list --json` has an entry whose `plugin_id` is
+   `persiyanov.reviewr`.
 3. **Config Symlinks**:
    - `~/.config/herdr/config.toml` is a symlink and defines the `persiyanov.reviewr.toggle`
      keybinding.
    - `~/.config/herdr/plugins/config/persiyanov.reviewr/config.toml` is a symlink into
-     [modules/herdr/reviewr-config.toml](../../../modules/herdr/reviewr-config.toml).
+     [modules/herdr/reviewr-config.toml](../../../modules/herdr/reviewr-config.toml) (resolved with
+     `readlink -f`, since home-manager links through the Nix store).
 4. **Live Plugin Invocation**: creates a disposable scratch workspace (`herdr workspace create`),
-   invokes `herdr plugin action invoke open --plugin persiyanov.reviewr`, and confirms a new pane
-   appeared via `herdr pane list --workspace <id>`. The scratch workspace is closed on exit
+   invokes `herdr plugin action invoke open --plugin persiyanov.reviewr`, and polls
+   `herdr pane list --workspace <id>` for up to 10 seconds until a new pane appears (the action
+   returns before the pane opens). The scratch workspace is closed on exit
    (`trap cleanup EXIT`), regardless of pass/fail.
 
 ## When to Use
 
-- After `darwin-rebuild switch` to verify herdr-reviewr deployed correctly.
+- After running [modules/herdr/install-plugins.sh](../../../modules/herdr/install-plugins.sh) to verify herdr-reviewr installed correctly.
 - When debugging why the `prefix+ctrl+r` toggle or `persiyanov.reviewr.toggle` keybinding isn't opening
   the sidebar.
 

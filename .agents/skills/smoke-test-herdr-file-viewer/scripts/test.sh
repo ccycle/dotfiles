@@ -37,13 +37,10 @@ echo ""
 # --- 2. Plugin Installation ---
 echo "=== 🔌 Plugin Installation ==="
 
-# Field name for the plugin's id in `herdr plugin list --json` is unconfirmed for this plugin
-# (docs and herdr-reviewr's own smoke test disagree between "id" and "plugin_id"), so search all
-# field values instead of asserting a specific key.
-if herdr plugin list --json 2>/dev/null | jq -e --arg id "$PLUGIN_ID" '.result.plugins[] | to_entries[] | select(.value == $id)' >/dev/null 2>&1; then
+if herdr plugin list --json 2>/dev/null | jq -e --arg id "$PLUGIN_ID" '.result.plugins[] | select(.plugin_id == $id)' >/dev/null 2>&1; then
   pass "$PLUGIN_ID is installed"
 else
-  fail "$PLUGIN_ID is not installed (run: herdr plugin install smarzban/herdr-file-viewer)"
+  fail "$PLUGIN_ID is not installed (run: modules/herdr/install-plugins.sh)"
 fi
 
 echo ""
@@ -78,7 +75,12 @@ else
   fail "failed to invoke the ${PLUGIN_ID} open-file-viewer action"
 fi
 
-AFTER_COUNT=$(herdr pane list --workspace "$WORKSPACE_ID" | jq '.result.panes | length')
+AFTER_COUNT=$BEFORE_COUNT
+for _ in $(seq 1 10); do
+  AFTER_COUNT=$(herdr pane list --workspace "$WORKSPACE_ID" | jq '.result.panes | length')
+  [ "$AFTER_COUNT" -gt "$BEFORE_COUNT" ] && break
+  sleep 1
+done
 if [ "$AFTER_COUNT" -gt "$BEFORE_COUNT" ]; then
   pass "file-viewer opened a pane in the scratch workspace ($BEFORE_COUNT -> $AFTER_COUNT panes)"
 else
