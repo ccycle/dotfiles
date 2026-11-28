@@ -70,6 +70,37 @@
           "instant": true
         }
       ]
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "Tokens (input+output), last 30d, by tool",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 24 },
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (tool) (token_usage_tokens_total)",
+          "legendFormat": "{{tool}}"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "type": "bargauge",
+      "title": "Tokens by model, last 30d",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 9, "w": 24, "x": 0, "y": 32 },
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+      "options": { "orientation": "horizontal", "reduceOptions": { "calcs": ["lastNotNull"] } },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (model) (token_usage_tokens_total)",
+          "legendFormat": "{{model}}"
+        }
+      ]
     }
   ]
 }
