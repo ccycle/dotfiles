@@ -1,0 +1,92 @@
+rule_files:
+  - ../../prometheus-rules.yml
+
+evaluation_interval: 1m
+
+tests:
+  - name: data volume filling up fires both disk alerts
+    interval: 1m
+    input_series:
+      - series: 'node_filesystem_size_bytes{job="node-exporter",instance="host-gateway:9100",fstype="apfs",mountpoint="/System/Volumes/Data"}'
+        values: "1000x120"
+      - series: 'node_filesystem_avail_bytes{job="node-exporter",instance="host-gateway:9100",fstype="apfs",mountpoint="/System/Volumes/Data"}'
+        values: "200-1x120"
+      - series: 'node_filesystem_size_bytes{job="node-exporter",instance="host-gateway:9100",fstype="apfs",mountpoint="/System/Volumes/Preboot"}'
+        values: "1000x120"
+      - series: 'node_filesystem_avail_bytes{job="node-exporter",instance="host-gateway:9100",fstype="apfs",mountpoint="/System/Volumes/Preboot"}'
+        values: "10x120"
+    alert_rule_test:
+      - eval_time: 105m
+        alertname: HostVolumeAlmostFull
+        exp_alerts: []
+      - eval_time: 120m
+        alertname: HostVolumeAlmostFull
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              job: node-exporter
+              instance: host-gateway:9100
+              fstype: apfs
+              mountpoint: /System/Volumes/Data
+            exp_annotations:
+              summary: "/System/Volumes/Data is over 90% full"
+      - eval_time: 60m
+        alertname: HostVolumeWillFillIn24h
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              job: node-exporter
+              instance: host-gateway:9100
+              fstype: apfs
+              mountpoint: /System/Volumes/Data
+            exp_annotations:
+              summary: "/System/Volumes/Data will run out of space within 24h at the last 6h's rate"
+
+  - name: sustained CPU, memory, and thermal pressure
+    interval: 1m
+    input_series:
+      - series: 'node_cpu_seconds_total{job="node-exporter",instance="host-gateway:9100",cpu="0",mode="idle"}'
+        values: "0+3x60"
+      - series: 'node_cpu_seconds_total{job="node-exporter",instance="host-gateway:9100",cpu="1",mode="idle"}'
+        values: "0+3x60"
+      - series: 'node_memory_total_bytes{job="node-exporter",instance="host-gateway:9100"}'
+        values: "100x60"
+      - series: 'node_memory_wired_bytes{job="node-exporter",instance="host-gateway:9100"}'
+        values: "40x60"
+      - series: 'node_memory_active_bytes{job="node-exporter",instance="host-gateway:9100"}'
+        values: "40x60"
+      - series: 'node_memory_compressed_bytes{job="node-exporter",instance="host-gateway:9100"}'
+        values: "15x60"
+      - series: 'thermal_pressure_level{job="node-exporter",instance="host-gateway:9100"}'
+        values: "0x5 2x30"
+    alert_rule_test:
+      - eval_time: 40m
+        alertname: HostCpuSaturated
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              job: node-exporter
+              instance: host-gateway:9100
+            exp_annotations:
+              summary: "Host CPU has been over 90% busy for 30m"
+      - eval_time: 20m
+        alertname: HostMemoryPressure
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              job: node-exporter
+              instance: host-gateway:9100
+            exp_annotations:
+              summary: "Host memory in use (wired + active + compressed) has been over 90% for 15m"
+      - eval_time: 10m
+        alertname: HostThermalPressureHigh
+        exp_alerts: []
+      - eval_time: 20m
+        alertname: HostThermalPressureHigh
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              job: node-exporter
+              instance: host-gateway:9100
+            exp_annotations:
+              summary: "macOS thermal pressure has been Heavy or worse for 10m"

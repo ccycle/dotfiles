@@ -126,6 +126,16 @@ test("Grafana provisions the DORA dashboard from the checked-in JSON", async ({ 
   expect(body.dashboard.title).toBe("DORA (comin deployments)");
 });
 
+test("Grafana provisions the Host Overview dashboard from the checked-in JSON", async ({
+  request,
+}) => {
+  await grafanaApiLogin(request);
+  const res = await request.get(`${GRAFANA_URL}/api/dashboards/uid/host-overview`);
+  expect(res.ok(), `dashboard fetch: ${res.status()} ${await res.text()}`).toBeTruthy();
+  const body = (await res.json()) as { dashboard: { title: string } };
+  expect(body.dashboard.title).toBe("Host Overview");
+});
+
 test("Grafana dashboard renders in the browser without console errors", async ({ page }) => {
   const consoleErrors: string[] = [];
   page.on("console", (msg) => {

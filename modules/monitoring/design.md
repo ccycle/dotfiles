@@ -132,6 +132,11 @@ for agent-driven investigation.
   `/var/lib/static-reports` is accumulating) becomes answerable, which
   container-level cAdvisor metrics cannot show.
 
+- **Host alerts watch only the volumes that hold data**: the Data volume, `/nix`, and the external `WD_BLACK_*` and Time Machine volumes.
+  The other APFS volumes (Preboot, VM, Recovery, ...) are system-managed and run near full by design, so alerting on them would be noise.
+- **Host memory "in use" is wired + active + compressed**, macOS's own notion of memory that cannot be reclaimed immediately.
+  Inactive and purgeable pages are left out because macOS reclaims them on demand.
+
 - **Alertmanager runs inside this same compose stack**, wired to Prometheus
   via `alerting.alertmanagers` in `prometheus.yml`, with no host port
   published — Prometheus reaches it over the compose network
@@ -161,6 +166,8 @@ for agent-driven investigation.
 
 ## Rejected Alternatives
 
+- **A Celsius CPU temperature from macmon** (sudoless, nixpkgs `macmon` 0.6.1) - rejected after sampling it on `mac-mini-m4-pro` on 2026-11-28: five 1-second samples read 41.8, 28.7, 10.4, 28.7, 28.6 degrees C and `cpu_power` stayed 0.0.
+  A 10 degree die is impossible, so the value cannot drive an alert; `thermal_pressure_level` stays the thermal signal.
 - **Shared docker network between stacks** for scraping — rejected to keep
   stack lifecycles independent (see above).
 - **Grafana MCP server** as the agent interface — rejected for now: the APIs

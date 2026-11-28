@@ -199,3 +199,45 @@ groups:
           severity: warning
         annotations:
           summary: "comin has stopped picking up new commits (every remote failing, suspended, or no fetch in 30m)"
+
+  - name: host
+    rules:
+      - alert: HostCpuSaturated
+        expr: 1 - avg without (cpu, mode) (rate(node_cpu_seconds_total{mode="idle"}[5m])) > 0.9
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Host CPU has been over 90% busy for 30m"
+
+      - alert: HostMemoryPressure
+        expr: (node_memory_wired_bytes + node_memory_active_bytes + node_memory_compressed_bytes) / node_memory_total_bytes > 0.9
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Host memory in use (wired + active + compressed) has been over 90% for 15m"
+
+      - alert: HostVolumeAlmostFull
+        expr: 1 - node_filesystem_avail_bytes{fstype="apfs",mountpoint=~"/System/Volumes/Data|/nix|/Volumes/(WD_BLACK.*|TB4-TimeMachine)"} / node_filesystem_size_bytes{fstype="apfs",mountpoint=~"/System/Volumes/Data|/nix|/Volumes/(WD_BLACK.*|TB4-TimeMachine)"} > 0.9
+        for: 10m
+        labels:
+          severity: critical
+        annotations:
+          summary: "{{ $labels.mountpoint }} is over 90% full"
+
+      - alert: HostVolumeWillFillIn24h
+        expr: predict_linear(node_filesystem_avail_bytes{fstype="apfs",mountpoint=~"/System/Volumes/Data|/nix|/Volumes/(WD_BLACK.*|TB4-TimeMachine)"}[6h], 86400) < 0
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.mountpoint }} will run out of space within 24h at the last 6h's rate"
+
+      - alert: HostThermalPressureHigh
+        expr: thermal_pressure_level >= 2
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "macOS thermal pressure has been Heavy or worse for 10m"
