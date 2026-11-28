@@ -61,6 +61,18 @@ let
   alertmanagerConfig = ./alertmanager.yml;
   grafanaProvisioningDir = ./grafana/provisioning;
   grafanaDashboardsDir = ./grafana/dashboards;
+  launchdJobStateName = "launchd-job-state";
+  jobLines =
+    domain: jobs:
+    mapAttrsToList (
+      name: job:
+      "${domain} ${job.serviceConfig.Label or "org.nixos.${name}"} ${
+        boolToString ((job.serviceConfig.KeepAlive or false) == true)
+      }"
+    ) (filterAttrs (name: _: name != launchdJobStateName) jobs);
+  launchdJobList = concatStringsSep "\n" (
+    jobLines "system" config.launchd.daemons ++ jobLines "user" config.launchd.user.agents
+  );
 in
 {
   options.services.monitoring = {
@@ -271,6 +283,45 @@ in
         thermal_pressure_level $VALUE
         EOF
         ${pkgs.coreutils}/bin/mv "$OUT/thermal_pressure_level.prom".tmp "$OUT/thermal_pressure_level.prom"
+      '';
+    };
+
+    launchd.daemons.${launchdJobStateName} = {
+      serviceConfig = {
+        RunAtLoad = true;
+        StartInterval = 60;
+        StandardOutPath = "/var/log/launchd-job-state.log";
+        StandardErrorPath = "/var/log/launchd-job-state.log";
+      };
+      script = ''
+        set -euo pipefail
+        OUT="${nodeExporterTextfileDir}"
+        SYSTEM_JOBS=$(/bin/launchctl list)
+        USER_JOBS=$(/bin/launchctl asuser "$(/usr/bin/id -u ${config.system.primaryUser})" /bin/launchctl list)
+        {
+          echo "# HELP launchd_job_loaded Whether a launchd job this repo defines is loaded (1) or missing (0)."
+          echo "# TYPE launchd_job_loaded gauge"
+          echo "# HELP launchd_job_running Whether the job currently has a PID."
+          echo "# TYPE launchd_job_running gauge"
+          echo "# HELP launchd_job_last_exit_status Last exit status launchd recorded (negative = killed by that signal)."
+          echo "# TYPE launchd_job_last_exit_status gauge"
+          while read -r domain label keepalive; do
+            if [ "$domain" = system ]; then jobs="$SYSTEM_JOBS"; else jobs="$USER_JOBS"; fi
+            row=$(printf '%s\n' "$jobs" | /usr/bin/awk -v l="$label" '$3 == l { print $1, $2 }')
+            labels="domain=\"$domain\",label=\"$label\",keepalive=\"$keepalive\""
+            if [ -z "$row" ]; then
+              echo "launchd_job_loaded{$labels} 0"
+              continue
+            fi
+            read -r pid status <<<"$row"
+            echo "launchd_job_loaded{$labels} 1"
+            if [ "$pid" = "-" ]; then echo "launchd_job_running{$labels} 0"; else echo "launchd_job_running{$labels} 1"; fi
+            echo "launchd_job_last_exit_status{$labels} $status"
+          done <<'JOBS'
+        ${launchdJobList}
+        JOBS
+        } > "$OUT/launchd_job_state.prom".tmp
+        ${pkgs.coreutils}/bin/mv "$OUT/launchd_job_state.prom".tmp "$OUT/launchd_job_state.prom"
       '';
     };
 

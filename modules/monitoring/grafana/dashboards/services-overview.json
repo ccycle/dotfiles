@@ -135,6 +135,21 @@
           "legendFormat": "Dedup ratio"
         }
       ]
+    },
+    {
+      "id": 7,
+      "type": "table",
+      "title": "launchd jobs needing attention (not loaded, KeepAlive without a process, or failed last run)",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 28 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "launchd_job_loaded == 0 or launchd_job_running{keepalive=\"true\"} == 0 or launchd_job_last_exit_status{keepalive=\"false\"} != 0",
+          "instant": true,
+          "format": "table"
+        }
+      ]
     }
   ]
 }

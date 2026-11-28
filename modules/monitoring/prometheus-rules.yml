@@ -241,3 +241,28 @@ groups:
           severity: warning
         annotations:
           summary: "macOS thermal pressure has been Heavy or worse for 10m"
+
+  - name: launchd
+    rules:
+      - alert: LaunchdJobNotLoaded
+        expr: launchd_job_loaded == 0
+        for: 10m
+        labels:
+          severity: critical
+        annotations:
+          summary: "launchd job {{ $labels.label }} ({{ $labels.domain }}) is defined in this repo but not loaded"
+
+      - alert: LaunchdKeepAliveJobDown
+        expr: launchd_job_running{keepalive="true"} == 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "KeepAlive launchd job {{ $labels.label }} ({{ $labels.domain }}) has had no process for 5m"
+
+      - alert: LaunchdJobFailed
+        expr: launchd_job_last_exit_status{keepalive="false"} != 0
+        labels:
+          severity: warning
+        annotations:
+          summary: "launchd job {{ $labels.label }} ({{ $labels.domain }}) last exited with status {{ $value }}"

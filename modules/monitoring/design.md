@@ -137,6 +137,9 @@ for agent-driven investigation.
 - **Host memory "in use" is wired + active + compressed**, macOS's own notion of memory that cannot be reclaimed immediately.
   Inactive and purgeable pages are left out because macOS reclaims them on demand.
 
+- **Native services are watched through launchd's own job table, for exactly the jobs this repo defines.**
+  The job list is generated from `launchd.daemons` and `launchd.user.agents`, so a job that should exist but is not loaded is visible, which neither `up` nor cAdvisor can show (comin unloading itself mid-activation is one such case).
+  A KeepAlive job's last exit status belongs to its previous process, so it alerts only on having no process; every other job alerts on a non-zero last exit status.
 - **Alertmanager runs inside this same compose stack**, wired to Prometheus
   via `alerting.alertmanagers` in `prometheus.yml`, with no host port
   published — Prometheus reaches it over the compose network

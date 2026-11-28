@@ -1,0 +1,57 @@
+rule_files:
+  - ../../prometheus-rules.yml
+
+evaluation_interval: 1m
+
+tests:
+  - name: comin unloads itself during activation and a one-shot job fails
+    interval: 1m
+    input_series:
+      - series: 'launchd_job_loaded{job="node-exporter",instance="host-gateway:9100",domain="system",label="com.github.nlewo.comin",keepalive="true"}'
+        values: "1x5 0x20"
+      - series: 'launchd_job_running{job="node-exporter",instance="host-gateway:9100",domain="system",label="org.nixos.caddy",keepalive="true"}'
+        values: "1x5 0x20"
+      - series: 'launchd_job_last_exit_status{job="node-exporter",instance="host-gateway:9100",domain="system",label="org.nixos.caddy",keepalive="true"}'
+        values: "1x25"
+      - series: 'launchd_job_last_exit_status{job="node-exporter",instance="host-gateway:9100",domain="system",label="org.nixos.forgejo-backup",keepalive="false"}'
+        values: "0x5 1x20"
+    alert_rule_test:
+      - eval_time: 14m
+        alertname: LaunchdJobNotLoaded
+        exp_alerts: []
+      - eval_time: 16m
+        alertname: LaunchdJobNotLoaded
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              job: node-exporter
+              instance: host-gateway:9100
+              domain: system
+              label: com.github.nlewo.comin
+              keepalive: "true"
+            exp_annotations:
+              summary: "launchd job com.github.nlewo.comin (system) is defined in this repo but not loaded"
+      - eval_time: 12m
+        alertname: LaunchdKeepAliveJobDown
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              job: node-exporter
+              instance: host-gateway:9100
+              domain: system
+              label: org.nixos.caddy
+              keepalive: "true"
+            exp_annotations:
+              summary: "KeepAlive launchd job org.nixos.caddy (system) has had no process for 5m"
+      - eval_time: 7m
+        alertname: LaunchdJobFailed
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              job: node-exporter
+              instance: host-gateway:9100
+              domain: system
+              label: org.nixos.forgejo-backup
+              keepalive: "false"
+            exp_annotations:
+              summary: "launchd job org.nixos.forgejo-backup (system) last exited with status 1"
